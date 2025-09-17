@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookmarklet Butler - Specialized Tools</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+      body{font-family:'Inter',sans-serif;background-color:#f3f4f6;color:#1f2937;margin:0;padding:2rem;display:flex;justify-content:center;align-items:flex-start;min-height:100vh}
+      .container{max-width:800px;width:100%;margin:0 auto}
+      .card{background:white;padding:2rem;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1);margin-bottom:1rem}
+      .wizard-step{display:none}.wizard-step.active{display:block}
+      .grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.25rem}
+      .btn{padding:.75rem 1.5rem;border:none;border-radius:6px;cursor:pointer;font-weight:600;text-align:center;display:inline-block;text-decoration:none;transition:background-color .2s,transform .1s}
+      .btn:disabled{opacity:.6;cursor:not-allowed}
+      .btn:active:not(:disabled){transform:scale(.98)}
+      .btn-blue{background:#3b82f6;color:white}.btn-blue:hover:not(:disabled){background:#2563eb}
+      .btn-green{background:#16a34a;color:white}.btn-green:hover:not(:disabled){background:#15803d}
+      .btn-gray{background:#6b7280;color:white}.btn-gray:hover:not(:disabled){background:#4b5563}
+      .action-btn{width:100%;padding:1.25rem;border:1px solid #e5e7eb;border-radius:8px;background-color:white;text-align:left;cursor:pointer;transition:background-color .2s,border-color .2s,transform .1s}
+      .action-btn:hover{background-color:#f9fafb;transform:translateY(-2px);border-color:#a5b4fc}
+      .action-btn h3{margin:0 0 .25rem 0;font-size:1.1rem;color:#111827}
+      .action-btn p{margin:0;font-size:.9rem;color:#4b5563;line-height:1.4}
+      .input,select,textarea{width:100%;padding:.75rem;border:1px solid #d1d5db;border-radius:6px;margin-top:.25rem;box-sizing:border-box;transition:border-color .2s,box-shadow .2s}
+      .input:focus,select:focus,textarea:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.3)}
+      .config-section{margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid #e5e7eb}
+      .config-section:last-child{border-bottom:none;padding-bottom:0;margin-bottom:0}
+      .error-box{display:none;margin-top:1rem;padding:.75rem 1rem;background-color:#fef2f2;color:#991b1b;border:1px solid #fecaca;border-radius:6px;font-size:.9rem}
+  </style>
+</head>
+<body>
+
+  <div class="container">
+      <header style="text-align: center; margin-bottom: 2rem;">
+          <h1 style="font-size: 2.25rem; font-weight: 700; color: #111827;">Bookmarklet Butler</h1>
+          <p style="font-size: 1.125rem; color: #4b5563; margin-top: 0.5rem;">Passphrase generators, data lookups, and more.</p>
+      </header>
+
+      <main class="card">
+          <!-- ::STEP_1::START -->
+          <div id="step1" class="wizard-step active">
+              <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem;">Step 1: Choose a Specialized Tool</h2>
+              <div class="grid-3">
+                  <button onclick="selectAction('passphrase_generator')" type="button" class="action-btn">
+                      <h3>Secure Passphrase Generator</h3>
+                      <p>Generate strong, memorable passphrases with seasonal themes.</p>
+                  </button>
+                  <button onclick="selectAction('temporary_password_generator')" type="button" class="action-btn">
+                      <h3>Temporary Password Generator</h3>
+                      <p>Create simple, temporary passwords in the Word1 format.</p>
+                  </button>
+                  <button onclick="selectAction('pa_county_finder')" type="button" class="action-btn">
+                      <h3>PA County Finder</h3>
+                      <p>Instantly look up PA county info from a ZIP code or city.</p>
+                  </button>
+              </div>
+          </div>
+          <!-- ::STEP_1::END -->
+
+          <!-- ::STEP_2::START -->
+          <div id="step2" class="wizard-step">
+              <h2 id="step2-title" style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem;">Step 2: Configure Your Tool</h2>
+              <div id="config-container"></div>
+              <div style="margin-top: 1.5rem;">
+                  <label for="bookmarkletName" style="display: block; font-size: 0.9rem; font-weight: 500;">Bookmarklet Name</label>
+                  <input type="text" id="bookmarkletName" class="input" placeholder="e.g., My Passphrase Generator">
+              </div>
+              <div id="error-display" class="error-box"></div>
+              <div style="margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                  <button onclick="goBack()" type="button" class="btn btn-gray">Back</button>
+                  <button onclick="generateBookmarklet()" id="generateBtn" type="button" class="btn btn-green">Generate</button>
+              </div>
+          </div>
+          <!-- ::STEP_2::END -->
+
+          <!-- ::STEP_3::START -->
+          <div id="step3" class="wizard-step">
+              <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; text-align: center;">Step 3: Get Your Bookmarklet!</h2>
+              <div style="background-color: #f3f4f6; padding: 1.5rem; border-radius: 12px; text-align: center;">
+                  <p style="margin-bottom: 1rem; font-weight: 500;">Drag the blue link below to your browser's bookmarks bar.</p>
+                  <div id="bookmarklet-output" style="display: flex; justify-content: center; margin: 1rem 0;"></div>
+                  <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 1rem;">
+                      <button onclick="copyCode()" type="button" class="btn btn-gray" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Copy Code</button>
+                      <button onclick="downloadBookmarklet()" type="button" class="btn btn-gray" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Download</button>
+                  </div>
+              </div>
+              <div style="margin-top: 1.5rem; text-align: center;">
+                  <button onclick="startOver()" type="button" class="btn btn-blue">Create Another</button>
+              </div>
+          </div>
+          <!-- ::STEP_3::END -->
+      </main>
+  </div>
+
+<script>
+//::APP_STATE::START
+let wizardState = {};
+let paCountyData = null;
+//::APP_STATE::END
+
+//::DOM_UTILITIES::START
+const getEl = (id) => document.getElementById(id);
+const minifyScript = (script) => script.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '').replace(/\s*([{}();,=])\s*/g, '$1').replace(/\s+/g, ' ').trim();
+const showError = (message) => {
+    const errorDiv = getEl('error-display');
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+};
+const hideError = () => {
+    const errorDiv = getEl('error-display');
+    errorDiv.textContent = '';
+    errorDiv.style.display = 'none';
+};
+const createBookmarkletLink = (href, name) => {
+    const container = getEl('bookmarklet-output');
+    container.innerHTML = '';
+    const link = document.createElement('a');
+    link.href = href;
+    link.className = 'btn btn-blue';
+    link.textContent = name;
+    link.setAttribute('draggable', 'true');
+    container.appendChild(link);
+};
+//::DOM_UTILITIES::END
+
+//::DATA_LAYER::START
+function getPAData() {
+    if (paCountyData) return paCountyData;
+    paCountyData = {"counties":[["Adams",17301,17372,["Gettysburg","Littlestown","McSherrystown","New Oxford","Bonneauville","Carroll Valley","East Berlin","Fairfield","York Springs","Arendtsville","Bendersville"]],["Allegheny",15101,15295,["Pittsburgh","McKeesport","Clairton","Duquesne","Bethel Park","Monroeville","Mount Lebanon","Penn Hills","West Mifflin","Baldwin","Franklin Park","Jefferson Hills","Moon","Plum","Shaler","Upper St. Clair","Whitehall","Allison Park","Glenshaw","Wexford","Gibsonia","Bridgeville","Carnegie","Castle Shannon","Coraopolis","Crafton","Dormont","Edgewood","Forest Hills","Glassport","Green Tree","Ingram","McKees Rocks","Munhall","Oakmont","Pitcairn","Pleasant Hills","Sewickley","Swissvale","Tarentum","Verona","West View","Wilkinsburg","Aspinwall","Avalon","Bell Acres","Bellevue","Ben Avon","Braddock","Braddock Hills","Chalfant","Churchill","Dravosburg","East McKeesport","East Pittsburgh","Edgeworth","Emsworth","Etna","Fox Chapel","Heidelberg","Homestead","Leetsdale","Millvale","Mount Oliver","North Braddock","Rankin","Sharpsburg","Springdale","Stowe","Thornburg","Trafford","Turtle Creek","Wall","West Homestead","Whitaker","Wilmerding"]],["Armstrong",15610,15688,["Kittanning","Ford City","Leechburg","Apollo","Freeport","Parker","Rural Valley","South Bethlehem"]],["Beaver",15001,15099,["Beaver Falls","Aliquippa","Ambridge","Monaca","New Brighton","Baden","Beaver","Bridgewater","Conway","Darlington","East Rochester","Eastvale","Economy","Fallston","Freedom","Georgetown","Glasgow","Homewood","Hookstown","Industry","Koppel","Midland","New Galilee","Ohioville","Patterson Heights","Rochester","Shippingport","South Heights","West Mayfield"]],["Bedford",15522,15583,["Bedford","Everett","Coaldale","Hyndman","Manns Choice","New Paris","Pleasantville","Rainsburg","Saxton","Schellsburg","St. Clairsville","Woodbury"]],["Berks",19501,19640,["Reading","Wyomissing","Pottstown","Sinking Spring","Shillington","Birdsboro","Kutztown","Hamburg","Boyertown","Bally","Bechtelsville","Bernville","Centerport","Fleetwood","Kenhorst","Laureldale","Leesport","Lenhartsville","Lyons","Mohnton","Mount Penn","New Morgan","Robesonia","Shoemakersville","St. Lawrence","Strausstown","Temple","Topton","Wernersville","West Reading"]],["Blair",16601,16693,["Altoona","Hollidaysburg","Tyrone","Bellwood","Duncansville","Martinsburg","Newry","Roaring Spring","Williamsburg"]],["Bradford",16901,16950,["Sayre","Towanda","Athens","Troy","Alba","Burlington","Canton","Leraysville","Monroe","New Albany","Rome","Sylvania","Wyalusing"]],["Bucks",18901,19090,["Levittown","Bensalem","Bristol","Doylestown","Quakertown","Warminster","Newtown","Morrisville","Perkasie","Sellersville","Yardley","Langhorne","Feasterville-Trevose","Richboro","Chalfont","Dublin","Hulmeville","Ivyland","Langhorne Manor","New Britain","New Hope","Penndel","Richlandtown","Riegelsville","Silverdale","Telford","Trumbauersville","Tullytown"]],["Butler",16001,16137,["Butler","Cranberry","Slippery Rock","Zelienople","Mars","Seven Fields","Bruin","Callery","Cherry Valley","Chicora","Connoquenessing","East Butler","Eau Claire","Evans City","Fairview","Harmony","Harrisville","Karns City","Petrolia","Portersville","Prospect","Saxonburg","Valencia","West Liberty","West Sunbury"]],["Cambria",15901,15958,["Johnstown","Ebensburg","Windber","Portage","Nanty Glo","Ashville","Barnesboro","Brownstown","Carrolltown","Cassandra","Chest Springs","Cresson","Daisytown","Dale","East Conemaugh","Ferndale","Franklin","Gallitzin","Geistown","Hastings","Lilly","Lorain","Loretto","Patton","Sankertown","Scalp Level","South Fork","Southmont","Spangler","Summerhill","Tunnelhill","Vintondale","Westmont","Wilmore"]],["Carbon",18210,18252,["Lehighton","Jim Thorpe","Palmerton","Lansford","Beaver Meadows","Bowmanstown","East Side","Nesquehoning","Parryville","Summit Hill","Weatherly","Weissport"]],["Centre",16801,16877,["State College","Bellefonte","Philipsburg","Boalsburg","Centre Hall","Howard","Milesburg","Millheim","Port Matilda","Snow Shoe","Unionville"]],["Chester",19301,19395,["West Chester","Phoenixville","Coatesville","Downingtown","Kennett Square","Paoli","Exton","Atglen","Avondale","Elverson","Honey Brook","Malvern","Modena","Oxford","Parkesburg","South Coatesville","Spring City"]],["Clarion",16201,16374,["Clarion","New Bethlehem","Callensburg","East Brady","Foxburg","Hawthorn","Knox","Rimersburg","Shippenville","Sligo","St. Petersburg","Strattanville"]],["Clearfield",15826,16865,["DuBois","Clearfield","Philipsburg","Curwensville","Brisbin","Burnside","Chester Hill","Coalport","Glen Hope","Grampian","Houtzdale","Irvona","Lumber City","Mahaffey","New Washington","Newburg","Osceola Mills","Ramey","Troutville","Wallaceton","Westover"]],["Clinton",17720,17779,["Lock Haven","Mill Hall","Avis","Beech Creek","Flemington","Loganton","Renovo","South Renovo"]],["Columbia",17801,17889,["Bloomsburg","Berwick","Ashland","Benton","Briar Creek","Catawissa","Centralia","Millville","Orangeville","Stillwater"]],["Crawford",16301,16436,["Meadville","Titusville","Conneaut Lake","Blooming Valley","Cambridge Springs","Canadohta Lake","Centerville","Cochranton","Conneautville","Geneva","Hartstown","Hydetown","Linesville","Saegertown","Spartansburg","Springboro","Townville","Venango","Woodcock"]],["Cumberland",17011,17070,["Carlisle","Mechanicsburg","Camp Hill","New Cumberland","Shippensburg","Lemoyne","Enola","Mount Holly Springs","Newburg","Newville","Shiremanstown","West Fairview","Wormleysburg"]],["Dauphin",17001,17113,["Harrisburg","Hershey","Middletown","Hummelstown","Steelton","Elizabethville","Berrysburg","Dauphin","Gratz","Halifax","Highspire","Lykens","Millersburg","Paxtang","Penbrook","Pillow","Royalton","Williamstown"]],["Delaware",19013,19094,["Chester","Upper Darby","Haverford","Radnor","Drexel Hill","Media","Springfield","Ridley Park","Wayne","Aldan","Brookhaven","Clifton Heights","Collingdale","Colwyn","Darby","East Lansdowne","Eddystone","Folcroft","Glenolden","Lansdowne","Marcus Hook","Millbourne","Morton","Norwood","Parkside","Prospect Park","Rose Valley","Rutledge","Sharon Hill","Swarthmore","Trainer","Upland","Yeadon"]],["Elk",15834,15866,["St. Marys","Ridgway","Johnsonburg"]],["Erie",16401,16565,["Erie","Corry","Edinboro","North East","Girard","Albion","Cranesville","East Springfield","Elgin","Fairview","Lake City","McKean","Mill Village","Platea","Union City","Waterford","Wattsburg","Wesleyville"]],["Fayette",15401,15490,["Uniontown","Connellsville","Brownsville","Masontown","Belle Vernon","Dawson","Dunbar","Everson","Fairchance","Fayette City","Markleysburg","Newell","Ohiopyle","Perryopolis","Point Marion","Smithfield","South Connellsville","Vanderbilt"]],["Franklin",17201,17268,["Chambersburg","Waynesboro","Greencastle","Mercersburg","Mont Alto","Orrstown"]],["Greene",15301,15370,["Waynesburg","Carmichaels","Clarksville","Greensboro","Jefferson","Rices Landing"]],["Huntingdon",16652,17066,["Huntingdon","Mount Union","Alexandria","Birmingham","Broad Top City","Cassville","Coalmont","Dudley","Mapleton","Marklesburg","Mill Creek","Orbisonia","Petersburg","Rockhill","Saltillo","Shade Gap","Shirleysburg","Three Springs"]],["Indiana",15701,15781,["Indiana","Blairsville","Armagh","Cherry Tree","Clarksburg","Clymer","Creekside","Ernest","Glen Campbell","Homer City","Jacksonville","Marion Center","Plumville","Saltsburg","Shelocta","Smicksburg"]],["Jefferson",15831,15866,["Punxsutawney","Brookville","Reynoldsville","Big Run","Brockway","Corsica","Falls Creek","Summerville","Sykesville","Timblin","Worthville"]],["Juniata",17020,17099,["Mifflintown","Mifflin","Port Royal","Thompsontown"]],["Lackawanna",18401,18519,["Scranton","Carbondale","Dunmore","Old Forge","Clarks Summit","Archbald","Dickson City","Blakely","Clarks Green","Dalton","Jermyn","Jessup","Mayfield","Moosic","Moscow","Olyphant","Taylor","Throop","Vandling","Waverly"]],["Lancaster",17501,17608,["Lancaster","Ephrata","Elizabethtown","Lititz","Columbia","Manheim","New Holland","Akron","Christiana","Denver","East Petersburg","Marietta","Millersville","Mount Joy","Mountville","Quarryville","Strasburg","Terre Hill"]],["Lawrence",16101,16160,["New Castle","Ellwood City","New Wilmington","Bessemer","Enon Valley","New Beaver","S.N.P.J.","South New Castle","Volant","Wampum"]],["Lebanon",17003,17099,["Lebanon","Palmyra","Annville","Myerstown","Cleona","Cornwall","Jonestown","Richland"]],["Lehigh",18001,18109,["Allentown","Bethlehem","Emmaus","Whitehall","Macungie","Alburtis","Catasauqua","Coopersburg","Coplay","Fountain Hill","Slatington"]],["Luzerne",18201,18709,["Wilkes-Barre","Hazleton","Kingston","Nanticoke","Pittston","Mountain Top","Dallas","Ashley","Avoca","Bear Creek Village","Conyngham","Courtdale","Dupont","Duryea","Edwardsville","Exeter","Forty Fort","Freeland","Harveys Lake","Hughestown","Jeddo","Laflin","Larksville","Laurel Run","Luzerne","New Columbus","Nuangola","Penn Lake Park","Plymouth","Pringle","Shickshinny","Sugar Notch","Swoyersville","Warrior Run","West Hazleton","West Pittston","West Wyoming","White Haven","Wyoming","Yatesville"]],["Lycoming",17701,17778,["Williamsport","Montoursville","Muncy","Jersey Shore","Duboistown","Hughesville","Montgomery","Picture Rocks","Salladasburg","South Williamsport"]],["McKean",16701,16749,["Bradford","Kane","Eldred","Lewis Run","Mount Jewett","Port Allegany","Smethport"]],["Mercer",16125,16173,["Hermitage","Sharon","Greenville","Grove City","Mercer","Clark","Farrell","Fredonia","Jackson Center","Jamestown","New Lebanon","Sandy Lake","Sheakleyville","Stoneboro","West Middlesex","Wheatland"]],["Mifflin",17044,17099,["Lewistown","Burnham","Juniata Terrace","Kistler","McVeytown","Newton Hamilton"]],["Monroe",18301,18372,["East Stroudsburg","Stroudsburg","Mount Pocono","Pocono Pines","Delaware Water Gap"]],["Montgomery",19001,19490,["Norristown","Pottstown","King of Prussia","Lansdale","Willow Grove","Horsham","Montgomeryville","Ardmore","Harleysville","Ambler","Bridgeport","Bryn Athyn","Collegeville","Conshohocken","East Greenville","Green Lane","Hatboro","Hatfield","Jenkintown","Narberth","North Wales","Pennsburg","Red Hill","Rockledge","Royersford","Schwenksville","Souderton","Trappe","West Conshohocken"]],["Montour",17821,17889,["Danville","Washingtonville"]],["Northampton",18013,18109,["Bethlehem","Easton","Northampton","Nazareth","Bangor","Bath","Chapman","East Bangor","Freemansburg","Glendon","Hellertown","North Catasauqua","Pen Argyl","Portland","Roseto","Stockertown","Tatamy","Walnutport","West Easton","Wilson","Wind Gap"]],["Northumberland",17801,17889,["Sunbury","Shamokin","Mount Carmel","Milton","Herndon","Kulpmont","Marion Heights","McEwensville","Northumberland","Riverside","Snydertown","Turbotville","Watsontown"]],["Perry",17013,17099,["Newport","Duncannon","Blain","Bloomfield","Landisburg","Liverpool","Marysville","New Buffalo"]],["Philadelphia",19101,19155,["Philadelphia"]],["Pike",18324,18472,["Milford","Matamoras"]],["Potter",16915,16950,["Coudersport","Austin","Galeton","Oswayo","Shinglehouse","Ulysses"]],["Schuylkill",17901,17985,["Pottsville","Tamaqua","Schuylkill Haven","Shenandoah","Mahanoy City","Ashland","Auburn","Coaldale","Cressona","Deer Lake","Frackville","Gilberton","Girardville","Gordon","Landingville","McAdoo","Mechanicsville","Middleport","Minersville","Mount Carbon","New Philadelphia","New Ringgold","Orwigsburg","Palo Alto","Pine Grove","Port Carbon","Port Clinton","Ringtown","St. Clair","Tower City","Tremont"]],["Snyder",17837,17889,["Selinsgrove","Middleburg","Beavertown","Freeburg","McClure","Shamokin Dam"]],["Somerset",15501,15563,["Somerset","Windber","Meyersdale","Addison","Benson","Berlin","Boswell","Callimont","Casselman","Central City","Confluence","Garrett","Hooversville","Indian Lake","Jennerstown","New Baltimore","New Centerville","Paint","Rockwood","Salisbury","Shanksville","Stoystown","Ursina","Wellersburg"]],["Susquehanna",18801,18853,["Montrose","Forest City","Friendsville","Great Bend","Hallstead","Hop Bottom","Lanesboro","Little Meadows","New Milford","Oakland","Susquehanna Depot","Thompson","Union Dale"]],["Tioga",16920,16950,["Wellsboro","Mansfield","Blossburg","Covington","Elkland","Knoxville","Lawrenceville","Liberty","Middlebury Center","Millerton","Morris","Osceola","Roseville","Tioga","Westfield"]],["Union",17837,17889,["Lewisburg","Mifflinburg","Hartleton","New Berlin"]],["Venango",16301,16374,["Oil City","Franklin","Titusville","Barkeyville","Clintonville","Cooperstown","Emlenton","Pleasantville","Polk","Rouseville","Sugarcreek","Utica"]],["Warren",16301,16374,["Warren","Bear Lake","Clarendon","Sugar Grove","Tidioute","Youngsville"]],["Washington",15301,15370,["Washington","Canonsburg","Monongahela","Charleroi","McMurray","Allenport","Beallsville","Bentleyville","Burgettstown","California","Canton","Cecil-Bishop","Centerville","Claysville","Coal Center","Cokeburg","Deemston","Donora","Dunlevy","East Washington","Elco","Ellsworth","Finleyville","Green Hills","Houston","Long Branch","Marianna","McDonald","Midway","New Eagle","North Charleroi","North Franklin","Roscoe","Speers","Stockdale","Twilight","West Brownsville","West Middletown"]],["Wayne",18411,18472,["Honesdale","Hawley","Bethany","Prompton","Starrucca","Waymart"]],["Westmoreland",15601,15697,["Greensburg","Murrysville","New Kensington","Latrobe","Lower Burrell","Jeannette","Monessen","Irwin","Adamsburg","Arona","Avonmore","Bolivar","Delmont","Derry","Donegal","East Vandergrift","Export","Hunker","Hyde Park","Ligonier","Madison","Manor","Mount Pleasant","New Alexandria","New Florence","New Stanton","North Belle Vernon","North Irwin","Oklahoma","Penn","Scottdale","Seward","Smithton","South Greensburg","Southwest Greensburg","Sutersville","Trafford","Vandergrift","West Leechburg","West Newton","Youngstown","Youngwood"]],["Wyoming",18610,18657,["Tunkhannock","Factoryville","Laceyville","Meshoppen","Nicholson"]],["York",17401,17408,["York","Hanover","Red Lion","Shrewsbury","Dillsburg","Cross Roads","Dallastown","Delta","Dover","East Prospect","Fawn Grove","Felton","Franklintown","Glen Rock","Goldsboro","Hallam","Jacobus","Jefferson","Lewisberry","Loganville","Manchester","Mount Wolf","New Freedom","New Salem","North York","Railroad","Seven Valleys","Spring Grove","Stewartstown","Wellsville","West York","Windsor","Winterstown","Wrightsville","Yoe","Yorkana","York Haven"]]],"overrides":{"bethlehem":{"Lehigh":[18015,18017],"Northampton":[18016,18018,18020,18025]},"trafford":{"Allegheny":[15085],"Westmoreland":[15085]},"mcdonald":{"Allegheny":[15057],"Washington":[15057]},"ellwood city":{"Beaver":[16117],"Lawrence":[16117]},"adamstown":{"Berks":[19501],"Lancaster":[19501]},"shippensburg":{"Cumberland":[17257],"Franklin":[17257]},"seven springs":{"Fayette":[15622],"Somerset":[15622]}}};
+    return paCountyData;
+}
+//::DATA_LAYER::END
+
+//::FEATURE_REGISTRY::START
+const FEATURES = {
+    passphrase_generator: {
+        id: 'passphrase_generator',
+        label: 'Secure Passphrase Generator',
+        uiTemplate: () => `
+             <div class="config-section">
+                 <h4>Bookmarklet Size</h4>
+                 <label for="embedCount" style="display:block; font-size:0.9rem; font-weight:500;">Number of Words to Embed</label>
+                 <input type="number" id="embedCount" class="input" value="200" min="50" max="450">
+                 <p style="font-size:0.9rem; color:#4b5563; margin-top:0.5rem;">Controls the size of the final bookmarklet from the 450-word bank. Higher numbers are more random but may not work in all browsers. Start with 200.</p>
+             </div>
+            <div style="background-color: #f9fafb; padding: 1rem; border-radius: 8px;">
+                <h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem;">Passphrase Options</h3>
+                <div class="grid-2" style="gap: 1rem;">
+                    <div><label># Words</label><select id="passNumWords" class="input"><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option></select></div>
+                    <div><label>Separator</label><select id="passSeparator" class="input"><option value="-">-</option><option value="_">_</option><option value=" ">space</option><option value="" selected>None</option></select></div>
+                    <div><label>Capitalization</label><select id="passCapitalization" class="input"><option value="caps" selected>Title Case</option><option value="lower">lowercase</option></select></div>
+                    <div><label># Digits</label><input type="number" id="passNumDigits" value="2" min="0" max="9" class="input"></div>
+                    <div><label># Symbols</label><input type="number" id="passNumSymbols" value="1" min="0" max="4" class="input"></div>
+                    <div><label>Min Length</label><input type="number" id="passMinLength" value="12" min="8" max="64" class="input"></div>
+                </div>
+                <div style="margin-top: 1rem;">
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input type="checkbox" id="passUseSeasonal" checked>
+                        <span style="margin-left: 0.5rem; font-size: 0.9rem;">Use Seasonal Theme</span>
+                    </label>
+                </div>
+            </div>`,
+        validator: () => {
+            const embedCount = parseInt(getEl('embedCount').value, 10);
+            if (isNaN(embedCount) || embedCount < 50 || embedCount > 450) {
+                throw new Error('Number of words to embed must be between 50 and 450.');
+            }
+            const passNumDigits = parseInt(getEl('passNumDigits').value, 10);
+            if (isNaN(passNumDigits) || passNumDigits < 0 || passNumDigits > 9) {
+                throw new Error('Number of digits must be between 0 and 9.');
+            }
+            return true;
+        },
+        generator: async () => {
+            const fullWordBank = {"Adjective":["Able","Ancient","Basic","Bent","Blank","Brave","Bold","Bumpy","Busy","Clever","Cloudy","Clumsy","Cranky","Curly","Dapper","Eager","Empty","Even","Fancy","Firm","Foggy","Fuzzy","Giant","Glad","Grand","Gritty","Harsh","Heavy","Humble","Jolly","Jumbo","Kind","Known","Large","Lavish","Lean","Major","Minor","Modern","Muddy","Odd","Plain","Quick","Rough","Royal","Sharp","Slim","Zany","Bright","Happy"],"Animal":["Badger","Bat","Beaver","Bison","Bobcat","Camel","Cat","Clam","Cobra","Colt","Coyote","Crow","Dingo","Dog","Dolphin","Dove","Dragon","Duck","Eel","Elk","Falcon","Fawn","Finch","Frog","Gecko","Goose","Grizzly","Guppy","Heron","Hornet","Hound","Jaguar","Koala","Llama","Mammoth","Moose","Moth","Newt","Otter","Panther","Parrot","Pony","Cougar","Rhino","Sloth","Stallion","Swan","Tadpole","Wasp","Wolf","Bear","Fox","Eagle"],"Object":["Anvil","Armor","Armchair","Backpack","Balloon","Banana","Barrel","Basket","Battery","Bell","Bench","Binder","Blanket","Bongo","Book","Booklet","Boulder","Bowl","Box","Bracelet","Bracket","Brick","Brush","Bubble","Bucket","Buckle","Bulb","Bumper","Button","Cabin","Cable","Camera","Candle","Canoe","Canvas","Carton","Castle","Harp","Chalk","Charger","Charm","Chart","Tool","Boat","Cup","Desk","Lamp","Door","Ball"],"Verb":["Argue","Arise","Bake","Bathe","Bend","Blink","Blush","Bolt","Bounce","Bump","Carve","Chase","Chew","Clap","Clash","Climb","Cling","Cough","Cover","Cram","Crawl","Crouch","Cuddle","Dance","Dare","Dash","Daze","Dig","Dip","Dive","Dodge","Drain","Drench","Drill","Drip","Droop","Drop","Drum","Dump","Dust","Gasp","Grab","Press","Scold","Slice","Thump","Tussle","Run","Jump","Sing","Hop","Spin"],"Color":["Amber","Blue","Bronze","Brown","Coral","Cyan","Emerald","Gold","Green","Indigo","Jade","Lavender","Lime","Maroon","Mint","Navy","Olive","Pink","Plum","Purple","Red","Rose","Ruby","Silver","Teal","Violet","White","Yellow","Tan","Gray","Peach","Aqua"],"Winter":{"Noun":["Blizzard","Chill","Flake","Frost","Glacier","Hearth","Ice","Icicle","Igloo","Mountain","Pine","Skate","Sled","Snow","Storm","Tundra","Yle"],"Adjective":["Barren","Bitter","Bleak","Brisk","Frigid","Frozen","Glacial","Icy","Hushed","Quiet","Still","Snowy","Chilly"],"Verb":["Drift","Fall","Freeze","Huddle","Melt","Nip","Shiver","Settle","Shine"],"Concept":["Calm","Peace","Silence","Spirit","Legend","Mystery"]},"Spring":{"Noun":["April","Blossom","Breeze","Bud","Bulb","Butterfly","Chick","Clover","Crocus","Daffodil","Egg","Equinox","Garden","Lamb","Meadow","Nest","Rabbit","Rainbow","Robin","Seed","Tulip","Rose","Rain"],"Adjective":["Alive","Blooming","Budding","Cheerful","Clean","Dewy","Early","Fresh","Gentle","Green","Growing","Hopeful","Lively","Mild","New","Vibrant","Young"],"Verb":["Bloom","Bud","Burst","Chirp","Emerge","Grow","Hatch","Open","Peep","Sprout","Wake"],"Concept":["Anticipation","Awakening","Beginning","Bloom","Growth","Hope","Freshness","Youth"]},"Summer":{"Noun":["August","Beach","Campfire","Canoe","Cicada","Cricket","Festival","Firefly","Hammock","Heat","July","June","Lemonade","Ocean","Picnic","Pool","Sandal","Solstice","Sprinkler","Sunshine","Tent","Sun"],"Adjective":["Balmy","Bright","Carefree","Drowsy","Golden","Hazy","Hot","Humid","Light","Long","Lush","Ripe","Sandy","Sizzling","Sunny","Warm"],"Verb":["Dive","Doze","Explore","Float","Grill","Lounge","Relax","Shine","Sizzle","Splash","Swim","Travel"],"Concept":["Adventure","Bliss","Ease","Freedom","Fun","Glow","Happiness","Journey","Leisure"]},"Autumn":{"Noun":["Acorn","Apple","Cider","Corn","Fall","Foliage","Gourd","Harvest","Hay","Leaf","Maple","Orchard","Pumpkin","Spice","Sweater","Wood"],"Adjective":["Blustery","Chilly","Cool","Cozy","Crimson","Dim","Dry","Golden","Mellow","Orange","Quiet","Rustic","Leafy"],"Verb":["Bake","Change","Chill","Cool","Crunch","Fade","Gather","Glow","Rustle"],"Concept":["Calm","Change","Comfort","Cycle","Dusk","Memory","Thought","Joy"]}};
+            const NEW_PHRASE_STRUCTURES = {"standard":{"2":[["Adjective","Animal"],["Adjective","Object"],["Color","Object"],["Color","Animal"],["Verb","Animal"],["Animal","Object"],["Object","Object"]],"3":[["Adjective","Color","Animal"],["Verb","Adjective","Object"],["Adjective","Object","Verb"]],"4":[["Adjective","Animal","Color","Verb"],["Color","Adjective","Object","Verb"]]},"seasonal":{"2":[["SeasonAdjective","Object"],["Adjective","SeasonNoun"],["SeasonVerb","Animal"],["Color","SeasonNoun"],["SeasonVerb","Object"],["Color","SeasonConcept"],["SeasonNoun","Animal"]],"3":[["Adjective","Color","SeasonConcept"],["SeasonAdjective","Verb","Object"],["Verb","Adjective","SeasonNoun"]],"4":[["Adjective","Verb","Color","SeasonNoun"],["SeasonAdjective","Adjective","Object","Verb"]]}};
+            const SYMBOL_RULES = {"beforeNum":["$","#","*"],"afterNum":["%","+"],"junction":["=","@",".","-"],"end":["!","?"]};
+            const embedCount = parseInt(getEl('embedCount').value, 10);
+            function sample(arr, n) {
+                let result = new Array(n), len = arr.length, taken = new Array(len);
+                if (n > len) n = len;
+                while (n--) {
+                    const x = Math.floor(Math.random() * len);
+                    result[n] = arr[x in taken ? taken[x] : x];
+                    taken[x] = --len in taken ? taken[len] : len;
+                }
+                return result;
+            }
+            let totalWords = 0;
+            Object.keys(fullWordBank).forEach(key => {
+                 if (Array.isArray(fullWordBank[key])) {
+                     totalWords += fullWordBank[key].length;
+                 } else if (typeof fullWordBank[key] === 'object') {
+                     Object.keys(fullWordBank[key]).forEach(subKey => {
+                         if(Array.isArray(fullWordBank[key][subKey])) totalWords += fullWordBank[key][subKey].length;
+                     });
+                 }
+            });
+            const W = {}; 
+            Object.keys(fullWordBank).forEach(key => {
+                 if (Array.isArray(fullWordBank[key])) {
+                     const proportion = fullWordBank[key].length / totalWords;
+                     const count = Math.max(1, Math.round(proportion * embedCount));
+                     W[key] = sample(fullWordBank[key], count);
+                 } else if (typeof fullWordBank[key] === 'object') {
+                     W[key] = {};
+                     Object.keys(fullWordBank[key]).forEach(subKey => {
+                          if(Array.isArray(fullWordBank[key][subKey])) {
+                             const proportion = fullWordBank[key][subKey].length / totalWords;
+                             const count = Math.max(1, Math.round(proportion * embedCount));
+                             W[key][subKey] = sample(fullWordBank[key][subKey], count);
+                          }
+                     });
+                 }
+            });
+            W.PHRASE_STRUCTURES = NEW_PHRASE_STRUCTURES;
+            W.SYMBOL_RULES = SYMBOL_RULES;
+            const C = { 
+                w: parseInt(getEl('passNumWords').value, 10), 
+                t: getEl('passUseSeasonal').checked,
+                s: getEl('passSeparator').value, 
+                c: getEl('passCapitalization').value, 
+                d: parseInt(getEl('passNumDigits').value, 10), 
+                y: parseInt(getEl('passNumSymbols').value, 10),
+                m: parseInt(getEl('passMinLength').value, 10)
+            };
+            const script = `(function(){const C=${JSON.stringify(C)};const W=${JSON.stringify(W)};function getRand(m){const r=new Uint32Array(1);window.crypto.getRandomValues(r);return r[0]%m}function R(a){return a[getRand(a.length)]}function Cap(s){return s.charAt(0).toUpperCase()+s.slice(1).toLowerCase()}
+const season=C.t?(d=>{const Y=d.getFullYear();function getMemorialDay(y){const date=new Date(y,5,31);date.setDate(date.getDate()-(date.getDay()+6)%7);return date}function getLaborDay(y){const date=new Date(y,8,1);const dayOfWeek=date.getDay();const offset=(dayOfWeek<=1)?1-dayOfWeek:8-dayOfWeek;date.setDate(date.getDate()+offset);return date}
+const memorialDay=getMemorialDay(Y);const laborDay=getLaborDay(Y);const springOfficialStart=new Date(Y,2,17);const summerOfficialStart=memorialDay;const autumnOfficialStart=laborDay;const winterOfficialStart=new Date(Y,11,1);
+const springStart=new Date(springOfficialStart.getTime()-7*24*60*60*1000);const springEnd=new Date(summerOfficialStart.getTime()-60*24*60*60*1000);const summerStart=new Date(summerOfficialStart.getTime()-7*24*60*60*1000);const summerEnd=new Date(autumnOfficialStart.getTime()-60*24*60*60*1000);const autumnStart=new Date(autumnOfficialStart.getTime()-7*24*60*60*1000);const autumnEnd=new Date(winterOfficialStart.getTime()-60*24*60*60*1000);const winterStart=new Date(winterOfficialStart.getTime()-7*24*60*60*1000);const winterEnd=new Date(springOfficialStart.getTime()-60*24*60*60*1000);
+if(d>=springStart&&d<=springEnd)return'Spring';if(d>=summerStart&&d<=summerEnd)return'Summer';if(d>=autumnStart&&d<=autumnEnd)return'Autumn';if(d>=winterStart||d<=winterEnd)return'Winter';return null})(new Date()):null;
+let allPasses=[];for(let i=0;i<5;i++){let words=[];const P=W.PHRASE_STRUCTURES;let struct;if(season&&P.seasonal&&P.seasonal[C.w]){struct=R(P.seasonal[C.w]);}else if(P.standard&&P.standard[C.w]){struct=R(P.standard[C.w]);}else{struct=['Adjective','Animal'];}words=struct.map(cat=>{if(cat.startsWith('Season')){const sCat=cat.replace('Season','');return R(W[season][sCat]);}return R(W[cat]);});if(C.c==='caps'){words=words.map(Cap);}else if(C.c==='upper'){words=words.map(w=>w.toUpperCase());}else{words=words.map(w=>w.toLowerCase());}let wordStr=words.join(C.s);let numberBlock=[];for(let j=0;j<C.d;j++){numberBlock.push(getRand(10));}let symbolsToUse={beforeNum:'',afterNum:'',junction:'',end:''};let preliminaryLength=wordStr.length+numberBlock.length;let paddingNeeded=Math.max(0,C.m-preliminaryLength);let willHaveNumbers=(numberBlock.length+paddingNeeded)>0;if(C.y>0){let availableTypes=['end','junction'];if(willHaveNumbers){availableTypes.push('beforeNum','afterNum');}for(let k=availableTypes.length-1;k>0;k--){const l=getRand(k+1);[availableTypes[k],availableTypes[l]]=[availableTypes[l],availableTypes[k]];}for(let j=0;j<C.y;j++){if(availableTypes.length===0)break;let type=availableTypes.shift();if(type){symbolsToUse[type]=R(W.SYMBOL_RULES[type]);}}}let currentLength=wordStr.length+numberBlock.length+Object.values(symbolsToUse).join('').length;paddingNeeded=Math.max(0,C.m-currentLength);for(let j=0;j<paddingNeeded;j++){numberBlock.push(getRand(10));}let numberPart=symbolsToUse.beforeNum+numberBlock.join('')+symbolsToUse.afterNum;let finalPass;if(getRand(2)===0&&numberPart){finalPass=numberPart+symbolsToUse.junction+wordStr+symbolsToUse.end;}else{finalPass=wordStr+symbolsToUse.junction+numberPart+symbolsToUse.end;}allPasses.push(finalPass);}function showDialog(passwords,title){const existing=document.getElementById('passphrase-dialog-bm');if(existing)existing.remove();const overlay=document.createElement('div');overlay.id='passphrase-dialog-bm';Object.assign(overlay.style,{position:'fixed',top:'0',left:'0',width:'100%',height:'100%',backgroundColor:'rgba(0,0,0,0.5)',zIndex:'99998',display:'flex',alignItems:'center',justifyContent:'center'});const dialog=document.createElement('div');Object.assign(dialog.style,{background:'white',padding:'24px',borderRadius:'8px',boxShadow:'0 5px 15px rgba(0,0,0,0.3)',width:'auto',maxWidth:'90%',fontFamily:'sans-serif'});const titleEl=document.createElement('h3');titleEl.textContent=title;Object.assign(titleEl.style,{marginTop:'0',fontSize:'18px',color:'#111'});dialog.appendChild(titleEl);const list=document.createElement('div');passwords.forEach(p=>{const item=document.createElement('div');Object.assign(item.style,{display:'flex',alignItems:'center',marginBottom:'8px'});const text=document.createElement('p');text.textContent=p;Object.assign(text.style,{margin:'0',marginRight:'12px',fontSize:'16px',fontFamily:'monospace',color:'#333',userSelect:'text'});const copyBtn=document.createElement('button');copyBtn.textContent='Copy';Object.assign(copyBtn.style,{padding:'4px 8px',fontSize:'12px',border:'none',borderRadius:'4px',cursor:'pointer',backgroundColor:'#6b7280',color:'white'});copyBtn.onclick=()=>{navigator.clipboard.writeText(p).then(()=>{copyBtn.textContent='Copied!';setTimeout(()=>copyBtn.textContent='Copy',2000);}).catch(e=>console.error(e));};item.appendChild(text);item.appendChild(copyBtn);list.appendChild(item);});dialog.appendChild(list);const closeBtn=document.createElement('button');closeBtn.textContent='Close';Object.assign(closeBtn.style,{marginTop:'16px',padding:'8px 16px',border:'none',borderRadius:'4px',backgroundColor:'#3b82f6',color:'white',cursor:'pointer'});const closeDialog=()=>overlay.remove();closeBtn.onclick=closeDialog;overlay.onclick=(e)=>{if(e.target===overlay)closeDialog();};dialog.appendChild(closeBtn);overlay.appendChild(dialog);document.body.appendChild(overlay);}showDialog(allPasses,'Generated Passphrases');})();`;
+            return script;
+        }
+    },
+    temporary_password_generator: {
+        id: 'temporary_password_generator',
+        label: 'Temporary Password Generator',
+        uiTemplate: () => `
+            <div class="config-section">
+                <h4>Password Count</h4>
+                <label for="tempPassCount" style="display:block; font-size:0.9rem; font-weight:500;">Number of passwords to generate</label>
+                <input type="number" id="tempPassCount" class="input" value="5" min="1" max="10">
+            </div>
+            <div class="config-section">
+                <h4>Password Options</h4>
+                <label style="display: flex; align-items: center; cursor: pointer; margin-bottom: 0.5rem;">
+                    <input type="checkbox" id="tempPassSymbol">
+                    <span style="margin-left: 0.5rem; font-size: 0.9rem;">Add random symbol (!, ?, $, %)</span>
+                </label>
+                <label style="display: flex; align-items: center; cursor: pointer;">
+                    <input type="checkbox" id="tempPassRandomNum">
+                    <span style="margin-left: 0.5rem; font-size: 0.9rem;">Use random number (instead of '1')</span>
+                </label>
+            </div>`,
+        validator: () => {
+            const count = parseInt(getEl('tempPassCount').value, 10);
+            if (isNaN(count) || count < 1 || count > 10) {
+                throw new Error('Please enter a number between 1 and 10.');
+            }
+            return true;
+        },
+        generator: async () => {
+            const wordList = ["Applebutter","Appleslicer","Automobiles","Backpackers","Beachcomber","Biographies","Blackmarker","Bluebonnets","Blueberries","Bluehorizon","Bookkeepers","Breadbasket","Brightlight","Broadstreet","Brotherhood","Buttercream","Butterflies","Calculators","Campgrounds","Candlestick","Caterpillar","Cheesemaker","Cheesesteak","Cherrycider","Cherrypatch","Cherrytrees","Ciderdonuts","Coffeebeans","Coffeehouse","Dragonflies","Fingerprint","Firefighter","Firestation","Fishmongers","Flashlights","Fluteplayer","Footbridges","Gardenhouse","Gingersnaps","Goldfinches","Goldenapple","Grandfather","Grandmother","Grasshopper","Greenhouses","Grizzlybear","Handwriting","Helicopters","Hummingbird","Icecreamery","Instruments","Ironworkers","Jellydonuts","Killerwhale","Libertybell","Lightheaded","Lighthouses","Loudspeaker","Mapledonuts","Mapleforest","Marshmallow","Mockingbird","Motorcycles","Nightrunner","Paperbridge","Papermakers","Paperweight","Peacemakers","Peppergrass","Pharmacists","Phonenumber","Photographs","Pineneedles","Polarbreeze","Powerhouses","Preschooler","Quickstride","Quicksprint","Rainbowfish","Rattlesnake","Refrigerate","Restaurants","Rivermarket","Rivervalley","Rollerblade","Salamanders","Sandcastles","Schoolhouse","Scratchcard","Scratchpads","Screwdriver","Silvermaple","Skateboards","Skyscrapers","Smartphones","Snowleopard","Softpretzel","Springwater","Stonebridge","Storyteller","Sugarcookie","Sunrisepark","Switchboard","Televisions","Thermometer","Thermostats","Toothpastes","Typewriters","Valleyparks","Waterbottle","Waterlilies","Wildflowers","Windowpanes","Woodpeckers","Workbenches","Yellowfinch","Yellowstone"];
+            const config = {
+                count: parseInt(getEl('tempPassCount').value, 10),
+                addSymbol: getEl('tempPassSymbol').checked,
+                randomNum: getEl('tempPassRandomNum').checked
+            };
+            const script = `(function(){const W=${JSON.stringify(wordList)};const C=${JSON.stringify(config)};const S=['!','?','$','%'];let passes=[];function getRand(m){const r=new Uint32Array(1);window.crypto.getRandomValues(r);return r[0]%m}
+function R(a){return a[getRand(a.length)];}
+for(let i=0;i<C.count;i++){let p=R(W);p+=C.randomNum?getRand(10):'1';if(C.addSymbol){p+=R(S);}passes.push(p);}
+function showDialog(passwords, title){const existing=document.getElementById('passphrase-dialog-bm');if(existing)existing.remove();const overlay=document.createElement('div');overlay.id='passphrase-dialog-bm';Object.assign(overlay.style,{position:'fixed',top:'0',left:'0',width:'100%',height:'100%',backgroundColor:'rgba(0,0,0,0.5)',zIndex:'99998',display:'flex',alignItems:'center',justifyContent:'center'});const dialog=document.createElement('div');Object.assign(dialog.style,{background:'white',padding:'24px',borderRadius:'8px',boxShadow:'0 5px 15px rgba(0,0,0,0.3)',width:'auto',maxWidth:'90%',fontFamily:'sans-serif'});const titleEl=document.createElement('h3');titleEl.textContent=title;Object.assign(titleEl.style,{marginTop:'0',fontSize:'18px',color:'#111'});dialog.appendChild(titleEl);const list=document.createElement('div');passwords.forEach(p=>{const item=document.createElement('div');Object.assign(item.style,{display:'flex',alignItems:'center',marginBottom:'8px'});const text=document.createElement('p');text.textContent=p;Object.assign(text.style,{margin:'0',marginRight:'12px',fontSize:'16px',fontFamily:'monospace',color:'#333',userSelect:'text'});const copyBtn=document.createElement('button');copyBtn.textContent='Copy';Object.assign(copyBtn.style,{padding:'4px 8px',fontSize:'12px',border:'none',borderRadius:'4px',cursor:'pointer',backgroundColor:'#6b7280',color:'white'});copyBtn.onclick=()=>{navigator.clipboard.writeText(p).then(()=>{copyBtn.textContent='Copied!';setTimeout(()=>copyBtn.textContent='Copy',2000);}).catch(e=>console.error(e));};item.appendChild(text);item.appendChild(copyBtn);list.appendChild(item);});dialog.appendChild(list);const closeBtn=document.createElement('button');closeBtn.textContent='Close';Object.assign(closeBtn.style,{marginTop:'16px',padding:'8px 16px',border:'none',borderRadius:'4px',backgroundColor:'#3b82f6',color:'white',cursor:'pointer'});const closeDialog=()=>overlay.remove();closeBtn.onclick=closeDialog;overlay.onclick=(e)=>{if(e.target===overlay)closeDialog();};dialog.appendChild(closeBtn);overlay.appendChild(dialog);document.body.appendChild(overlay);}showDialog(passes, 'Temporary Passwords');})();`;
+            return script;
+        }
+    },
+    pa_county_finder: {
+        id: 'pa_county_finder',
+        label: 'PA County Finder',
+        uiTemplate: () => `<p>This tool has no configuration. It will use your highlighted text or prompt you for a PA ZIP code or city.</p>`,
+        validator: () => true,
+        generator: async () => {
+            const newScript = `(function(){const D=[["Adams",17301,17372,["Gettysburg","Littlestown","McSherrystown","New Oxford","Bonneauville","Carroll Valley","East Berlin","Fairfield","York Springs","Arendtsville","Bendersville"]],["Allegheny",15101,15295,["Pittsburgh","McKeesport","Clairton","Duquesne","Bethel Park","Monroeville","Mount Lebanon","Penn Hills","West Mifflin","Baldwin","Franklin Park","Jefferson Hills","Moon","Plum","Shaler","Upper St. Clair","Whitehall","Allison Park","Glenshaw","Wexford","Gibsonia","Bridgeville","Carnegie","Castle Shannon","Coraopolis","Crafton","Dormont","Edgewood","Forest Hills","Glassport","Green Tree","Ingram","McKees Rocks","Munhall","Oakmont","Pitcairn","Pleasant Hills","Sewickley","Swissvale","Tarentum","Verona","West View","Wilkinsburg","Aspinwall","Avalon","Bell Acres","Bellevue","Ben Avon","Braddock","Braddock Hills","Chalfant","Churchill","Dravosburg","East McKeesport","East Pittsburgh","Edgeworth","Emsworth","Etna","Fox Chapel","Heidelberg","Homestead","Leetsdale","Millvale","Mount Oliver","North Braddock","Rankin","Sharpsburg","Springdale","Stowe","Thornburg","Trafford","Turtle Creek","Wall","West Homestead","Whitaker","Wilmerding"]],["Armstrong",15610,15688,["Kittanning","Ford City","Leechburg","Apollo","Freeport","Parker","Rural Valley","South Bethlehem"]],["Beaver",15001,15099,["Beaver Falls","Aliquippa","Ambridge","Monaca","New Brighton","Baden","Beaver","Bridgewater","Conway","Darlington","East Rochester","Eastvale","Economy","Fallston","Freedom","Georgetown","Glasgow","Homewood","Hookstown","Industry","Koppel","Midland","New Galilee","Ohioville","Patterson Heights","Rochester","Shippingport","South Heights","West Mayfield"]],["Bedford",15522,15583,["Bedford","Everett","Coaldale","Hyndman","Manns Choice","New Paris","Pleasantville","Rainsburg","Saxton","Schellsburg","St. Clairsville","Woodbury"]],["Berks",19501,19640,["Reading","Wyomissing","Pottstown","Sinking Spring","Shillington","Birdsboro","Kutztown","Hamburg","Boyertown","Bally","Bechtelsville","Bernville","Centerport","Fleetwood","Kenhorst","Laureldale","Leesport","Lenhartsville","Lyons","Mohnton","Mount Penn","New Morgan","Robesonia","Shoemakersville","St. Lawrence","Strausstown","Temple","Topton","Wernersville","West Reading"]],["Blair",16601,16693,["Altoona","Hollidaysburg","Tyrone","Bellwood","Duncansville","Martinsburg","Newry","Roaring Spring","Williamsburg"]],["Bradford",16901,16950,["Sayre","Towanda","Athens","Troy","Alba","Burlington","Canton","Leraysville","Monroe","New Albany","Rome","Sylvania","Wyalusing"]],["Bucks",18901,19090,["Levittown","Bensalem","Bristol","Doylestown","Quakertown","Warminster","Newtown","Morrisville","Perkasie","Sellersville","Yardley","Langhorne","Feasterville-Trevose","Richboro","Chalfont","Dublin","Hulmeville","Ivyland","Langhorne Manor","New Britain","New Hope","Penndel","Richlandtown","Riegelsville","Silverdale","Telford","Trumbauersville","Tullytown"]],["Butler",16001,16137,["Butler","Cranberry","Slippery Rock","Zelienople","Mars","Seven Fields","Bruin","Callery","Cherry Valley","Chicora","Connoquenessing","East Butler","Eau Claire","Evans City","Fairview","Harmony","Harrisville","Karns City","Petrolia","Portersville","Prospect","Saxonburg","Valencia","West Liberty","West Sunbury"]],["Cambria",15901,15958,["Johnstown","Ebensburg","Windber","Portage","Nanty Glo","Ashville","Barnesboro","Brownstown","Carrolltown","Cassandra","Chest Springs","Cresson","Daisytown","Dale","East Conemaugh","Ferndale","Franklin","Gallitzin","Geistown","Hastings","Lilly","Lorain","Loretto","Patton","Sankertown","Scalp Level","South Fork","Southmont","Spangler","Summerhill","Tunnelhill","Vintondale","Westmont","Wilmore"]],["Carbon",18210,18252,["Lehighton","Jim Thorpe","Palmerton","Lansford","Beaver Meadows","Bowmanstown","East Side","Nesquehoning","Parryville","Summit Hill","Weatherly","Weissport"]],["Centre",16801,16877,["State College","Bellefonte","Philipsburg","Boalsburg","Centre Hall","Howard","Milesburg","Millheim","Port Matilda","Snow Shoe","Unionville"]],["Chester",19301,19395,["West Chester","Phoenixville","Coatesville","Downingtown","Kennett Square","Paoli","Exton","Atglen","Avondale","Elverson","Honey Brook","Malvern","Modena","Oxford","Parkesburg","South Coatesville","Spring City"]],["Clarion",16201,16374,["Clarion","New Bethlehem","Callensburg","East Brady","Foxburg","Hawthorn","Knox","Rimersburg","Shippenville","Sligo","St. Petersburg","Strattanville"]],["Clearfield",15826,16865,["DuBois","Clearfield","Philipsburg","Curwensville","Brisbin","Burnside","Chester Hill","Coalport","Glen Hope","Grampian","Houtzdale","Irvona","Lumber City","Mahaffey","New Washington","Newburg","Osceola Mills","Ramey","Troutville","Wallaceton","Westover"]],["Clinton",17720,17779,["Lock Haven","Mill Hall","Avis","Beech Creek","Flemington","Loganton","Renovo","South Renovo"]],["Columbia",17801,17889,["Bloomsburg","Berwick","Ashland","Benton","Briar Creek","Catawissa","Centralia","Millville","Orangeville","Stillwater"]],["Crawford",16301,16436,["Meadville","Titusville","Conneaut Lake","Blooming Valley","Cambridge Springs","Canadohta Lake","Centerville","Cochranton","Conneautville","Geneva","Hartstown","Hydetown","Linesville","Saegertown","Spartansburg","Springboro","Townville","Venango","Woodcock"]],["Cumberland",17011,17070,["Carlisle","Mechanicsburg","Camp Hill","New Cumberland","Shippensburg","Lemoyne","Enola","Mount Holly Springs","Newburg","Newville","Shiremanstown","West Fairview","Wormleysburg"]],["Dauphin",17001,17113,["Harrisburg","Hershey","Middletown","Hummelstown","Steelton","Elizabethville","Berrysburg","Dauphin","Gratz","Halifax","Highspire","Lykens","Millersburg","Paxtang","Penbrook","Pillow","Royalton","Williamstown"]],["Delaware",19013,19094,["Chester","Upper Darby","Haverford","Radnor","Drexel Hill","Media","Springfield","Ridley Park","Wayne","Aldan","Brookhaven","Clifton Heights","Collingdale","Colwyn","Darby","East Lansdowne","Eddystone","Folcroft","Glenolden","Lansdowne","Marcus Hook","Millbourne","Morton","Norwood","Parkside","Prospect Park","Rose Valley","Rutledge","Sharon Hill","Swarthmore","Trainer","Upland","Yeadon"]],["Elk",15834,15866,["St. Marys","Ridgway","Johnsonburg"]],["Erie",16401,16565,["Erie","Corry","Edinboro","North East","Girard","Albion","Cranesville","East Springfield","Elgin","Fairview","Lake City","McKean","Mill Village","Platea","Union City","Waterford","Wattsburg","Wesleyville"]],["Fayette",15401,15490,["Uniontown","Connellsville","Brownsville","Masontown","Belle Vernon","Dawson","Dunbar","Everson","Fairchance","Fayette City","Markleysburg","Newell","Ohiopyle","Perryopolis","Point Marion","Smithfield","South Connellsville","Vanderbilt"]],["Franklin",17201,17268,["Chambersburg","Waynesboro","Greencastle","Mercersburg","Mont Alto","Orrstown"]],["Greene",15301,15370,["Waynesburg","Carmichaels","Clarksville","Greensboro","Jefferson","Rices Landing"]],["Huntingdon",16652,17066,["Huntingdon","Mount Union","Alexandria","Birmingham","Broad Top City","Cassville","Coalmont","Dudley","Mapleton","Marklesburg","Mill Creek","Orbisonia","Petersburg","Rockhill","Saltillo","Shade Gap","Shirleysburg","Three Springs"]],["Indiana",15701,15781,["Indiana","Blairsville","Armagh","Cherry Tree","Clarksburg","Clymer","Creekside","Ernest","Glen Campbell","Homer City","Jacksonville","Marion Center","Plumville","Saltsburg","Shelocta","Smicksburg"]],["Jefferson",15831,15866,["Punxsutawney","Brookville","Reynoldsville","Big Run","Brockway","Corsica","Falls Creek","Summerville","Sykesville","Timblin","Worthville"]],["Juniata",17020,17099,["Mifflintown","Mifflin","Port Royal","Thompsontown"]],["Lackawanna",18401,18519,["Scranton","Carbondale","Dunmore","Old Forge","Clarks Summit","Archbald","Dickson City","Blakely","Clarks Green","Dalton","Jermyn","Jessup","Mayfield","Moosic","Moscow","Olyphant","Taylor","Throop","Vandling","Waverly"]],["Lancaster",17501,17608,["Lancaster","Ephrata","Elizabethtown","Lititz","Columbia","Manheim","New Holland","Akron","Christiana","Denver","East Petersburg","Marietta","Millersville","Mount Joy","Mountville","Quarryville","Strasburg","Terre Hill"]],["Lawrence",16101,16160,["New Castle","Ellwood City","New Wilmington","Bessemer","Enon Valley","New Beaver","S.N.P.J.","South New Castle","Volant","Wampum"]],["Lebanon",17003,17099,["Lebanon","Palmyra","Annville","Myerstown","Cleona","Cornwall","Jonestown","Richland"]],["Lehigh",18001,18109,["Allentown","Bethlehem","Emmaus","Whitehall","Macungie","Alburtis","Catasauqua","Coopersburg","Coplay","Fountain Hill","Slatington"]],["Luzerne",18201,18709,["Wilkes-Barre","Hazleton","Kingston","Nanticoke","Pittston","Mountain Top","Dallas","Ashley","Avoca","Bear Creek Village","Conyngham","Courtdale","Dupont","Duryea","Edwardsville","Exeter","Forty Fort","Freeland","Harveys Lake","Hughestown","Jeddo","Laflin","Larksville","Laurel Run","Luzerne","New Columbus","Nuangola","Penn Lake Park","Plymouth","Pringle","Shickshinny","Sugar Notch","Swoyersville","Warrior Run","West Hazleton","West Pittston","West Wyoming","White Haven","Wyoming","Yatesville"]],["Lycoming",17701,17778,["Williamsport","Montoursville","Muncy","Jersey Shore","Duboistown","Hughesville","Montgomery","Picture Rocks","Salladasburg","South Williamsport"]],["McKean",16701,16749,["Bradford","Kane","Eldred","Lewis Run","Mount Jewett","Port Allegany","Smethport"]],["Mercer",16125,16173,["Hermitage","Sharon","Greenville","Grove City","Mercer","Clark","Farrell","Fredonia","Jackson Center","Jamestown","New Lebanon","Sandy Lake","Sheakleyville","Stoneboro","West Middlesex","Wheatland"]],["Mifflin",17044,17099,["Lewistown","Burnham","Juniata Terrace","Kistler","McVeytown","Newton Hamilton"]],["Monroe",18301,18372,["East Stroudsburg","Stroudsburg","Mount Pocono","Pocono Pines","Delaware Water Gap"]],["Montgomery",19001,19490,["Norristown","Pottstown","King of Prussia","Lansdale","Willow Grove","Horsham","Montgomeryville","Ardmore","Harleysville","Ambler","Bridgeport","Bryn Athyn","Collegeville","Conshohocken","East Greenville","Green Lane","Hatboro","Hatfield","Jenkintown","Narberth","North Wales","Pennsburg","Red Hill","Rockledge","Royersford","Schwenksville","Souderton","Trappe","West Conshohocken"]],["Montour",17821,17889,["Danville","Washingtonville"]],["Northampton",18013,18109,["Bethlehem","Easton","Northampton","Nazareth","Bangor","Bath","Chapman","East Bangor","Freemansburg","Glendon","Hellertown","North Catasauqua","Pen Argyl","Portland","Roseto","Stockertown","Tatamy","Walnutport","West Easton","Wilson","Wind Gap"]],["Northumberland",17801,17889,["Sunbury","Shamokin","Mount Carmel","Milton","Herndon","Kulpmont","Marion Heights","McEwensville","Northumberland","Riverside","Snydertown","Turbotville","Watsontown"]],["Perry",17013,17099,["Newport","Duncannon","Blain","Bloomfield","Landisburg","Liverpool","Marysville","New Buffalo"]],["Philadelphia",19101,19155,["Philadelphia"]],["Pike",18324,18472,["Milford","Matamoras"]],["Potter",16915,16950,["Coudersport","Austin","Galeton","Oswayo","Shinglehouse","Ulysses"]],["Schuylkill",17901,17985,["Pottsville","Tamaqua","Schuylkill Haven","Shenandoah","Mahanoy City","Ashland","Auburn","Coaldale","Cressona","Deer Lake","Frackville","Gilberton","Girardville","Gordon","Landingville","McAdoo","Mechanicsville","Middleport","Minersville","Mount Carbon","New Philadelphia","New Ringgold","Orwigsburg","Palo Alto","Pine Grove","Port Carbon","Port Clinton","Ringtown","St. Clair","Tower City","Tremont"]],["Snyder",17837,17889,["Selinsgrove","Middleburg","Beavertown","Freeburg","McClure","Shamokin Dam"]],["Somerset",15501,15563,["Somerset","Windber","Meyersdale","Addison","Benson","Berlin","Boswell","Callimont","Casselman","Central City","Confluence","Garrett","Hooversville","Indian Lake","Jennerstown","New Baltimore","New Centerville","Paint","Rockwood","Salisbury","Shanksville","Stoystown","Ursina","Wellersburg"]],["Susquehanna",18801,18853,["Montrose","Forest City","Friendsville","Great Bend","Hallstead","Hop Bottom","Lanesboro","Little Meadows","New Milford","Oakland","Susquehanna Depot","Thompson","Union Dale"]],["Tioga",16920,16950,["Wellsboro","Mansfield","Blossburg","Covington","Elkland","Knoxville","Lawrenceville","Liberty","Middlebury Center","Millerton","Morris","Osceola","Roseville","Tioga","Westfield"]],["Union",17837,17889,["Lewisburg","Mifflinburg","Hartleton","New Berlin"]],["Venango",16301,16374,["Oil City","Franklin","Titusville","Barkeyville","Clintonville","Cooperstown","Emlenton","Pleasantville","Polk","Rouseville","Sugarcreek","Utica"]],["Warren",16301,16374,["Warren","Bear Lake","Clarendon","Sugar Grove","Tidioute","Youngsville"]],["Washington",15301,15370,["Washington","Canonsburg","Monongahela","Charleroi","McMurray","Allenport","Beallsville","Bentleyville","Burgettstown","California","Canton","Cecil-Bishop","Centerville","Claysville","Coal Center","Cokeburg","Deemston","Donora","Dunlevy","East Washington","Elco","Ellsworth","Finleyville","Green Hills","Houston","Long Branch","Marianna","McDonald","Midway","New Eagle","North Charleroi","North Franklin","Roscoe","Speers","Stockdale","Twilight","West Brownsville","West Middletown"]],["Wayne",18411,18472,["Honesdale","Hawley","Bethany","Prompton","Starrucca","Waymart"]],["Westmoreland",15601,15697,["Greensburg","Murrysville","New Kensington","Latrobe","Lower Burrell","Jeannette","Monessen","Irwin","Adamsburg","Arona","Avonmore","Bolivar","Delmont","Derry","Donegal","East Vandergrift","Export","Hunker","Hyde Park","Ligonier","Madison","Manor","Mount Pleasant","New Alexandria","New Florence","New Stanton","North Belle Vernon","North Irwin","Oklahoma","Penn","Scottdale","Seward","Smithton","South Greensburg","Southwest Greensburg","Sutersville","Trafford","Vandergrift","West Leechburg","West Newton","Youngstown","Youngwood"]],["Wyoming",18610,18657,["Tunkhannock","Factoryville","Laceyville","Meshoppen","Nicholson"]],["York",17401,17408,["York","Hanover","Red Lion","Shrewsbury","Dillsburg","Cross Roads","Dallastown","Delta","Dover","East Prospect","Fawn Grove","Felton","Franklintown","Glen Rock","Goldsboro","Hallam","Jacobus","Jefferson","Lewisberry","Loganville","Manchester","Mount Wolf","New Freedom","New Salem","North York","Railroad","Seven Valleys","Spring Grove","Stewartstown","Wellsville","West York","Windsor","Winterstown","Wrightsville","Yoe","Yorkana","York Haven"]]];const O={"bethlehem":{"Lehigh":[18015,18017],"Northampton":[18016,18018,18020,18025]},"trafford":{"Allegheny":[15085],"Westmoreland":[15085]},"mcdonald":{"Allegheny":[15057],"Washington":[15057]},"ellwood city":{"Beaver":[16117],"Lawrence":[16117]},"adamstown":{"Berks":[19501],"Lancaster":[19501]},"shippensburg":{"Cumberland":[17257],"Franklin":[17257]},"seven springs":{"Fayette":[15622],"Somerset":[15622]}};const zM={};D.forEach(d=>{for(let i=d[1];i<=d[2];i++){zM[i]=d[0]}});Object.keys(O).forEach(l=>{Object.keys(O[l]).forEach(cN=>{O[l][cN].forEach(z=>{zM[z]=cN})})});const lM={};D.forEach(d=>{d[3].forEach(l=>{const k=l.toLowerCase();if(!lM[k])lM[k]=[];if(!lM[k].includes(d[0]))lM[k].push(d[0])})});function find(q){const c=q.trim();if(/^\\d{5}$/.test(c)){const co=zM[parseInt(c,10)];return co?c+': '+co:null;}const l=c.toLowerCase();if(lM[l]){return c+': '+lM[l].join(',')}return null;}let s=window.getSelection().toString().trim();if(!s){for(let i=0;i<5;i++){try{if(window.frames[i].getSelection)s=window.frames[i].getSelection().toString().trim();if(s)break}catch(e){}}}if(!s)s=prompt('Enter PA ZIP or city:');if(!s)return;const res=find(s);if(res){alert('County info found:\\n'+res);}else{alert('No PA county found for "'+s+'"');}})();`;
+            return newScript;
+        }
+    }
+};
+//::FEATURE_REGISTRY::END
+
+//::WIZARD_LOGIC::START
+window.goToStep = (stepNumber) => {
+    document.querySelectorAll('.wizard-step').forEach(step => step.classList.remove('active'));
+    const stepEl = getEl(`step${stepNumber}`);
+    if (stepEl) stepEl.classList.add('active');
+};
+
+window.selectAction = (action) => {
+    wizardState.action = action;
+    const feature = FEATURES[action];
+    if (feature) {
+        getEl('step2-title').textContent = `Step 2: Configure ${feature.label}`;
+    }
+    buildConfigUI(action);
+    goToStep(2);
+};
+
+window.goBack = () => {
+    wizardState = {};
+    getEl('config-container').innerHTML = '';
+    getEl('bookmarkletName').value = '';
+    getEl('step2-title').textContent = 'Step 2: Configure Your Tool';
+    hideError();
+    goToStep(1);
+};
+
+window.startOver = () => {
+    window.goBack();
+};
+
+window.generateBookmarklet = async () => {
+    const generateBtn = getEl('generateBtn');
+    generateBtn.textContent = 'Generating...';
+    generateBtn.disabled = true;
+    hideError();
+
+    try {
+        validateAllFields();
+        const name = getEl('bookmarkletName').value.trim() || 'My Bookmarklet';
+        const feature = FEATURES[wizardState.action];
+        
+        const script = await feature.generator();
+        
+        const finalCode = `javascript:${encodeURIComponent(minifyScript(script))}`;
+
+        createBookmarkletLink(finalCode, name);
+        goToStep(3);
+    } catch (error) {
+        showError(`Error: ${error.message}`);
+    } finally {
+        generateBtn.textContent = 'Generate';
+        generateBtn.disabled = false;
+    }
+};
+
+window.copyCode = () => {
+   const link = getEl('bookmarklet-output').querySelector('a');
+   if (link?.href) {
+       navigator.clipboard.writeText(decodeURIComponent(link.href))
+           .then(() => alert('Bookmarklet code copied to clipboard!'))
+           .catch(() => alert('Failed to copy code.'));
+   }
+};
+
+window.downloadBookmarklet = () => {
+    const link = getEl('bookmarklet-output').querySelector('a');
+    if (link && link.href) {
+        const name = getEl('bookmarkletName').value.trim() || 'My Bookmarklet';
+        const htmlContent = `<!DOCTYPE html><html><head><title>Drag Me</title></head><body><p>Drag this link to your bookmarks bar: <a href="${link.href.replace(/"/g, '&quot;')}">${link.textContent}</a></p></body></html>`;
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${name}.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+};
+//::WIZARD_LOGIC::END
+
+//::UI_BUILDING::START
+const buildConfigUI = (action) => {
+    wizardState.action = action;
+    const configContainer = getEl('config-container');
+    configContainer.innerHTML = '';
+
+    const feature = FEATURES[action];
+    if (feature && feature.uiTemplate) {
+        configContainer.innerHTML = feature.uiTemplate();
+        getEl('bookmarkletName').value = feature.label;
+    }
+};
+//::UI_BUILDING::END
+
+//::VALIDATION::START
+const validateAllFields = () => {
+    if (!getEl('bookmarkletName').value.trim()) {
+        throw new Error('Bookmarklet Name cannot be empty.');
+    }
+    
+    const action = wizardState.action;
+    if (!action) throw new Error('No action selected.');
+    
+    const feature = FEATURES[action];
+    if (feature && typeof feature.validator === 'function') {
+        feature.validator();
+    }
+};
+//::VALIDATION::END
+
+</script>
+</body>
+</html>
+
