@@ -161,6 +161,7 @@
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             const tempImg = new Image();
+            /* Bypass CORS if possible */
             tempImg.crossOrigin = "Anonymous";
             tempImg.onload = function() {
                 canvas.width = tempImg.width;

@@ -1,13 +1,13 @@
 (function () {
     /* DEFAULT CONFIGURATION */
     const C = {
-        w: 4,      // Words count
-        t: true,   // Seasonal theme
-        s: '',     // Separator
-        c: 'caps', // Capitalization
-        d: 2,      // Digits
-        y: 1,      // Symbols
-        m: 16      // Min length
+        w: 4,      /* Words count */
+        t: true,   /* Seasonal theme */
+        s: '',     /* Separator */
+        c: 'caps', /* Capitalization */
+        d: 2,      /* Digits */
+        y: 1,      /* Symbols */
+        m: 16      /* Min length */
     };
 
     /* WORD BANK */
