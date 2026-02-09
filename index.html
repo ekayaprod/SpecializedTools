@@ -19,7 +19,6 @@
         </header>
 
         <main class="space-y-6">
-            <!-- TARGET & EDIT -->
             <section class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 flex flex-col md:flex-row gap-6">
                 <div class="flex-1">
                     <h2 class="text-xl font-semibold text-slate-900">Target & Edit</h2>
@@ -31,7 +30,6 @@
                 </div>
             </section>
 
-            <!-- PROPERTY CLIPPER -->
             <section class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 flex flex-col md:flex-row gap-6">
                 <div class="flex-1">
                     <h2 class="text-xl font-semibold text-slate-900">Property Clipper</h2>
@@ -49,7 +47,6 @@
                 </div>
             </section>
 
-            <!-- PASSPHRASE GENERATOR -->
             <section class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 flex flex-col md:flex-row gap-6">
                 <div class="flex-1">
                     <h2 class="text-xl font-semibold text-slate-900">Passphrase Generator</h2>
@@ -60,7 +57,6 @@
                 </div>
             </section>
 
-            <!-- TEMP PASSWORD -->
             <section class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 flex flex-col md:flex-row gap-6">
                 <div class="flex-1">
                     <h2 class="text-xl font-semibold text-slate-900">Temp Password</h2>
@@ -71,7 +67,6 @@
                 </div>
             </section>
 
-            <!-- PA COUNTY FINDER -->
             <section class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 flex flex-col md:flex-row gap-6">
                 <div class="flex-1">
                     <h2 class="text-xl font-semibold text-slate-900">PA County Finder</h2>
@@ -95,13 +90,20 @@
                 const res = await fetch(file);
                 if (!res.ok) throw new Error('Failed');
                 let code = await res.text();
-                // Safe Minification
-                code = code.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ').trim();
+
+                // --- SAFE MINIFICATION LOGIC ---
+                // 1. Remove Block Comments (Safe)
+                code = code.replace(/\/\*[\s\S]*?\*\//g, '');
+
+                // 2. Collapse whitespace (Safe ONLY if no single-line comments exist)
+                code = code.replace(/\s+/g, ' ').trim();
+
                 el.href = `javascript:${encodeURIComponent(code)}`;
                 el.textContent = name;
             } catch (e) {
                 el.textContent = "Error";
                 el.classList.add("bg-red-500");
+                console.error(e);
             }
         }
 

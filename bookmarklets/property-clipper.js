@@ -38,7 +38,7 @@
     function getCleanPageContent() {
         const clone = document.body.cloneNode(true);
 
-        // 1. Aggressive Noise Removal
+        /* 1. Aggressive Noise Removal */
         const noiseSelectors = [
             'script', 'style', 'noscript', 'iframe', 'svg', 'button', 'input',
             'nav', 'footer', 'header', 'aside',
@@ -48,8 +48,8 @@
         ];
         noiseSelectors.forEach(sel => clone.querySelectorAll(sel).forEach(el => el.remove()));
 
-        // 2. Platform-Specific Targeting
-        // We try to find the specific container for major sites to reduce clutter.
+        /* 2. Platform-Specific Targeting */
+        /* We try to find the specific container for major sites to reduce clutter. */
         const host = window.location.hostname;
         let targetSelector = null;
 
@@ -59,14 +59,14 @@
         else if (host.includes('trulia.com')) targetSelector = '[data-testid="home-details-summary"]';
         else if (host.includes('homes.com')) targetSelector = '.property-info';
 
-        // 3. Extraction
+        /* 3. Extraction */
         let content = null;
         if (targetSelector) {
             const found = clone.querySelector(targetSelector);
             if (found) content = found.innerHTML;
         }
 
-        // 4. Fallback (Semantic Main or Body)
+        /* 4. Fallback (Semantic Main or Body) */
         if (!content) {
             const main = clone.querySelector('main') || clone.querySelector('[role="main"]') || clone.querySelector('article');
             content = main ? main.innerHTML : clone.innerHTML;
@@ -82,12 +82,12 @@
         const modal = document.createElement('div');
         modal.id = CONFIG.modalId;
 
-        // --- HEADER ---
+        /* --- HEADER --- */
         const header = document.createElement('div');
         header.className = 'pc-header';
         header.innerHTML = '<strong>Property Clipper</strong> <span style="font-weight:normal; opacity:0.7">| Investment Research Tool</span>';
 
-        // --- SECTION 1: PROMPT CONFIG ---
+        /* --- SECTION 1: PROMPT CONFIG --- */
         const promptSection = document.createElement('div');
         promptSection.className = 'pc-section pc-prompt-bg';
 
@@ -132,7 +132,7 @@
         promptSection.appendChild(promptBox);
         promptSection.appendChild(copyBtn);
 
-        // --- SECTION 2: LISTING PREVIEW ---
+        /* --- SECTION 2: LISTING PREVIEW --- */
         const contentSection = document.createElement('div');
         contentSection.className = 'pc-content-section';
         const contentHeader = document.createElement('div');
@@ -148,7 +148,7 @@
         contentSection.appendChild(contentHeader);
         contentSection.appendChild(contentArea);
 
-        // --- FOOTER ---
+        /* --- FOOTER --- */
         const footer = document.createElement('div');
         footer.className = 'pc-footer';
 
@@ -172,7 +172,7 @@
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
 
-        // --- STYLES ---
+        /* --- STYLES --- */
         const style = document.createElement('style');
         style.textContent = `
             #${CONFIG.overlayId} { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 999999; display: flex; justify-content: center; align-items: center; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
