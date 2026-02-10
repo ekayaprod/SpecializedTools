@@ -221,7 +221,7 @@
                         img.src = canvas.toDataURL('image/png');
                         img.removeAttribute('srcset');
                     } catch (e) {
-                        /* console.warn('CORS or Canvas error', e); */
+                        console.warn('Target & Edit: Image processing failed (likely CORS)', e);
                     }
                     onComplete();
                 };
