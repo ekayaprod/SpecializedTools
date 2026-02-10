@@ -9,14 +9,18 @@ const files = [
   'bookmarklets/property-clipper.js'
 ];
 
-(async () => {
+function stripBlockComments(rawCode) {
+    return rawCode.replace(/\/\*[\s\S]*?\*\//g, '');
+}
+
+async function main() {
   await Promise.all(files.map(async file => {
     try {
       const rawCode = await fs.promises.readFile(file, 'utf8');
 
       // --- SIMULATE index.html LOGIC ---
       // 1. Remove Block Comments
-      let code = rawCode.replace(/\/\*[\s\S]*?\*\//g, '');
+      let code = stripBlockComments(rawCode);
 
       // 2. Trim lines but PRESERVE NEWLINES.
       code = code.split('\n').map(line => line.trim()).filter(l => l.length > 0).join('\n');
@@ -51,4 +55,10 @@ const files = [
       console.error(`Error reading ${file}: ${err.message}`);
     }
   }));
-})();
+}
+
+if (require.main === module) {
+    main();
+}
+
+module.exports = { stripBlockComments, main };
