@@ -173,13 +173,11 @@
     function cleanupDOM(node) {
         const dangerous = node.querySelectorAll('script, iframe, object, embed, style, noscript');
         dangerous.forEach(function(n) { n.remove(); });
-        const all = node.getElementsByTagName("*");
-        for (let i = 0; i < all.length; i++) {
-            const el = all[i];
+        node.querySelectorAll('*').forEach(function(el) {
             Array.from(el.attributes).forEach(function(attr) {
                 if (attr.name.startsWith('on')) el.removeAttribute(attr.name);
             });
-        }
+        });
     }
 
     function processImages(container) {
