@@ -95,7 +95,6 @@
     function openEditor(element) {
         const clone = element.cloneNode(true);
         cleanupDOM(clone);
-        processImages(clone);
 
         const overlay = document.createElement('div');
         overlay.id = CONFIG.overlayId;
@@ -161,6 +160,9 @@
         overlay.appendChild(style);
         document.body.appendChild(overlay);
         contentArea.focus();
+
+        /* Start processing images after editor is visible */
+        processImages(contentArea);
     }
 
     function closeEditor() {
@@ -181,24 +183,55 @@
     }
 
     function processImages(container) {
-        const imgs = container.querySelectorAll('img');
-        imgs.forEach(function(img) {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const tempImg = new Image();
-            /* Bypass CORS if possible */
-            tempImg.crossOrigin = "Anonymous";
-            tempImg.onload = function() {
-                canvas.width = tempImg.width;
-                canvas.height = tempImg.height;
-                ctx.drawImage(tempImg, 0, 0);
-                try {
-                    img.src = canvas.toDataURL('image/png');
-                    img.removeAttribute('srcset');
-                } catch (e) {}
-            };
-            tempImg.src = img.src;
-        });
+        const imgs = Array.from(container.querySelectorAll('img'));
+        const CONCURRENCY = 3;
+        let active = 0;
+        let index = 0;
+
+        function processNext() {
+            if (index >= imgs.length && active === 0) return;
+
+            while (active < CONCURRENCY && index < imgs.length) {
+                const img = imgs[index++];
+                /* Skip if no src or already data URI */
+                if (!img.src || img.src.startsWith('data:')) continue;
+
+                active++;
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const tempImg = new Image();
+                /* Bypass CORS if possible */
+                tempImg.crossOrigin = "Anonymous";
+
+                const onComplete = function() {
+                    active--;
+                    /* Schedule next batch */
+                    if (window.requestIdleCallback) {
+                        window.requestIdleCallback(processNext);
+                    } else {
+                        setTimeout(processNext, 10);
+                    }
+                };
+
+                tempImg.onload = function() {
+                    canvas.width = tempImg.width;
+                    canvas.height = tempImg.height;
+                    ctx.drawImage(tempImg, 0, 0);
+                    try {
+                        img.src = canvas.toDataURL('image/png');
+                        img.removeAttribute('srcset');
+                    } catch (e) {
+                        /* console.warn('CORS or Canvas error', e); */
+                    }
+                    onComplete();
+                };
+
+                tempImg.onerror = onComplete;
+                tempImg.src = img.src;
+            }
+        }
+
+        processNext();
     }
 
     async function handleCopy(contentArea) {
