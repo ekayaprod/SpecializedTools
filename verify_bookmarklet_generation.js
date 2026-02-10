@@ -9,6 +9,8 @@ const files = [
   'bookmarklets/property-clipper.js'
 ];
 
+let hasError = false;
+
 files.forEach(file => {
   try {
     const rawCode = fs.readFileSync(file, 'utf8');
@@ -34,6 +36,7 @@ files.forEach(file => {
         // Verify newlines are present
         if (!code.includes('\n')) {
             console.error(`CRITICAL: Single-line comment found but no newlines preserved! Code is broken.`);
+            hasError = true;
         } else {
             console.log(`SAFE: Single-line comments found, but newlines preserved.`);
         }
@@ -48,5 +51,12 @@ files.forEach(file => {
 
   } catch (err) {
     console.error(`Error reading ${file}: ${err.message}`);
+    process.exit(1);
   }
 });
+
+// Final check for critical errors in previous logic
+if (hasError) {
+    console.error("\n❌ Critical errors found in bookmarklet generation!");
+    process.exit(1);
+}
