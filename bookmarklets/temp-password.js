@@ -6,8 +6,16 @@
     const nouns = ["butter", "slicer", "mobile", "packer", "comber", "graphy", "marker", "bonnet", "berry", "keeper", "basket", "street", "cream", "fly", "ground", "stick", "pillar", "maker", "steak", "patch", "tree", "donut", "bean", "house", "print", "fight", "monger", "light", "player", "bridge", "snap", "finch", "apple", "father", "mother", "hopper", "bear", "writer", "copter", "bird", "worker", "whale", "bell", "head", "speaker", "nut", "forest", "mallow", "cycle", "runner", "weight", "grass", "macist", "number", "graph", "needle", "breeze", "house", "school", "stride", "sprint", "bow", "snake", "market", "blade", "mander", "castle", "card", "pad", "driver", "board", "scraper", "pretzel", "water", "teller", "cookie", "rise", "vision", "meter", "stat", "paste", "bottle", "lily", "flower", "pane", "pecker", "bench", "stone"];
     const symbols = ['!', '?', '$', '%', '#', '@', '&', '*'];
 
-    const r = new Uint32Array(1);
-    function getRand(m) { window.crypto.getRandomValues(r); return r[0] % m; }
+    const BUFFER_SIZE = 256;
+    const r = new Uint32Array(BUFFER_SIZE);
+    let rIdx = BUFFER_SIZE;
+    function getRand(m) {
+        if (rIdx >= BUFFER_SIZE) {
+            window.crypto.getRandomValues(r);
+            rIdx = 0;
+        }
+        return r[rIdx++] % m;
+    }
     function R(a) { return a[getRand(a.length)]; }
 
     let passes = [];
