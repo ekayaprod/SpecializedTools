@@ -275,12 +275,18 @@
     async function expandDetails() {
         const targets = ['[data-testid="hero-view-more"]', '#load-more-features', 'button[class*="show-more"]', '.BottomLink', 'button.clickable'];
         let c = 0;
-        document.querySelectorAll('button, a').forEach(b => {
-            const t = (b.innerText || '').toLowerCase();
-            if ((t.includes('see more') || t.includes('show more') || t.includes('view all')) && !t.includes('photo') && b.offsetParent !== null) {
-                try { b.click(); c++; } catch(e){}
+        const candidates = document.querySelectorAll('button, a');
+        for (let i = 0; i < candidates.length; i++) {
+            const b = candidates[i];
+            const t = b.textContent;
+            if (!t || t.length > 50) continue;
+            const lowerT = t.toLowerCase();
+            if ((lowerT.includes('see more') || lowerT.includes('show more') || lowerT.includes('view all')) && !lowerT.includes('photo')) {
+                if (b.offsetParent !== null) {
+                    try { b.click(); c++; } catch(e){}
+                }
             }
-        });
+        }
         targets.forEach(s => document.querySelectorAll(s).forEach(e => { try{e.click(); c++;}catch(r){} }));
         if (c > 0) await new Promise(r => setTimeout(r, 1200));
     }
