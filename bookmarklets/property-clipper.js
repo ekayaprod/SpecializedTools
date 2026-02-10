@@ -295,8 +295,7 @@
     }
 
     function getCleanPageContent() {
-        const c = document.body.cloneNode(!0);
-        ['script','style','noscript','iframe','svg','button','input','nav','footer','header','aside','[role="banner"]','[role="navigation"]','[role="contentinfo"]','[role="dialog"]','[id*="ad-"]','[class*="ad-"]','[class*="advert"]','[id*="cookie"]','.modal','.popup','.drawer','.lightbox'].forEach(s => c.querySelectorAll(s).forEach(e => e.remove()));
+        /* Determine target selector based on hostname */
         const h = window.location.hostname;
         let s = null;
         if(h.includes('realtor.com')) s='#app-content, .main-content';
@@ -305,10 +304,17 @@
         else if(h.includes('trulia.com')) s='[data-testid="home-details-summary"]';
         else if(h.includes('homes.com')) s='.property-info';
         
-        let content = null;
-        if(s) { const f = c.querySelector(s); if(f) content=f.innerHTML; }
-        if(!content) { const m = c.querySelector('main')||c.querySelector('[role="main"]')||c.querySelector('article'); content=m?m.innerHTML:c.innerHTML; }
-        return content;
+        /* Find target in live DOM or fallback */
+        let t = s ? document.querySelector(s) : null;
+        if(!t) t = document.querySelector('main')||document.querySelector('[role="main"]')||document.querySelector('article')||document.body;
+
+        /* Clone ONLY the target element */
+        const c = t.cloneNode(!0);
+
+        /* Clean the clone */
+        ['script','style','noscript','iframe','svg','button','input','nav','footer','header','aside','[role="banner"]','[role="navigation"]','[role="contentinfo"]','[role="dialog"]','[id*="ad-"]','[class*="ad-"]','[class*="advert"]','[id*="cookie"]','.modal','.popup','.drawer','.lightbox'].forEach(k => c.querySelectorAll(k).forEach(e => e.remove()));
+
+        return c.innerHTML;
     }
 
     init();
