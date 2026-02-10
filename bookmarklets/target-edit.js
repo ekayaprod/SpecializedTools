@@ -51,7 +51,7 @@
         document.removeEventListener('mouseout', handleMouseOut);
         document.removeEventListener('click', handleClick, { capture: true });
         document.removeEventListener('keydown', handleEscape);
-        clearHighlight();
+        clearHighlights();
         
         /* Remove elements from DOM */
         const h1 = document.getElementById(CONFIG.highlightId);
@@ -113,12 +113,12 @@
 
     function handleMouseOut(e) {
         if (e.target === activeElement) {
-            clearHighlight();
+            clearHighlights();
             activeElement = null;
         }
     }
 
-    function clearHighlight() {
+    function clearHighlights() {
         const h1 = document.getElementById(CONFIG.highlightId);
         if (h1) h1.style.display = 'none';
         const h2 = document.getElementById(CONFIG.parentHighlightId);
@@ -250,6 +250,13 @@
                 if (attr.name.startsWith('on')) el.removeAttribute(attr.name);
             });
         });
+
+        /* Remove empty divs */
+        node.querySelectorAll('div').forEach(function(d) {
+            if (!d.innerText.trim() && d.children.length === 0) {
+                d.remove();
+            }
+        });
     }
 
     function processImages(container) {
@@ -350,8 +357,17 @@
             mimeType = 'text/plain';
             filename = cleanTitle + '_' + Date.now() + '.txt';
         } else {
-            /* HTML Default */
-            content = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + cleanTitle + '</title><style>body{font-family:system-ui,sans-serif;max-width:800px;margin:2rem auto;line-height:1.6;padding:0 1rem;}img{max-width:100%;height:auto;}</style></head><body>' + contentArea.innerHTML + '</body></html>';
+            /* HTML Default - Add basic styles to make export readable */
+            const basicStyles = `
+                body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 2rem auto; line-height: 1.6; padding: 0 1rem; color: #333; }
+                img { max-width: 100%; height: auto; border-radius: 4px; }
+                h1, h2, h3 { margin-top: 1.5em; color: #111; }
+                a { color: #007bff; text-decoration: none; }
+                table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f2f2f2; }
+            `;
+            content = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + cleanTitle + '</title><style>' + basicStyles + '</style></head><body>' + contentArea.innerHTML + '</body></html>';
             mimeType = 'text/html';
             filename = cleanTitle + '_' + Date.now() + '.html';
         }
