@@ -138,6 +138,7 @@
     <!-- Toast Container -->
     <div id="toast-container" class="fixed bottom-5 right-5 flex flex-col gap-3 z-50" aria-live="polite" aria-atomic="true"></div>
 
+    <script src="compile_bookmarklet.js"></script>
     <script>
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
@@ -195,12 +196,8 @@
                 }
 
                 // --- SAFE BOOKMARKLET COMPILATION ---
-                // 1. Remove Block Comments (Strictly avoid // comments in source files)
-                code = code.replace(/\/\*[\s\S]*?\*\//g, '');
-
-                // 2. Trim lines but PRESERVE NEWLINES.
-                // This is critical for template literals (like LLM Prompts) to maintain formatting.
-                code = code.split('\n').map(line => line.trim()).filter(l => l.length > 0).join('\n');
+                // Uses shared compilation logic (compile_bookmarklet.js) to prevent drift
+                code = BookmarkletCompiler.compile(code);
 
                 // 3. Encode URI (Handles the newlines via %0A)
                 const href = `javascript:${encodeURIComponent(code)}`;
