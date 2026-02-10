@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Browser Toolkit</title>
     <!-- Preload bookmarklet scripts to improve perceived load time -->
+    <link rel="preload" href="bookmarklets/utils.js" as="fetch" crossorigin>
     <link rel="preload" href="bookmarklets/target-edit.js" as="fetch" crossorigin>
     <link rel="preload" href="bookmarklets/property-clipper.js" as="fetch" crossorigin>
     <link rel="preload" href="bookmarklets/passphrase-generator.js" as="fetch" crossorigin>
@@ -163,6 +164,20 @@
             }, 3000);
         }
 
+        let utilsCode = null;
+        async function getUtilsCode() {
+            if (utilsCode !== null) return utilsCode;
+            try {
+                const res = await fetch('bookmarklets/utils.js');
+                if (!res.ok) throw new Error('Failed to load utils');
+                utilsCode = await res.text();
+                return utilsCode;
+            } catch (e) {
+                console.error('Error loading utils', e);
+                return '';
+            }
+        }
+
         async function load(id, file, name) {
             const el = document.getElementById(id);
             const copyBtnId = 'copy-' + id;
@@ -172,6 +187,12 @@
                 const res = await fetch(file);
                 if (!res.ok) throw new Error('Failed');
                 let code = await res.text();
+
+                // Inject shared utils for specific bookmarklets
+                if (file.includes('target-edit.js') || file.includes('property-clipper.js')) {
+                    const utils = await getUtilsCode();
+                    code = utils + '\n' + code;
+                }
 
                 // --- SAFE BOOKMARKLET COMPILATION ---
                 // 1. Remove Block Comments (Strictly avoid // comments in source files)
