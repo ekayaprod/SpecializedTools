@@ -8,6 +8,7 @@
 
     /* STATE MANAGEMENT */
     let extractedContent = null;
+    let isExtracting = false;
 
     /* PROMPT LIBRARY */
     const PROMPTS = {
@@ -102,6 +103,7 @@
 
     /* BACKGROUND WORKER */
     async function runBackgroundExtraction() {
+        isExtracting = true;
         updateStatus("Scanning page...", "loading");
 
         /* 1. Expand Details (Wait for clicks) */
@@ -112,6 +114,7 @@
         const rawJSON = extractHiddenData();
         extractedContent = cleanHTML + rawJSON;
 
+        isExtracting = false;
         updateStatus("Listing data captured.", "success");
         enableDownload();
     }
@@ -260,29 +263,58 @@
 
     function handleDownload() {
         if (!extractedContent) return;
-        const title = BookmarkletUtils.sanitizeFilename(document.title || 'Property');
+        const title = (document.title || 'Property').replace(/[^a-z0-9]/gi, '_').substring(0, 50);
         const filename = `${CONFIG.filenamePrefix}${title}_${Date.now()}.html`;
         const fullHTML = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title></head><body>${extractedContent}</body></html>`;
-        BookmarkletUtils.downloadFile(filename, fullHTML);
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([fullHTML], {type: 'text/html'}));
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     }
 
-    /* EXTRACTION LOGIC (UNCHANGED BUT MINIFIED FOR SAFETY) */
+    /* SAFE EXTRACTION LOGIC */
     async function expandDetails() {
+        /* SEARCH SCOPE: Try to find the main content to avoid header/footer links */
+        const mainSelectors = ['#app-content', '.main-content', '#details-page-container', '[role="main"]'];
+        let searchScope = document.body;
+        for (const sel of mainSelectors) {
+            const el = document.querySelector(sel);
+            if (el) { searchScope = el; break; }
+        }
+
+        /* 1. Click Specific Targets (Known Expanders) */
         const targets = ['[data-testid="hero-view-more"]', '#load-more-features', 'button[class*="show-more"]', '.BottomLink', 'button.clickable'];
         let c = 0;
-        const candidates = document.querySelectorAll('button, a');
+        targets.forEach(s => {
+            const els = searchScope.querySelectorAll(s);
+            els.forEach(e => { try{e.click(); c++;}catch(r){} });
+        });
+
+        /* 2. Fuzzy Match Text (Scoped & Safe) */
+        const candidates = searchScope.querySelectorAll('button, a, div[role="button"], span[role="button"]');
         for (let i = 0; i < candidates.length; i++) {
-            const b = candidates[i];
-            const t = b.textContent;
-            if (!t || t.length > 50) continue;
-            const lowerT = t.toLowerCase();
-            if ((lowerT.includes('see more') || lowerT.includes('show more') || lowerT.includes('view all')) && !lowerT.includes('photo')) {
-                if (b.offsetParent !== null) {
-                    try { b.click(); c++; } catch(e){}
+            const el = candidates[i];
+            
+            /* SAFETY: Check if element or any ancestor is a dangerous link */
+            const link = el.closest('a');
+            if (link && link.href && !link.href.includes('javascript') && !link.href.includes('#')) {
+                /* If it links to a different URL, SKIP IT */
+                continue; 
+            }
+
+            const t = (el.innerText || '').toLowerCase();
+            const badTerms = ['photo', 'agent', 'map', 'school', 'sell', 'buy', 'rent', 'advice'];
+            if (badTerms.some(term => t.includes(term))) continue;
+
+            if ((t.includes('see more') || t.includes('show more') || t.includes('view all') || t.includes('read more'))) {
+                if (el.offsetParent !== null) { /* Visible */
+                    try { el.click(); c++; } catch(e){}
                 }
             }
         }
-        targets.forEach(s => document.querySelectorAll(s).forEach(e => { try{e.click(); c++;}catch(r){} }));
+        
         if (c > 0) await new Promise(r => setTimeout(r, 1200));
     }
 
@@ -296,7 +328,8 @@
     }
 
     function getCleanPageContent() {
-        /* Determine target selector based on hostname */
+        const c = document.body.cloneNode(!0);
+        ['script','style','noscript','iframe','svg','button','input','nav','footer','header','aside','[role="banner"]','[role="navigation"]','[role="contentinfo"]','[role="dialog"]','[id*="ad-"]','[class*="ad-"]','[class*="advert"]','[id*="cookie"]','.modal','.popup','.drawer','.lightbox'].forEach(s => c.querySelectorAll(s).forEach(e => e.remove()));
         const h = window.location.hostname;
         let s = null;
         if(h.includes('realtor.com')) s='#app-content, .main-content';
@@ -305,17 +338,10 @@
         else if(h.includes('trulia.com')) s='[data-testid="home-details-summary"]';
         else if(h.includes('homes.com')) s='.property-info';
         
-        /* Find target in live DOM or fallback */
-        let t = s ? document.querySelector(s) : null;
-        if(!t) t = document.querySelector('main')||document.querySelector('[role="main"]')||document.querySelector('article')||document.body;
-
-        /* Clone ONLY the target element */
-        const c = t.cloneNode(!0);
-
-        /* Clean the clone */
-        ['script','style','noscript','iframe','svg','button','input','nav','footer','header','aside','[role="banner"]','[role="navigation"]','[role="contentinfo"]','[role="dialog"]','[id*="ad-"]','[class*="ad-"]','[class*="advert"]','[id*="cookie"]','.modal','.popup','.drawer','.lightbox'].forEach(k => c.querySelectorAll(k).forEach(e => e.remove()));
-
-        return c.innerHTML;
+        let content = null;
+        if(s) { const f = c.querySelector(s); if(f) content=f.innerHTML; }
+        if(!content) { const m = c.querySelector('main')||c.querySelector('[role="main"]')||c.querySelector('article'); content=m?m.innerHTML:c.innerHTML; }
+        return content;
     }
 
     init();
