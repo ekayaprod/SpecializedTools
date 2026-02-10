@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Browser Toolkit</title>
+    <!-- Preload bookmarklet scripts to improve perceived load time -->
+    <link rel="preload" href="bookmarklets/target-edit.js" as="fetch" crossorigin>
+    <link rel="preload" href="bookmarklets/property-clipper.js" as="fetch" crossorigin>
+    <link rel="preload" href="bookmarklets/passphrase-generator.js" as="fetch" crossorigin>
+    <link rel="preload" href="bookmarklets/temp-password.js" as="fetch" crossorigin>
+    <link rel="preload" href="bookmarklets/pa-county-finder.js" as="fetch" crossorigin>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -114,13 +120,12 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            load('btn-target-edit', 'bookmarklets/target-edit.js', 'Target & Edit');
-            load('btn-prop-clipper', 'bookmarklets/property-clipper.js', 'Property Clipper');
-            load('btn-passphrase', 'bookmarklets/passphrase-generator.js', 'Passphrase Gen');
-            load('btn-temp-pass', 'bookmarklets/temp-password.js', 'Temp Password');
-            load('btn-pa-county', 'bookmarklets/pa-county-finder.js', 'PA County');
-        });
+        // Execute immediately since script is at end of body
+        load('btn-target-edit', 'bookmarklets/target-edit.js', 'Target & Edit');
+        load('btn-prop-clipper', 'bookmarklets/property-clipper.js', 'Property Clipper');
+        load('btn-passphrase', 'bookmarklets/passphrase-generator.js', 'Passphrase Gen');
+        load('btn-temp-pass', 'bookmarklets/temp-password.js', 'Temp Password');
+        load('btn-pa-county', 'bookmarklets/pa-county-finder.js', 'PA County');
     </script>
 </body>
 </html>
