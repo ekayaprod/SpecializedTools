@@ -95,10 +95,10 @@
                 // 1. Remove Block Comments (Safe)
                 code = code.replace(/\/\*[\s\S]*?\*\//g, '');
 
-                // 2. Collapse whitespace (Safe ONLY if no single-line comments exist)
-                code = code.replace(/\s+/g, ' ').trim();
+                // 2. Collapse whitespace (REMOVED: Unsafe if single-line comments exist)
+                // code = code.replace(/\s+/g, ' ').trim();
 
-                el.href = `javascript:${encodeURIComponent(code)}`;
+                el.href = `javascript:${encodeURIComponent(code.trim())}`;
                 el.textContent = name;
             } catch (e) {
                 el.textContent = "Error";
