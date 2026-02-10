@@ -33,7 +33,7 @@
                 </div>
                 <div class="w-full md:w-64 text-center">
                     <a id="btn-target-edit" href="#" onclick="return false;" class="bookmarklet-btn block w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-full shadow-md hover:bg-blue-700">Loading...</a>
-                    <p class="text-xs text-slate-400 mt-2">Drag to Bookmarks Bar</p>
+                    <p class="text-xs text-slate-400 mt-2">Drag to Bookmarks Bar or Click to Test</p>
                 </div>
             </section>
 
@@ -51,7 +51,7 @@
                 </div>
                 <div class="w-full md:w-64 text-center">
                     <a id="btn-prop-clipper" href="#" onclick="return false;" class="bookmarklet-btn block w-full bg-indigo-600 text-white font-bold py-3 px-6 rounded-full shadow-md hover:bg-indigo-700">Loading...</a>
-                    <p class="text-xs text-slate-400 mt-2">Drag to Bookmarks Bar</p>
+                    <p class="text-xs text-slate-400 mt-2">Drag to Bookmarks Bar or Click to Test</p>
                 </div>
             </section>
 
@@ -63,6 +63,7 @@
                 </div>
                 <div class="w-full md:w-64 text-center">
                     <a id="btn-passphrase" href="#" onclick="return false;" class="bookmarklet-btn block w-full bg-slate-600 text-white font-bold py-3 px-6 rounded-full shadow-md hover:bg-slate-700">Loading...</a>
+                    <p class="text-xs text-slate-400 mt-2">Drag to Bookmarks Bar or Click to Test</p>
                 </div>
             </section>
 
@@ -74,6 +75,7 @@
                 </div>
                 <div class="w-full md:w-64 text-center">
                     <a id="btn-temp-pass" href="#" onclick="return false;" class="bookmarklet-btn block w-full bg-slate-600 text-white font-bold py-3 px-6 rounded-full shadow-md hover:bg-slate-700">Loading...</a>
+                    <p class="text-xs text-slate-400 mt-2">Drag to Bookmarks Bar or Click to Test</p>
                 </div>
             </section>
 
@@ -85,6 +87,7 @@
                 </div>
                 <div class="w-full md:w-64 text-center">
                     <a id="btn-pa-county" href="#" onclick="return false;" class="bookmarklet-btn block w-full bg-slate-600 text-white font-bold py-3 px-6 rounded-full shadow-md hover:bg-slate-700">Loading...</a>
+                    <p class="text-xs text-slate-400 mt-2">Drag to Bookmarks Bar or Click to Test</p>
                 </div>
             </section>
         </main>
@@ -113,6 +116,11 @@
                 // 3. Encode URI (Handles the newlines via %0A)
                 el.href = `javascript:${encodeURIComponent(code)}`;
                 el.textContent = name;
+
+                // UX: Make clickable for testing and add accessibility
+                el.removeAttribute('onclick');
+                el.setAttribute('title', `Drag to bookmarks or click to run ${name}`);
+                el.setAttribute('aria-label', `Drag ${name} bookmarklet to your bookmarks bar`);
             } catch (e) {
                 console.error(e);
                 el.textContent = "Error";
