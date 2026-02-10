@@ -2,16 +2,17 @@
     /* CONFIG */
     const C = { count: 5, addSymbol: true, randomNum: true };
 
-    const wordList = ["Applebutter", "Appleslicer", "Automobiles", "Backpackers", "Beachcomber", "Biographies", "Blackmarker", "Bluebonnets", "Blueberries", "Bluehorizon", "Bookkeepers", "Breadbasket", "Brightlight", "Broadstreet", "Brotherhood", "Buttercream", "Butterflies", "Calculators", "Campgrounds", "Candlestick", "Caterpillar", "Cheesemaker", "Cheesesteak", "Cherrycider", "Cherrypatch", "Cherrytrees", "Ciderdonuts", "Coffeebeans", "Coffeehouse", "Dragonflies", "Fingerprint", "Firefighter", "Firestation", "Fishmongers", "Flashlights", "Fluteplayer", "Footbridges", "Gardenhouse", "Gingersnaps", "Goldfinches", "Goldenapple", "Grandfather", "Grandmother", "Grasshopper", "Greenhouses", "Grizzlybear", "Handwriting", "Helicopters", "Hummingbird", "Icecreamery", "Instruments", "Ironworkers", "Jellydonuts", "Killerwhale", "Libertybell", "Lightheaded", "Lighthouses", "Loudspeaker", "Mapledonuts", "Mapleforest", "Marshmallow", "Mockingbird", "Motorcycles", "Nightrunner", "Paperbridge", "Papermakers", "Paperweight", "Peacemakers", "Peppergrass", "Pharmacists", "Phonenumber", "Photographs", "Pineneedles", "Polarbreeze", "Powerhouses", "Preschooler", "Quickstride", "Quicksprint", "Rainbowfish", "Rattlesnake", "Refrigerate", "Restaurants", "Rivermarket", "Rivervalley", "Rollerblade", "Salamanders", "Sandcastles", "Schoolhouse", "Scratchcard", "Scratchpads", "Screwdriver", "Silvermaple", "Skateboards", "Skyscrapers", "Smartphones", "Snowleopard", "Softpretzel", "Springwater", "Stonebridge", "Storyteller", "Sugarcookie", "Sunrisepark", "Switchboard", "Televisions", "Thermometer", "Thermostats", "Toothpastes", "Typewriters", "Valleyparks", "Waterbottle", "Waterlilies", "Wildflowers", "Windowpanes", "Woodpeckers", "Workbenches", "Yellowfinch", "Yellowstone"];
-    const symbols = ['!', '?', '$', '%'];
+    const adjectives = ["Apple", "Blue", "Bright", "Butter", "Cherry", "Cider", "Coffee", "Dragon", "Fire", "Fish", "Flash", "Foot", "Garden", "Gold", "Grand", "Green", "Hand", "Ice", "Iron", "Jelly", "Killer", "Liberty", "Light", "Loud", "Maple", "Marsh", "Mocking", "Motor", "Night", "Paper", "Peace", "Pepper", "Phone", "Photo", "Pine", "Polar", "Power", "Quick", "Rain", "Rattle", "River", "Roller", "Sand", "School", "Silver", "Skate", "Smart", "Snow", "Soft", "Spring", "Stone", "Story", "Sugar", "Sun", "Switch", "Tele", "Tooth", "Type", "Valley", "Water", "Wild", "Wind", "Wood", "Work", "Yellow"];
+    const nouns = ["butter", "slicer", "mobile", "packer", "comber", "graphy", "marker", "bonnet", "berry", "keeper", "basket", "street", "cream", "fly", "ground", "stick", "pillar", "maker", "steak", "patch", "tree", "donut", "bean", "house", "print", "fight", "monger", "light", "player", "bridge", "snap", "finch", "apple", "father", "mother", "hopper", "bear", "writer", "copter", "bird", "worker", "whale", "bell", "head", "speaker", "nut", "forest", "mallow", "cycle", "runner", "weight", "grass", "macist", "number", "graph", "needle", "breeze", "house", "school", "stride", "sprint", "bow", "snake", "market", "blade", "mander", "castle", "card", "pad", "driver", "board", "scraper", "pretzel", "water", "teller", "cookie", "rise", "vision", "meter", "stat", "paste", "bottle", "lily", "flower", "pane", "pecker", "bench", "stone"];
+    const symbols = ['!', '?', '$', '%', '#', '@', '&', '*'];
 
     function getRand(m) { const r = new Uint32Array(1); window.crypto.getRandomValues(r); return r[0] % m; }
     function R(a) { return a[getRand(a.length)]; }
 
     let passes = [];
     for (let i = 0; i < C.count; i++) {
-        let p = R(wordList);
-        p += C.randomNum ? getRand(10) : '1';
+        let p = R(adjectives) + R(nouns);
+        p += C.randomNum ? getRand(100) : '1';
         if (C.addSymbol) p += R(symbols);
         passes.push(p);
     }

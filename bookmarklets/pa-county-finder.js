@@ -4,15 +4,17 @@
 
     const O = {"bethlehem": {"Lehigh": [18015, 18017], "Northampton": [18016, 18018, 18020, 18025]}, "trafford": {"Allegheny": [15085], "Westmoreland": [15085]}, "mcdonald": {"Allegheny": [15057], "Washington": [15057]}, "ellwood city": {"Beaver": [16117], "Lawrence": [16117]}, "adamstown": {"Berks": [19501], "Lancaster": [19501]}, "shippensburg": {"Cumberland": [17257], "Franklin": [17257]}, "seven springs": {"Fayette": [15622], "Somerset": [15622]}};
 
-    const zM = {}; D.forEach(d => { for (let i = d[1]; i <= d[2]; i++) { zM[i] = d[0] } });
-    Object.keys(O).forEach(l => { Object.keys(O[l]).forEach(cN => { O[l][cN].forEach(z => { zM[z] = cN } ) }) });
+    const zM = {};
+    const addZ = (z, c) => { if (!zM[z]) zM[z] = []; if (!zM[z].includes(c)) zM[z].push(c); };
+    D.forEach(d => { for (let i = d[1]; i <= d[2]; i++) { addZ(i, d[0]); } });
+    Object.keys(O).forEach(l => { Object.keys(O[l]).forEach(cN => { O[l][cN].forEach(z => { addZ(z, cN); } ) }) });
     const lM = {}; D.forEach(d => { d[3].forEach(l => { const k = l.toLowerCase(); if (!lM[k]) lM[k] = []; if (!lM[k].includes(d[0])) lM[k].push(d[0]) } ) });
 
     function find(q) {
         const c = q.trim();
-        if (/^\d{5}$/.test(c)) { const co = zM[parseInt(c, 10)]; return co ? c + ': ' + co : null; }
+        if (/^\d{5}$/.test(c)) { const co = zM[parseInt(c, 10)]; return co ? c + ': ' + co.join(', ') : null; }
         const l = c.toLowerCase();
-        if (lM[l]) return c + ': ' + lM[l].join(',');
+        if (lM[l]) return c + ': ' + lM[l].join(', ');
         return null;
     }
 

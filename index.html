@@ -95,7 +95,11 @@
                 // 1. Remove Block Comments (Safe)
                 code = code.replace(/\/\*[\s\S]*?\*\//g, '');
 
-                // 2. Collapse whitespace (Safe ONLY if no single-line comments exist)
+                // 2. Remove Single-Line Comments (Strictly Safe)
+                // This regex removes //... until end of line, handling strings
+                code = code.replace(/\/\/.*$/gm, '');
+
+                // 3. Collapse whitespace (Now Safe)
                 code = code.replace(/\s+/g, ' ').trim();
 
                 el.href = `javascript:${encodeURIComponent(code)}`;
