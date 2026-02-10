@@ -204,14 +204,23 @@
     async function handleCopy(contentArea) {
         const html = contentArea.innerHTML;
         const text = contentArea.innerText;
+        const btn = document.querySelector('#' + CONFIG.modalId + ' button.primary');
         try {
             const data = [new ClipboardItem({ 'text/html': new Blob([html], { type: 'text/html' }), 'text/plain': new Blob([text], { type: 'text/plain' }) })];
             await navigator.clipboard.write(data);
-            const btn = document.querySelector('#' + CONFIG.modalId + ' button.primary');
             btn.textContent = "Copied!";
             btn.style.background = "#28a745";
             setTimeout(function() { closeEditor(); }, 1000);
-        } catch (err) { alert('Clipboard access failed.'); }
+        } catch (err) {
+            /* Replace alert with non-blocking UI update */
+            console.error('Clipboard access failed:', err);
+            btn.textContent = "Error";
+            btn.style.background = "#dc3545";
+            setTimeout(function() {
+                btn.textContent = "Copy to Clipboard";
+                btn.style.background = "#007bff";
+            }, 1000);
+        }
     }
 
     function handleDownload(contentArea) {
