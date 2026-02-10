@@ -30,8 +30,16 @@
     const SYMBOL_RULES = { "beforeNum": ["$", "#", "*"], "afterNum": ["%", "+"], "junction": ["=", "@", ".", "-"], "end": ["!", "?"] };
 
     /* HELPERS */
-    const r = new Uint32Array(1);
-    function getRand(m) { window.crypto.getRandomValues(r); return r[0] % m; }
+    const BUFFER_SIZE = 256;
+    const r = new Uint32Array(BUFFER_SIZE);
+    let rIdx = BUFFER_SIZE;
+    function getRand(m) {
+        if (rIdx >= BUFFER_SIZE) {
+            window.crypto.getRandomValues(r);
+            rIdx = 0;
+        }
+        return r[rIdx++] % m;
+    }
     function R(a) { return a[getRand(a.length)]; }
     function Cap(s) { return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase(); }
 
