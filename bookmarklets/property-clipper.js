@@ -8,7 +8,6 @@
 
     /* STATE MANAGEMENT */
     let extractedContent = null;
-    let isExtracting = false;
 
     /* PROMPT LIBRARY */
     const PROMPTS = {
@@ -103,7 +102,6 @@
 
     /* BACKGROUND WORKER */
     async function runBackgroundExtraction() {
-        isExtracting = true;
         updateStatus("Scanning page...", "loading");
 
         /* 1. Expand Details (Wait for clicks) */
@@ -114,7 +112,6 @@
         const rawJSON = extractHiddenData();
         extractedContent = cleanHTML + rawJSON;
 
-        isExtracting = false;
         updateStatus("Listing data captured.", "success");
         enableDownload();
     }
