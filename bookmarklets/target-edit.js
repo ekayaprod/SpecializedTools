@@ -5,10 +5,28 @@
         outlineStyle: '2px solid blue',
         modalId: 'te-bookmarklet-modal',
         overlayId: 'te-bookmarklet-overlay',
+        highlightId: 'te-bookmarklet-highlight',
         ignoreTags: ['HTML', 'BODY', 'SCRIPT', 'STYLE', 'NOSCRIPT', 'IFRAME']
     };
 
     let activeElement = null;
+
+    function getOrCreateHighlightEl() {
+        let el = document.getElementById(CONFIG.highlightId);
+        if (!el) {
+            el = document.createElement('div');
+            el.id = CONFIG.highlightId;
+            el.style.position = 'fixed';
+            el.style.pointerEvents = 'none';
+            el.style.zIndex = '1000000';
+            el.style.border = CONFIG.outlineStyle;
+            el.style.backgroundColor = CONFIG.highlightColor;
+            el.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
+            el.style.display = 'none';
+            document.body.appendChild(el);
+        }
+        return el;
+    }
 
     /* PHASE 1: THE FINDER */
     function startFinder() {
@@ -26,14 +44,22 @@
         document.removeEventListener('click', handleClick, { capture: true });
         document.removeEventListener('keydown', handleEscape);
         clearHighlight();
+        const highlight = document.getElementById(CONFIG.highlightId);
+        if (highlight) highlight.remove();
     }
 
     function handleMouseOver(e) {
-        if (CONFIG.ignoreTags.includes(e.target.tagName) || e.target.closest('#' + CONFIG.overlayId)) return;
+        if (CONFIG.ignoreTags.includes(e.target.tagName) || e.target.closest('#' + CONFIG.overlayId) || e.target.closest('#' + CONFIG.highlightId)) return;
         activeElement = e.target;
-        activeElement.style.outline = CONFIG.outlineStyle;
-        activeElement.style.backgroundColor = CONFIG.highlightColor;
-        activeElement.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
+
+        const rect = activeElement.getBoundingClientRect();
+        const highlight = getOrCreateHighlightEl();
+
+        highlight.style.top = rect.top + 'px';
+        highlight.style.left = rect.left + 'px';
+        highlight.style.width = rect.width + 'px';
+        highlight.style.height = rect.height + 'px';
+        highlight.style.display = 'block';
     }
 
     function handleMouseOut(e) {
@@ -44,10 +70,9 @@
     }
 
     function clearHighlight() {
-        if (activeElement) {
-            activeElement.style.outline = '';
-            activeElement.style.backgroundColor = '';
-            activeElement.style.boxShadow = '';
+        const highlight = document.getElementById(CONFIG.highlightId);
+        if (highlight) {
+            highlight.style.display = 'none';
         }
     }
 
