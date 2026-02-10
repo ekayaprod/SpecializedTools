@@ -1,7 +1,0 @@
-127.0.0.1 - - [10/Feb/2026 17:18:11] "GET /index.html HTTP/1.1" 200 -
-127.0.0.1 - - [10/Feb/2026 17:18:11] "GET /bookmarklets/property-clipper.js HTTP/1.1" 200 -
-127.0.0.1 - - [10/Feb/2026 17:18:11] "GET /bookmarklets/target-edit.js HTTP/1.1" 200 -
-127.0.0.1 - - [10/Feb/2026 17:18:11] "GET /bookmarklets/pa-county-finder.js HTTP/1.1" 200 -
-127.0.0.1 - - [10/Feb/2026 17:18:11] "GET /bookmarklets/temp-password.js HTTP/1.1" 200 -
-127.0.0.1 - - [10/Feb/2026 17:18:11] "GET /bookmarklets/passphrase-generator.js HTTP/1.1" 200 -
-127.0.0.1 - - [10/Feb/2026 17:18:11] "GET /compile_bookmarklet.js HTTP/1.1" 200 -

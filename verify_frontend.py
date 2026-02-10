@@ -32,7 +32,7 @@ def run(playwright):
         else:
             print("Error: Href does not contain encoded newlines (%0A)")
 
-        page.screenshot(path="verification_screenshot_http.png")
+        page.screenshot(path="verification_screenshot_http_2.png")
 
     except Exception as e:
         print(f"Error: {e}")
