@@ -53,7 +53,10 @@ global.navigator = {
 
 // Helper to run the bookmarklet
 function runBookmarklet() {
-    const code = fs.readFileSync('bookmarklets/temp-password.js', 'utf8');
+    let code = fs.readFileSync('bookmarklets/temp-password.js', 'utf8');
+    const utils = fs.readFileSync('bookmarklets/utils.js', 'utf8');
+    code = code.replace('/* @IMPORT_UTILS */', utils);
+
     // We can eval the code directly as it's an IIFE
     try {
         eval(code);

@@ -4,7 +4,11 @@ const vm = require('vm');
 const assert = require('assert');
 
 const filePath = path.join(__dirname, '../bookmarklets/passphrase-generator.js');
-const code = fs.readFileSync(filePath, 'utf8');
+let code = fs.readFileSync(filePath, 'utf8');
+
+const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
+const utils = fs.readFileSync(utilsPath, 'utf8');
+code = code.replace('/* @IMPORT_UTILS */', utils);
 
 // --- INSTRUMENTATION ---
 // The code is an IIFE: (function() { ... })();

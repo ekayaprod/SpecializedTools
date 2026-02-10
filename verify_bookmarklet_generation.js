@@ -6,7 +6,8 @@ const files = [
   'bookmarklets/passphrase-generator.js',
   'bookmarklets/target-edit.js',
   'bookmarklets/temp-password.js',
-  'bookmarklets/property-clipper.js'
+  'bookmarklets/property-clipper.js',
+  'bookmarklets/utils.js'
 ];
 
 function formatCode(code) {
@@ -15,11 +16,18 @@ function formatCode(code) {
 
 if (require.main === module) {
   (async () => {
+    const utils = await fs.promises.readFile('bookmarklets/utils.js', 'utf8');
+
     await Promise.all(files.map(async file => {
       try {
-        const rawCode = await fs.promises.readFile(file, 'utf8');
+        let rawCode = await fs.promises.readFile(file, 'utf8');
 
         // --- SIMULATE index.html LOGIC ---
+        // 0. Inject Utils
+        if (rawCode.includes('/* @IMPORT_UTILS */')) {
+            rawCode = rawCode.replace('/* @IMPORT_UTILS */', utils);
+        }
+
         // 1. Remove Block Comments
         let code = rawCode.replace(/\/\*[\s\S]*?\*\//g, '');
 
