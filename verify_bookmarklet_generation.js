@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { compile } = require('./compile_bookmarklet');
 
 const files = [
   'bookmarklets/pa-county-finder.js',
@@ -9,10 +10,6 @@ const files = [
   'bookmarklets/property-clipper.js'
 ];
 
-function formatCode(code) {
-  return code.split('\n').map(line => line.trim()).filter(l => l.length > 0).join('\n');
-}
-
 if (require.main === module) {
   (async () => {
     await Promise.all(files.map(async file => {
@@ -20,11 +17,8 @@ if (require.main === module) {
         const rawCode = await fs.promises.readFile(file, 'utf8');
 
         // --- SIMULATE index.html LOGIC ---
-        // 1. Remove Block Comments
-        let code = rawCode.replace(/\/\*[\s\S]*?\*\//g, '');
-
-        // 2. Trim lines but PRESERVE NEWLINES.
-        code = formatCode(code);
+        // Uses shared compilation logic to prevent drift
+        let code = compile(rawCode);
 
         // 3. Encode
         const bookmarklet = `javascript:${encodeURIComponent(code)}`;
@@ -58,5 +52,3 @@ if (require.main === module) {
     }));
   })();
 }
-
-module.exports = { formatCode };

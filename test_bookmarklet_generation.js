@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { formatCode } = require('./verify_bookmarklet_generation');
+const { compile } = require('./compile_bookmarklet');
 
 console.log('Running tests for bookmarklet generation logic...');
 
@@ -46,6 +46,14 @@ line 2`
         name: 'Trailing spaces',
         input: 'line 1   \nline 2   ',
         expected: 'line 1\nline 2'
+    },
+    {
+        name: 'Block comment removal',
+        input: `/* This is a comment */
+        code();
+        /* Another
+           Comment */`,
+        expected: 'code();'
     }
 ];
 
@@ -54,14 +62,14 @@ let failed = 0;
 
 tests.forEach(test => {
     try {
-        const actual = formatCode(test.input);
+        const actual = compile(test.input);
         assert.strictEqual(actual, test.expected);
         console.log(`✅ ${test.name}`);
         passed++;
     } catch (e) {
         console.error(`❌ ${test.name}`);
         console.error(`   Expected: ${JSON.stringify(test.expected)}`);
-        console.error(`   Actual:   ${JSON.stringify(formatCode(test.input))}`);
+        console.error(`   Actual:   ${JSON.stringify(compile(test.input))}`);
         failed++;
     }
 });
