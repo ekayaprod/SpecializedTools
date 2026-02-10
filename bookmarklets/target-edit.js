@@ -171,8 +171,10 @@
     }
 
     function cleanupDOM(node) {
-        const dangerous = node.querySelectorAll('script, iframe, object, embed, style, noscript');
+        /* Aggressive Noise Removal: Forms, Inputs, Buttons, SVGs */
+        const dangerous = node.querySelectorAll('script, iframe, object, embed, style, noscript, form, input, button, select, textarea, svg, nav, footer, aside');
         dangerous.forEach(function(n) { n.remove(); });
+        
         node.querySelectorAll('*').forEach(function(el) {
             Array.from(el.attributes).forEach(function(attr) {
                 if (attr.name.startsWith('on')) el.removeAttribute(attr.name);
@@ -191,19 +193,16 @@
 
             while (active < CONCURRENCY && index < imgs.length) {
                 const img = imgs[index++];
-                /* Skip if no src or already data URI */
                 if (!img.src || img.src.startsWith('data:')) continue;
 
                 active++;
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 const tempImg = new Image();
-                /* Bypass CORS if possible */
                 tempImg.crossOrigin = "Anonymous";
 
                 const onComplete = function() {
                     active--;
-                    /* Schedule next batch */
                     if (window.requestIdleCallback) {
                         window.requestIdleCallback(processNext);
                     } else {
@@ -243,7 +242,6 @@
             btn.style.background = "#28a745";
             setTimeout(function() { closeEditor(); }, 1000);
         } catch (err) {
-            /* Replace alert with non-blocking UI update */
             console.error('Clipboard access failed:', err);
             btn.textContent = "Error";
             btn.style.background = "#dc3545";
