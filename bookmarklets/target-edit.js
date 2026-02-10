@@ -257,15 +257,10 @@
     }
 
     function handleDownload(contentArea) {
-        const cleanTitle = (document.title || 'snippet').replace(/[^a-z0-9]/gi, '_').substring(0, 50);
+        const cleanTitle = BookmarkletUtils.sanitizeFilename(document.title);
         const filename = cleanTitle + '_' + Date.now() + '.html';
         const fullHtml = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + cleanTitle + '</title><style>body{font-family:system-ui,sans-serif;max-width:800px;margin:2rem auto;line-height:1.6;padding:0 1rem;}img{max-width:100%;height:auto;}</style></head><body>' + contentArea.innerHTML + '</body></html>';
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob([fullHtml], { type: 'text/html' }));
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        BookmarkletUtils.triggerDownload(filename, fullHtml);
     }
     startFinder();
 })();

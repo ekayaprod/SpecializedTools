@@ -169,17 +169,32 @@
             const copyBtn = document.getElementById(copyBtnId);
 
             try {
+                let code = '';
+
+                // --- INJECT UTILS IF NEEDED ---
+                if (file.includes('target-edit') || file.includes('property-clipper')) {
+                    const uRes = await fetch('bookmarklets/utils.js');
+                    if (uRes.ok) {
+                        let uCode = await uRes.text();
+                        uCode = uCode.replace(/\/\*[\s\S]*?\*\//g, ''); // Remove comments
+                        uCode = uCode.split('\n').map(line => line.trim()).filter(l => l.length > 0).join('\n');
+                        code += uCode + '\n';
+                    }
+                }
+
                 const res = await fetch(file);
                 if (!res.ok) throw new Error('Failed');
-                let code = await res.text();
+                let fileCode = await res.text();
 
                 // --- SAFE BOOKMARKLET COMPILATION ---
                 // 1. Remove Block Comments (Strictly avoid // comments in source files)
-                code = code.replace(/\/\*[\s\S]*?\*\//g, '');
+                fileCode = fileCode.replace(/\/\*[\s\S]*?\*\//g, '');
 
                 // 2. Trim lines but PRESERVE NEWLINES.
                 // This is critical for template literals (like LLM Prompts) to maintain formatting.
-                code = code.split('\n').map(line => line.trim()).filter(l => l.length > 0).join('\n');
+                fileCode = fileCode.split('\n').map(line => line.trim()).filter(l => l.length > 0).join('\n');
+
+                code += fileCode;
 
                 // 3. Encode URI (Handles the newlines via %0A)
                 const href = `javascript:${encodeURIComponent(code)}`;

@@ -6,7 +6,8 @@ const files = [
   'bookmarklets/passphrase-generator.js',
   'bookmarklets/target-edit.js',
   'bookmarklets/temp-password.js',
-  'bookmarklets/property-clipper.js'
+  'bookmarklets/property-clipper.js',
+  'bookmarklets/utils.js'
 ];
 
 function formatCode(code) {

@@ -260,15 +260,10 @@
 
     function handleDownload() {
         if (!extractedContent) return;
-        const title = (document.title || 'Property').replace(/[^a-z0-9]/gi, '_').substring(0, 50);
+        const title = BookmarkletUtils.sanitizeFilename(document.title || 'Property');
         const filename = `${CONFIG.filenamePrefix}${title}_${Date.now()}.html`;
         const fullHTML = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title></head><body>${extractedContent}</body></html>`;
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob([fullHTML], {type: 'text/html'}));
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        BookmarkletUtils.triggerDownload(filename, fullHTML);
     }
 
     /* EXTRACTION LOGIC (UNCHANGED BUT MINIFIED FOR SAFETY) */
