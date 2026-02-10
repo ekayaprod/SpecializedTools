@@ -15,6 +15,18 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         .bookmarklet-btn { cursor: move; }
         .loading { opacity: 0.5; pointer-events: none; }
+
+        /* Toast Animations */
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        .toast-enter { animation: slideIn 0.3s ease-out forwards; }
+        .toast-exit { animation: fadeOut 0.3s ease-in forwards; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 p-8">
@@ -31,9 +43,14 @@
                     <h2 class="text-xl font-semibold text-slate-900">Target & Edit</h2>
                     <p class="text-sm text-slate-600 mt-2">Visually select any element, edit it, and download as HTML.</p>
                 </div>
-                <div class="w-full md:w-64 text-center">
-                    <a id="btn-target-edit" href="#" onclick="return false;" class="bookmarklet-btn block w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-full shadow-md hover:bg-blue-700">Loading...</a>
-                    <p class="text-xs text-slate-400 mt-2">Drag to Bookmarks Bar or Click to Test</p>
+                <div class="w-full md:w-64 flex flex-col items-center">
+                    <div class="flex w-full shadow-md rounded-full overflow-hidden">
+                        <a id="btn-target-edit" href="#" onclick="return false;" class="bookmarklet-btn flex-1 bg-blue-600 text-white font-bold py-3 px-4 text-center hover:bg-blue-700 transition-colors truncate">Loading...</a>
+                        <button id="copy-btn-target-edit" class="bg-blue-800 text-white px-4 hover:bg-blue-900 transition-colors flex items-center justify-center opacity-50 cursor-not-allowed border-l border-white/20" title="Copy Code">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">Drag to Bookmarks Bar or Click to Test</p>
                 </div>
             </section>
 
@@ -49,9 +66,14 @@
                         <strong>Workflow:</strong> Click Bookmarklet &rarr; Copy Prompt &rarr; Download File &rarr; Upload to Gemini.
                     </div>
                 </div>
-                <div class="w-full md:w-64 text-center">
-                    <a id="btn-prop-clipper" href="#" onclick="return false;" class="bookmarklet-btn block w-full bg-indigo-600 text-white font-bold py-3 px-6 rounded-full shadow-md hover:bg-indigo-700">Loading...</a>
-                    <p class="text-xs text-slate-400 mt-2">Drag to Bookmarks Bar or Click to Test</p>
+                <div class="w-full md:w-64 flex flex-col items-center">
+                    <div class="flex w-full shadow-md rounded-full overflow-hidden">
+                        <a id="btn-prop-clipper" href="#" onclick="return false;" class="bookmarklet-btn flex-1 bg-indigo-600 text-white font-bold py-3 px-4 text-center hover:bg-indigo-700 transition-colors truncate">Loading...</a>
+                        <button id="copy-btn-prop-clipper" class="bg-indigo-800 text-white px-4 hover:bg-indigo-900 transition-colors flex items-center justify-center opacity-50 cursor-not-allowed border-l border-white/20" title="Copy Code">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">Drag to Bookmarks Bar or Click to Test</p>
                 </div>
             </section>
 
@@ -61,9 +83,14 @@
                     <h2 class="text-xl font-semibold text-slate-900">Passphrase Generator</h2>
                     <p class="text-sm text-slate-600 mt-2">Generates cryptographically strong, memorable phrases (e.g., "BraveGoldenEagle"). Uses seasonal themes.</p>
                 </div>
-                <div class="w-full md:w-64 text-center">
-                    <a id="btn-passphrase" href="#" onclick="return false;" class="bookmarklet-btn block w-full bg-slate-600 text-white font-bold py-3 px-6 rounded-full shadow-md hover:bg-slate-700">Loading...</a>
-                    <p class="text-xs text-slate-400 mt-2">Drag to Bookmarks Bar or Click to Test</p>
+                <div class="w-full md:w-64 flex flex-col items-center">
+                    <div class="flex w-full shadow-md rounded-full overflow-hidden">
+                        <a id="btn-passphrase" href="#" onclick="return false;" class="bookmarklet-btn flex-1 bg-slate-600 text-white font-bold py-3 px-4 text-center hover:bg-slate-700 transition-colors truncate">Loading...</a>
+                        <button id="copy-btn-passphrase" class="bg-slate-800 text-white px-4 hover:bg-slate-900 transition-colors flex items-center justify-center opacity-50 cursor-not-allowed border-l border-white/20" title="Copy Code">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">Drag to Bookmarks Bar or Click to Test</p>
                 </div>
             </section>
 
@@ -73,9 +100,14 @@
                     <h2 class="text-xl font-semibold text-slate-900">Temp Password</h2>
                     <p class="text-sm text-slate-600 mt-2">Creates simple temporary passwords (e.g., "Applebutter1!").</p>
                 </div>
-                <div class="w-full md:w-64 text-center">
-                    <a id="btn-temp-pass" href="#" onclick="return false;" class="bookmarklet-btn block w-full bg-slate-600 text-white font-bold py-3 px-6 rounded-full shadow-md hover:bg-slate-700">Loading...</a>
-                    <p class="text-xs text-slate-400 mt-2">Drag to Bookmarks Bar or Click to Test</p>
+                <div class="w-full md:w-64 flex flex-col items-center">
+                    <div class="flex w-full shadow-md rounded-full overflow-hidden">
+                        <a id="btn-temp-pass" href="#" onclick="return false;" class="bookmarklet-btn flex-1 bg-slate-600 text-white font-bold py-3 px-4 text-center hover:bg-slate-700 transition-colors truncate">Loading...</a>
+                        <button id="copy-btn-temp-pass" class="bg-slate-800 text-white px-4 hover:bg-slate-900 transition-colors flex items-center justify-center opacity-50 cursor-not-allowed border-l border-white/20" title="Copy Code">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">Drag to Bookmarks Bar or Click to Test</p>
                 </div>
             </section>
 
@@ -85,9 +117,14 @@
                     <h2 class="text-xl font-semibold text-slate-900">PA County Finder</h2>
                     <p class="text-sm text-slate-600 mt-2">Look up PA county info by highlighted text or prompt.</p>
                 </div>
-                <div class="w-full md:w-64 text-center">
-                    <a id="btn-pa-county" href="#" onclick="return false;" class="bookmarklet-btn block w-full bg-slate-600 text-white font-bold py-3 px-6 rounded-full shadow-md hover:bg-slate-700">Loading...</a>
-                    <p class="text-xs text-slate-400 mt-2">Drag to Bookmarks Bar or Click to Test</p>
+                <div class="w-full md:w-64 flex flex-col items-center">
+                    <div class="flex w-full shadow-md rounded-full overflow-hidden">
+                        <a id="btn-pa-county" href="#" onclick="return false;" class="bookmarklet-btn flex-1 bg-slate-600 text-white font-bold py-3 px-4 text-center hover:bg-slate-700 transition-colors truncate">Loading...</a>
+                        <button id="copy-btn-pa-county" class="bg-slate-800 text-white px-4 hover:bg-slate-900 transition-colors flex items-center justify-center opacity-50 cursor-not-allowed border-l border-white/20" title="Copy Code">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">Drag to Bookmarks Bar or Click to Test</p>
                 </div>
             </section>
         </main>
@@ -97,9 +134,39 @@
         </footer>
     </div>
 
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 flex flex-col gap-3 z-50"></div>
+
     <script>
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+
+            // Styles based on type
+            const baseClasses = "px-4 py-3 rounded shadow-lg text-white text-sm font-medium flex items-center gap-2 min-w-[200px]";
+            const bgClass = type === 'success' ? 'bg-green-600' : 'bg-slate-800';
+
+            toast.className = `${baseClasses} ${bgClass} toast-enter`;
+            toast.innerHTML = `
+                <span>${type === 'success' ? '✓' : 'ℹ'}</span>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            // Remove after 3s
+            setTimeout(() => {
+                toast.classList.remove('toast-enter');
+                toast.classList.add('toast-exit');
+                toast.addEventListener('animationend', () => toast.remove());
+            }, 3000);
+        }
+
         async function load(id, file, name) {
             const el = document.getElementById(id);
+            const copyBtnId = 'copy-' + id;
+            const copyBtn = document.getElementById(copyBtnId);
+
             try {
                 const res = await fetch(file);
                 if (!res.ok) throw new Error('Failed');
@@ -114,17 +181,39 @@
                 code = code.split('\n').map(line => line.trim()).filter(l => l.length > 0).join('\n');
 
                 // 3. Encode URI (Handles the newlines via %0A)
-                el.href = `javascript:${encodeURIComponent(code)}`;
+                const href = `javascript:${encodeURIComponent(code)}`;
+                el.href = href;
                 el.textContent = name;
 
                 // UX: Make clickable for testing and add accessibility
                 el.removeAttribute('onclick');
                 el.setAttribute('title', `Drag to bookmarks or click to run ${name}`);
                 el.setAttribute('aria-label', `Drag ${name} bookmarklet to your bookmarks bar`);
+
+                // Add click listener for toast feedback
+                el.addEventListener('click', (e) => {
+                    // Start toast
+                    showToast(`${name} started...`);
+                });
+
+                // Setup Copy Button
+                if (copyBtn) {
+                    copyBtn.onclick = () => {
+                        navigator.clipboard.writeText(href);
+                        showToast('Code copied to clipboard!', 'success');
+                    };
+                    copyBtn.setAttribute('aria-label', `Copy code for ${name}`);
+                    copyBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+
             } catch (e) {
                 console.error(e);
                 el.textContent = "Error";
                 el.classList.add("bg-red-500");
+                if (copyBtn) {
+                    copyBtn.textContent = "Error";
+                    copyBtn.classList.add("bg-red-500");
+                }
             }
         }
 
