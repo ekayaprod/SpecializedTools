@@ -173,13 +173,11 @@
     function cleanupDOM(node) {
         const dangerous = node.querySelectorAll('script, iframe, object, embed, style, noscript');
         dangerous.forEach(function(n) { n.remove(); });
-        const all = node.getElementsByTagName("*");
-        for (let i = 0; i < all.length; i++) {
-            const el = all[i];
+        node.querySelectorAll('*').forEach(function(el) {
             Array.from(el.attributes).forEach(function(attr) {
                 if (attr.name.startsWith('on')) el.removeAttribute(attr.name);
             });
-        }
+        });
     }
 
     function processImages(container) {
@@ -221,7 +219,7 @@
                         img.src = canvas.toDataURL('image/png');
                         img.removeAttribute('srcset');
                     } catch (e) {
-                        /* console.warn('CORS or Canvas error', e); */
+                        console.warn('Target & Edit: Image processing failed (likely CORS)', e);
                     }
                     onComplete();
                 };
@@ -257,10 +255,10 @@
     }
 
     function handleDownload(contentArea) {
-        const cleanTitle = BookmarkletUtils.sanitizeFilename(document.title);
+        const cleanTitle = BookmarkletUtils.sanitizeFilename(document.title || 'snippet');
         const filename = cleanTitle + '_' + Date.now() + '.html';
         const fullHtml = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + cleanTitle + '</title><style>body{font-family:system-ui,sans-serif;max-width:800px;margin:2rem auto;line-height:1.6;padding:0 1rem;}img{max-width:100%;height:auto;}</style></head><body>' + contentArea.innerHTML + '</body></html>';
-        BookmarkletUtils.triggerDownload(filename, fullHtml);
+        BookmarkletUtils.downloadFile(filename, fullHtml);
     }
     startFinder();
 })();
