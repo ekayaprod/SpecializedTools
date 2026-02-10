@@ -30,7 +30,12 @@
     const SYMBOL_RULES = { "beforeNum": ["$", "#", "*"], "afterNum": ["%", "+"], "junction": ["=", "@", ".", "-"], "end": ["!", "?"] };
 
     /* HELPERS */
-    function getRand(m) { const r = new Uint32Array(1); window.crypto.getRandomValues(r); return r[0] % m; }
+    function getRand(m) {
+        const r = new Uint32Array(1);
+        const l = 0x100000000 - (0x100000000 % m);
+        do { window.crypto.getRandomValues(r); } while (r[0] >= l);
+        return r[0] % m;
+    }
     function R(a) { return a[getRand(a.length)]; }
     function Cap(s) { return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase(); }
 
