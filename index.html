@@ -19,6 +19,7 @@
         </header>
 
         <main class="space-y-6">
+            <!-- TARGET & EDIT -->
             <section class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 flex flex-col md:flex-row gap-6">
                 <div class="flex-1">
                     <h2 class="text-xl font-semibold text-slate-900">Target & Edit</h2>
@@ -30,6 +31,7 @@
                 </div>
             </section>
 
+            <!-- PROPERTY CLIPPER -->
             <section class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 flex flex-col md:flex-row gap-6">
                 <div class="flex-1">
                     <h2 class="text-xl font-semibold text-slate-900">Property Clipper</h2>
@@ -47,6 +49,7 @@
                 </div>
             </section>
 
+            <!-- PASSPHRASE GENERATOR -->
             <section class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 flex flex-col md:flex-row gap-6">
                 <div class="flex-1">
                     <h2 class="text-xl font-semibold text-slate-900">Passphrase Generator</h2>
@@ -57,6 +60,7 @@
                 </div>
             </section>
 
+            <!-- TEMP PASSWORD -->
             <section class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 flex flex-col md:flex-row gap-6">
                 <div class="flex-1">
                     <h2 class="text-xl font-semibold text-slate-900">Temp Password</h2>
@@ -67,6 +71,7 @@
                 </div>
             </section>
 
+            <!-- PA COUNTY FINDER -->
             <section class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 flex flex-col md:flex-row gap-6">
                 <div class="flex-1">
                     <h2 class="text-xl font-semibold text-slate-900">PA County Finder</h2>
@@ -91,23 +96,21 @@
                 if (!res.ok) throw new Error('Failed');
                 let code = await res.text();
 
-                // --- SAFE MINIFICATION LOGIC ---
-                // 1. Remove Block Comments (Safe)
+                // --- SAFE BOOKMARKLET COMPILATION ---
+                // 1. Remove Block Comments (Strictly avoid // comments in source files)
                 code = code.replace(/\/\*[\s\S]*?\*\//g, '');
 
-                // 2. Remove Single-Line Comments (Strictly Safe)
-                // This regex removes //... until end of line, handling strings
-                code = code.replace(/\/\/.*$/gm, '');
+                // 2. Trim lines but PRESERVE NEWLINES.
+                // This is critical for template literals (like LLM Prompts) to maintain formatting.
+                code = code.split('\n').map(line => line.trim()).filter(l => l.length > 0).join('\n');
 
-                // 3. Collapse whitespace (Now Safe)
-                code = code.replace(/\s+/g, ' ').trim();
-
+                // 3. Encode URI (Handles the newlines via %0A)
                 el.href = `javascript:${encodeURIComponent(code)}`;
                 el.textContent = name;
             } catch (e) {
+                console.error(e);
                 el.textContent = "Error";
                 el.classList.add("bg-red-500");
-                console.error(e);
             }
         }
 

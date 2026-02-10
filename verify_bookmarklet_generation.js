@@ -17,10 +17,8 @@ files.forEach(file => {
     // 1. Remove Block Comments
     let code = rawCode.replace(/\/\*[\s\S]*?\*\//g, '');
 
-    // 2. Collapse Whitespace (Original was unsafe; current fix removes this)
-    // code = code.replace(/\s+/g, ' ').trim();
-    // Current logic in index.html is effectively:
-    code = code.trim();
+    // 2. Trim lines but PRESERVE NEWLINES.
+    code = code.split('\n').map(line => line.trim()).filter(l => l.length > 0).join('\n');
 
     // 3. Encode
     const bookmarklet = `javascript:${encodeURIComponent(code)}`;
