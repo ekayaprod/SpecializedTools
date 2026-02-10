@@ -3,28 +3,36 @@
     const CONFIG = {
         highlightColor: 'rgba(0, 0, 255, 0.1)',
         outlineStyle: '2px solid blue',
+        parentHighlightColor: 'rgba(255, 255, 0, 0.2)', /* Distinct Yellow */
+        parentOutlineStyle: '2px dashed #DAA520', /* GoldenRod dashed border */
         modalId: 'te-bookmarklet-modal',
         overlayId: 'te-bookmarklet-overlay',
         highlightId: 'te-bookmarklet-highlight',
+        parentHighlightId: 'te-bookmarklet-highlight-parent',
         ignoreTags: ['HTML', 'BODY', 'SCRIPT', 'STYLE', 'NOSCRIPT', 'IFRAME']
     };
 
     let activeElement = null;
 
-    function getOrCreateHighlightEl() {
-        let el = document.getElementById(CONFIG.highlightId);
+    function getOrCreateHighlightEl(id, outline, color, zIndex) {
+        let el = document.getElementById(id);
         if (!el) {
             el = document.createElement('div');
-            el.id = CONFIG.highlightId;
+            el.id = id;
             el.style.position = 'fixed';
             el.style.pointerEvents = 'none';
-            el.style.zIndex = '1000000';
-            el.style.border = CONFIG.outlineStyle;
-            el.style.backgroundColor = CONFIG.highlightColor;
-            el.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
+            el.style.zIndex = zIndex;
+            el.style.border = outline;
+            el.style.backgroundColor = color;
             el.style.display = 'none';
+            /* Add shadow to make it pop */
+            el.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
             document.body.appendChild(el);
         }
+        /* Update style in case it exists but needs refresh */
+        el.style.border = outline;
+        el.style.backgroundColor = color;
+        el.style.zIndex = zIndex;
         return el;
     }
 
@@ -44,22 +52,63 @@
         document.removeEventListener('click', handleClick, { capture: true });
         document.removeEventListener('keydown', handleEscape);
         clearHighlight();
-        const highlight = document.getElementById(CONFIG.highlightId);
-        if (highlight) highlight.remove();
+        
+        /* Remove elements from DOM */
+        const h1 = document.getElementById(CONFIG.highlightId);
+        if (h1) h1.remove();
+        const h2 = document.getElementById(CONFIG.parentHighlightId);
+        if (h2) h2.remove();
     }
 
     function handleMouseOver(e) {
         if (CONFIG.ignoreTags.includes(e.target.tagName) || e.target.closest('#' + CONFIG.overlayId) || e.target.closest('#' + CONFIG.highlightId)) return;
+        
         activeElement = e.target;
-
         const rect = activeElement.getBoundingClientRect();
-        const highlight = getOrCreateHighlightEl();
 
+        /* 1. Highlight Active Element */
+        const highlight = getOrCreateHighlightEl(CONFIG.highlightId, CONFIG.outlineStyle, CONFIG.highlightColor, '1000000');
         highlight.style.top = rect.top + 'px';
         highlight.style.left = rect.left + 'px';
         highlight.style.width = rect.width + 'px';
         highlight.style.height = rect.height + 'px';
         highlight.style.display = 'block';
+
+        /* 2. Highlight Parent Element */
+        const parent = activeElement.parentElement;
+        if (parent && !CONFIG.ignoreTags.includes(parent.tagName)) {
+            const parentRect = parent.getBoundingClientRect();
+            const parentHighlight = getOrCreateHighlightEl(CONFIG.parentHighlightId, CONFIG.parentOutlineStyle, CONFIG.parentHighlightColor, '999999');
+            
+            let pTop = parentRect.top;
+            let pLeft = parentRect.left;
+            let pWidth = parentRect.width;
+            let pHeight = parentRect.height;
+
+            /* Visual Tweak: If parent is exact same size as child, expand it slightly to be visible */
+            /* Threshold of 2px difference */
+            const sameWidth = Math.abs(pWidth - rect.width) < 2;
+            const sameHeight = Math.abs(pHeight - rect.height) < 2;
+            const samePos = Math.abs(pTop - rect.top) < 2 && Math.abs(pLeft - rect.left) < 2;
+
+            if (sameWidth && sameHeight && samePos) {
+                /* Expand parent highlight by 4px on all sides */
+                const padding = 4;
+                pTop -= padding;
+                pLeft -= padding;
+                pWidth += (padding * 2);
+                pHeight += (padding * 2);
+            }
+
+            parentHighlight.style.top = pTop + 'px';
+            parentHighlight.style.left = pLeft + 'px';
+            parentHighlight.style.width = pWidth + 'px';
+            parentHighlight.style.height = pHeight + 'px';
+            parentHighlight.style.display = 'block';
+        } else {
+            const ph = document.getElementById(CONFIG.parentHighlightId);
+            if (ph) ph.style.display = 'none';
+        }
     }
 
     function handleMouseOut(e) {
@@ -70,10 +119,10 @@
     }
 
     function clearHighlight() {
-        const highlight = document.getElementById(CONFIG.highlightId);
-        if (highlight) {
-            highlight.style.display = 'none';
-        }
+        const h1 = document.getElementById(CONFIG.highlightId);
+        if (h1) h1.style.display = 'none';
+        const h2 = document.getElementById(CONFIG.parentHighlightId);
+        if (h2) h2.style.display = 'none';
     }
 
     function handleClick(e) {
@@ -193,12 +242,14 @@
 
             while (active < CONCURRENCY && index < imgs.length) {
                 const img = imgs[index++];
+                /* Skip if no src or already data URI */
                 if (!img.src || img.src.startsWith('data:')) continue;
 
                 active++;
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 const tempImg = new Image();
+                /* Bypass CORS if possible */
                 tempImg.crossOrigin = "Anonymous";
 
                 const onComplete = function() {
