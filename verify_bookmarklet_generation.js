@@ -9,46 +9,54 @@ const files = [
   'bookmarklets/property-clipper.js'
 ];
 
-(async () => {
-  await Promise.all(files.map(async file => {
-    try {
-      const rawCode = await fs.promises.readFile(file, 'utf8');
+function formatCode(code) {
+  return code.split('\n').map(line => line.trim()).filter(l => l.length > 0).join('\n');
+}
 
-      // --- SIMULATE index.html LOGIC ---
-      // 1. Remove Block Comments
-      let code = rawCode.replace(/\/\*[\s\S]*?\*\//g, '');
+if (require.main === module) {
+  (async () => {
+    await Promise.all(files.map(async file => {
+      try {
+        const rawCode = await fs.promises.readFile(file, 'utf8');
 
-      // 2. Trim lines but PRESERVE NEWLINES.
-      code = code.split('\n').map(line => line.trim()).filter(l => l.length > 0).join('\n');
+        // --- SIMULATE index.html LOGIC ---
+        // 1. Remove Block Comments
+        let code = rawCode.replace(/\/\*[\s\S]*?\*\//g, '');
 
-      // 3. Encode
-      const bookmarklet = `javascript:${encodeURIComponent(code)}`;
+        // 2. Trim lines but PRESERVE NEWLINES.
+        code = formatCode(code);
 
-      console.log(`\n--- ${file} ---`);
-      console.log(`Original Length: ${rawCode.length}`);
-      console.log(`Processed Length: ${code.length}`);
-      console.log(`Bookmarklet Length: ${bookmarklet.length}`);
+        // 3. Encode
+        const bookmarklet = `javascript:${encodeURIComponent(code)}`;
 
-      // Check for single-line comments in the processed code
-      if (code.includes('//')) {
-          console.warn(`WARNING: ${file} contains single-line comments ('//'). Without newline preservation, this would break.`);
-          // Verify newlines are present
-          if (!code.includes('\n')) {
-              console.error(`CRITICAL: Single-line comment found but no newlines preserved! Code is broken.`);
-          } else {
-              console.log(`SAFE: Single-line comments found, but newlines preserved.`);
-          }
-      } else {
-          console.log(`SAFE: No single-line comments found.`);
+        console.log(`\n--- ${file} ---`);
+        console.log(`Original Length: ${rawCode.length}`);
+        console.log(`Processed Length: ${code.length}`);
+        console.log(`Bookmarklet Length: ${bookmarklet.length}`);
+
+        // Check for single-line comments in the processed code
+        if (code.includes('//')) {
+            console.warn(`WARNING: ${file} contains single-line comments ('//'). Without newline preservation, this would break.`);
+            // Verify newlines are present
+            if (!code.includes('\n')) {
+                console.error(`CRITICAL: Single-line comment found but no newlines preserved! Code is broken.`);
+            } else {
+                console.log(`SAFE: Single-line comments found, but newlines preserved.`);
+            }
+        } else {
+            console.log(`SAFE: No single-line comments found.`);
+        }
+
+        // Check size limit (approx 2000 chars is safe for older browsers, modern support ~64k)
+        if (bookmarklet.length > 2000) {
+            console.warn(`NOTE: Bookmarklet size > 2000 chars. Modern browsers handle this, but older ones (IE) might not.`);
+        }
+
+      } catch (err) {
+        console.error(`Error reading ${file}: ${err.message}`);
       }
+    }));
+  })();
+}
 
-      // Check size limit (approx 2000 chars is safe for older browsers, modern support ~64k)
-      if (bookmarklet.length > 2000) {
-          console.warn(`NOTE: Bookmarklet size > 2000 chars. Modern browsers handle this, but older ones (IE) might not.`);
-      }
-
-    } catch (err) {
-      console.error(`Error reading ${file}: ${err.message}`);
-    }
-  }));
-})();
+module.exports = { formatCode };
