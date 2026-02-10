@@ -1,6 +1,7 @@
 (function () {
     /* DEFAULT CONFIGURATION */
     const C = {
+        n: 5,      /* Passphrase count */
         w: 4,      /* Words count */
         t: true,   /* Seasonal theme */
         s: '',     /* Separator */
@@ -56,7 +57,7 @@
     })(new Date()) : null;
 
     let allPasses = [];
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < C.n; i++) {
         let words = [];
         let struct = (season && PHRASE_STRUCTURES.seasonal[C.w]) ? R(PHRASE_STRUCTURES.seasonal[C.w]) : R(PHRASE_STRUCTURES.standard[C.w]);
         words = struct.map(cat => {
