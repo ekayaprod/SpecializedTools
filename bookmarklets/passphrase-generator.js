@@ -30,7 +30,8 @@
     const SYMBOL_RULES = { "beforeNum": ["$", "#", "*"], "afterNum": ["%", "+"], "junction": ["=", "@", ".", "-"], "end": ["!", "?"] };
 
     /* HELPERS */
-    function getRand(m) { const r = new Uint32Array(1); window.crypto.getRandomValues(r); return r[0] % m; }
+    const r = new Uint32Array(1);
+    function getRand(m) { window.crypto.getRandomValues(r); return r[0] % m; }
     function R(a) { return a[getRand(a.length)]; }
     function Cap(s) { return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase(); }
 
