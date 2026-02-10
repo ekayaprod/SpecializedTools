@@ -18,9 +18,40 @@
         return null;
     }
 
+    /* UI LOGIC */
+    const overlay = document.createElement('div');
+    Object.assign(overlay.style, {position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:99999});
+    const card = document.createElement('div');
+    Object.assign(card.style, {background:'white',padding:'20px',borderRadius:'8px',boxShadow:'0 10px 25px rgba(0,0,0,0.2)',width:'300px',fontFamily:'system-ui'});
+    card.innerHTML = `<h3 style="margin:0 0 15px">PA County Finder</h3><div id="pa-content"></div>`;
+    overlay.appendChild(card);
+    overlay.onclick = e => e.target === overlay && overlay.remove();
+
+    const content = card.querySelector('#pa-content');
+    const showRes = (r, q) => {
+        content.innerHTML = r ? `<div style="color:#15803d;background:#dcfce7;padding:12px;border-radius:6px;margin-bottom:10px"><strong>Found:</strong><br>${r}</div>`
+                              : `<div style="color:#b91c1c;background:#fee2e2;padding:12px;border-radius:6px;margin-bottom:10px">No match for "<strong>${q}</strong>"</div>`;
+        const close = document.createElement('button');
+        close.textContent = 'Close';
+        Object.assign(close.style, {width:'100%',padding:'8px',background:'#f3f4f6',border:'none',borderRadius:'4px',cursor:'pointer'});
+        close.onclick = () => overlay.remove();
+        content.appendChild(close);
+    };
+
     let s = window.getSelection().toString().trim();
-    if (!s) s = prompt('Enter PA ZIP or city:');
-    if (!s) return;
-    const res = find(s);
-    alert(res ? 'County info found:\n' + res : 'No PA county found for "' + s + '"');
+    if (s) {
+        showRes(find(s), s);
+    } else {
+        const inp = document.createElement('input');
+        Object.assign(inp.style, {width:'100%',padding:'10px',marginBottom:'10px',boxSizing:'border-box',border:'1px solid #ccc',borderRadius:'4px'});
+        inp.placeholder = "Enter ZIP or City";
+        const btn = document.createElement('button');
+        btn.textContent = 'Search';
+        Object.assign(btn.style, {width:'100%',padding:'10px',background:'#2563eb',color:'white',border:'none',borderRadius:'4px',cursor:'pointer',fontWeight:'bold'});
+        btn.onclick = () => { if(inp.value.trim()) showRes(find(inp.value.trim()), inp.value.trim()); };
+        inp.onkeydown = e => e.key === 'Enter' && btn.click();
+        content.append(inp, btn);
+        setTimeout(() => inp.focus(), 50);
+    }
+    document.body.appendChild(overlay);
 })();
