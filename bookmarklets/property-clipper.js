@@ -280,7 +280,15 @@
         }
 
         /* 1. Click Specific Targets (Known Expanders) */
-        const targets = ['[data-testid="hero-view-more"]', '#load-more-features', 'button[class*="show-more"]', '.BottomLink', 'button.clickable'];
+        const targets = [
+            '[data-testid="hero-view-more"]', /* Realtor.com Main Expand */
+            '[data-testid="accordion-header"][aria-expanded="false"]', /* Realtor.com Property History Accordions */
+            '#load-more-features',
+            'button[class*="show-more"]', /* Zillow */
+            '.BottomLink', /* Redfin (sometimes divs) */
+            'button.clickable' 
+        ];
+        
         let c = 0;
         targets.forEach(function(s) {
             const els = searchScope.querySelectorAll(s);
@@ -300,7 +308,7 @@
             }
 
             const t = (el.innerText || '').toLowerCase();
-            const badTerms = ['photo', 'agent', 'map', 'school', 'sell', 'buy', 'rent', 'advice'];
+            const badTerms = ['photo', 'agent', 'map', 'school', 'sell', 'buy', 'rent', 'advice', 'contact'];
             if (badTerms.some(function(term) { return t.includes(term); })) continue;
 
             if ((t.includes('see more') || t.includes('show more') || t.includes('view all') || t.includes('read more'))) {
@@ -339,13 +347,23 @@
         /* Clone ONLY the target element */
         const c = t.cloneNode(!0);
 
-        /* Clean the clone */
-        ['script','style','noscript','iframe','svg','button','input','nav','footer','header','aside','[role="banner"]','[role="navigation"]','[role="contentinfo"]','[role="dialog"]','[id*="ad-"]','[class*="ad-"]','[class*="advert"]','[id*="cookie"]','.modal','.popup','.drawer','.lightbox'].forEach(function(k) { c.querySelectorAll(k).forEach(function(e) { e.remove(); }); });
+        /* Clean the clone - AGGRESSIVE STRIPPING */
+        const junk = [
+            'script', 'style', 'noscript', 'iframe', 'svg', 'button', 'input', 
+            'nav', 'footer', 'header', 'aside',
+            '[role="banner"]', '[role="navigation"]', '[role="contentinfo"]', '[role="dialog"]', '[role="search"]',
+            '[id*="ad-"]', '[class*="ad-"]', '[class*="advert"]', '[id*="cookie"]',
+            '.modal', '.popup', '.drawer', '.lightbox',
+            '[data-testid="fixed-header"]', /* Realtor.com headers */
+            '[data-testid="ldp-header"]', /* Realtor.com search bar */
+            '[data-testid="search-wrapper"]',
+            '[class*="SearchBox"]',
+            '[class*="ActionBar"]'
+        ];
+        junk.forEach(function(k) { c.querySelectorAll(k).forEach(function(e) { e.remove(); }); });
 
         return c.innerHTML;
     }
 
     init();
 })();
-
-
