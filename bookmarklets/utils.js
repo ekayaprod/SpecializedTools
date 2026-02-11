@@ -1,4 +1,9 @@
 (function(w) {
+    /* Shared Random Buffer */
+    const BUFFER_SIZE = 256;
+    const r = new Uint32Array(BUFFER_SIZE);
+    let rIdx = BUFFER_SIZE;
+
     w.BookmarkletUtils = {
         sanitizeFilename: function(s) {
             /* Replace non-alphanumeric characters with underscores and truncate */
@@ -16,6 +21,13 @@
             document.body.removeChild(a);
             /* Revoke URL after short delay to free memory */
             setTimeout(function() { URL.revokeObjectURL(url); }, 100);
+        },
+        getRand: function(m) {
+            if (rIdx >= BUFFER_SIZE) {
+                window.crypto.getRandomValues(r);
+                rIdx = 0;
+            }
+            return r[rIdx++] % m;
         }
     };
 })(window);
