@@ -5,3 +5,7 @@
 ## 2025-02-10 - Copy Button for Bookmarklets
 **Learning:** Users often struggle to drag-and-drop bookmarklets on certain devices or contexts. Providing a "Copy Code" button is a critical accessibility fallback.
 **Action:** Always include a way to manually copy the javascript code for bookmarklets alongside the drag handle.
+
+## 2026-02-11 - Micro-interaction: Visual Feedback for Copy Actions
+**Learning:** Toast notifications alone are sometimes too subtle for primary actions like "Copy Code". Users expect immediate visual confirmation at the point of interaction (the button itself).
+**Action:** Implemented a pattern where the copy button temporarily changes its icon to a checkmark (✓) for 2 seconds, providing clear, delightful feedback that the action succeeded.
