@@ -6,7 +6,7 @@
     <title>Browser Toolkit</title>
     <!-- Preload bookmarklet scripts to improve perceived load time -->
     <link rel="preload" href="bookmarklets/utils.js" as="fetch" crossorigin>
-    <link rel="preload" href="bookmarklets/target-edit.js" as="fetch" crossorigin>
+    <link rel="preload" href="bookmarklets/web-clipper.js" as="fetch" crossorigin>
     <link rel="preload" href="bookmarklets/property-clipper.js" as="fetch" crossorigin>
     <link rel="preload" href="bookmarklets/passphrase-generator.js" as="fetch" crossorigin>
     <link rel="preload" href="bookmarklets/temp-password.js" as="fetch" crossorigin>
@@ -38,18 +38,18 @@
         </header>
 
         <main class="space-y-6">
-            <!-- TARGET & EDIT -->
+            <!-- WEB CLIPPER (Formerly Target & Edit) -->
             <section class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 flex flex-col md:flex-row gap-6">
                 <div class="flex-1">
-                    <h2 class="text-xl font-semibold text-slate-900">Target & Edit</h2>
+                    <h2 class="text-xl font-semibold text-slate-900">Web Clipper</h2>
                     <p class="text-sm text-slate-600 mt-2">
-                        Advanced web content editor. Selectively capture, clean, and modify any part of a webpage, then save it as a pristine document (HTML, Markdown, or Text) without the clutter.
+                        Universal content capture. Selectively snapshot any part of a webpage—article, recipe, or invoice—and save it as a clean HTML, Markdown, or Text file. Works on any site.
                     </p>
                 </div>
                 <div class="w-full md:w-64 flex flex-col items-center">
                     <div class="flex w-full shadow-md rounded-full overflow-hidden">
-                        <a id="btn-target-edit" href="#" onclick="return false;" class="bookmarklet-btn flex-1 bg-blue-600 text-white font-bold py-3 px-4 text-center hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 transition-colors truncate">Loading...</a>
-                        <button id="copy-btn-target-edit" class="bg-blue-800 text-white px-4 hover:bg-blue-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 transition-colors flex items-center justify-center opacity-50 cursor-not-allowed border-l border-white/20" title="Copy Code">
+                        <a id="btn-web-clipper" href="#" onclick="return false;" class="bookmarklet-btn flex-1 bg-blue-600 text-white font-bold py-3 px-4 text-center hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 transition-colors truncate">Loading...</a>
+                        <button id="copy-btn-web-clipper" class="bg-blue-800 text-white px-4 hover:bg-blue-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 transition-colors flex items-center justify-center opacity-50 cursor-not-allowed border-l border-white/20" title="Copy Code">
                              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                         </button>
                     </div>
@@ -103,7 +103,7 @@
                 <div class="flex-1">
                     <h2 class="text-xl font-semibold text-slate-900">Temp Password</h2>
                     <p class="text-sm text-slate-600 mt-2">
-                        Need a quick, disposable password for a guest, temporary account, or shared login? Generates simple "Word1!" style passwords instantly.
+                        Need a quick, disposable password for a guest, temporary account, or shared login? Instantly generates simple "Word1!" style passwords.
                     </p>
                 </div>
                 <div class="w-full md:w-64 flex flex-col items-center">
@@ -197,7 +197,7 @@
                 let code = await res.text();
 
                 // Inject shared utils for specific bookmarklets
-                if (file.includes('target-edit.js') || file.includes('property-clipper.js')) {
+                if (file.includes('web-clipper.js') || file.includes('property-clipper.js')) {
                     const utils = await getUtilsCode();
                     code = utils + '\n' + code;
                 }
@@ -244,7 +244,7 @@
         }
 
         // Execute immediately since script is at end of body
-        load('btn-target-edit', 'bookmarklets/target-edit.js', 'Target & Edit');
+        load('btn-target-edit', 'bookmarklets/web-clipper.js', 'Web Clipper'); // Renamed
         load('btn-prop-clipper', 'bookmarklets/property-clipper.js', 'Property Clipper');
         load('btn-passphrase', 'bookmarklets/passphrase-generator.js', 'Passphrase Gen');
         load('btn-temp-pass', 'bookmarklets/temp-password.js', 'Temp Password');
@@ -252,5 +252,3 @@
     </script>
 </body>
 </html>
-
-
