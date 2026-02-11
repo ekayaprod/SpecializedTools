@@ -110,9 +110,13 @@
         await expandDetails();
         
         /* 2. Extract HTML & JSON */
-        const cleanHTML = getCleanPageContent();
+        const content = getCleanPageContent(); 
+        /* content is now a DocumentFragment-like structure or HTML string with preserved root */
+        
         const rawJSON = extractHiddenData();
-        extractedContent = cleanHTML + rawJSON;
+        
+        /* Combine visual content with raw data */
+        extractedContent = content + rawJSON;
 
         isExtracting = false;
         updateStatus("Listing data captured.", "success");
@@ -264,8 +268,9 @@
     function handleDownload() {
         if (!extractedContent) return;
         const title = BookmarkletUtils.sanitizeFilename(document.title || 'Property');
-        const filename = `${title}_${Date.now()}.html`; /* Just Title + Timestamp */
-        const fullHTML = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title></head><body>${extractedContent}</body></html>`;
+        const filename = `${CONFIG.filenamePrefix}${title}_${Date.now()}.html`;
+        /* Inject BASE tag to fix relative links */
+        const fullHTML = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title><base href="${window.location.origin}"></head><body>${extractedContent}</body></html>`;
         BookmarkletUtils.downloadFile(filename, fullHTML);
     }
 
@@ -327,7 +332,7 @@
         const n = document.getElementById('__NEXT_DATA__');
         if(n) try{d.push(JSON.parse(n.innerText))}catch(e){}
         if(d.length===0) return '';
-        return `<hr><section id="raw-data" style="margin-top:50px;border-top:5px solid #000;padding-top:20px;"><h2>RAW DATA</h2><pre style="background:#f4f4f4;padding:15px;overflow-x:auto;white-space:pre-wrap;font-size:10px;font-family:monospace;">${JSON.stringify(d, null, 2)}</pre></section>`;
+        return `<hr><details open style="margin-top:50px;border-top:5px solid #000;padding-top:20px;"><summary style="font-size:1.5em;font-weight:bold;cursor:pointer;">RAW DATA (JSON)</summary><pre style="background:#f4f4f4;padding:15px;overflow-x:auto;white-space:pre-wrap;font-size:10px;font-family:monospace;">${JSON.stringify(d, null, 2)}</pre></details>`;
     }
 
     function getCleanPageContent() {
@@ -347,7 +352,13 @@
         /* Clone ONLY the target element */
         const c = t.cloneNode(!0);
 
-        /* Clean the clone - AGGRESSIVE STRIPPING */
+        /* 1. Normalize Images (Ported from Web Clipper) */
+        normalizeImagesInSubtree(c);
+
+        /* 2. Inline Safe Styles (Ported from Web Clipper - Minimal Stabilization) */
+        inlineSafeStyles(t, c); /* Apply styles from live element 't' to clone 'c' */
+
+        /* 3. Clean the clone - AGGRESSIVE STRIPPING of Junk */
         const junk = [
             'script', 'style', 'noscript', 'iframe', 'svg', 'button', 'input', 
             'nav', 'footer', 'header', 'aside',
@@ -364,27 +375,82 @@
         ];
         junk.forEach(function(k) { c.querySelectorAll(k).forEach(function(e) { e.remove(); }); });
 
-        /* Remove attributes to reduce token count */
-        c.querySelectorAll('*').forEach(function(el) {
-            el.removeAttribute('class');
-            el.removeAttribute('style');
-            el.removeAttribute('data-testid');
-        });
-
-        /* Aggressive Empty List Cleanup */
+        /* Remove empty lists */
         c.querySelectorAll('li').forEach(function(li) {
-            if (!li.innerText.trim() && li.children.length === 0) {
-                li.remove();
-            }
+            if (!li.innerText.trim() && li.children.length === 0) { li.remove(); }
         });
-        /* Cleanup empty UL/OL if all children were removed */
         c.querySelectorAll('ul, ol').forEach(function(list) {
-            if (list.children.length === 0) {
-                list.remove();
-            }
+            if (list.children.length === 0) { list.remove(); }
         });
 
-        return c.innerHTML;
+        /* Instead of innerHTML, return the outerHTML of the stabilized clone */
+        return c.outerHTML;
+    }
+
+    /* Helper: Image Normalization (From Web Clipper) */
+    function normalizeImagesInSubtree(root) {
+        const imgs = root.querySelectorAll('img');
+        for (let i = 0; i < imgs.length; i++) {
+            const img = imgs[i];
+            /* 1. Resolve Lazy Loading */
+            if (img.dataset.src) img.src = img.dataset.src;
+            if (img.dataset.lazySrc) img.src = img.dataset.lazySrc;
+            if (!img.src && img.srcset) {
+                const parts = img.srcset.split(',');
+                if(parts.length > 0) {
+                     const firstSrc = parts[0].trim().split(' ')[0];
+                     if(firstSrc) img.src = firstSrc;
+                }
+            }
+            /* 2. Remove lazy loading attributes */
+            img.removeAttribute('loading');
+            
+            /* 3. Stabilize Dimensions */
+            img.removeAttribute('width');
+            img.removeAttribute('height');
+            img.style.maxWidth = '100%';
+            img.style.height = 'auto';
+            img.style.display = 'block';
+        }
+    }
+
+    /* Helper: Inline Safe Styles (From Web Clipper - Option A) */
+    function inlineSafeStyles(source, target) {
+        const computed = window.getComputedStyle(source);
+        if (!computed) return;
+        
+        const safeProperties = [
+            'display', 'visibility', 'opacity', 'z-index',
+            'margin', 'padding', 'border', 'border-radius', 'box-shadow', 'box-sizing',
+            'background', 'background-color', 'background-image', 'color',
+            'font-family', 'font-size', 'font-weight', 'line-height', 'text-align',
+            'list-style', 'vertical-align', 'float', 'clear',
+            /* Basic flex/grid properties */
+            'flex-direction', 'justify-content', 'align-items', 'gap', 'align-self', 'flex-wrap',
+            'grid-template-columns', 'grid-template-rows', 'grid-auto-flow'
+        ];
+        
+        let styleString = '';
+        safeProperties.forEach(function(prop) {
+            let val = computed.getPropertyValue(prop);
+            if (val && val !== 'none' && val !== 'normal' && val !== 'static' && val !== '0px' && val !== 'auto' && val !== 'rgba(0, 0, 0, 0)') {
+                 styleString += prop + ':' + val + '; ';
+            }
+        });
+        
+        if (styleString) {
+            target.style.cssText += styleString;
+        }
+
+        const sourceChildren = source.children;
+        const targetChildren = target.children;
+        
+        /* Stop recursion if trees diverge */
+        if (!targetChildren || sourceChildren.length !== targetChildren.length) return;
+
+        for (let i = 0; i < sourceChildren.length; i++) {
+            inlineSafeStyles(sourceChildren[i], targetChildren[i]);
+        }
     }
 
     init();
