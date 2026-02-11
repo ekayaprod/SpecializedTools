@@ -304,7 +304,19 @@
         });
     }
 
-    /* Basic Markdown Converter */
+    /**
+     * Converts an HTML string to Markdown format.
+     * Supported tags:
+     * - Headings (h1-h4)
+     * - Text formatting (strong, b, em, i)
+     * - Paragraphs and line breaks
+     * - Lists (ul, ol)
+     * - Links and Images
+     * - Tables (basic support)
+     *
+     * @param {string} html - The HTML string to convert.
+     * @returns {string} The Markdown representation.
+     */
     function htmlToMarkdown(html) {
         let temp = document.createElement('div');
         temp.innerHTML = html;
@@ -313,7 +325,7 @@
         
         function traverse(node) {
             if (node.nodeType === 3) {
-                // Text node
+                /* Text node */
                 markdown += node.nodeValue;
                 return;
             }
@@ -353,12 +365,12 @@
                 case 'th': markdown += '| '; break;
             }
             
-            // Traverse children
+            /* Traverse children */
             for (let i = 0; i < node.childNodes.length; i++) {
                 traverse(node.childNodes[i]);
             }
             
-            // Closing tags
+            /* Closing tags */
             switch(tag) {
                 case 'strong':
                 case 'b': markdown += '**'; break;
@@ -380,7 +392,7 @@
         
         traverse(temp);
         
-        // Cleanup excessive newlines
+        /* Cleanup excessive newlines */
         return markdown.replace(/\n\s+\n/g, '\n\n').trim();
     }
 

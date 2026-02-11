@@ -6,6 +6,7 @@ This document tracks the status of features and tools within the Browser Toolkit
 
 - [x] **Web Clipper** (Target & Edit): Universal content capture and export.
 - [x] **Property Clipper**: Specialized real estate research tool.
+  - [x] **Prompt Engine**: Generates investment analysis prompts.
 - [x] **Passphrase Generator**: Strong password creation with seasonal themes.
   - [x] **Temp Password Mode**: Quick disposable passwords.
 - [x] **PA County Finder**: ZIP code and city lookup for Pennsylvania.
