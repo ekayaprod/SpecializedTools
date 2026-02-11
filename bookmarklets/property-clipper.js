@@ -10,34 +10,36 @@
     let extractedContent = null;
     let isExtracting = false;
 
-    /* PROMPT LIBRARY */
+    /* PROMPT LIBRARY - UPDATED TO FORENSIC STANDARD */
     const PROMPTS = {
-        str: `Act as a Senior Real Estate Investment Analyst. I am providing a raw property listing file (HTML + JSON). Please produce a "Deep Dive Short-Term Rental (STR) Viability Report".
+        str: `Act as a Senior Real Estate Investment Analyst specializing in Short-Term Rentals (STR). Please produce a "Forensic STR Comparative Viability Report" for the attached properties.
 
-1. STR Infrastructure Forensics (CRITICAL):
-   - Analyze Sewer vs. Septic status. If Septic, calculate the "Hard Occupancy Cap" (usually 2 persons per bedroom).
-   - Assess mechanical vintage (Year Built + Heating Type). Does the heating system impact the winter Net Operating Income (NOI)?
-2. Regulatory & Gatekeeper Analysis:
-   - Identify HOA friction: "Gate Taxes" (per-car guest fees), registration costs, or amenity badge fees.
-   - Flag zoning risks for transient use.
+1. Infrastructure Forensics (Critical):
+   - Specifically analyze Sewer vs. Septic. If Septic, calculate the legal 'Hard Occupancy Cap' using local township formulas (e.g., usually 2/bedroom + 2).
+   - Assess if the building's vintage and heating type (e.g., electric baseboard vs. mini-splits) will cripple winter NOI due to utility volatility.
+   - Flag "Vintage Risk": 1970s wiring (Aluminum?), 1980s siding (T1-11?), or pre-1978 lead paint.
+2. Regulatory Audit:
+   - Break down HOA 'Gate Taxes' (per-stay or per-car fees), mandatory registration costs, and township licensing friction. Flag any communities with high administrative overhead.
 3. Amenity Audit:
-   - Does it have "Value Drivers" (AC, Hot Tub potential, Water access) or "Value Drags" (Shared driveway, no parking)?
+   - Identify 'Value Drivers' (Central AC, parking volume, water access) vs. 'Value Drags' (single-bathroom bottlenecks for high-occupancy groups).
 4. Financial Stress Test:
-   - Estimate "Silent Costs": Snow removal, landscaping, flood insurance, and utility spikes.
-5. Location & Area Analysis:
-   - Analyze the specific neighborhood/town context. Is it a "Prime Tourist Hub" or a "Commuter Class" area? How does the location impact seasonality?
-6. Verdict: 
-   - Provide a nuanced investment conclusion. Characterize the opportunity (e.g., "High Risk/High Yield," "Stable Income Generator," "Speculative Play"). Summarize the risk-reward profile without being overly prescriptive.
+   - Calculate 'Silent Costs,' including snow removal per-visit estimates and projected winter utility spikes based on current energy rates.
+5. Revenue & Acquisition Strategy:
+   - Provide revenue projections based on market ADR and occupancy rates.
+   - Rank properties from best to worst STR fitness.
+6. Offer Recommendations:
+   - Suggest specific offer prices for each based on Days on Market (DOM), list-to-sale price trends, and prior sales history.
+7. Forensic Verdict (Identifying Traps):
+   - Forensicly highlight hidden liabilities (e.g., contradictory data or regulatory time bombs like legacy cesspools). Provide a clear 'Analyst’s Pick' for the primary target.
 
 *** IF MULTIPLE FILES ARE UPLOADED: ***
-- Produce a "Comparative Analysis Table" ranking properties by: [Price, Est. Revenue, Septic Cap, HOA Fees, Risk Profile].
-- Explicitly compare the NEIGHBORHOODS/AREAS of the properties in a separate section.`,
+- Produce a "Comparative Forensic Matrix" table ranking properties by: [Price, Occupancy Cap, Heating Fuel, HOA Fees, Risk Score].`,
 
-        ltr: `Act as a Residential Portfolio Manager. I am providing a property listing file. Produce a "Long-Term Rental (LTR) Asset Analysis".
+        ltr: `Act as a Residential Portfolio Manager. Produce a "Forensic Long-Term Rental (LTR) Asset Analysis".
 
 1. Tenant Avatar & Demand:
    - Based on School District, Bedroom Count, and Layout, who is the ideal tenant? (e.g., "Long-term family" vs. "Transient workforce").
-2. Durability & OpEx Audit:
+2. Durability & OpEx Audit (Forensic):
    - Flag "High-Maintenance" features: carpet (vs. LVP), complex landscaping, old appliances, oil heat.
    - Estimate CapEx reserves needed for Roof/HVAC based on listed age.
 3. School & Location Premium:
@@ -47,15 +49,14 @@
    - Calculate the Rent-to-Price ratio.
    - Identify non-recoverable costs (Taxes, HOA) that eat into the Cap Rate.
 5. Verdict: 
-   - Summarize the investment thesis. Is this a "Cash Flow Play," an "Appreciation Play," or a "Capital Preservation" asset? Assess the long-term stability.
+   - Summarize the investment thesis. Is this a "Cash Flow Play," an "Appreciation Play," or a "Capital Preservation" asset?
 
 *** IF MULTIPLE FILES ARE UPLOADED: ***
-- Create a "Portfolio Ranking Table" comparing: [Price, Est. Rent, Taxes, School Rating, Cash-on-Cash Return].
-- Breakdown the pros/cons of each specific neighborhood.`,
+- Create a "Portfolio Ranking Table" comparing: [Price, Est. Rent, Taxes, School Rating, Cash-on-Cash Return].`,
 
-        multi: `Act as a Commercial Real Estate Analyst. I am providing a Multi-Unit / Small Multi-Family listing. Produce a "Value-Add & Yield Analysis".
+        multi: `Act as a Commercial Real Estate Analyst. Produce a "Value-Add & Yield Analysis" for Multi-Unit assets.
 
-1. Unit Mix & Metering:
+1. Unit Mix & Metering (Critical):
    - Analyze the unit configuration (e.g., 2x2 vs. 1x1).
    - CRITICAL: Are utilities (Electric, Heat, Water) separated or master-metered? (Master-metered = landlord expense risk).
 2. Value-Add Opportunities:
@@ -67,15 +68,14 @@
 4. Exit Strategy:
    - Who is the end buyer? (Owner-occupant house hacker vs. Pure investor).
 5. Verdict: 
-   - Assess the overall investment viability. How does the operational risk compare to the potential yield? (e.g., "Turnkey/Low Yield" vs "Heavy Lift/High Yield").
+   - Assess the overall investment viability. "Turnkey Yield" vs. "BRRRR Project."
 
 *** IF MULTIPLE FILES ARE UPLOADED: ***
-- Compare assets in a table: [Price per Door, Gross Rent Multiplier (GRM), Utility Config, Cap Rate].
-- Compare the tenant quality/demographics of each area.`,
+- Compare assets in a table: [Price per Door, Gross Rent Multiplier (GRM), Utility Config, Cap Rate].`,
 
-        flip: `Act as a Project Manager & Fix-and-Flip Specialist. I am providing a property listing. Produce a "Renovation Feasibility & ARV Report".
+        flip: `Act as a Project Manager & Fix-and-Flip Specialist. Produce a "Renovation Feasibility & ARV Report".
 
-1. The "Bone Structure":
+1. The "Bone Structure" (Forensic):
    - Identify structural red flags: Foundation issues, water intrusion, "As-Is" language, mold hints.
    - Vintage Risks: 1950s (Galvanized pipe), 1970s (Aluminum wiring), Pre-1978 (Lead paint/Asbestos).
 2. Renovation Scope Estimation:
@@ -87,7 +87,7 @@
 4. Location Analysis:
    - Is this an up-and-coming neighborhood or a declining one? Does the street support the potential ARV?
 5. Verdict: 
-   - Evaluate the project feasibility. Does the spread justify the renovation risk? Characterize the difficulty level (e.g., "Light Cosmetic," "Major Overhaul," "Structural Risk").
+   - Evaluate the project feasibility. Does the spread justify the renovation risk? Characterize the difficulty level.
 
 *** IF MULTIPLE FILES ARE UPLOADED: ***
 - Rank projects in a table by "Profit Spread" and "Risk Level".`
@@ -111,8 +111,6 @@
         
         /* 2. Extract HTML & JSON */
         const content = getCleanPageContent(); 
-        /* content is now a DocumentFragment-like structure or HTML string with preserved root */
-        
         const rawJSON = extractHiddenData();
         
         /* Combine visual content with raw data */
@@ -125,7 +123,6 @@
 
     /* UI GENERATION */
     function createUI() {
-        /* Cleanup old instances */
         const existing = document.getElementById(CONFIG.overlayId);
         if (existing) existing.remove();
 
