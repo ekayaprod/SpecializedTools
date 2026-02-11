@@ -11,67 +11,174 @@
     let isExtracting = false;
 
     /* PROMPT LIBRARY */
-    const PROMPTS = {
-        str: `Act as a Senior Real Estate Investment Analyst specializing in Short-Term Rentals (STR). Please produce a "Forensic STR Comparative Viability Report" for the attached properties.
-
-1. Infrastructure Forensics (Critical):
-   - Specifically analyze Sewer vs. Septic. If Septic, calculate the legal 'Hard Occupancy Cap' using local township formulas (e.g., usually 2/bedroom + 2).
-   - Assess if the building's vintage and heating type (e.g., electric baseboard vs. mini-splits) will cripple winter NOI due to utility volatility.
-   - Flag "Vintage Risk": 1970s wiring (Aluminum?), 1980s siding (T1-11?), or pre-1978 lead paint.
-2. Regulatory Audit:
-   - Break down HOA 'Gate Taxes' (per-stay or per-car fees), mandatory registration costs, and township licensing friction. Flag any communities with high administrative overhead.
-3. Amenity Audit:
-   - Identify 'Value Drivers' (Central AC, parking volume, water access) vs. 'Value Drags' (single-bathroom bottlenecks for high-occupancy groups).
-4. Visual Condition Audit (Look at the Embedded Photos):
-   - Analyze the kitchen and bathrooms. Are they "Time Capsule" (original 80s/90s) or "Flip Grade" (LVP flooring, gray walls, quartz)?
-   - Estimate immediate cosmetic CapEx needed to reach top-tier ADR.
-5. Financial Stress Test:
-   - Calculate 'Silent Costs,' including snow removal per-visit estimates and projected winter utility spikes based on current energy rates.
-6. Forensic Verdict (Identifying Traps):
-   - Forensicly highlight hidden liabilities. Provide a clear 'Analyst’s Pick' for the primary target.
-
-*** IF MULTIPLE FILES ARE UPLOADED: ***
-- Produce a "Comparative Forensic Matrix" table ranking properties by: [Price, Occupancy Cap, Heating Fuel, Renovation Needs, Risk Score].`,
-
-        ltr: `Act as a Residential Portfolio Manager. Produce a "Forensic Long-Term Rental (LTR) Asset Analysis".
-
-1. Tenant Avatar & Demand:
-   - Based on School District, Bedroom Count, and Layout, who is the ideal tenant?
-2. Condition & Durability Audit (Look at the Embedded Photos):
-   - Flag "High-Maintenance" features: carpet (vs. LVP), complex landscaping, old appliances.
-   - Judge the "Rental Grade": Does it need a full paint/floor refresh before listing?
-3. Cash Flow Stability:
-   - Calculate the Rent-to-Price ratio.
-   - Identify non-recoverable costs (Taxes, HOA) that eat into the Cap Rate.
-5. Verdict: 
-   - Summarize the investment thesis. Is this a "Cash Flow Play," an "Appreciation Play," or a "Capital Preservation" asset?`,
-
-        multi: `Act as a Commercial Real Estate Analyst. Produce a "Value-Add & Yield Analysis" for Multi-Unit assets.
-
-1. Unit Mix & Metering (Critical):
-   - Analyze the unit configuration.
-   - CRITICAL: Are utilities (Electric, Heat, Water) separated or master-metered?
-2. Visual CapEx Assessment (Look at the Embedded Photos):
-   - Identify "Loss to Lease": Are units dated? Can cosmetic updates (cabinets, fixtures) force appreciation?
-   - Flag "Deferred Maintenance" visible in photos (roof stains, siding issues).
-3. Expense Ratio Reality Check:
-   - Normalize taxes, insurance, and maintenance.
-4. Verdict: 
-   - Assess the overall investment viability. "Turnkey Yield" vs. "BRRRR Project."`,
-
-        flip: `Act as a Project Manager & Fix-and-Flip Specialist. Produce a "Renovation Feasibility & ARV Report".
-
-1. The "Bone Structure" (Forensic):
-   - Identify structural red flags: Foundation issues, water intrusion, "As-Is" language, mold hints.
-2. Renovation Scope Estimation (Look at the Embedded Photos):
-   - Categorize required work: "Cosmetic" (Paint/Floors) vs. "Heavy" (Kitchen/Bath relocation) vs. "Gut".
-   - Estimate a rough "Rehab Budget" range based on visual condition.
-   - Does the kitchen layout require moving plumbing/gas? (High cost).
-3. After Repair Value (ARV) Clues:
-   - Does the layout support modern resale? 
-4. Verdict: 
-   - Evaluate the project feasibility. Does the spread justify the renovation risk?`
+    const PROMPT_DATA = {
+        str: {
+            label: "Short-Term Rental (STR)",
+            role: "Act as a Senior Real Estate Investment Analyst specializing in Short-Term Rentals (STR).",
+            objective: 'Produce a "Forensic STR Comparative Viability Report" for the attached properties.',
+            defaults: ['infrastructure', 'regulatory', 'amenity', 'visual', 'financial', 'verdict'],
+            sections: {
+                infrastructure: {
+                    title: "Infrastructure Forensics (Critical)",
+                    content: `   - Specifically analyze Sewer vs. Septic. If Septic, calculate the legal 'Hard Occupancy Cap' using local township formulas (e.g., usually 2/bedroom + 2).\n   - Assess if the building's vintage and heating type (e.g., electric baseboard vs. mini-splits) will cripple winter NOI due to utility volatility.\n   - Flag "Vintage Risk": 1970s wiring (Aluminum?), 1980s siding (T1-11?), or pre-1978 lead paint.`
+                },
+                regulatory: {
+                    title: "Regulatory Audit",
+                    content: `   - Break down HOA 'Gate Taxes' (per-stay or per-car fees), mandatory registration costs, and township licensing friction. Flag any communities with high administrative overhead.`
+                },
+                amenity: {
+                    title: "Amenity Audit",
+                    content: `   - Identify 'Value Drivers' (Central AC, parking volume, water access) vs. 'Value Drags' (single-bathroom bottlenecks for high-occupancy groups).`
+                },
+                visual: {
+                    title: "Visual Condition Audit (Look at the Embedded Photos)",
+                    content: `   - Analyze the kitchen and bathrooms. Are they "Time Capsule" (original 80s/90s) or "Flip Grade" (LVP flooring, gray walls, quartz)?\n   - Estimate immediate cosmetic CapEx needed to reach top-tier ADR.`
+                },
+                financial: {
+                    title: "Financial Stress Test",
+                    content: `   - Calculate 'Silent Costs,' including snow removal per-visit estimates and projected winter utility spikes based on current energy rates.`
+                },
+                verdict: {
+                    title: "Forensic Verdict (Identifying Traps)",
+                    content: `   - Forensicly highlight hidden liabilities. Provide a clear 'Analyst’s Pick' for the primary target.`
+                }
+            }
+        },
+        ltr: {
+            label: "Long-Term Rental (LTR)",
+            role: "Act as a Residential Portfolio Manager.",
+            objective: 'Produce a "Forensic Long-Term Rental (LTR) Asset Analysis".',
+            defaults: ['tenant', 'condition', 'cashflow', 'verdict'],
+            sections: {
+                tenant: {
+                    title: "Tenant Avatar & Demand",
+                    content: `   - Based on School District, Bedroom Count, and Layout, who is the ideal tenant?`
+                },
+                condition: {
+                    title: "Condition & Durability Audit (Look at the Embedded Photos)",
+                    content: `   - Flag "High-Maintenance" features: carpet (vs. LVP), complex landscaping, old appliances.\n   - Judge the "Rental Grade": Does it need a full paint/floor refresh before listing?`
+                },
+                cashflow: {
+                    title: "Cash Flow Stability",
+                    content: `   - Calculate the Rent-to-Price ratio.\n   - Identify non-recoverable costs (Taxes, HOA) that eat into the Cap Rate.`
+                },
+                verdict: {
+                    title: "Verdict",
+                    content: `   - Summarize the investment thesis. Is this a "Cash Flow Play," an "Appreciation Play," or a "Capital Preservation" asset?`
+                }
+            }
+        },
+        multi: {
+            label: "Multi-Unit / House Hacking",
+            role: "Act as a Commercial Real Estate Analyst.",
+            objective: 'Produce a "Value-Add & Yield Analysis" for Multi-Unit assets.',
+            defaults: ['unitmix', 'visual', 'expense', 'verdict'],
+            sections: {
+                unitmix: {
+                    title: "Unit Mix & Metering (Critical)",
+                    content: `   - Analyze the unit configuration.\n   - CRITICAL: Are utilities (Electric, Heat, Water) separated or master-metered?`
+                },
+                visual: {
+                    title: "Visual CapEx Assessment (Look at the Embedded Photos)",
+                    content: `   - Identify "Loss to Lease": Are units dated? Can cosmetic updates (cabinets, fixtures) force appreciation?\n   - Flag "Deferred Maintenance" visible in photos (roof stains, siding issues).`
+                },
+                expense: {
+                    title: "Expense Ratio Reality Check",
+                    content: `   - Normalize taxes, insurance, and maintenance.`
+                },
+                verdict: {
+                    title: "Verdict",
+                    content: `   - Assess the overall investment viability. "Turnkey Yield" vs. "BRRRR Project."`
+                }
+            }
+        },
+        flip: {
+            label: "Fix & Flip / Renovation",
+            role: "Act as a Project Manager & Fix-and-Flip Specialist.",
+            objective: 'Produce a "Renovation Feasibility & ARV Report".',
+            defaults: ['bones', 'scope', 'arv', 'verdict'],
+            sections: {
+                bones: {
+                    title: 'The "Bone Structure" (Forensic)',
+                    content: `   - Identify structural red flags: Foundation issues, water intrusion, "As-Is" language, mold hints.`
+                },
+                scope: {
+                    title: "Renovation Scope Estimation (Look at the Embedded Photos)",
+                    content: `   - Categorize required work: "Cosmetic" (Paint/Floors) vs. "Heavy" (Kitchen/Bath relocation) vs. "Gut".\n   - Estimate a rough "Rehab Budget" range based on visual condition.\n   - Does the kitchen layout require moving plumbing/gas? (High cost).`
+                },
+                arv: {
+                    title: "After Repair Value (ARV) Clues",
+                    content: `   - Does the layout support modern resale?`
+                },
+                verdict: {
+                    title: "Verdict",
+                    content: `   - Evaluate the project feasibility. Does the spread justify the renovation risk?`
+                }
+            }
+        }
     };
+
+    const GLOBAL_SECTIONS = {
+        deep_research: {
+            title: "Deep Research Verification",
+            content: `   - Verify all data points using external sources (County Tax Records, Zoning Maps).\n   - Search for recent permits and code violations.\n   - Cross-reference school ratings and local crime statistics.`
+        },
+        thinking: {
+            title: "Thinking Process (Chain of Thought)",
+            content: `   - Before providing the final verdict, explicitly show your reasoning steps.\n   - Weigh the pros and cons of each major finding.`
+        },
+        renovation: {
+            title: "Renovation Estimator",
+            content: `   - Estimate cosmetic vs structural rehab costs based on photos and description.\n   - Create a rough budget for "Rent Ready" or "Flip Grade" status.`
+        },
+        neighborhood: {
+            title: "Neighborhood Analysis",
+            content: `   - Analyze the neighborhood using map data and description.\n   - Identify proximity to amenities, schools, and potential noise sources (highways, trains).`
+        }
+    };
+
+    function buildPrompt(strategyKey, selectedSections, globalOptions) {
+        const strategy = PROMPT_DATA[strategyKey];
+        if (!strategy) return "Error: Invalid Strategy";
+
+        let role = strategy.role;
+        if (globalOptions.includes('skeptical')) {
+            role = role.replace("Act as a", "Act as a highly skeptical and forensic");
+        }
+
+        let prompt = `${role} ${strategy.objective}\n\n`;
+
+        if (globalOptions.includes('thinking_header')) {
+            prompt += `[IMPORTANT: Use a step-by-step thinking process before finalizing each section.]\n\n`;
+        }
+
+        let sectionIndex = 1;
+
+        const allSections = [];
+
+        /* Add Strategy Sections */
+        Object.keys(strategy.sections).forEach(key => {
+            if (selectedSections.includes(key)) {
+                allSections.push({ ...strategy.sections[key], id: key });
+            }
+        });
+
+        /* Add Global Sections */
+        Object.keys(GLOBAL_SECTIONS).forEach(key => {
+            if (selectedSections.includes(key)) {
+                allSections.push({ ...GLOBAL_SECTIONS[key], id: key });
+            }
+        });
+
+        allSections.forEach(section => {
+            prompt += `${sectionIndex}. ${section.title}:\n${section.content}\n`;
+            sectionIndex++;
+        });
+
+        prompt += `\n*** IF MULTIPLE FILES ARE UPLOADED: ***\n- Produce a "Comparative Forensic Matrix" table ranking properties by: [Price, Occupancy Cap, Heating Fuel, Renovation Needs, Risk Score].`;
+
+        return prompt;
+    }
 
     /* INITIALIZATION */
     function init() {
@@ -123,35 +230,75 @@
         const body = document.createElement('div');
         body.className = 'pc-body';
 
+        /* --- UI: STRATEGY SELECTOR --- */
         const step1 = document.createElement('div');
         step1.className = 'pc-step';
         step1.innerHTML = `<label>1. Select Investment Strategy</label>`;
         
         const select = document.createElement('select');
         select.className = 'pc-select';
-        select.innerHTML = `
-            <option value="str">Short-Term Rental (Vacation/Airbnb)</option>
-            <option value="ltr">Long-Term Rental (City/Suburban)</option>
-            <option value="multi">Multi-Unit / House Hacking</option>
-            <option value="flip">Fix & Flip / Renovation</option>
-        `;
+        /* Populate Strategies */
+        Object.keys(PROMPT_DATA).forEach(k => {
+            const opt = document.createElement('option');
+            opt.value = k;
+            opt.textContent = PROMPT_DATA[k].label;
+            select.appendChild(opt);
+        });
         step1.appendChild(select);
 
+        /* --- UI: OPTIONS CONTAINER --- */
+        const optionsContainer = document.createElement('div');
+        optionsContainer.className = 'pc-options-container';
+
+        const sectionsGroup = document.createElement('fieldset');
+        sectionsGroup.className = 'pc-fieldset';
+        sectionsGroup.innerHTML = `<legend>Include Sections</legend>`;
+        const sectionsList = document.createElement('div');
+        sectionsList.className = 'pc-checkbox-grid';
+        sectionsGroup.appendChild(sectionsList);
+
+        const globalGroup = document.createElement('fieldset');
+        globalGroup.className = 'pc-fieldset';
+        globalGroup.innerHTML = `<legend>Advanced Options</legend>`;
+        const globalList = document.createElement('div');
+        globalList.className = 'pc-checkbox-grid';
+        globalGroup.appendChild(globalList);
+
+        /* Render Global Options Once */
+        const globalOpts = [
+            { id: 'deep_research', label: 'Deep Research (Web)' },
+            { id: 'thinking', label: 'Thinking Process Step' },
+            { id: 'renovation', label: 'Renovation Estimator' },
+            { id: 'neighborhood', label: 'Neighborhood Analysis' },
+            { id: 'skeptical', label: 'Skeptical/Forensic Tone', type: 'option' },
+            { id: 'thinking_header', label: 'Chain of Thought Header', type: 'option' }
+        ];
+
+        globalOpts.forEach(opt => {
+            const div = document.createElement('div');
+            div.className = 'pc-checkbox-item';
+            div.innerHTML = `
+                <input type="checkbox" id="pc-opt-${opt.id}" value="${opt.id}" data-type="${opt.type || 'section'}">
+                <label for="pc-opt-${opt.id}">${opt.label}</label>
+            `;
+            globalList.appendChild(div);
+        });
+
+        optionsContainer.appendChild(sectionsGroup);
+        optionsContainer.appendChild(globalGroup);
+
+        /* --- UI: TEXTAREA --- */
         const step2 = document.createElement('div');
         step2.className = 'pc-step';
         step2.style.flexGrow = '1';
         step2.style.display = 'flex';
         step2.style.flexDirection = 'column';
-        step2.innerHTML = `<label>2. Generated Gemini Prompt (Editable)</label>`;
+        step2.innerHTML = `<label>Generated Prompt (Editable)</label>`;
 
         const textarea = document.createElement('textarea');
         textarea.className = 'pc-textarea';
-        textarea.value = PROMPTS.str;
         
-        select.onchange = (e) => {
-            textarea.value = PROMPTS[e.target.value];
-        };
-
+        /* COPY BUTTON */
         const copyBtn = document.createElement('button');
         copyBtn.className = 'pc-btn secondary';
         copyBtn.textContent = "Copy Prompt to Clipboard";
@@ -165,6 +312,54 @@
         step2.appendChild(textarea);
         step2.appendChild(copyBtn);
 
+        /* --- LOGIC: UPDATE PROMPT --- */
+        function refreshPrompt() {
+            const strat = select.value;
+            const selectedSections = [];
+            const globalOptions = [];
+
+            /* Gather Section Checkboxes */
+            sectionsList.querySelectorAll('input:checked').forEach(cb => selectedSections.push(cb.value));
+
+            /* Gather Global Checkboxes */
+            globalList.querySelectorAll('input:checked').forEach(cb => {
+                if(cb.dataset.type === 'section') selectedSections.push(cb.value);
+                else globalOptions.push(cb.value);
+            });
+
+            textarea.value = buildPrompt(strat, selectedSections, globalOptions);
+        }
+
+        function renderStrategySections() {
+            const strat = select.value;
+            const data = PROMPT_DATA[strat];
+            sectionsList.innerHTML = '';
+
+            Object.keys(data.sections).forEach(k => {
+                const s = data.sections[k];
+                const div = document.createElement('div');
+                div.className = 'pc-checkbox-item';
+                const isChecked = data.defaults.includes(k) ? 'checked' : '';
+                div.innerHTML = `
+                    <input type="checkbox" id="pc-sec-${k}" value="${k}" ${isChecked}>
+                    <label for="pc-sec-${k}" title="${s.title}">${s.title.split('(')[0].trim()}</label>
+                `;
+                sectionsList.appendChild(div);
+            });
+
+            /* Re-bind events for new checkboxes */
+            sectionsList.querySelectorAll('input').forEach(i => i.onchange = refreshPrompt);
+            refreshPrompt();
+        }
+
+        /* Bind Events */
+        select.onchange = renderStrategySections;
+        globalList.querySelectorAll('input').forEach(i => i.onchange = refreshPrompt);
+
+        /* Initial Render */
+        renderStrategySections();
+
+        /* --- FOOTER --- */
         const footer = document.createElement('div');
         footer.className = 'pc-footer';
 
@@ -184,6 +379,7 @@
         footer.appendChild(dlBtn);
 
         body.appendChild(step1);
+        body.appendChild(optionsContainer); // Insert Options
         body.appendChild(step2);
         modal.appendChild(header);
         modal.appendChild(body);
@@ -194,12 +390,12 @@
         const style = document.createElement('style');
         style.textContent = `
             #${CONFIG.overlayId} { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 999999; display: flex; justify-content: center; align-items: center; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-            #${CONFIG.modalId} { background: white; width: 500px; height: 600px; display: flex; flex-direction: column; border-radius: 12px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+            #${CONFIG.modalId} { background: white; width: 600px; height: 80vh; max-height: 800px; display: flex; flex-direction: column; border-radius: 12px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
             .pc-header { padding: 16px 20px; background: #fff; border-bottom: 1px solid #e5e7eb; font-size: 16px; color: #111827; }
-            .pc-body { flex-grow: 1; padding: 20px; display: flex; flex-direction: column; gap: 20px; background: #f9fafb; overflow-y: auto; }
+            .pc-body { flex-grow: 1; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: #f9fafb; overflow-y: auto; }
             .pc-step label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
             .pc-select { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; background: white; color: #1f2937; }
-            .pc-textarea { width: 100%; flex-grow: 1; min-height: 200px; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-family: monospace; font-size: 12px; resize: none; color: #374151; line-height: 1.5; }
+            .pc-textarea { width: 100%; flex-grow: 1; min-height: 150px; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-family: monospace; font-size: 12px; resize: none; color: #374151; line-height: 1.5; }
             .pc-footer { padding: 16px 20px; background: #fff; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 10px; }
             .pc-btn { padding: 8px 16px; border: 1px solid #d1d5db; background: white; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; color: #374151; transition: all 0.2s; }
             .pc-btn:hover { background: #f3f4f6; }
@@ -211,6 +407,14 @@
             .pc-pill { padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
             .pc-pill.loading { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; }
             .pc-pill.success { background: #f0fdf4; color: #15803d; border: 1px solid #dcfce7; }
+            /* New Styles for Builder */
+            .pc-options-container { display: flex; gap: 15px; }
+            .pc-fieldset { flex: 1; border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px; background: white; }
+            .pc-fieldset legend { font-size: 11px; font-weight: bold; color: #6b7280; padding: 0 4px; text-transform: uppercase; }
+            .pc-checkbox-grid { display: flex; flex-direction: column; gap: 6px; max-height: 150px; overflow-y: auto; }
+            .pc-checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #374151; }
+            .pc-checkbox-item input { margin: 0; cursor: pointer; }
+            .pc-checkbox-item label { margin: 0; cursor: pointer; text-transform: none; font-weight: 400; }
         `;
         overlay.appendChild(style);
     }
