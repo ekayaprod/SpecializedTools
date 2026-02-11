@@ -385,7 +385,14 @@
 
             while (active < CONCURRENCY && index < imgs.length) {
                 const img = imgs[index++];
-                if (!img.src || img.src.startsWith('data:')) continue;
+                
+                /* FIX: Handle lazy loaded images (data-src) and srcset */
+                let src = img.getAttribute('src');
+                if (!src || src.startsWith('data:')) {
+                    src = img.getAttribute('data-src') || img.getAttribute('data-original') || img.currentSrc;
+                }
+                
+                if (!src) continue;
 
                 active++;
                 const tempImg = new Image();
@@ -409,14 +416,27 @@
                     try {
                         img.src = canvas.toDataURL('image/png');
                         img.removeAttribute('srcset');
+                        /* Ensure size styles are preserved */
+                        img.style.maxWidth = "100%";
+                        img.style.height = "auto";
                     } catch (e) {
-                        /* CORS error - keep original src */
+                        /* CORS error - keep original src but ensure protocol is absolute */
+                        if (src.startsWith('//')) img.src = 'https:' + src;
+                        else if (src.startsWith('/')) img.src = window.location.origin + src;
+                        else img.src = src;
                     }
                     onComplete();
                 };
 
-                tempImg.onerror = onComplete;
-                tempImg.src = img.src;
+                tempImg.onerror = function() {
+                    /* Fallback to original URL if loading fails */
+                    if (src.startsWith('//')) img.src = 'https:' + src;
+                    else if (src.startsWith('/')) img.src = window.location.origin + src;
+                    else img.src = src;
+                    onComplete();
+                };
+
+                tempImg.src = src;
             }
         }
 
