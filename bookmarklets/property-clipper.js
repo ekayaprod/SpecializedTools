@@ -371,7 +371,14 @@
             '[data-testid="map-loader"]', /* Maps */
             '.map-container',
             '[class*="SearchBox"]',
-            '[class*="ActionBar"]'
+            '[class*="ActionBar"]',
+            /* Additional Map Killers */
+            '.neighborhood-class-loader', /* The US map artifact */
+            '[data-testid="map-wrap"]',
+            '#map',
+            '.map-inner',
+            '.leaflet-container',
+            '.mapboxgl-map'
         ];
         junk.forEach(function(k) { c.querySelectorAll(k).forEach(function(e) { e.remove(); }); });
 
