@@ -4,7 +4,7 @@ A collection of utility bookmarklets for web development and content management.
 
 Included Tools
 
-Web Clipper: Advanced content capture. Select any element on a webpage, clean it up, and save it as a high-fidelity HTML snapshot, Markdown, or Text file. Perfect for clipping articles, recipes, or invoices without the ads.
+Web Clipper: Advanced content capture. Select any element on a webpage, clean it up, and save it as a high-fidelity HTML snapshot, Markdown, Text file, or Image (.png). Perfect for clipping articles, recipes, or invoices without the ads.
 
 Property Clipper: A specialized research tool for Realtor.com, Zillow, and Redfin.
 

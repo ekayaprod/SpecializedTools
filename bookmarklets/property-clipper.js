@@ -292,7 +292,17 @@
         if (c > 0) await new Promise(function(r) { setTimeout(r, 1200); });
     }
 
-    /* ASYNC IMAGE EMBEDDER */
+    /**
+     * Asynchronously extracts property images and embeds them as base64 strings.
+     *
+     * Strategy:
+     * 1. Scrapes high-res image URLs from Next.js data (`__NEXT_DATA__`) or fallback DOM <img> tags.
+     * 2. Fetches each image to convert it to a resized base64 string (to avoid hotlinking issues).
+     * 3. Handles CORS errors by falling back to direct hotlinks if conversion fails.
+     * 4. Returns an HTML string containing a responsive grid of the embedded images.
+     *
+     * @returns {Promise<string>} HTML string representing the gallery section.
+     */
     async function extractAndEmbedGallery() {
         const imageUrls = new Set();
         const MAX_IMAGES = 15; /* Limit to avoid massive files */
