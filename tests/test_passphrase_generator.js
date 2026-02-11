@@ -39,7 +39,10 @@ const sandbox = {
                 return arr;
             }
         },
-        getSelection: () => ({ toString: () => '' })
+        getSelection: () => ({ toString: () => '' }),
+        BookmarkletUtils: {
+            getRand: (m) => Math.floor(Math.random() * m)
+        }
     },
     document: {
         createElement: (tag) => {

@@ -407,10 +407,10 @@
         const c = t.cloneNode(!0);
 
         /* 1. Normalize Images */
-        normalizeImagesInSubtree(c);
+        BookmarkletUtils.normalizeImages(c);
 
         /* 2. Inline Safe Styles (Minimal Stabilization) */
-        inlineSafeStyles(t, c);
+        BookmarkletUtils.inlineStyles(t, c);
 
         /* 3. Clean the clone - SCORCHED EARTH MAP REMOVAL */
         const junk = [
@@ -450,70 +450,6 @@
         });
 
         return c.outerHTML;
-    }
-
-    /* Helper: Image Normalization */
-    function normalizeImagesInSubtree(root) {
-        const imgs = root.querySelectorAll('img');
-        for (let i = 0; i < imgs.length; i++) {
-            const img = imgs[i];
-            /* 1. Resolve Lazy Loading */
-            if (img.dataset.src) img.src = img.dataset.src;
-            if (img.dataset.lazySrc) img.src = img.dataset.lazySrc;
-            if (!img.src && img.srcset) {
-                const parts = img.srcset.split(',');
-                if(parts.length > 0) {
-                     const firstSrc = parts[0].trim().split(' ')[0];
-                     if(firstSrc) img.src = firstSrc;
-                }
-            }
-            /* 2. Remove lazy loading attributes */
-            img.removeAttribute('loading');
-            
-            /* 3. Stabilize Dimensions */
-            img.removeAttribute('width');
-            img.removeAttribute('height');
-            img.style.maxWidth = '100%';
-            img.style.height = 'auto';
-            img.style.display = 'block';
-        }
-    }
-
-    /* Helper: Inline Safe Styles */
-    function inlineSafeStyles(source, target) {
-        const computed = window.getComputedStyle(source);
-        if (!computed) return;
-        
-        const safeProperties = [
-            'display', 'visibility', 'opacity', 'z-index',
-            'margin', 'padding', 'border', 'border-radius', 'box-shadow', 'box-sizing',
-            'background', 'background-color', 'background-image', 'color',
-            'font-family', 'font-size', 'font-weight', 'line-height', 'text-align',
-            'list-style', 'vertical-align', 'float', 'clear',
-            'flex-direction', 'justify-content', 'align-items', 'gap', 'align-self', 'flex-wrap',
-            'grid-template-columns', 'grid-template-rows', 'grid-auto-flow'
-        ];
-        
-        let styleString = '';
-        safeProperties.forEach(function(prop) {
-            let val = computed.getPropertyValue(prop);
-            if (val && val !== 'none' && val !== 'normal') {
-                 styleString += prop + ':' + val + '; ';
-            }
-        });
-        
-        if (styleString) {
-            target.style.cssText += styleString;
-        }
-
-        const sourceChildren = source.children;
-        const targetChildren = target.children;
-        
-        if (!targetChildren || sourceChildren.length !== targetChildren.length) return;
-
-        for (let i = 0; i < sourceChildren.length; i++) {
-            inlineSafeStyles(sourceChildren[i], targetChildren[i]);
-        }
     }
 
     init();
