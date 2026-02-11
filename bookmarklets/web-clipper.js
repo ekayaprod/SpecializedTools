@@ -5,8 +5,8 @@
         outlineStyle: '2px solid blue',
         parentHighlightColor: 'rgba(255, 215, 0, 0.15)', /* Gold with low opacity */
         parentOutlineStyle: '4px dashed #FFD700', /* Thicker Gold dashed border */
-        modalId: 'wc-bookmarklet-modal', /* Renamed ID */
-        overlayId: 'wc-bookmarklet-overlay', /* Renamed ID */
+        modalId: 'wc-bookmarklet-modal',
+        overlayId: 'wc-bookmarklet-overlay',
         highlightId: 'wc-bookmarklet-highlight',
         parentHighlightId: 'wc-bookmarklet-highlight-parent',
         ignoreTags: ['HTML', 'BODY', 'SCRIPT', 'STYLE', 'NOSCRIPT', 'IFRAME']
@@ -28,7 +28,7 @@
             el.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
             document.body.appendChild(el);
         }
-        /* Update style ensuring dynamic config changes apply */
+        /* Update style */
         el.style.border = outline;
         el.style.backgroundColor = color;
         el.style.zIndex = zIndex;
@@ -78,13 +78,11 @@
             const parentRect = parent.getBoundingClientRect();
             const parentHighlight = getOrCreateHighlightEl(CONFIG.parentHighlightId, CONFIG.parentOutlineStyle, CONFIG.parentHighlightColor, '999999');
             
-            /* Logic: Always make parent highlight visibly larger/distinct */
             let pTop = parentRect.top;
             let pLeft = parentRect.left;
             let pWidth = parentRect.width;
             let pHeight = parentRect.height;
 
-            /* Expansion Logic: Add padding to ensure visual separation (The "Space between blue and yellow") */
             const padding = 6; 
             pTop -= padding;
             pLeft -= padding;
@@ -122,7 +120,7 @@
         e.stopPropagation();
         const target = activeElement;
         stopFinder();
-        /* Show loading before processing - styles capture can be slow */
+        /* Show loading before processing */
         showLoadingOverlay();
         setTimeout(function() {
             openEditor(target);
@@ -176,7 +174,6 @@
         const modal = document.createElement('div');
         modal.id = CONFIG.modalId;
 
-        /* Updated Header with Close Icon */
         const header = document.createElement('div');
         header.className = 'wc-header';
         header.innerHTML = `
@@ -284,22 +281,61 @@
     function inlineComputedStyles(source, target) {
         /* Recursively apply computed styles from source to target */
         const computed = window.getComputedStyle(source);
+        if (!computed) return;
         
-        /* List of styles relevant to layout fidelity */
+        /* Comprehensive list for layout fidelity */
         const properties = [
-            'color', 'background-color', 'background-image', 'font-family', 'font-size', 'font-weight', 
-            'text-align', 'line-height', 'text-decoration', 
-            'border', 'border-radius', 'padding', 'margin', 
-            'display', 'width', 'max-width', 'min-width', 'height', 'max-height', 'min-height',
-            'float', 'clear', 'list-style', 'box-shadow', 'opacity', 'visibility'
+            /* Typography & Text */
+            'color', 'font-family', 'font-size', 'font-weight', 'font-style', 'font-variant',
+            'text-align', 'line-height', 'text-decoration', 'text-transform', 'text-indent',
+            'letter-spacing', 'word-spacing', 'white-space', 'word-break', 'text-overflow',
+            
+            /* Backgrounds */
+            'background-color', 'background-image', 'background-size', 'background-position', 'background-repeat', 'background-attachment',
+            
+            /* Box Model */
+            'width', 'height', 'min-width', 'min-height', 'max-width', 'max-height',
+            'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
+            'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
+            'border-top-width', 'border-right-width', 'border-bottom-width', 'border-left-width',
+            'border-top-style', 'border-right-style', 'border-bottom-style', 'border-left-style',
+            'border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color',
+            'border-radius', 'box-sizing', 'box-shadow', 'outline',
+            
+            /* Layout & Positioning */
+            'display', 'position', 'top', 'right', 'bottom', 'left', 'z-index',
+            'float', 'clear', 'overflow', 'overflow-x', 'overflow-y', 'visibility', 'opacity',
+            
+            /* Flexbox */
+            'flex', 'flex-direction', 'flex-wrap', 'justify-content', 'align-items', 'align-content', 
+            'flex-grow', 'flex-shrink', 'flex-basis', 'order',
+            
+            /* Grid */
+            'grid-template-columns', 'grid-template-rows', 'grid-template-areas', 'grid-auto-columns', 'grid-auto-rows', 'grid-auto-flow',
+            'gap', 'row-gap', 'column-gap', 'justify-items', 'align-self', 'justify-self',
+            
+            /* Visuals */
+            'transform', 'transform-origin', 'vertical-align', 'list-style'
         ];
         
         /* Apply to current element */
         let styleString = '';
         properties.forEach(function(prop) {
             const val = computed.getPropertyValue(prop);
-            /* Only apply if it's not a default value (optimization to keep HTML size sane) */
-            if (val && val !== 'none' && val !== 'auto' && val !== '0px' && val !== 'normal' && val !== 'rgba(0, 0, 0, 0)') {
+            /* Skip default values to keep size manageable, but preserve crucial layout indicators */
+            if (val && 
+                val !== 'none' && 
+                val !== 'auto' && 
+                val !== 'normal' && 
+                val !== '0px' && 
+                val !== 'rgba(0, 0, 0, 0)' && 
+                val !== 'transparent' &&
+                val !== 'visible' && /* default visibility */
+                val !== 'static' /* default position */
+            ) {
+                 styleString += prop + ':' + val + '; ';
+            } else if (prop === 'display' || prop === 'position' || prop === 'visibility' || prop === 'box-sizing') {
+                 /* Always explicitly set key layout props even if default-ish */
                  styleString += prop + ':' + val + '; ';
             }
         });
