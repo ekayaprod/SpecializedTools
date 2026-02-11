@@ -159,13 +159,17 @@
 
     /* PHASE 2: THE EDITOR */
     function openEditor(element) {
-        /* Clone node deeply */
+        /* 1. Normalize Images IN PLACE (before cloning) to capture true sources */
+        normalizeImagesInSubtree(element);
+        
+        /* 2. Clone node deeply */
         const clone = element.cloneNode(true);
         
-        /* CRITICAL: Inline Computed Styles to preserve layout without external CSS */
-        inlineComputedStyles(element, clone);
+        /* 3. Inline "Safe" Computed Styles */
+        /* Changed strategy: Minimal stabilization to avoid layout breakage */
+        inlineSafeStyles(element, clone);
         
-        /* Cleanup - remove scripts but KEEP classes and styles */
+        /* 4. Cleanup - remove scripts but KEEP classes and styles */
         cleanupDOM(clone);
 
         const overlay = document.createElement('div');
@@ -174,6 +178,7 @@
         const modal = document.createElement('div');
         modal.id = CONFIG.modalId;
 
+        /* Updated Header with Close Icon */
         const header = document.createElement('div');
         header.className = 'wc-header';
         header.innerHTML = `
@@ -189,11 +194,16 @@
         const contentArea = document.createElement('div');
         contentArea.className = 'wc-content';
         contentArea.contentEditable = 'true';
-        contentArea.innerHTML = clone.innerHTML;
+        
+        /* IMPORTANT FIX: Append the clone directly to preserve the root element wrapper */
+        contentArea.appendChild(clone);
         
         /* Copy style from clone root to contentArea to maintain container look */
         if (clone.getAttribute('style')) {
-            contentArea.setAttribute('style', clone.getAttribute('style'));
+            /* We merge it carefully to not break the editor area */
+            const originalStyle = clone.getAttribute('style');
+            /* Ensure editor area is scrollable */
+            contentArea.setAttribute('style', originalStyle + '; overflow-y: auto !important; height: auto !important; max-height: none !important;');
         }
 
         const footer = document.createElement('div');
@@ -220,7 +230,8 @@
         const formats = [
             { val: 'html', txt: 'HTML Snapshot (.html)' },
             { val: 'md', txt: 'Markdown (.md)' },
-            { val: 'txt', txt: 'Plain Text (.txt)' }
+            { val: 'txt', txt: 'Plain Text (.txt)' },
+            { val: 'png', txt: 'Image (.png)' }
         ];
         
         formats.forEach(function(f) {
@@ -273,76 +284,80 @@
         document.body.appendChild(overlay);
         hideLoadingOverlay();
         contentArea.focus();
-
-        /* Start processing images after editor is visible */
-        processImages(contentArea);
     }
 
-    function inlineComputedStyles(source, target) {
-        /* Recursively apply computed styles from source to target */
+    function normalizeImagesInSubtree(root) {
+        /* Basic <picture> Support */
+        const pictures = root.querySelectorAll('picture');
+        pictures.forEach(function(pic) {
+            const img = pic.querySelector('img');
+            const source = pic.querySelector('source');
+            if (source && source.srcset && img && !img.src) {
+                img.src = source.srcset.split(',')[0].trim().split(' ')[0];
+            }
+        });
+
+        const imgs = root.querySelectorAll('img');
+        for (let i = 0; i < imgs.length; i++) {
+            const img = imgs[i];
+            /* 1. Resolve Lazy Loading */
+            if (img.dataset.src) img.src = img.dataset.src;
+            if (img.dataset.lazySrc) img.src = img.dataset.lazySrc;
+            if (!img.src && img.srcset) {
+                const parts = img.srcset.split(',');
+                if(parts.length > 0) {
+                     const firstSrc = parts[0].trim().split(' ')[0];
+                     if(firstSrc) img.src = firstSrc;
+                }
+            }
+            /* 2. Remove lazy loading attributes to force render */
+            img.removeAttribute('loading');
+            
+            /* 3. Stabilize Dimensions: remove specific width/height attrs to let CSS max-width work */
+            img.removeAttribute('width');
+            img.removeAttribute('height');
+            img.style.maxWidth = '100%';
+            img.style.height = 'auto';
+            img.style.display = 'block';
+        }
+    }
+
+    function inlineSafeStyles(source, target) {
+        /* Recursively apply SAFE computed styles from source to target */
         const computed = window.getComputedStyle(source);
         if (!computed) return;
         
-        /* Comprehensive list for layout fidelity */
-        const properties = [
-            /* Typography & Text */
-            'color', 'font-family', 'font-size', 'font-weight', 'font-style', 'font-variant',
-            'text-align', 'line-height', 'text-decoration', 'text-transform', 'text-indent',
-            'letter-spacing', 'word-spacing', 'white-space', 'word-break', 'text-overflow',
-            
-            /* Backgrounds */
-            'background-color', 'background-image', 'background-size', 'background-position', 'background-repeat', 'background-attachment',
-            
-            /* Box Model */
-            'width', 'height', 'min-width', 'min-height', 'max-width', 'max-height',
-            'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
-            'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
-            'border-top-width', 'border-right-width', 'border-bottom-width', 'border-left-width',
-            'border-top-style', 'border-right-style', 'border-bottom-style', 'border-left-style',
-            'border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color',
-            'border-radius', 'box-sizing', 'box-shadow', 'outline',
-            
-            /* Layout & Positioning */
-            'display', 'position', 'top', 'right', 'bottom', 'left', 'z-index',
-            'float', 'clear', 'overflow', 'overflow-x', 'overflow-y', 'visibility', 'opacity',
-            
-            /* Flexbox */
-            'flex', 'flex-direction', 'flex-wrap', 'justify-content', 'align-items', 'align-content', 
-            'flex-grow', 'flex-shrink', 'flex-basis', 'order',
-            
-            /* Grid */
-            'grid-template-columns', 'grid-template-rows', 'grid-template-areas', 'grid-auto-columns', 'grid-auto-rows', 'grid-auto-flow',
-            'gap', 'row-gap', 'column-gap', 'justify-items', 'align-self', 'justify-self',
-            
-            /* Visuals */
-            'transform', 'transform-origin', 'vertical-align', 'list-style'
+        /* Restricted list: Stabilize layout without breaking flexible content.
+           REMOVED: width, height, position, top/left etc to allow flow. */
+        const safeProperties = [
+            'display', 'visibility', 'opacity', 'z-index',
+            'margin', 'padding', 'border', 'border-radius', 'box-shadow', 'box-sizing',
+            'background', 'background-color', 'background-image', 'color',
+            'font-family', 'font-size', 'font-weight', 'line-height', 'text-align',
+            'text-decoration', 'list-style', 'vertical-align', 'float', 'clear',
+            'max-width', 'min-width', 'white-space', 'overflow', 'overflow-x', 'overflow-y',
+            'object-fit', 'aspect-ratio',
+            /* Basic flex properties to preserve grid/card layouts */
+            'flex-direction', 'justify-content', 'align-items', 'gap', 'align-self', 'flex-wrap',
+            /* Minimal Grid Support */
+            'grid-template-columns', 'grid-template-rows', 'grid-auto-flow', 'grid-column', 'grid-row'
         ];
         
         /* Apply to current element */
         let styleString = '';
-        properties.forEach(function(prop) {
-            const val = computed.getPropertyValue(prop);
-            /* Skip default values to keep size manageable, but preserve crucial layout indicators */
-            if (val && 
-                val !== 'none' && 
-                val !== 'auto' && 
-                val !== 'normal' && 
-                val !== '0px' && 
-                val !== 'rgba(0, 0, 0, 0)' && 
-                val !== 'transparent' &&
-                val !== 'visible' && /* default visibility */
-                val !== 'static' /* default position */
-            ) {
-                 styleString += prop + ':' + val + '; ';
-            } else if (prop === 'display' || prop === 'position' || prop === 'visibility' || prop === 'box-sizing') {
-                 /* Always explicitly set key layout props even if default-ish */
+        safeProperties.forEach(function(prop) {
+            let val = computed.getPropertyValue(prop);
+            
+            /* Skip default values to keep size manageable */
+            if (val && val !== 'none' && val !== 'normal') {
                  styleString += prop + ':' + val + '; ';
             }
         });
         
-        /* Preserve existing inline styles too */
-        const existing = target.getAttribute('style') || '';
-        target.setAttribute('style', styleString + existing);
+        /* Preserve existing inline styles too - using cssText to avoid overwrites */
+        if (styleString) {
+            target.style.cssText += styleString;
+        }
 
         /* Recurse children */
         const sourceChildren = source.children;
@@ -350,7 +365,7 @@
         
         for (let i = 0; i < sourceChildren.length; i++) {
             if (targetChildren[i]) {
-                inlineComputedStyles(sourceChildren[i], targetChildren[i]);
+                inlineSafeStyles(sourceChildren[i], targetChildren[i]);
             }
         }
     }
@@ -361,12 +376,11 @@
     }
 
     function cleanupDOM(node) {
-        /* General Cleanup: Remove active scripts and dangerous elements only.
-           IMPORTANT: Preserve 'class' and 'style' attributes to maintain layout fidelity. */
-        const dangerous = node.querySelectorAll('script, iframe, object, embed, noscript, form, input, button, select, textarea, meta, link');
+        /* General Cleanup: Remove active scripts and dangerous elements only. */
+        const dangerous = node.querySelectorAll('script, iframe, object, embed, noscript, form, input, button, select, textarea');
         dangerous.forEach(function(n) { n.remove(); });
         
-        /* Attribute Cleanup: Remove only event handlers (on*) to prevent scripts running. */
+        /* Attribute Cleanup: Remove only event handlers (on*) */
         node.querySelectorAll('*').forEach(function(el) {
             Array.from(el.attributes).forEach(function(attr) {
                 if (attr.name.startsWith('on')) el.removeAttribute(attr.name);
@@ -374,87 +388,84 @@
         });
     }
 
-    function processImages(container) {
-        const imgs = Array.from(container.querySelectorAll('img'));
-        const CONCURRENCY = 3;
-        let active = 0;
-        let index = 0;
-
-        function processNext() {
-            if (index >= imgs.length && active === 0) return;
-
-            while (active < CONCURRENCY && index < imgs.length) {
-                const img = imgs[index++];
-                
-                /* FIX: Handle lazy loaded images (data-src) and srcset */
-                let src = img.getAttribute('src');
-                if (!src || src.startsWith('data:')) {
-                    src = img.getAttribute('data-src') || img.getAttribute('data-original') || img.currentSrc;
-                }
-                
-                if (!src) continue;
-
-                active++;
-                const tempImg = new Image();
-                tempImg.crossOrigin = "Anonymous";
-
-                const onComplete = function() {
-                    active--;
-                    if (window.requestIdleCallback) {
-                        window.requestIdleCallback(processNext);
-                    } else {
-                        setTimeout(processNext, 10);
-                    }
-                };
-
-                tempImg.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    canvas.width = tempImg.width;
-                    canvas.height = tempImg.height;
-                    ctx.drawImage(tempImg, 0, 0);
-                    try {
-                        img.src = canvas.toDataURL('image/png');
-                        img.removeAttribute('srcset');
-                        /* Ensure size styles are preserved */
-                        img.style.maxWidth = "100%";
-                        img.style.height = "auto";
-                    } catch (e) {
-                        /* CORS error - keep original src but ensure protocol is absolute */
-                        if (src.startsWith('//')) img.src = 'https:' + src;
-                        else if (src.startsWith('/')) img.src = window.location.origin + src;
-                        else img.src = src;
-                    }
-                    onComplete();
-                };
-
-                tempImg.onerror = function() {
-                    /* Fallback to original URL if loading fails */
-                    if (src.startsWith('//')) img.src = 'https:' + src;
-                    else if (src.startsWith('/')) img.src = window.location.origin + src;
-                    else img.src = src;
-                    onComplete();
-                };
-
-                tempImg.src = src;
-            }
-        }
-
-        processNext();
-    }
-
     /* Basic Markdown Converter */
     function htmlToMarkdown(html) {
         let temp = document.createElement('div');
         temp.innerHTML = html;
         
-        /* Replace block elements with newlines */
-        temp.querySelectorAll('p, div, h1, h2, h3, h4, h5, h6, li').forEach(function(el) {
-            el.innerHTML = el.innerHTML + '\n\n';
-        });
+        let markdown = '';
         
-        let text = temp.innerText || temp.textContent;
-        return text.replace(/\n\s+\n/g, '\n\n').trim();
+        function traverse(node) {
+            if (node.nodeType === 3) {
+                // Text node
+                markdown += node.nodeValue;
+                return;
+            }
+            
+            if (node.nodeType !== 1) return;
+            
+            const tag = node.tagName.toLowerCase();
+            
+            switch(tag) {
+                case 'h1': markdown += '\n# '; break;
+                case 'h2': markdown += '\n## '; break;
+                case 'h3': markdown += '\n### '; break;
+                case 'h4': markdown += '\n#### '; break;
+                case 'strong':
+                case 'b': markdown += '**'; break;
+                case 'em':
+                case 'i': markdown += '*'; break;
+                case 'p': markdown += '\n\n'; break;
+                case 'br': markdown += '\n'; break;
+                case 'li': 
+                    if (node.parentElement && node.parentElement.tagName.toLowerCase() === 'ol') {
+                        const index = Array.prototype.indexOf.call(node.parentElement.children, node) + 1;
+                        markdown += '\n' + index + '. ';
+                    } else {
+                        markdown += '\n- '; 
+                    }
+                    break;
+                case 'a': markdown += '['; break;
+                case 'img':
+                    const src = node.getAttribute('src');
+                    const alt = node.getAttribute('alt') || '';
+                    markdown += '![' + alt + '](' + src + ')';
+                    return; /* Skip children of img */
+                case 'table': markdown += '\n\n'; break;
+                case 'tr': markdown += '\n'; break;
+                case 'td':
+                case 'th': markdown += '| '; break;
+            }
+            
+            // Traverse children
+            for (let i = 0; i < node.childNodes.length; i++) {
+                traverse(node.childNodes[i]);
+            }
+            
+            // Closing tags
+            switch(tag) {
+                case 'strong':
+                case 'b': markdown += '**'; break;
+                case 'em':
+                case 'i': markdown += '*'; break;
+                case 'a': 
+                    const href = node.getAttribute('href');
+                    if (href) markdown += '](' + href + ')';
+                    else markdown += ']';
+                    break;
+                case 'h1':
+                case 'h2':
+                case 'h3':
+                case 'h4':
+                    markdown += '\n'; break;
+                case 'tr': markdown += '|\n'; break;
+            }
+        }
+        
+        traverse(temp);
+        
+        // Cleanup excessive newlines
+        return markdown.replace(/\n\s+\n/g, '\n\n').trim();
     }
 
     async function handleCopy(contentArea) {
@@ -481,24 +492,49 @@
 
     function handleDownload(contentArea, format) {
         const cleanTitle = BookmarkletUtils.sanitizeFilename(document.title || 'Web_Clip');
-        let content, mimeType, filename;
 
         if (format === 'md') {
-            content = htmlToMarkdown(contentArea.innerHTML);
-            mimeType = 'text/markdown';
-            filename = cleanTitle + '_' + Date.now() + '.md';
+            const content = htmlToMarkdown(contentArea.innerHTML);
+            BookmarkletUtils.downloadFile(cleanTitle + '_' + Date.now() + '.md', content, 'text/markdown');
         } else if (format === 'txt') {
-            content = contentArea.innerText;
-            mimeType = 'text/plain';
-            filename = cleanTitle + '_' + Date.now() + '.txt';
+            const content = contentArea.innerText;
+            BookmarkletUtils.downloadFile(cleanTitle + '_' + Date.now() + '.txt', content, 'text/plain');
+        } else if (format === 'png') {
+            /* Dynamically load html2canvas if needed */
+            if (typeof html2canvas === 'undefined') {
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                script.onload = () => capturePng(contentArea, cleanTitle);
+                script.onerror = () => alert('Failed to load html2canvas for PNG export.');
+                document.body.appendChild(script);
+            } else {
+                capturePng(contentArea, cleanTitle);
+            }
         } else {
-            /* HTML Default - Wrap in basic structure but TRUST inline styles/classes for layout fidelity */
-            content = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + cleanTitle + '</title></head><body>' + contentArea.innerHTML + '</body></html>';
-            mimeType = 'text/html';
-            filename = cleanTitle + '_' + Date.now() + '.html';
+            /* HTML Default */
+            const content = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + cleanTitle + '</title></head><body>' + contentArea.innerHTML + '</body></html>';
+            BookmarkletUtils.downloadFile(cleanTitle + '_' + Date.now() + '.html', content, 'text/html');
         }
-
-        BookmarkletUtils.downloadFile(filename, content, mimeType);
     }
+
+    function capturePng(element, title) {
+        /* Temporarily ensure element is visible and has white background for capture */
+        const originalBg = element.style.backgroundColor;
+        element.style.backgroundColor = '#ffffff';
+        
+        html2canvas(element, { useCORS: true, logging: false }).then(canvas => {
+            element.style.backgroundColor = originalBg; /* Restore */
+            
+            const link = document.createElement('a');
+            link.download = title + '_' + Date.now() + '.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }).catch(err => {
+            console.error('PNG Capture failed:', err);
+            alert('PNG export failed. Check console for details.');
+            element.style.backgroundColor = originalBg;
+        });
+    }
+
     startFinder();
 })();
