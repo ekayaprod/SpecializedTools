@@ -14,9 +14,7 @@ Prompt Engine: Generates sophisticated "Investment Analysis" prompts for Gemini 
 
 Output: Downloads a clean HTML file ready for LLM ingestion.
 
-Passphrase Generator: Creates strong, memorable passwords using seasonal themes (e.g., "WinterBlueWolf").
-
-Temp Password: Generates simple temporary passwords (e.g., "Sunlight1!").
+Passphrase Generator: Creates strong, memorable passwords using seasonal themes (e.g., "WinterBlueWolf"). Includes a "Temp Password" mode for generating simple, disposable credentials (e.g., "Sunlight1!").
 
 PA County Finder: Look up Pennsylvania county information by ZIP code or city.
 
