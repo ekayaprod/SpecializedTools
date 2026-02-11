@@ -3,12 +3,12 @@
     const CONFIG = {
         highlightColor: 'rgba(0, 0, 255, 0.1)',
         outlineStyle: '2px solid blue',
-        parentHighlightColor: 'rgba(255, 215, 0, 0.1)', /* Gold with low opacity */
+        parentHighlightColor: 'rgba(255, 215, 0, 0.15)', /* Gold with low opacity */
         parentOutlineStyle: '4px dashed #FFD700', /* Thicker Gold dashed border */
-        modalId: 'te-bookmarklet-modal',
-        overlayId: 'te-bookmarklet-overlay',
-        highlightId: 'te-bookmarklet-highlight',
-        parentHighlightId: 'te-bookmarklet-highlight-parent',
+        modalId: 'wc-bookmarklet-modal', /* Renamed ID */
+        overlayId: 'wc-bookmarklet-overlay', /* Renamed ID */
+        highlightId: 'wc-bookmarklet-highlight',
+        parentHighlightId: 'wc-bookmarklet-highlight-parent',
         ignoreTags: ['HTML', 'BODY', 'SCRIPT', 'STYLE', 'NOSCRIPT', 'IFRAME']
     };
 
@@ -79,7 +79,6 @@
             const parentHighlight = getOrCreateHighlightEl(CONFIG.parentHighlightId, CONFIG.parentOutlineStyle, CONFIG.parentHighlightColor, '999999');
             
             /* Logic: Always make parent highlight visibly larger/distinct */
-            /* Default to bounding box */
             let pTop = parentRect.top;
             let pLeft = parentRect.left;
             let pWidth = parentRect.width;
@@ -123,7 +122,11 @@
         e.stopPropagation();
         const target = activeElement;
         stopFinder();
-        openEditor(target);
+        /* Show loading before processing - styles capture can be slow */
+        showLoadingOverlay();
+        setTimeout(function() {
+            openEditor(target);
+        }, 50);
     }
 
     function handleEscape(e) {
@@ -132,9 +135,39 @@
         }
     }
 
+    function showLoadingOverlay() {
+        const div = document.createElement('div');
+        div.id = 'wc-loading';
+        div.style.position = 'fixed';
+        div.style.top = '0';
+        div.style.left = '0';
+        div.style.width = '100%';
+        div.style.height = '100%';
+        div.style.background = 'rgba(255,255,255,0.8)';
+        div.style.zIndex = '2000000';
+        div.style.display = 'flex';
+        div.style.justifyContent = 'center';
+        div.style.alignItems = 'center';
+        div.style.fontSize = '20px';
+        div.style.fontFamily = 'sans-serif';
+        div.innerHTML = '<span>Capturing styles & layout...</span>';
+        document.body.appendChild(div);
+    }
+
+    function hideLoadingOverlay() {
+        const div = document.getElementById('wc-loading');
+        if (div) div.remove();
+    }
+
     /* PHASE 2: THE EDITOR */
     function openEditor(element) {
+        /* Clone node deeply */
         const clone = element.cloneNode(true);
+        
+        /* CRITICAL: Inline Computed Styles to preserve layout without external CSS */
+        inlineComputedStyles(element, clone);
+        
+        /* Cleanup - remove scripts but KEEP classes and styles */
         cleanupDOM(clone);
 
         const overlay = document.createElement('div');
@@ -143,24 +176,38 @@
         const modal = document.createElement('div');
         modal.id = CONFIG.modalId;
 
+        /* Updated Header with Close Icon */
         const header = document.createElement('div');
-        header.className = 'te-header';
-        header.innerHTML = '<span>Target & Edit</span> <span style="font-size:12px; color:#888;">(Edit content below)</span>';
+        header.className = 'wc-header';
+        header.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <span style="font-weight:700; font-size:16px;">Web Clipper</span> 
+                    <span style="font-size:12px; color:#666; margin-left:8px;">(Snapshot Preview)</span>
+                </div>
+                <div id="wc-close-icon" style="cursor:pointer; font-size:20px; color:#999; line-height:1;">&times;</div>
+            </div>
+        `;
 
         const contentArea = document.createElement('div');
-        contentArea.className = 'te-content';
+        contentArea.className = 'wc-content';
         contentArea.contentEditable = 'true';
         contentArea.innerHTML = clone.innerHTML;
+        
+        /* Copy style from clone root to contentArea to maintain container look */
+        if (clone.getAttribute('style')) {
+            contentArea.setAttribute('style', clone.getAttribute('style'));
+        }
 
         const footer = document.createElement('div');
-        footer.className = 'te-footer';
+        footer.className = 'wc-footer';
 
         const btnCancel = document.createElement('button');
         btnCancel.textContent = 'Cancel';
         btnCancel.onclick = closeEditor;
 
         const btnRetry = document.createElement('button');
-        btnRetry.textContent = 'Pick Another';
+        btnRetry.textContent = 'Select New';
         btnRetry.onclick = function() {
             closeEditor();
             startFinder();
@@ -174,7 +221,7 @@
         formatSelect.style.border = '1px solid #ccc';
         
         const formats = [
-            { val: 'html', txt: 'HTML (.html)' },
+            { val: 'html', txt: 'HTML Snapshot (.html)' },
             { val: 'md', txt: 'Markdown (.md)' },
             { val: 'txt', txt: 'Plain Text (.txt)' }
         ];
@@ -206,25 +253,70 @@
         modal.appendChild(footer);
         overlay.appendChild(modal);
 
+        /* Event Listener for Close Icon */
+        setTimeout(function() {
+            const closeIcon = document.getElementById('wc-close-icon');
+            if(closeIcon) closeIcon.onclick = closeEditor;
+        }, 0);
+
         const style = document.createElement('style');
         style.textContent = '#' + CONFIG.overlayId + '{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:999999;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif;}' +
-            '#' + CONFIG.modalId + '{background:white;width:80%;max-width:800px;max-height:90vh;display:flex;flex-direction:column;border-radius:8px;box-shadow:0 10px 25px rgba(0,0,0,0.5);overflow:hidden;}' +
-            '.te-header{padding:15px 20px;border-bottom:1px solid #eee;font-weight:bold;font-size:16px;background:#f9f9f9;color:#333;}' +
-            '.te-content{padding:20px;overflow-y:auto;flex-grow:1;min-height:200px;outline:none;color:#000;line-height:1.6;}' +
-            '.te-content h1,.te-content h2,.te-content h3{margin-top:0;}' +
-            '.te-content p{margin-bottom:1em;}' +
-            '.te-footer{padding:15px 20px;border-top:1px solid #eee;background:#f9f9f9;display:flex;justify-content:flex-end;align-items:center;gap:10px;}' +
-            '#' + CONFIG.modalId + ' button{padding:8px 16px;border:1px solid #ccc;background:white;border-radius:4px;cursor:pointer;font-size:14px;color:#333;}' +
-            '#' + CONFIG.modalId + ' button:hover{background:#f0f0f0;}' +
-            '#' + CONFIG.modalId + ' button.primary{background:#007bff;color:white;border-color:#0069d9;}' +
-            '#' + CONFIG.modalId + ' button.primary:hover{background:#0069d9;}';
+            '#' + CONFIG.modalId + '{background:white;width:80%;max-width:900px;max-height:90vh;display:flex;flex-direction:column;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,0.5);overflow:hidden;}' +
+            '.wc-header{padding:16px 24px;border-bottom:1px solid #eee;background:#fff;color:#333;}' +
+            '.wc-content{padding:24px;overflow-y:auto;flex-grow:1;min-height:200px;outline:none;color:#000;line-height:1.6;background:#fff;}' +
+            '.wc-content h1,.wc-content h2,.wc-content h3{margin-top:0;}' +
+            '.wc-content p{margin-bottom:1em;}' +
+            '.wc-footer{padding:16px 24px;border-top:1px solid #eee;background:#fff;display:flex;justify-content:flex-end;align-items:center;gap:10px;}' +
+            '#' + CONFIG.modalId + ' button{padding:8px 16px;border:1px solid #d1d5db;background:white;border-radius:6px;cursor:pointer;font-size:14px;color:#374151;transition:all 0.2s;}' +
+            '#' + CONFIG.modalId + ' button:hover{background:#f3f4f6;}' +
+            '#' + CONFIG.modalId + ' button.primary{background:#2563eb;color:white;border:none;}' +
+            '#' + CONFIG.modalId + ' button.primary:hover{background:#1d4ed8;}';
 
         overlay.appendChild(style);
         document.body.appendChild(overlay);
+        hideLoadingOverlay();
         contentArea.focus();
 
         /* Start processing images after editor is visible */
         processImages(contentArea);
+    }
+
+    function inlineComputedStyles(source, target) {
+        /* Recursively apply computed styles from source to target */
+        const computed = window.getComputedStyle(source);
+        
+        /* List of styles relevant to layout fidelity */
+        const properties = [
+            'color', 'background-color', 'background-image', 'font-family', 'font-size', 'font-weight', 
+            'text-align', 'line-height', 'text-decoration', 
+            'border', 'border-radius', 'padding', 'margin', 
+            'display', 'width', 'max-width', 'min-width', 'height', 'max-height', 'min-height',
+            'float', 'clear', 'list-style', 'box-shadow', 'opacity', 'visibility'
+        ];
+        
+        /* Apply to current element */
+        let styleString = '';
+        properties.forEach(function(prop) {
+            const val = computed.getPropertyValue(prop);
+            /* Only apply if it's not a default value (optimization to keep HTML size sane) */
+            if (val && val !== 'none' && val !== 'auto' && val !== '0px' && val !== 'normal' && val !== 'rgba(0, 0, 0, 0)') {
+                 styleString += prop + ':' + val + '; ';
+            }
+        });
+        
+        /* Preserve existing inline styles too */
+        const existing = target.getAttribute('style') || '';
+        target.setAttribute('style', styleString + existing);
+
+        /* Recurse children */
+        const sourceChildren = source.children;
+        const targetChildren = target.children;
+        
+        for (let i = 0; i < sourceChildren.length; i++) {
+            if (targetChildren[i]) {
+                inlineComputedStyles(sourceChildren[i], targetChildren[i]);
+            }
+        }
     }
 
     function closeEditor() {
@@ -332,7 +424,7 @@
     }
 
     function handleDownload(contentArea, format) {
-        const cleanTitle = BookmarkletUtils.sanitizeFilename(document.title || 'snippet');
+        const cleanTitle = BookmarkletUtils.sanitizeFilename(document.title || 'Web_Clip');
         let content, mimeType, filename;
 
         if (format === 'md') {
