@@ -8,11 +8,11 @@ def run(playwright):
 
         # Wait for the bookmarklets to be compiled and loaded
         # The text changes from "Loading..." to the bookmarklet name.
-        # Let's wait for "Target & Edit"
-        page.wait_for_selector("text=Target & Edit", timeout=5000)
+        # Let's wait for "Web Clipper"
+        page.wait_for_selector("text=Web Clipper", timeout=5000)
 
         # Get the href of the button
-        href = page.get_attribute("#btn-target-edit", "href")
+        href = page.get_attribute("#btn-web-clipper", "href")
 
         print(f"Href length: {len(href)}")
         if href.startswith("javascript:"):
