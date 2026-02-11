@@ -3,8 +3,8 @@
     const CONFIG = {
         highlightColor: 'rgba(0, 0, 255, 0.1)',
         outlineStyle: '2px solid blue',
-        parentHighlightColor: 'rgba(255, 255, 0, 0.2)', /* Distinct Yellow */
-        parentOutlineStyle: '2px dashed #DAA520', /* GoldenRod dashed border */
+        parentHighlightColor: 'rgba(255, 215, 0, 0.1)', /* Gold with low opacity */
+        parentOutlineStyle: '4px dashed #FFD700', /* Thicker Gold dashed border */
         modalId: 'te-bookmarklet-modal',
         overlayId: 'te-bookmarklet-overlay',
         highlightId: 'te-bookmarklet-highlight',
@@ -25,11 +25,10 @@
             el.style.border = outline;
             el.style.backgroundColor = color;
             el.style.display = 'none';
-            /* Add shadow to make it pop */
             el.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
             document.body.appendChild(el);
         }
-        /* Update style in case it exists but needs refresh */
+        /* Update style ensuring dynamic config changes apply */
         el.style.border = outline;
         el.style.backgroundColor = color;
         el.style.zIndex = zIndex;
@@ -53,7 +52,6 @@
         document.removeEventListener('keydown', handleEscape);
         clearHighlights();
         
-        /* Remove elements from DOM */
         const h1 = document.getElementById(CONFIG.highlightId);
         if (h1) h1.remove();
         const h2 = document.getElementById(CONFIG.parentHighlightId);
@@ -80,24 +78,19 @@
             const parentRect = parent.getBoundingClientRect();
             const parentHighlight = getOrCreateHighlightEl(CONFIG.parentHighlightId, CONFIG.parentOutlineStyle, CONFIG.parentHighlightColor, '999999');
             
+            /* Logic: Always make parent highlight visibly larger/distinct */
+            /* Default to bounding box */
             let pTop = parentRect.top;
             let pLeft = parentRect.left;
             let pWidth = parentRect.width;
             let pHeight = parentRect.height;
 
-            /* Visual Tweak: If parent is exact same size as child, expand it slightly to be visible */
-            const sameWidth = Math.abs(pWidth - rect.width) < 2;
-            const sameHeight = Math.abs(pHeight - rect.height) < 2;
-            const samePos = Math.abs(pTop - rect.top) < 2 && Math.abs(pLeft - rect.left) < 2;
-
-            if (sameWidth && sameHeight && samePos) {
-                /* Expand parent highlight by 4px on all sides */
-                const padding = 4;
-                pTop -= padding;
-                pLeft -= padding;
-                pWidth += (padding * 2);
-                pHeight += (padding * 2);
-            }
+            /* Expansion Logic: Add padding to ensure visual separation (The "Space between blue and yellow") */
+            const padding = 6; 
+            pTop -= padding;
+            pLeft -= padding;
+            pWidth += (padding * 2);
+            pHeight += (padding * 2);
 
             parentHighlight.style.top = pTop + 'px';
             parentHighlight.style.left = pLeft + 'px';
@@ -240,44 +233,17 @@
     }
 
     function cleanupDOM(node) {
-        /* 1. Aggressive Tag Removal */
-        /* Removed 'style' attribute from this list to handle it in loop, added META/LINK */
-        const dangerous = node.querySelectorAll('script, iframe, object, embed, noscript, form, input, button, select, textarea, svg, nav, footer, aside, meta, link');
+        /* General Cleanup: Remove active scripts and dangerous elements only.
+           IMPORTANT: Preserve 'class' and 'style' attributes to maintain layout fidelity. */
+        const dangerous = node.querySelectorAll('script, iframe, object, embed, noscript, form, input, button, select, textarea, meta, link');
         dangerous.forEach(function(n) { n.remove(); });
         
-        /* 2. Specific Junk Class/ID Removal (Realtor.com, Zillow, etc) */
-        const junkSelectors = [
-            '[data-testid="ldp-header"]', 
-            '[data-testid="ldp-sidebar"]',
-            '[data-testid="ad-container"]', 
-            '.ad-wrapper', 
-            '[class*="SearchBox"]', 
-            '[class*="ActionBar"]',
-            '[id*="google_ads"]'
-        ];
-        junkSelectors.forEach(function(sel) {
-            node.querySelectorAll(sel).forEach(function(n) { n.remove(); });
-        });
-
-        /* 3. Attribute Cleanup */
+        /* Attribute Cleanup: Remove only event handlers (on*) to prevent scripts running. */
         node.querySelectorAll('*').forEach(function(el) {
-            /* Remove inline styles to prevent broken layouts in export */
-            el.removeAttribute('style');
-            
             Array.from(el.attributes).forEach(function(attr) {
                 if (attr.name.startsWith('on')) el.removeAttribute(attr.name);
             });
         });
-
-        /* 4. Recursive Empty Element Removal */
-        /* Run multiple passes to clean up nested empty divs */
-        for (let i = 0; i < 3; i++) {
-            node.querySelectorAll('div, span, section, ul, li').forEach(function(d) {
-                if (!d.innerText.trim() && d.children.length === 0 && d.tagName !== 'IMG' && d.tagName !== 'BR' && d.tagName !== 'HR') {
-                    d.remove();
-                }
-            });
-        }
     }
 
     function processImages(container) {
@@ -294,8 +260,6 @@
                 if (!img.src || img.src.startsWith('data:')) continue;
 
                 active++;
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
                 const tempImg = new Image();
                 tempImg.crossOrigin = "Anonymous";
 
@@ -309,6 +273,8 @@
                 };
 
                 tempImg.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
                     canvas.width = tempImg.width;
                     canvas.height = tempImg.height;
                     ctx.drawImage(tempImg, 0, 0);
@@ -316,7 +282,7 @@
                         img.src = canvas.toDataURL('image/png');
                         img.removeAttribute('srcset');
                     } catch (e) {
-                        console.warn('Target & Edit: Image processing failed (likely CORS)', e);
+                        /* CORS error - keep original src */
                     }
                     onComplete();
                 };
@@ -340,7 +306,6 @@
         });
         
         let text = temp.innerText || temp.textContent;
-        /* Simple cleanup */
         return text.replace(/\n\s+\n/g, '\n\n').trim();
     }
 
@@ -349,6 +314,7 @@
         const text = contentArea.innerText;
         const btn = document.querySelector('#' + CONFIG.modalId + ' button.primary');
         try {
+            /* Copying as 'text/html' preserves styles when pasting into Google Docs/Word */
             const data = [new ClipboardItem({ 'text/html': new Blob([html], { type: 'text/html' }), 'text/plain': new Blob([text], { type: 'text/plain' }) })];
             await navigator.clipboard.write(data);
             btn.textContent = "Copied!";
@@ -378,17 +344,8 @@
             mimeType = 'text/plain';
             filename = cleanTitle + '_' + Date.now() + '.txt';
         } else {
-            /* HTML Default - Add basic styles to make export readable */
-            const basicStyles = `
-                body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 2rem auto; line-height: 1.6; padding: 0 1rem; color: #333; }
-                img { max-width: 100%; height: auto; border-radius: 4px; }
-                h1, h2, h3 { margin-top: 1.5em; color: #111; }
-                a { color: #007bff; text-decoration: none; }
-                table { border-collapse: collapse; width: 100%; margin: 1em 0; }
-                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                th { background-color: #f2f2f2; }
-            `;
-            content = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + cleanTitle + '</title><style>' + basicStyles + '</style></head><body>' + contentArea.innerHTML + '</body></html>';
+            /* HTML Default - Wrap in basic structure but TRUST inline styles/classes for layout fidelity */
+            content = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + cleanTitle + '</title></head><body>' + contentArea.innerHTML + '</body></html>';
             mimeType = 'text/html';
             filename = cleanTitle + '_' + Date.now() + '.html';
         }
