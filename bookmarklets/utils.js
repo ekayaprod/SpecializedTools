@@ -4,6 +4,34 @@
     const r = new Uint32Array(BUFFER_SIZE);
     let rIdx = BUFFER_SIZE;
 
+    /* Restricted list: Stabilize layout without breaking flexible content. */
+    const safeProperties = [
+        'display', 'visibility', 'opacity', 'z-index',
+        'margin', 'padding', 'border', 'border-radius', 'box-shadow', 'box-sizing',
+        'background', 'background-color', 'background-image', 'color',
+        'font-family', 'font-size', 'font-weight', 'line-height', 'text-align',
+        'list-style', 'vertical-align', 'float', 'clear',
+        /* Dimensions */
+        'width', 'height', 'min-width', 'min-height', 'max-width', 'max-height',
+        /* Flexbox */
+        'flex', 'flex-direction', 'flex-wrap', 'flex-flow', 'flex-grow', 'flex-shrink', 'flex-basis',
+        'justify-content', 'align-items', 'align-content', 'align-self', 'gap', 'order',
+        /* Grid */
+        'grid-template-columns', 'grid-template-rows', 'grid-template-areas',
+        'grid-auto-columns', 'grid-auto-rows', 'grid-auto-flow',
+        'grid-area', 'grid-column', 'grid-row',
+        /* Alignment */
+        'place-content', 'place-items', 'place-self',
+        /* Text & Overflow */
+        'white-space', 'overflow', 'text-overflow', 'word-wrap', 'word-break',
+        'text-transform', 'text-decoration', 'letter-spacing', 'word-spacing',
+        /* Images/Media */
+        'object-fit', 'object-position',
+        /* Positioning & Transform (Fix for Layout Collapse) */
+        'position', 'top', 'bottom', 'left', 'right',
+        'transform', 'transform-origin', 'transform-style'
+    ];
+
     w.BookmarkletUtils = {
         sanitizeFilename: function(s) {
             /* Replace non-alphanumeric characters with underscores and truncate */
@@ -73,34 +101,6 @@
             /* Recursively apply SAFE computed styles from source to target */
             const computed = window.getComputedStyle(source);
             if (!computed) return;
-
-            /* Restricted list: Stabilize layout without breaking flexible content. */
-            const safeProperties = [
-                'display', 'visibility', 'opacity', 'z-index',
-                'margin', 'padding', 'border', 'border-radius', 'box-shadow', 'box-sizing',
-                'background', 'background-color', 'background-image', 'color',
-                'font-family', 'font-size', 'font-weight', 'line-height', 'text-align',
-                'list-style', 'vertical-align', 'float', 'clear',
-                /* Dimensions */
-                'width', 'height', 'min-width', 'min-height', 'max-width', 'max-height',
-                /* Flexbox */
-                'flex', 'flex-direction', 'flex-wrap', 'flex-flow', 'flex-grow', 'flex-shrink', 'flex-basis',
-                'justify-content', 'align-items', 'align-content', 'align-self', 'gap', 'order',
-                /* Grid */
-                'grid-template-columns', 'grid-template-rows', 'grid-template-areas',
-                'grid-auto-columns', 'grid-auto-rows', 'grid-auto-flow',
-                'grid-area', 'grid-column', 'grid-row',
-                /* Alignment */
-                'place-content', 'place-items', 'place-self',
-                /* Text & Overflow */
-                'white-space', 'overflow', 'text-overflow', 'word-wrap', 'word-break',
-                'text-transform', 'text-decoration', 'letter-spacing', 'word-spacing',
-                /* Images/Media */
-                'object-fit', 'object-position',
-                /* Positioning & Transform (Fix for Layout Collapse) */
-                'position', 'top', 'bottom', 'left', 'right',
-                'transform', 'transform-origin', 'transform-style'
-            ];
 
             /* Apply to current element */
             let styleString = '';
