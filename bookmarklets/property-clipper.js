@@ -3,7 +3,7 @@
     const CONFIG = {
         modalId: 'pc-bookmarklet-modal',
         overlayId: 'pc-bookmarklet-overlay',
-        filenamePrefix: 'Investment_Data_'
+        filenamePrefix: '' /* Removed prefix as requested */
     };
 
     /* STATE MANAGEMENT */
@@ -264,7 +264,7 @@
     function handleDownload() {
         if (!extractedContent) return;
         const title = BookmarkletUtils.sanitizeFilename(document.title || 'Property');
-        const filename = `${CONFIG.filenamePrefix}${title}_${Date.now()}.html`;
+        const filename = `${title}_${Date.now()}.html`; /* Just Title + Timestamp */
         const fullHTML = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title></head><body>${extractedContent}</body></html>`;
         BookmarkletUtils.downloadFile(filename, fullHTML);
     }
@@ -369,6 +369,19 @@
             el.removeAttribute('class');
             el.removeAttribute('style');
             el.removeAttribute('data-testid');
+        });
+
+        /* Aggressive Empty List Cleanup */
+        c.querySelectorAll('li').forEach(function(li) {
+            if (!li.innerText.trim() && li.children.length === 0) {
+                li.remove();
+            }
+        });
+        /* Cleanup empty UL/OL if all children were removed */
+        c.querySelectorAll('ul, ol').forEach(function(list) {
+            if (list.children.length === 0) {
+                list.remove();
+            }
         });
 
         return c.innerHTML;
