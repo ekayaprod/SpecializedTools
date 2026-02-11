@@ -9,3 +9,7 @@
 ## 2026-02-11 - Micro-interaction: Visual Feedback for Copy Actions
 **Learning:** Toast notifications alone are sometimes too subtle for primary actions like "Copy Code". Users expect immediate visual confirmation at the point of interaction (the button itself).
 **Action:** Implemented a pattern where the copy button temporarily changes its icon to a checkmark (✓) for 2 seconds, providing clear, delightful feedback that the action succeeded.
+
+## 2026-02-11 - Async Bookmarklet Loading Feedback
+**Learning:** For bookmarklets fetched asynchronously on the landing page, a static "Loading..." text is insufficient for users on slower connections and lacks accessibility context.
+**Action:** Enhance the loading state with a visual spinner and `aria-busy="true"` attribute to clearly communicate activity to both sighted users and screen readers.
