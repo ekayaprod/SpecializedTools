@@ -5,7 +5,7 @@ const { compile } = require('./compile_bookmarklet');
 const files = [
   'bookmarklets/pa-county-finder.js',
   'bookmarklets/passphrase-generator.js',
-  'bookmarklets/target-edit.js',
+  'bookmarklets/web-clipper.js',
   'bookmarklets/temp-password.js',
   'bookmarklets/property-clipper.js',
   'bookmarklets/utils.js'
