@@ -354,7 +354,10 @@
             'white-space', 'overflow', 'text-overflow', 'word-wrap', 'word-break',
             'text-transform', 'text-decoration', 'letter-spacing', 'word-spacing',
             /* Images/Media */
-            'object-fit', 'object-position'
+            'object-fit', 'object-position',
+            /* Positioning & Transform (Fix for Layout Collapse) */
+            'position', 'top', 'bottom', 'left', 'right',
+            'transform', 'transform-origin', 'transform-style'
         ];
         
         /* Apply to current element */
