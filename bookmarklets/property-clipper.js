@@ -357,10 +357,19 @@
             '[data-testid="fixed-header"]', /* Realtor.com headers */
             '[data-testid="ldp-header"]', /* Realtor.com search bar */
             '[data-testid="search-wrapper"]',
+            '[data-testid="map-loader"]', /* Maps */
+            '.map-container',
             '[class*="SearchBox"]',
             '[class*="ActionBar"]'
         ];
         junk.forEach(function(k) { c.querySelectorAll(k).forEach(function(e) { e.remove(); }); });
+
+        /* Remove attributes to reduce token count */
+        c.querySelectorAll('*').forEach(function(el) {
+            el.removeAttribute('class');
+            el.removeAttribute('style');
+            el.removeAttribute('data-testid');
+        });
 
         return c.innerHTML;
     }
