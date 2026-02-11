@@ -203,7 +203,7 @@
                 let code = await res.text();
 
                 // Inject shared utils for specific bookmarklets
-                if (file.includes('web-clipper.js') || file.includes('property-clipper.js')) {
+                if (file.includes('web-clipper.js') || file.includes('property-clipper.js') || file.includes('passphrase-generator.js')) {
                     const utils = await getUtilsCode();
                     code = utils + '\n' + code;
                 }
