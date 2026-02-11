@@ -327,6 +327,22 @@
         }
     }
 
+    /**
+     * Recursively applies "safe" computed styles from a source element to a target element.
+     *
+     * Purpose:
+     * This function ensures that the cloned content retains its visual structure (layout, spacing,
+     * basic styling) without bringing over potentially destructive styles (like absolute positioning
+     * relative to the original document, fixed widths that cause overflow, etc.).
+     *
+     * Strategy:
+     * It uses a whitelist of safe CSS properties. It iterates through this list, gets the computed
+     * value from the source, and applies it to the target's inline style. It then recursively
+     * processes all children.
+     *
+     * @param {HTMLElement} source - The original DOM element being copied.
+     * @param {HTMLElement} target - The cloned DOM element receiving the styles.
+     */
     function inlineSafeStyles(source, target) {
         /* Recursively apply SAFE computed styles from source to target */
         const computed = window.getComputedStyle(source);

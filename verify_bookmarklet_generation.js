@@ -6,7 +6,6 @@ const files = [
   'bookmarklets/pa-county-finder.js',
   'bookmarklets/passphrase-generator.js',
   'bookmarklets/web-clipper.js',
-  'bookmarklets/temp-password.js',
   'bookmarklets/property-clipper.js',
   'bookmarklets/utils.js'
 ];
