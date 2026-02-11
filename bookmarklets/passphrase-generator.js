@@ -11,6 +11,9 @@
         m: 16      /* Min length */
     };
 
+    /* TEMP PASSWORD CONFIG */
+    const TC = window.TEMP_PASSWORD_CONFIG || { count: 5, addSymbol: true, randomNum: true };
+
     /* WORD BANK */
     const fullWordBank = {
         "Adjective": ["Able", "Ancient", "Basic", "Bent", "Blank", "Brave", "Bold", "Bumpy", "Busy", "Clever", "Cloudy", "Clumsy", "Cranky", "Curly", "Dapper", "Eager", "Empty", "Even", "Fancy", "Firm", "Foggy", "Fuzzy", "Giant", "Glad", "Grand", "Gritty", "Harsh", "Heavy", "Humble", "Jolly", "Jumbo", "Kind", "Known", "Large", "Lavish", "Lean", "Major", "Minor", "Modern", "Muddy", "Odd", "Plain", "Quick", "Rough", "Royal", "Sharp", "Slim", "Zany", "Bright", "Happy"],
@@ -30,6 +33,11 @@
     };
     const SYMBOL_RULES = { "beforeNum": ["$", "#", "*"], "afterNum": ["%", "+"], "junction": ["=", "@", ".", "-"], "end": ["!", "?"] };
 
+    /* WORD BANK (TEMP PASSWORD) */
+    const tpAdjectives = ["Apple", "Blue", "Bright", "Butter", "Cherry", "Cider", "Coffee", "Dragon", "Fire", "Fish", "Flash", "Foot", "Garden", "Gold", "Grand", "Green", "Hand", "Ice", "Iron", "Jelly", "Killer", "Liberty", "Light", "Loud", "Maple", "Marsh", "Mocking", "Motor", "Night", "Paper", "Peace", "Pepper", "Phone", "Photo", "Pine", "Polar", "Power", "Quick", "Rain", "Rattle", "River", "Roller", "Sand", "School", "Silver", "Skate", "Smart", "Snow", "Soft", "Spring", "Stone", "Story", "Sugar", "Sun", "Switch", "Tele", "Tooth", "Type", "Valley", "Water", "Wild", "Wind", "Wood", "Work", "Yellow"];
+    const tpNouns = ["butter", "slicer", "mobile", "packer", "comber", "graphy", "marker", "bonnet", "berry", "keeper", "basket", "street", "cream", "fly", "ground", "stick", "pillar", "maker", "steak", "patch", "tree", "donut", "bean", "house", "print", "fight", "monger", "light", "player", "bridge", "snap", "finch", "apple", "father", "mother", "hopper", "bear", "writer", "copter", "bird", "worker", "whale", "bell", "head", "speaker", "nut", "forest", "mallow", "cycle", "runner", "weight", "grass", "macist", "number", "graph", "needle", "breeze", "house", "school", "stride", "sprint", "bow", "snake", "market", "blade", "mander", "castle", "card", "pad", "driver", "board", "scraper", "pretzel", "water", "teller", "cookie", "rise", "vision", "meter", "stat", "paste", "bottle", "lily", "flower", "pane", "pecker", "bench", "stone"];
+    const tpSymbols = ['!', '?', '$', '%', '#', '@', '&', '*'];
+
     /* HELPERS */
     const BUFFER_SIZE = 256;
     const r = new Uint32Array(BUFFER_SIZE);
@@ -45,46 +53,60 @@
     function Cap(s) { return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase(); }
 
     /* LOGIC */
-    const season = C.t ? (d => {
-        const Y = d.getFullYear();
-        function getMemorialDay(y) { const date = new Date(y, 4, 31); date.setDate(date.getDate() - (date.getDay() + 6) % 7); return date; }
-        function getLaborDay(y) { const date = new Date(y, 8, 1); const dayOfWeek = date.getDay(); const offset = (dayOfWeek <= 1) ? 1 - dayOfWeek : 8 - dayOfWeek; date.setDate(date.getDate() + offset); return date; }
-        const memorialDay = getMemorialDay(Y); const laborDay = getLaborDay(Y); const winterStart = new Date(Y, 11, 1);
-        if (d >= new Date(Y, 2, 17) && d < memorialDay) return 'Spring';
-        if (d >= memorialDay && d < laborDay) return 'Summer';
-        if (d >= laborDay && d < winterStart) return 'Autumn';
-        return 'Winter';
-    })(new Date()) : null;
+    function generatePassphrases() {
+        const season = C.t ? (d => {
+            const Y = d.getFullYear();
+            function getMemorialDay(y) { const date = new Date(y, 4, 31); date.setDate(date.getDate() - (date.getDay() + 6) % 7); return date; }
+            function getLaborDay(y) { const date = new Date(y, 8, 1); const dayOfWeek = date.getDay(); const offset = (dayOfWeek <= 1) ? 1 - dayOfWeek : 8 - dayOfWeek; date.setDate(date.getDate() + offset); return date; }
+            const memorialDay = getMemorialDay(Y); const laborDay = getLaborDay(Y); const winterStart = new Date(Y, 11, 1);
+            if (d >= new Date(Y, 2, 17) && d < memorialDay) return 'Spring';
+            if (d >= memorialDay && d < laborDay) return 'Summer';
+            if (d >= laborDay && d < winterStart) return 'Autumn';
+            return 'Winter';
+        })(new Date()) : null;
 
-    let allPasses = [];
-    for (let i = 0; i < C.n; i++) {
-        let words = [];
-        let struct = (season && PHRASE_STRUCTURES.seasonal[C.w]) ? R(PHRASE_STRUCTURES.seasonal[C.w]) : R(PHRASE_STRUCTURES.standard[C.w]);
-        words = struct.map(cat => {
-            if (cat.startsWith('Season')) return R(fullWordBank[season][cat.replace('Season', '')]);
-            return R(fullWordBank[cat]);
-        });
-        if (C.c === 'caps') words = words.map(Cap);
-        else if (C.c === 'upper') words = words.map(w => w.toUpperCase());
-        else words = words.map(w => w.toLowerCase());
+        let passes = [];
+        for (let i = 0; i < C.n; i++) {
+            let words = [];
+            let struct = (season && PHRASE_STRUCTURES.seasonal[C.w]) ? R(PHRASE_STRUCTURES.seasonal[C.w]) : R(PHRASE_STRUCTURES.standard[C.w]);
+            words = struct.map(cat => {
+                if (cat.startsWith('Season')) return R(fullWordBank[season][cat.replace('Season', '')]);
+                return R(fullWordBank[cat]);
+            });
+            if (C.c === 'caps') words = words.map(Cap);
+            else if (C.c === 'upper') words = words.map(w => w.toUpperCase());
+            else words = words.map(w => w.toLowerCase());
 
-        let wordStr = words.join(C.s);
-        let numberBlock = [];
-        for (let j = 0; j < C.d; j++) numberBlock.push(getRand(10));
+            let wordStr = words.join(C.s);
+            let numberBlock = [];
+            for (let j = 0; j < C.d; j++) numberBlock.push(getRand(10));
 
-        let symbolsToUse = { beforeNum: '', afterNum: '', junction: '', end: '' };
-        let willHaveNumbers = (numberBlock.length > 0);
-        if (C.y > 0) {
-            let availableTypes = ['end', 'junction'];
-            if (willHaveNumbers) availableTypes.push('beforeNum', 'afterNum');
-            for (let j = 0; j < C.y; j++) {
-                let type = R(availableTypes);
-                if (type) symbolsToUse[type] = R(SYMBOL_RULES[type]);
+            let symbolsToUse = { beforeNum: '', afterNum: '', junction: '', end: '' };
+            let willHaveNumbers = (numberBlock.length > 0);
+            if (C.y > 0) {
+                let availableTypes = ['end', 'junction'];
+                if (willHaveNumbers) availableTypes.push('beforeNum', 'afterNum');
+                for (let j = 0; j < C.y; j++) {
+                    let type = R(availableTypes);
+                    if (type) symbolsToUse[type] = R(SYMBOL_RULES[type]);
+                }
             }
+            let numberPart = symbolsToUse.beforeNum + numberBlock.join('') + symbolsToUse.afterNum;
+            let finalPass = (getRand(2) === 0 && numberPart) ? numberPart + symbolsToUse.junction + wordStr + symbolsToUse.end : wordStr + symbolsToUse.junction + numberPart + symbolsToUse.end;
+            passes.push(finalPass);
         }
-        let numberPart = symbolsToUse.beforeNum + numberBlock.join('') + symbolsToUse.afterNum;
-        let finalPass = (getRand(2) === 0 && numberPart) ? numberPart + symbolsToUse.junction + wordStr + symbolsToUse.end : wordStr + symbolsToUse.junction + numberPart + symbolsToUse.end;
-        allPasses.push(finalPass);
+        return passes;
+    }
+
+    function generateTempPasswords() {
+        let passes = [];
+        for (let i = 0; i < TC.count; i++) {
+            let p = R(tpAdjectives) + R(tpNouns);
+            p += TC.randomNum ? getRand(100) : '1';
+            if (TC.addSymbol) p += R(tpSymbols);
+            passes.push(p);
+        }
+        return passes;
     }
 
     /* UI */
@@ -93,20 +115,63 @@
     const dialog = document.createElement('div');
     Object.assign(dialog.style, { background: 'white', padding: '24px', borderRadius: '8px', boxShadow: '0 5px 15px rgba(0,0,0,0.3)', width: 'auto', maxWidth: '90%', fontFamily: 'sans-serif' });
 
-    allPasses.forEach(p => {
-        const item = document.createElement('div');
-        Object.assign(item.style, { display: 'flex', alignItems: 'center', marginBottom: '8px' });
-        const text = document.createElement('p');
-        text.textContent = p;
-        Object.assign(text.style, { margin: '0', marginRight: '12px', fontSize: '16px', fontFamily: 'monospace', color: '#333' });
-        const copyBtn = document.createElement('button');
-        copyBtn.textContent = 'Copy';
-        copyBtn.onclick = () => { navigator.clipboard.writeText(p); copyBtn.textContent = 'Copied!'; setTimeout(() => copyBtn.textContent = 'Copy', 1000); };
-        item.appendChild(text); item.appendChild(copyBtn); dialog.appendChild(item);
-    });
+    // Mode Toggle Header
+    const header = document.createElement('div');
+    Object.assign(header.style, { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' });
+
+    const title = document.createElement('h3');
+    title.textContent = 'Passphrase Generator';
+    Object.assign(title.style, { margin: '0', fontSize: '18px', fontWeight: 'bold' });
+
+    const toggleBtn = document.createElement('button');
+    Object.assign(toggleBtn.style, { background: '#eee', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' });
+
+    header.appendChild(title);
+    header.appendChild(toggleBtn);
+    dialog.appendChild(header);
+
+    const listContainer = document.createElement('div');
+    dialog.appendChild(listContainer);
+
+    let currentMode = 'passphrase'; // 'passphrase' or 'temp'
+
+    function render() {
+        listContainer.innerHTML = '';
+        const passes = currentMode === 'passphrase' ? generatePassphrases() : generateTempPasswords();
+
+        passes.forEach(p => {
+            const item = document.createElement('div');
+            Object.assign(item.style, { display: 'flex', alignItems: 'center', marginBottom: '8px' });
+            const text = document.createElement('p');
+            text.textContent = p;
+            Object.assign(text.style, { margin: '0', marginRight: '12px', fontSize: '16px', fontFamily: 'monospace', color: '#333' });
+            const copyBtn = document.createElement('button');
+            copyBtn.textContent = 'Copy';
+            copyBtn.onclick = () => { navigator.clipboard.writeText(p); copyBtn.textContent = 'Copied!'; setTimeout(() => copyBtn.textContent = 'Copy', 1000); };
+            item.appendChild(text); item.appendChild(copyBtn); listContainer.appendChild(item);
+        });
+
+        title.textContent = currentMode === 'passphrase' ? 'Passphrase Generator' : 'Temp Password Generator';
+        toggleBtn.textContent = currentMode === 'passphrase' ? 'Switch to Temp Passwords' : 'Switch to Passphrases';
+    }
+
+    toggleBtn.onclick = () => {
+        currentMode = currentMode === 'passphrase' ? 'temp' : 'passphrase';
+        render();
+    };
+
+    render();
+
+    const footer = document.createElement('div');
+    Object.assign(footer.style, { display: 'flex', justifyContent: 'flex-end', marginTop: '16px' });
 
     const closeBtn = document.createElement('button');
     closeBtn.textContent = 'Close';
+    Object.assign(closeBtn.style, { padding: '8px 16px', background: '#333', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' });
     closeBtn.onclick = () => overlay.remove();
-    dialog.appendChild(closeBtn); overlay.appendChild(dialog); document.body.appendChild(overlay);
+
+    footer.appendChild(closeBtn);
+    dialog.appendChild(footer);
+
+    overlay.appendChild(dialog); document.body.appendChild(overlay);
 })();
