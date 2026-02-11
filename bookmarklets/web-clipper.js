@@ -303,13 +303,18 @@
             /* 1. Resolve Lazy Loading */
             if (img.dataset.src) img.src = img.dataset.src;
             if (img.dataset.lazySrc) img.src = img.dataset.lazySrc;
-            if (!img.src && img.srcset) {
+
+            /* Check for placeholder or missing src */
+            const isPlaceholder = !img.src || img.src.startsWith('data:') || img.src.includes('spacer');
+            if (isPlaceholder && img.srcset) {
                 const parts = img.srcset.split(',');
                 if(parts.length > 0) {
-                     const firstSrc = parts[0].trim().split(' ')[0];
-                     if(firstSrc) img.src = firstSrc;
+                     /* Pick the last candidate (usually highest res) */
+                     const bestCandidate = parts[parts.length - 1].trim().split(' ')[0];
+                     if(bestCandidate) img.src = bestCandidate;
                 }
             }
+
             /* 2. Remove lazy loading attributes to force render */
             img.removeAttribute('loading');
             
@@ -327,20 +332,29 @@
         const computed = window.getComputedStyle(source);
         if (!computed) return;
         
-        /* Restricted list: Stabilize layout without breaking flexible content.
-           REMOVED: width, height, position, top/left etc to allow flow. */
+        /* Restricted list: Stabilize layout without breaking flexible content. */
         const safeProperties = [
             'display', 'visibility', 'opacity', 'z-index',
             'margin', 'padding', 'border', 'border-radius', 'box-shadow', 'box-sizing',
             'background', 'background-color', 'background-image', 'color',
             'font-family', 'font-size', 'font-weight', 'line-height', 'text-align',
-            'text-decoration', 'list-style', 'vertical-align', 'float', 'clear',
-            'max-width', 'min-width', 'white-space', 'overflow', 'overflow-x', 'overflow-y',
-            'object-fit', 'aspect-ratio',
-            /* Basic flex properties to preserve grid/card layouts */
-            'flex-direction', 'justify-content', 'align-items', 'gap', 'align-self', 'flex-wrap',
-            /* Minimal Grid Support */
-            'grid-template-columns', 'grid-template-rows', 'grid-auto-flow', 'grid-column', 'grid-row'
+            'list-style', 'vertical-align', 'float', 'clear',
+            /* Dimensions */
+            'width', 'height', 'min-width', 'min-height', 'max-width', 'max-height',
+            /* Flexbox */
+            'flex', 'flex-direction', 'flex-wrap', 'flex-flow', 'flex-grow', 'flex-shrink', 'flex-basis',
+            'justify-content', 'align-items', 'align-content', 'align-self', 'gap', 'order',
+            /* Grid */
+            'grid-template-columns', 'grid-template-rows', 'grid-template-areas',
+            'grid-auto-columns', 'grid-auto-rows', 'grid-auto-flow',
+            'grid-area', 'grid-column', 'grid-row',
+            /* Alignment */
+            'place-content', 'place-items', 'place-self',
+            /* Text & Overflow */
+            'white-space', 'overflow', 'text-overflow', 'word-wrap', 'word-break',
+            'text-transform', 'text-decoration', 'letter-spacing', 'word-spacing',
+            /* Images/Media */
+            'object-fit', 'object-position'
         ];
         
         /* Apply to current element */

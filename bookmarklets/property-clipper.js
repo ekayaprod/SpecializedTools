@@ -325,9 +325,9 @@
 
     function extractHiddenData() {
         let d = [];
-        document.querySelectorAll('script[type="application/ld+json"]').forEach(function(s) { try{d.push(JSON.parse(s.innerText))}catch(e){} });
+        document.querySelectorAll('script[type="application/ld+json"]').forEach(function(s) { try{d.push(JSON.parse(s.textContent))}catch(e){} });
         const n = document.getElementById('__NEXT_DATA__');
-        if(n) try{d.push(JSON.parse(n.innerText))}catch(e){}
+        if(n) try{d.push(JSON.parse(n.textContent))}catch(e){}
         if(d.length===0) return '';
         return `<hr><details open style="margin-top:50px;border-top:5px solid #000;padding-top:20px;"><summary style="font-size:1.5em;font-weight:bold;cursor:pointer;">RAW DATA (JSON)</summary><pre style="background:#f4f4f4;padding:15px;overflow-x:auto;white-space:pre-wrap;font-size:10px;font-family:monospace;">${JSON.stringify(d, null, 2)}</pre></details>`;
     }
@@ -372,6 +372,8 @@
             /* Additional Map Killers */
             '.neighborhood-class-loader', /* The US map artifact */
             '[data-testid="map-wrap"]',
+            '[data-testid="listing-summary-map"]', /* Realtor.com Map Artifact */
+            '.listing-summary-map',
             '#map',
             '.map-inner',
             '.leaflet-container',
@@ -381,7 +383,7 @@
 
         /* Remove empty lists */
         c.querySelectorAll('li').forEach(function(li) {
-            if (!li.innerText.trim() && li.children.length === 0) { li.remove(); }
+            if (!li.textContent.trim() && li.children.length === 0) { li.remove(); }
         });
         c.querySelectorAll('ul, ol').forEach(function(list) {
             if (list.children.length === 0) { list.remove(); }
@@ -399,13 +401,18 @@
             /* 1. Resolve Lazy Loading */
             if (img.dataset.src) img.src = img.dataset.src;
             if (img.dataset.lazySrc) img.src = img.dataset.lazySrc;
-            if (!img.src && img.srcset) {
+
+            /* Check for placeholder or missing src */
+            const isPlaceholder = !img.src || img.src.startsWith('data:') || img.src.includes('spacer');
+            if (isPlaceholder && img.srcset) {
                 const parts = img.srcset.split(',');
                 if(parts.length > 0) {
-                     const firstSrc = parts[0].trim().split(' ')[0];
-                     if(firstSrc) img.src = firstSrc;
+                     /* Pick the last candidate (usually highest res) */
+                     const bestCandidate = parts[parts.length - 1].trim().split(' ')[0];
+                     if(bestCandidate) img.src = bestCandidate;
                 }
             }
+
             /* 2. Remove lazy loading attributes */
             img.removeAttribute('loading');
             
@@ -429,9 +436,22 @@
             'background', 'background-color', 'background-image', 'color',
             'font-family', 'font-size', 'font-weight', 'line-height', 'text-align',
             'list-style', 'vertical-align', 'float', 'clear',
-            /* Basic flex/grid properties */
-            'flex-direction', 'justify-content', 'align-items', 'gap', 'align-self', 'flex-wrap',
-            'grid-template-columns', 'grid-template-rows', 'grid-auto-flow'
+            /* Dimensions */
+            'width', 'height', 'min-width', 'min-height', 'max-width', 'max-height',
+            /* Flexbox */
+            'flex', 'flex-direction', 'flex-wrap', 'flex-flow', 'flex-grow', 'flex-shrink', 'flex-basis',
+            'justify-content', 'align-items', 'align-content', 'align-self', 'gap', 'order',
+            /* Grid */
+            'grid-template-columns', 'grid-template-rows', 'grid-template-areas',
+            'grid-auto-columns', 'grid-auto-rows', 'grid-auto-flow',
+            'grid-area', 'grid-column', 'grid-row',
+            /* Alignment */
+            'place-content', 'place-items', 'place-self',
+            /* Text & Overflow */
+            'white-space', 'overflow', 'text-overflow', 'word-wrap', 'word-break',
+            'text-transform', 'text-decoration', 'letter-spacing', 'word-spacing',
+            /* Images/Media */
+            'object-fit', 'object-position'
         ];
         
         let styleString = '';
