@@ -172,18 +172,20 @@
             }, 3000);
         }
 
-        let utilsCode = null;
-        async function getUtilsCode() {
-            if (utilsCode !== null) return utilsCode;
-            try {
-                const res = await fetch('bookmarklets/utils.js');
-                if (!res.ok) throw new Error('Failed to load utils');
-                utilsCode = await res.text();
-                return utilsCode;
-            } catch (e) {
-                console.error('Error loading utils', e);
-                return '';
-            }
+        let utilsPromise = null;
+        function getUtilsCode() {
+            if (utilsPromise) return utilsPromise;
+            utilsPromise = fetch('bookmarklets/utils.js')
+                .then(res => {
+                    if (!res.ok) throw new Error('Failed to load utils');
+                    return res.text();
+                })
+                .catch(e => {
+                    console.error('Error loading utils', e);
+                    utilsPromise = null;
+                    return '';
+                });
+            return utilsPromise;
         }
 
         function animateCopyButton(btn) {
