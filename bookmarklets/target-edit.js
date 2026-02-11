@@ -86,7 +86,6 @@
             let pHeight = parentRect.height;
 
             /* Visual Tweak: If parent is exact same size as child, expand it slightly to be visible */
-            /* Threshold of 2px difference */
             const sameWidth = Math.abs(pWidth - rect.width) < 2;
             const sameHeight = Math.abs(pHeight - rect.height) < 2;
             const samePos = Math.abs(pTop - rect.top) < 2 && Math.abs(pLeft - rect.left) < 2;
@@ -241,22 +240,44 @@
     }
 
     function cleanupDOM(node) {
-        /* Aggressive Noise Removal: Forms, Inputs, Buttons, SVGs */
-        const dangerous = node.querySelectorAll('script, iframe, object, embed, style, noscript, form, input, button, select, textarea, svg, nav, footer, aside');
+        /* 1. Aggressive Tag Removal */
+        /* Removed 'style' attribute from this list to handle it in loop, added META/LINK */
+        const dangerous = node.querySelectorAll('script, iframe, object, embed, noscript, form, input, button, select, textarea, svg, nav, footer, aside, meta, link');
         dangerous.forEach(function(n) { n.remove(); });
         
+        /* 2. Specific Junk Class/ID Removal (Realtor.com, Zillow, etc) */
+        const junkSelectors = [
+            '[data-testid="ldp-header"]', 
+            '[data-testid="ldp-sidebar"]',
+            '[data-testid="ad-container"]', 
+            '.ad-wrapper', 
+            '[class*="SearchBox"]', 
+            '[class*="ActionBar"]',
+            '[id*="google_ads"]'
+        ];
+        junkSelectors.forEach(function(sel) {
+            node.querySelectorAll(sel).forEach(function(n) { n.remove(); });
+        });
+
+        /* 3. Attribute Cleanup */
         node.querySelectorAll('*').forEach(function(el) {
+            /* Remove inline styles to prevent broken layouts in export */
+            el.removeAttribute('style');
+            
             Array.from(el.attributes).forEach(function(attr) {
                 if (attr.name.startsWith('on')) el.removeAttribute(attr.name);
             });
         });
 
-        /* Remove empty divs */
-        node.querySelectorAll('div').forEach(function(d) {
-            if (!d.innerText.trim() && d.children.length === 0) {
-                d.remove();
-            }
-        });
+        /* 4. Recursive Empty Element Removal */
+        /* Run multiple passes to clean up nested empty divs */
+        for (let i = 0; i < 3; i++) {
+            node.querySelectorAll('div, span, section, ul, li').forEach(function(d) {
+                if (!d.innerText.trim() && d.children.length === 0 && d.tagName !== 'IMG' && d.tagName !== 'BR' && d.tagName !== 'HR') {
+                    d.remove();
+                }
+            });
+        }
     }
 
     function processImages(container) {
