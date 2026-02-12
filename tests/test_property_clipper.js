@@ -55,6 +55,7 @@ const MockBookmarkletUtils = {
         // console.log(`[Mock] Content length: ${content.length}`);
     },
     normalizeImages: (root) => {},
+    sanitizeAttributes: (root) => {},
     inlineStyles: (source, target) => {},
     getRand: (m) => 0
 };

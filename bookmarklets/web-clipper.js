@@ -296,12 +296,8 @@
         const dangerous = node.querySelectorAll('script, iframe, object, embed, noscript, form, input, button, select, textarea');
         dangerous.forEach(function(n) { n.remove(); });
         
-        /* Attribute Cleanup: Remove only event handlers (on*) */
-        node.querySelectorAll('*').forEach(function(el) {
-            Array.from(el.attributes).forEach(function(attr) {
-                if (attr.name.startsWith('on')) el.removeAttribute(attr.name);
-            });
-        });
+        /* Attribute Cleanup: Remove event handlers (on*) and dangerous URLs */
+        BookmarkletUtils.sanitizeAttributes(node);
     }
 
     /**

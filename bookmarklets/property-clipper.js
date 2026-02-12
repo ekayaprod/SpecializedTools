@@ -692,6 +692,8 @@
         ];
         junk.forEach(function(k) { c.querySelectorAll(k).forEach(function(e) { e.remove(); }); });
 
+        BookmarkletUtils.sanitizeAttributes(c);
+
         c.querySelectorAll('*').forEach(function(el) {
             el.removeAttribute('class');
             el.removeAttribute('style');

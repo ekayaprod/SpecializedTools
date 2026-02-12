@@ -97,6 +97,41 @@
                 img.style.display = 'block';
             }
         },
+        sanitizeAttributes: function(root) {
+            /* Recursively remove dangerous attributes from root and its descendants */
+            const process = function(el) {
+                if (!el.attributes) return;
+                const attrs = [];
+                /* Iterate copy of attributes to safely remove them */
+                for (let i = 0; i < el.attributes.length; i++) attrs.push(el.attributes[i].name);
+
+                for (let i = 0; i < attrs.length; i++) {
+                    const name = attrs[i];
+                    const lowerName = name.toLowerCase();
+                    const val = (el.getAttribute(name) || '').toLowerCase().trim();
+
+                    /* 1. Event Handlers (on*) */
+                    if (lowerName.startsWith('on')) {
+                        el.removeAttribute(name);
+                    }
+                    /* 2. Malicious URIs (javascript:, vbscript:, data: except images) */
+                    else if (lowerName === 'href' || lowerName === 'src' || lowerName === 'action' || lowerName === 'data') {
+                        if (val.startsWith('javascript:') || val.startsWith('vbscript:')) {
+                            el.removeAttribute(name);
+                        }
+                        else if (val.startsWith('data:') && !val.startsWith('data:image/')) {
+                            el.removeAttribute(name);
+                        }
+                    }
+                }
+            };
+
+            process(root);
+            const all = root.querySelectorAll('*');
+            for (let i = 0; i < all.length; i++) {
+                process(all[i]);
+            }
+        },
         inlineStyles: function(source, target) {
             /* Recursively apply SAFE computed styles from source to target */
             const computed = window.getComputedStyle(source);
