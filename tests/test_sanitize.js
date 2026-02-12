@@ -1,0 +1,52 @@
+const fs = require('fs');
+const path = require('path');
+const jsdom = require("jsdom");
+const { JSDOM } = jsdom;
+const assert = require('assert');
+
+const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
+const utilsCode = fs.readFileSync(utilsPath, 'utf8');
+
+const dom = new JSDOM(`<!DOCTYPE html><body></body>`, { url: "http://localhost/" });
+global.window = dom.window;
+global.document = dom.window.document;
+global.Uint32Array = Uint32Array;
+global.window.crypto = { getRandomValues: () => {} };
+
+// Evaluate utils
+try {
+    eval(utilsCode);
+} catch (e) {
+    console.error("Error evaluating utils.js:", e);
+    process.exit(1);
+}
+
+// Test sanitizeAttributes
+console.log("Testing sanitizeAttributes...");
+
+const container = document.createElement('div');
+container.innerHTML = `
+    <div id="clean">Clean</div>
+    <div id="onclick" onclick="alert(1)">Onclick</div>
+    <a id="js-href" href="javascript:alert(1)">JS Link</a>
+    <a id="vb-href" href="vbscript:alert(1)">VB Link</a>
+    <img id="js-src" src="javascript:alert(1)">
+    <iframe id="data-iframe" src="data:text/html,<script>alert(1)</script>"></iframe>
+    <img id="valid-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAFhAJ/wlseKgAAAABJRU5ErkJggg==">
+    <form id="action-js" action="javascript:void(0)"></form>
+`;
+document.body.appendChild(container);
+
+window.BookmarkletUtils.sanitizeAttributes(container);
+
+// Assertions
+assert.ok(!document.getElementById('onclick').hasAttribute('onclick'), 'onclick should be removed');
+assert.ok(!document.getElementById('js-href').hasAttribute('href'), 'javascript: href should be removed');
+assert.ok(!document.getElementById('vb-href').hasAttribute('href'), 'vbscript: href should be removed');
+assert.ok(!document.getElementById('js-src').hasAttribute('src'), 'javascript: src should be removed');
+assert.ok(!document.getElementById('data-iframe').hasAttribute('src'), 'data: src (non-image) should be removed');
+assert.ok(document.getElementById('valid-img').hasAttribute('src'), 'data:image src should be preserved');
+assert.ok(!document.getElementById('action-js').hasAttribute('action'), 'javascript: action should be removed');
+assert.ok(document.getElementById('clean').textContent === 'Clean', 'Clean content should remain');
+
+console.log("✅ sanitizeAttributes passed");
