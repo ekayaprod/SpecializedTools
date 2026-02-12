@@ -129,4 +129,43 @@ if (hasNewSTRSection) {
     console.log("Labels found:", labels);
 }
 
+// 5. Verify Prompt Content
+const textarea = modal.querySelector('textarea');
+const promptText = textarea.value;
+
+const expectedPhrases = [
+    "REQUIRED OUTPUT STRUCTURE:",
+    "Risk Scoring",
+    "Financial Analysis",
+    "Comparison Tables",
+    "Renovation Tiers",
+    "Construction-Era Risk Checklist",
+    "Assumptions & Data Gaps"
+];
+
+let allPhrasesFound = true;
+expectedPhrases.forEach(phrase => {
+    if (promptText.includes(phrase)) {
+        console.log(`✅ Found phrase: "${phrase}"`);
+    } else {
+        console.error(`❌ Missing phrase: "${phrase}"`);
+        allPhrasesFound = false;
+    }
+});
+
+if (!allPhrasesFound) {
+    console.error("❌ Some prompt requirements are missing.");
+    process.exit(1);
+}
+
+// 6. Verify "Thinking" removal
+const bodyTextAfter = modal.textContent || modal.innerText;
+const hasThinking = bodyTextAfter.includes("Thinking Process Step");
+if (!hasThinking) {
+    console.log("✅ 'Thinking Process Step' option correctly removed.");
+} else {
+    console.error("❌ 'Thinking Process Step' option STILL PRESENT.");
+    process.exit(1);
+}
+
 console.log("Test execution completed.");

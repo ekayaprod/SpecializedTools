@@ -18,6 +18,25 @@
     };
 
     /* PROMPT LIBRARY */
+    const STANDARD_OUTPUTS = `
+REQUIRED OUTPUT STRUCTURE:
+1. **Executive Summary**: Concise overview of findings.
+2. **Detailed Analysis Phases**: (As selected below).
+3. **Financial Analysis**:
+   - Projected ADR, Occupancy, Gross Revenue.
+   - Expense Ratio, NOI, Cash-on-Cash Return, Cap Rate.
+   - Break-even Occupancy.
+4. **Risk & Sensitivity**:
+   - Risk Scoring (1-5 Scale for Regulatory, Structural, Market, Financial).
+   - Confidence Level (High/Moderate/Low).
+   - Sensitivity Analysis (±10% ADR/Occupancy).
+   - Exit Strategy Evaluation.
+5. **Assumptions & Data Gaps**: Explicitly list tax rates, financing terms, and any missing data.
+6. **Verdict & Tables**:
+   - Final Investment Grade (Strong Buy / Qualified Buy / Hard Pass).
+   - Comparison Tables must be used throughout to contrast findings.
+`;
+
     const PROMPT_DATA = {
         str: {
             label: "Short-Term Rental (STR)",
@@ -28,30 +47,30 @@
                 forensic_search: {
                     title: "Phase 1: Geographic & Forensic Identification",
                     content: `   - Extract the full address, County, and Township from the data.
-   - SEARCH PROTOCOL: Use Google Search to find: "[County] Tax Assessor [Address]", "[Township] STR Ordinance 2024", and "[County] GIS Property Map".
+   - SEARCH PROTOCOL: Use web research and cite authoritative sources to find: "[County] Tax Assessor [Address]", "[Township] STR Ordinance [Current Year]", and "[County] GIS Property Map".
    - Identify the current owner and check for recent transfers or "Lis Pendens" (distress signals).`
                 },
                 infrastructure: {
                     title: "Phase 2: Infrastructure Forensics",
-                    content: `   - Specifically analyze Sewer vs. Septic. If Septic, verify the legal 'Hard Occupancy Cap' using local township formulas.
-   - Search for utility rate hikes in this specific zip code (Electric/Water).
-   - Flag "Vintage Risk": Search for 1970s wiring (Aluminum?), 1980s siding (T1-11?), or pre-1978 lead paint issues in this neighborhood.`
+                    content: `   - Specifically analyze Sewer vs. Septic. If Septic, verify the legal 'Hard Occupancy Cap' (cite ordinance section) using local township formulas.
+   - Search for utility rate hikes in this specific zip code (Electric/Water) over the past 12-24 months.
+   - Flag "Construction-Era Risk Checklist": Search for 1970s wiring (Aluminum?), 1980s siding (T1-11?), or pre-1978 lead paint issues in this neighborhood.`
                 },
                 regulatory: {
                     title: "Phase 3: Regulatory & HOA Audit",
-                    content: `   - Verify HOA "Gate Taxes" and STR caps. Check 2024/2025 meeting minutes if available online.
-   - Search for "Township STR Moratorium" or pending registration changes. Check the 2024 fee schedule for licenses.`
+                    content: `   - Verify HOA "Registration/Impact Fees" (Gate Taxes) and STR caps. Check meeting minutes (if publicly accessible).
+   - Search for "Township STR Moratorium" or pending registration changes. Check the current fee schedule for licenses.`
                 },
                 amenity: {
                     title: "Phase 4: Amenity & Market Audit",
                     content: `   - Identify 'Value Drivers' (Central AC, parking) vs. 'Value Drags' (1-bath bottlenecks).
-   - Cross-reference AirDNA/Rabbu data with local hotel occupancy trends via web search.`
+   - Cross-reference AirDNA/Rabbu data with local hotel occupancy trends via web research.`
                 },
                 visual: {
                     title: "Phase 5: Visual Condition Audit (Photos)",
-                    content: `   - Analyze embedded photos for "Time Capsule" (80s/90s) vs "Flip Grade" (LVP, gray paint).
-   - Identify "Hoarding Risk" or "Deferred Maintenance" visible in photos (roof, siding, cluttered rooms).
-   - Estimate CapEx needed for top-tier ADR based on photo evidence.`
+                    content: `   - Analyze embedded photos for "Renovation Tiers" (Cosmetic vs Value-Add vs Full Gut).
+   - Identify "Clutter/Maintenance Issues" or "Deferred Maintenance" visible in photos (roof, siding, cluttered rooms).
+   - Estimate CapEx needed for top-tier ADR based on photo evidence using a structured table (Immediate, 1-3 Year, Deferred).`
                 },
                 financial: {
                     title: "Phase 6: Financial Stress Test",
@@ -61,7 +80,8 @@
                 verdict: {
                     title: "Phase 7: Forensic Verdict",
                     content: `   - Provide a final "Investment Grade": Strong Buy, Qualified Buy, or Hard Pass.
-   - Explicitly list the "Top 3 Hidden Liabilities" found during research.`
+   - Explicitly list the "Top 3 Hidden Liabilities" found during research.
+   - Include comparison tables throughout the conclusion.`
                 }
             }
         },
@@ -74,7 +94,7 @@
                 forensic_search: {
                     title: "Phase 1: Geographic & Permit Identification",
                     content: `   - Identify County/Township.
-   - SEARCH PROTOCOL: Search "[County] Building Permits [Address]" and "[County] Code Violations".
+   - SEARCH PROTOCOL: Use web research and cite authoritative sources to find "[County] Building Permits [Address]" and "[County] Code Violations".
    - Verify the "Certificate of Occupancy" requirements for LTR in this jurisdiction.`
                 },
                 tenant: {
@@ -85,16 +105,17 @@
                 condition: {
                     title: "Phase 3: Durability Audit (Photos)",
                     content: `   - Flag high-maintenance features in photos: carpet, old appliances, complex landscaping.
-   - Judge "Rental Grade": Does it need a refresh before listing?`
+   - Judge "Renovation Tier": Does it need a refresh before listing?`
                 },
                 cashflow: {
                     title: "Phase 4: Cash Flow Stability",
                     content: `   - Calculate Rent-to-Price ratio.
-   - Identify non-recoverable costs (Taxes, HOA) by searching official County tax rates for 2024.`
+   - Identify non-recoverable costs (Taxes, HOA) by searching official County tax rates for the current year.`
                 },
                 verdict: {
                     title: "Phase 5: Verdict",
-                    content: `   - Summarize the thesis: Cash Flow, Appreciation, or Capital Preservation?`
+                    content: `   - Summarize the thesis: Cash Flow, Appreciation, or Capital Preservation?
+   - Include comparison tables in the conclusion.`
                 }
             }
         },
@@ -106,7 +127,7 @@
             sections: {
                 forensic_search: {
                     title: "Phase 1: Metering & Zoning Verification",
-                    content: `   - SEARCH PROTOCOL: Search "[Township] Zoning Map" for property parcel. Verify if the unit count is legally non-conforming or fully permitted.
+                    content: `   - SEARCH PROTOCOL: Use web research and cite authoritative sources for "[Township] Zoning Map". Verify if the unit count is legally non-conforming or fully permitted.
    - Look for "Master Meter" records or utility billing history for this address.`
                 },
                 unitmix: {
@@ -116,7 +137,7 @@
                 },
                 visual: {
                     title: "Phase 3: Visual CapEx Assessment (Photos)",
-                    content: `   - Identify "Loss to Lease": Are units dated? Can cosmetic updates (cabinets, fixtures) force appreciation?
+                    content: `   - Identify "Renovation Tiers": Are units dated? Can cosmetic updates (cabinets, fixtures) force appreciation?
    - Flag "Deferred Maintenance" signals (Roof age, siding stains).`
                 },
                 expense: {
@@ -125,7 +146,8 @@
                 },
                 verdict: {
                     title: "Phase 5: Verdict",
-                    content: `   - Evaluate viability: "Turnkey Yield" vs. "Value-Add Project".`
+                    content: `   - Evaluate viability: "Turnkey Yield" vs. "Value-Add Project".
+   - Include comparison tables in the conclusion.`
                 }
             }
         },
@@ -137,7 +159,7 @@
             sections: {
                 forensic_search: {
                     title: "Phase 1: Structural & Permit History",
-                    content: `   - SEARCH PROTOCOL: Search "[County] Permit History [Address]". Identify if previous renovations were unpermitted.
+                    content: `   - SEARCH PROTOCOL: Use web research and cite authoritative sources for "[County] Permit History [Address]". Identify if previous renovations were unpermitted.
    - Search for "Soil Stability" or "Flood Zone" issues for this specific street.`
                 },
                 bones: {
@@ -155,7 +177,8 @@
                 },
                 verdict: {
                     title: "Phase 5: Verdict",
-                    content: `   - Evaluate project feasibility. Does the spread justify the renovation risk?`
+                    content: `   - Evaluate project feasibility. Does the spread justify the renovation risk?
+   - Include comparison tables in the conclusion.`
                 }
             }
         }
@@ -164,18 +187,13 @@
     const GLOBAL_SECTIONS = {
         deep_research: {
             title: "Deep Research Verification Protocol",
-            content: `   - MANDATORY: Search County Tax Records, Zoning Maps, and Code Violations.
-   - Verify school ratings and local crime statistics via 2024 data.
+            content: `   - MANDATORY: Use web research and cite authoritative sources for County Tax Records, Zoning Maps, and Code Violations.
+   - Verify school ratings and local crime statistics via current data.
    - Search for recent building permits (last 5 years).`
-        },
-        thinking: {
-            title: "Thinking Process (Chain of Thought)",
-            content: `   - Show your reasoning steps before providing the final verdict.
-   - Weight the pros and cons of the forensic findings (e.g., Permit issues vs. Market Demand).`
         },
         renovation: {
             title: "Renovation Estimator",
-            content: `   - Estimate rehab costs based on photos. Distinguish between "Rent Ready" and "Flip Grade".`
+            content: `   - Estimate rehab costs based on photos. Distinguish between "Cosmetic", "Value-Add", and "Full Gut".`
         },
         neighborhood: {
             title: "Neighborhood Analysis",
@@ -192,11 +210,7 @@
             role = role.replace("Act as a", "Act as a highly skeptical, forensic, and risk-averse");
         }
 
-        let prompt = `${role}\n\nMISSION:\n${strategy.objective}\n\n`;
-
-        if (globalOptions.includes('thinking_header')) {
-            prompt += `[PROTOCOL: Perform deep research and use a step-by-step thinking process for every phase.]\n\n`;
-        }
+        let prompt = `${role}\n\nMISSION:\n${strategy.objective}\n\n${STANDARD_OUTPUTS}\n\n`;
 
         prompt += `SOURCE HIERARCHY:\n1. Official County/Township Government Records (Assessor, GIS, Permits)\n2. Official Regulatory Codes (Zoning, STR Ordinances)\n3. Primary Market Data (AirDNA, Comps)\n4. Property Listing Description (Least Trusted)\n\n`;
 
@@ -334,18 +348,16 @@
 
         const globalOpts = [
             { id: 'deep_research', label: 'Deep Research Protocol' },
-            { id: 'thinking', label: 'Thinking Process Step' },
             { id: 'renovation', label: 'Renovation Estimator' },
             { id: 'neighborhood', label: 'Neighborhood Analysis' },
-            { id: 'skeptical', label: 'Forensic Skepticism', type: 'option' },
-            { id: 'thinking_header', label: 'Chain of Thought Header', type: 'option' }
+            { id: 'skeptical', label: 'Forensic Skepticism', type: 'option' }
         ];
 
         globalOpts.forEach(opt => {
             const div = document.createElement('div');
             div.className = 'pc-checkbox-item';
             div.innerHTML = `
-                <input type="checkbox" id="pc-opt-${opt.id}" value="${opt.id}" data-type="${opt.type || 'section'}">
+                <input type="checkbox" id="pc-opt-${opt.id}" value="${opt.id}" data-type="${opt.type || 'section'}" checked>
                 <label for="pc-opt-${opt.id}">${opt.label}</label>
             `;
             globalList.appendChild(div);
@@ -439,12 +451,12 @@
         const style = document.createElement('style');
         style.textContent = `
             #${CONFIG.overlayId} { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 999999; display: flex; justify-content: center; align-items: center; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-            #${CONFIG.modalId} { background: white; width: 600px; height: 80vh; max-height: 800px; display: flex; flex-direction: column; border-radius: 12px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+            #${CONFIG.modalId} { background: white; width: 900px; height: 80vh; max-height: 800px; display: flex; flex-direction: column; border-radius: 12px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
             .pc-header { padding: 16px 20px; background: #fff; border-bottom: 1px solid #e5e7eb; font-size: 16px; color: #111827; }
             .pc-body { flex-grow: 1; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: #f9fafb; overflow-y: auto; }
             .pc-step label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
             .pc-select { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; background: white; color: #1f2937; }
-            .pc-textarea { width: 100%; flex-grow: 1; min-height: 150px; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-family: monospace; font-size: 12px; resize: none; color: #374151; line-height: 1.5; }
+            .pc-textarea { width: 100%; flex-grow: 1; min-height: 400px; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-family: monospace; font-size: 12px; resize: none; color: #374151; line-height: 1.5; }
             .pc-footer { padding: 16px 20px; background: #fff; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 10px; }
             .pc-btn { padding: 8px 16px; border: 1px solid #d1d5db; background: white; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; color: #374151; transition: all 0.2s; }
             .pc-btn:hover { background: #f3f4f6; }
