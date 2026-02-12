@@ -10,7 +10,7 @@ Property Clipper: A specialized research tool for Realtor.com, Zillow, and Redfi
 
 Function: Cleans listing pages (removing ads/popups) to capture raw property data.
 
-Prompt Engine: Generates sophisticated "Investment Analysis" prompts for Gemini (comparing Septic vs. Sewer, HOA risks, and CapEx).
+Prompt Engine: Generates sophisticated "Investment Analysis" prompts for Gemini. Includes a "Deep Research Verification Protocol" to audit regulatory risks (Septic vs. Sewer, HOA limits) and estimate CapEx from photos.
 
 Output: Downloads a clean HTML file ready for LLM ingestion.
 

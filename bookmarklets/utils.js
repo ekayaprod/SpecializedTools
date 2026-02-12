@@ -97,6 +97,12 @@
                 img.style.display = 'block';
             }
         },
+        /**
+         * Recursively removes dangerous attributes (event handlers, javascript: URIs)
+         * from a root element and all its descendants to prevent XSS.
+         *
+         * @param {HTMLElement} root - The root element to sanitize.
+         */
         sanitizeAttributes: function(root) {
             /* Recursively remove dangerous attributes from root and its descendants */
             const process = function(el) {
@@ -132,6 +138,14 @@
                 process(all[i]);
             }
         },
+        /**
+         * Recursively applies computed styles from a source element to a target element.
+         * Only properties listed in the 'safeProperties' whitelist are copied to preserve layout
+         * without breaking flexibility or security.
+         *
+         * @param {HTMLElement} source - The original DOM element to read styles from.
+         * @param {HTMLElement} target - The cloned/target element to apply styles to.
+         */
         inlineStyles: function(source, target) {
             /* Recursively apply SAFE computed styles from source to target */
             const computed = window.getComputedStyle(source);
