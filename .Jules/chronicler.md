@@ -27,3 +27,5 @@ This project is built by a solo developer using AI. Documentation acts as the "S
 - Added JSDoc to `buildPrompt` and `extractAndEmbedGallery` in `bookmarklets/property-clipper.js` to explain prompt construction and image scraping strategies.
 - Added JSDoc to `normalizeImages` and `sanitizeFilename` in `bookmarklets/utils.js` to better document these shared utilities.
 - Updated `ROADMAP.md` to include "Deep Research Protocol", "Renovation Estimator", "Image Export", and "Markdown Export" as completed items.
+- Added JSDoc to `PropertyExtractor.getData` in `bookmarklets/property-clipper.js` to explain the strategy of prioritizing `__NEXT_DATA__` JSON for reliable data extraction.
+- Added "Rich Text Clipboard Copy" to `ROADMAP.md` under Web Clipper, as this feature was implemented (`handleCopy`) but not tracked.
