@@ -64,6 +64,12 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
 
     /* CORE EXTRACTOR - Builds Custom Data Object */
     const PropertyExtractor = {
+        /**
+         * Extracts property data from the page, prioritizing the hidden Next.js hydration state (`__NEXT_DATA__`)
+         * which contains raw, structured data. Falls back to DOM scraping for specific elements if the JSON is missing.
+         *
+         * @returns {Object} Normalized property object containing address, price, specs, financials, history, agents, and photos.
+         */
         getData: function() {
             let data = {
                 address: 'Unknown Address', price: 'Unknown Price', specs: {},
