@@ -17,227 +17,53 @@
         description: ''
     };
 
-    /* PROMPT LIBRARY */
-    const STANDARD_OUTPUTS = `
-REQUIRED OUTPUT STRUCTURE:
-1. **Executive Summary**: Concise overview of findings.
-2. **Detailed Analysis Phases**: (As selected below).
-3. **Financial Analysis**:
-   - Projected ADR, Occupancy, Gross Revenue.
-   - Expense Ratio, NOI, Cash-on-Cash Return, Cap Rate.
-   - Break-even Occupancy.
-4. **Risk & Sensitivity**:
-   - Risk Scoring (1-5 Scale for Regulatory, Structural, Market, Financial).
-   - Confidence Level (High/Moderate/Low).
-   - Sensitivity Analysis (±10% ADR/Occupancy).
-   - Exit Strategy Evaluation.
-5. **Assumptions & Data Gaps**: Explicitly list tax rates, financing terms, and any missing data.
-6. **Verdict & Tables**:
-   - Final Investment Grade (Strong Buy / Qualified Buy / Hard Pass).
-   - Comparison Tables must be used throughout to contrast findings.
-`;
+    /* PROMPT LIBRARY (OPTIMIZED FOR DEEP RESEARCH) */
+    const DEEP_RESEARCH_CORE = `Act as a Senior Real Estate Investment Analyst. I am providing you with a complete property listing capture (HTML, embedded photos, and hidden JSON data). 
 
-    const PROMPT_DATA = {
-        str: {
-            label: "Short-Term Rental (STR)",
-            role: "Act as a Senior Real Estate Investment Analyst specializing in Short-Term Rentals (STR).",
-            objective: 'Perform a "Forensic STR Deep Research Audit" for the attached property data.',
-            defaults: ['forensic_search', 'infrastructure', 'regulatory', 'amenity', 'visual', 'financial', 'verdict'],
-            sections: {
-                forensic_search: {
-                    title: "Phase 1: Geographic & Forensic Identification",
-                    content: `   - Extract the full address, County, and Township from the data.
-   - SEARCH PROTOCOL: Use web research and cite authoritative sources to find: "[County] Tax Assessor [Address]", "[Township] STR Ordinance [Current Year]", and "[County] GIS Property Map".
-   - Identify the current owner and check for recent transfers or "Lis Pendens" (distress signals).`
-                },
-                infrastructure: {
-                    title: "Phase 2: Infrastructure Forensics",
-                    content: `   - Specifically analyze Sewer vs. Septic. If Septic, verify the legal 'Hard Occupancy Cap' (cite ordinance section) using local township formulas.
-   - Search for utility rate hikes in this specific zip code (Electric/Water) over the past 12-24 months.
-   - Flag "Construction-Era Risk Checklist": Search for 1970s wiring (Aluminum?), 1980s siding (T1-11?), or pre-1978 lead paint issues in this neighborhood.`
-                },
-                regulatory: {
-                    title: "Phase 3: Regulatory & HOA Audit",
-                    content: `   - Verify HOA "Registration/Impact Fees" (Gate Taxes) and STR caps. Check meeting minutes (if publicly accessible).
-   - Search for "Township STR Moratorium" or pending registration changes. Check the current fee schedule for licenses.`
-                },
-                amenity: {
-                    title: "Phase 4: Amenity & Market Audit",
-                    content: `   - Identify 'Value Drivers' (Central AC, parking) vs. 'Value Drags' (1-bath bottlenecks).
-   - Cross-reference AirDNA/Rabbu data with local hotel occupancy trends via web research.`
-                },
-                visual: {
-                    title: "Phase 5: Visual Condition Audit (Photos)",
-                    content: `   - Analyze embedded photos for "Renovation Tiers" (Cosmetic vs Value-Add vs Full Gut).
-   - Identify "Clutter/Maintenance Issues" or "Deferred Maintenance" visible in photos (roof, siding, cluttered rooms).
-   - Estimate CapEx needed for top-tier ADR based on photo evidence using a structured table (Immediate, 1-3 Year, Deferred).`
-                },
-                financial: {
-                    title: "Phase 6: Financial Stress Test",
-                    content: `   - Calculate 'Silent Costs' (Snow removal, seasonal landscaping).
-   - Verify property tax assessment resets upon sale for this County.`
-                },
-                verdict: {
-                    title: "Phase 7: Forensic Verdict",
-                    content: `   - Provide a final "Investment Grade": Strong Buy, Qualified Buy, or Hard Pass.
-   - Explicitly list the "Top 3 Hidden Liabilities" found during research.
-   - Include comparison tables throughout the conclusion.`
-                }
-            }
-        },
-        ltr: {
-            label: "Long-Term Rental (LTR)",
-            role: "Act as a Residential Portfolio Manager.",
-            objective: 'Perform a "Forensic LTR Deep Research Analysis" for the attached assets.',
-            defaults: ['forensic_search', 'tenant', 'condition', 'cashflow', 'verdict'],
-            sections: {
-                forensic_search: {
-                    title: "Phase 1: Geographic & Permit Identification",
-                    content: `   - Identify County/Township.
-   - SEARCH PROTOCOL: Use web research and cite authoritative sources to find "[County] Building Permits [Address]" and "[County] Code Violations".
-   - Verify the "Certificate of Occupancy" requirements for LTR in this jurisdiction.`
-                },
-                tenant: {
-                    title: "Phase 2: Tenant Avatar & Demand",
-                    content: `   - Verify School District ratings (GreatSchools) and local crime indices.
-   - Search for major employers within 10 miles and their current layoff/growth news.`
-                },
-                condition: {
-                    title: "Phase 3: Durability Audit (Photos)",
-                    content: `   - Flag high-maintenance features in photos: carpet, old appliances, complex landscaping.
-   - Judge "Renovation Tier": Does it need a refresh before listing?`
-                },
-                cashflow: {
-                    title: "Phase 4: Cash Flow Stability",
-                    content: `   - Calculate Rent-to-Price ratio.
-   - Identify non-recoverable costs (Taxes, HOA) by searching official County tax rates for the current year.`
-                },
-                verdict: {
-                    title: "Phase 5: Verdict",
-                    content: `   - Summarize the thesis: Cash Flow, Appreciation, or Capital Preservation?
-   - Include comparison tables in the conclusion.`
-                }
-            }
-        },
-        multi: {
-            label: "Multi-Unit / House Hacking",
-            role: "Act as a Commercial Real Estate Analyst.",
-            objective: 'Perform a "Multi-Unit Yield & Forensic Audit".',
-            defaults: ['forensic_search', 'unitmix', 'visual', 'expense', 'verdict'],
-            sections: {
-                forensic_search: {
-                    title: "Phase 1: Metering & Zoning Verification",
-                    content: `   - SEARCH PROTOCOL: Use web research and cite authoritative sources for "[Township] Zoning Map". Verify if the unit count is legally non-conforming or fully permitted.
-   - Look for "Master Meter" records or utility billing history for this address.`
-                },
-                unitmix: {
-                    title: "Phase 2: Unit Mix & Utility Split",
-                    content: `   - Analyze the configuration. Are Electric/Heat/Water separated?
-   - Search for local utility company "Landlord Programs" and cost to separate meters.`
-                },
-                visual: {
-                    title: "Phase 3: Visual CapEx Assessment (Photos)",
-                    content: `   - Identify "Renovation Tiers": Are units dated? Can cosmetic updates (cabinets, fixtures) force appreciation?
-   - Flag "Deferred Maintenance" signals (Roof age, siding stains).`
-                },
-                expense: {
-                    title: "Phase 4: Expense Ratio Reality Check",
-                    content: `   - Search for commercial waste removal costs and multi-unit insurance premiums in this region.`
-                },
-                verdict: {
-                    title: "Phase 5: Verdict",
-                    content: `   - Evaluate viability: "Turnkey Yield" vs. "Value-Add Project".
-   - Include comparison tables in the conclusion.`
-                }
-            }
-        },
-        flip: {
-            label: "Fix & Flip / Renovation",
-            role: "Act as a Project Manager & Fix-and-Flip Specialist.",
-            objective: 'Perform a "Renovation Feasibility & ARV Forensic Report".',
-            defaults: ['forensic_search', 'bones', 'scope', 'arv', 'verdict'],
-            sections: {
-                forensic_search: {
-                    title: "Phase 1: Structural & Permit History",
-                    content: `   - SEARCH PROTOCOL: Use web research and cite authoritative sources for "[County] Permit History [Address]". Identify if previous renovations were unpermitted.
-   - Search for "Soil Stability" or "Flood Zone" issues for this specific street.`
-                },
-                bones: {
-                    title: "Phase 2: The 'Bone Structure' (Forensic)",
-                    content: `   - Identify structural red flags: Foundation cracks, water intrusion, mold hints in "As-Is" language.`
-                },
-                scope: {
-                    title: "Phase 3: Renovation Scope Estimation (Photos)",
-                    content: `   - Categorize work: Cosmetic vs Heavy vs Gut.
-   - Estimate "Rehab Budget" based on visual condition. Does kitchen layout require moving plumbing/gas?`
-                },
-                arv: {
-                    title: "Phase 4: ARV Clues",
-                    content: `   - Search for "Sold" comps within 0.5 miles with similar finishes. Compare "Price per SQFT" of renovated vs unrenovated homes.`
-                },
-                verdict: {
-                    title: "Phase 5: Verdict",
-                    content: `   - Evaluate project feasibility. Does the spread justify the renovation risk?
-   - Include comparison tables in the conclusion.`
-                }
-            }
-        }
+Your objective is to conduct a Deep Research analysis of this investment opportunity. Please do NOT restrict yourself to a narrow checklist or tunnel-vision solely on the provided text. Use your deep research capabilities to uncover market trends, hidden risks, local regulations, neighborhood dynamics, and any other factors that are not immediately obvious from the listing itself. Give me your best professional advice and highlight what I might be missing.`;
+
+    const PROMPTS = {
+        str: `${DEEP_RESEARCH_CORE}
+
+FOCUS AREA: Short-Term Rental (STR) / Airbnb
+While conducting your broad research, please ensure you investigate:
+- Infrastructure Constraints: e.g., Sewer vs. Septic limits (which often legally cap occupancy).
+- Regulatory Friction: e.g., HOA 'Gate taxes', short-term rental bans, or strict township licensing.
+- Utility Volatility: Assess mechanical vintage/heating type for winter NOI impact.
+- Value Drivers vs. Drags: Look at the embedded photos for cosmetic condition, layout bottlenecks, and required CapEx to reach top-tier ADR.
+
+Conclude with a clear investment verdict (Strong Buy, Qualified Buy, or Hard Pass) and summarize the Risk vs. Reward profile.`,
+
+        ltr: `${DEEP_RESEARCH_CORE}
+
+FOCUS AREA: Long-Term Rental (LTR) / Buy & Hold
+While conducting your broad research, please ensure you investigate:
+- Target Demographics: Tenant demand drivers like school districts, transit, and employment hubs.
+- Durability Risks: Look at the embedded photos to flag high-maintenance features (carpet, old appliances, complex landscaping).
+- Financial Stability: True cash flow potential, factoring in non-recoverable costs like taxes and HOA fees.
+
+Conclude with a clear investment verdict (Strong Buy, Qualified Buy, or Hard Pass) assessing whether this is a cash-flow play, appreciation play, or capital trap.`,
+
+        multi: `${DEEP_RESEARCH_CORE}
+
+FOCUS AREA: Multi-Unit / Small Multi-Family
+While conducting your broad research, please ensure you investigate:
+- Metering & Utilities: Are utilities master-metered (landlord risk) or separated?
+- Value-Add Potential: Review embedded photos for 'Loss to Lease' opportunities (cosmetic updates) or unused zoning density.
+- Expense Reality: Normalize taxes, insurance, and maintenance beyond what the listing claims.
+
+Conclude with a clear investment verdict (Strong Buy, Qualified Buy, or Hard Pass) detailing the operational risk vs. potential yield.`,
+
+        flip: `${DEEP_RESEARCH_CORE}
+
+FOCUS AREA: Fix-and-Flip / Renovation
+While conducting your broad research, please ensure you investigate:
+- Structural & Vintage Risks: Identify red flags like foundation issues, 1970s aluminum wiring, or pre-1978 lead paint risks.
+- Renovation Scope: Review the embedded photos to estimate the rehab budget (Cosmetic vs. Heavy vs. Gut) and layout obsolescence (e.g., 1.5 baths).
+- ARV Caps: Does the neighborhood, street, or ceiling height place a permanent cap on After Repair Value?
+
+Conclude with a clear investment verdict (Strong Buy, Qualified Buy, or Hard Pass) and evaluate if the profit spread justifies the renovation risk.`
     };
-
-    const GLOBAL_SECTIONS = {
-        deep_research: {
-            title: "Deep Research Verification Protocol",
-            content: `   - MANDATORY: Use web research and cite authoritative sources for County Tax Records, Zoning Maps, and Code Violations.
-   - Verify school ratings and local crime statistics via current data.
-   - Search for recent building permits (last 5 years).`
-        },
-        renovation: {
-            title: "Renovation Estimator",
-            content: `   - Estimate rehab costs based on photos. Distinguish between "Cosmetic", "Value-Add", and "Full Gut".`
-        },
-        neighborhood: {
-            title: "Neighborhood Analysis",
-            content: `   - Analyze via map data and description. Identify noise sources (highways, trains) and proximity to anchors.`
-        }
-    };
-
-    function buildPrompt(strategyKey, selectedSections, globalOptions) {
-        const strategy = PROMPT_DATA[strategyKey];
-        if (!strategy) return "Error: Invalid Strategy";
-
-        let role = strategy.role;
-        if (globalOptions.includes('skeptical')) {
-            role = role.replace("Act as a", "Act as a highly skeptical, forensic, and risk-averse");
-        }
-
-        let prompt = `${role}\n\nMISSION:\n${strategy.objective}\n\n${STANDARD_OUTPUTS}\n\n`;
-
-        prompt += `SOURCE HIERARCHY:\n1. Official County/Township Government Records (Assessor, GIS, Permits)\n2. Official Regulatory Codes (Zoning, STR Ordinances)\n3. Primary Market Data (AirDNA, Comps)\n4. Property Listing Description (Least Trusted)\n\n`;
-
-        let sectionIndex = 1;
-        const allSections = [];
-
-        Object.keys(strategy.sections).forEach(key => {
-            if (selectedSections.includes(key)) {
-                allSections.push({ ...strategy.sections[key], id: key });
-            }
-        });
-
-        Object.keys(GLOBAL_SECTIONS).forEach(key => {
-            if (selectedSections.includes(key)) {
-                allSections.push({ ...GLOBAL_SECTIONS[key], id: key });
-            }
-        });
-
-        allSections.forEach(section => {
-            prompt += `${sectionIndex}. ${section.title}:\n${section.content}\n\n`;
-            sectionIndex++;
-        });
-
-        prompt += `*** IF MULTIPLE FILES ARE UPLOADED: ***\n- Produce a "Forensic Comparative Matrix" ranking properties by: [Price, Risk Score, Yield Potential, Renovation Intensity].\n\nPROPERTY DATA FOR ANALYSIS:\n[ATTACHED BELOW]`;
-
-        return prompt;
-    }
 
     /* INITIALIZATION */
     function init() {
@@ -252,47 +78,92 @@ REQUIRED OUTPUT STRUCTURE:
 
         await expandDetails();
         
-        /* 1. Extract JSON-based metadata first */
-        const rawJSON = extractHiddenData();
-        scrapeMetadata(rawJSON);
+        /* 1. Extract Snapshot (Runs BEFORE we alter the DOM) */
+        const snapshotHtml = extractSnapshotData();
 
-        /* 2. Get cleaned body */
+        /* 2. Clean and Stabilize Page Content */
         const content = getCleanPageContent();
         
-        /* 3. Get images */
-        updateStatus("Embedding photos (0/20)...", "loading");
+        /* 3. Extract Raw JSON Data */
+        const rawJSON = extractHiddenData();
+        
+        /* 4. Async Photo Embedding */
+        updateStatus("Embedding photos (0/15)...", "loading");
         const photoGallery = await extractAndEmbedGallery();
         
-        extractedContent = content + photoGallery + rawJSON;
+        /* Combine everything */
+        extractedContent = snapshotHtml + content + photoGallery + rawJSON;
 
         isExtracting = false;
         updateStatus("Ready for download.", "success");
         enableDownload();
     }
 
-    function scrapeMetadata(jsonHtml) {
+    /* PROPERTY SNAPSHOT EXTRACTION */
+    function extractSnapshotData() {
         try {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(jsonHtml, 'text/html');
-            const pre = doc.querySelector('pre');
-            if (!pre) return;
-            const data = JSON.parse(pre.innerText);
+            // Price
+            const priceEl = document.querySelector('[data-testid="ldp-list-price"]');
+            propertyMetadata.price = priceEl ? priceEl.innerText.replace(/\n/g, ' ').trim() : 'N/A';
 
-            // Attempt to find Realtor.com specific structures
-            data.forEach(item => {
-                if (item.props && item.props.pageProps && item.props.pageProps.propertyData) {
-                    const p = item.props.pageProps.propertyData;
-                    propertyMetadata.address = p.location?.address?.line + ", " + p.location?.address?.city;
-                    propertyMetadata.price = "$" + (p.list_price || p.price);
-                    propertyMetadata.specs = `${p.description?.beds}bd, ${p.description?.baths}ba, ${p.description?.sqft}sqft`;
-                    propertyMetadata.yearBuilt = p.description?.year_built;
-                    propertyMetadata.description = p.description?.text;
+            // Address (Avoid getting "View on map" text)
+            const addressBtn = document.querySelector('[data-testid="address-line-ldp"] h1 button, [data-testid="address-line-ldp"] h1');
+            propertyMetadata.address = addressBtn ? addressBtn.innerText.trim() : 'N/A';
+
+            // Specs (Beds, Baths, SqFt)
+            const beds = document.querySelector('[data-testid="property-meta-beds"]')?.innerText.replace(/\n/g, ' ') || '';
+            const baths = document.querySelector('[data-testid="property-meta-baths"]')?.innerText.replace(/\n/g, ' ') || '';
+            const sqft = document.querySelector('[data-testid="property-meta-sqft"]')?.innerText.replace(/\n/g, ' ') || '';
+            propertyMetadata.specs = [beds, baths, sqft].filter(Boolean).join(' | ') || 'N/A';
+
+            // Description
+            const descEl = document.querySelector('[data-testid="romance-paragraph"]');
+            propertyMetadata.description = descEl ? descEl.innerText.replace('Show more', '').trim() : 'N/A';
+
+            // Year Built
+            propertyMetadata.yearBuilt = 'N/A';
+            const keyFacts = document.querySelectorAll('[data-testid="key-facts"] li');
+            keyFacts.forEach(li => {
+                const text = li.innerText.toLowerCase();
+                if (text.includes('built in') || text.includes('year built')) {
+                    propertyMetadata.yearBuilt = li.innerText.replace(/\n/g, ' ').trim();
                 }
             });
-        } catch(e) {}
+
+            return `
+            <div class="forensic-header">
+                <h1>Property Snapshot</h1>
+                <div class="core-facts">
+                    <div class="fact-item">
+                        <div class="fact-label">Address</div>
+                        <div style="font-size: 16px;">${propertyMetadata.address}</div>
+                    </div>
+                    <div class="fact-item">
+                        <div class="fact-label">Price</div>
+                        <div style="font-size: 18px; font-weight: bold; color: #10b981;">${propertyMetadata.price}</div>
+                    </div>
+                    <div class="fact-item">
+                        <div class="fact-label">Specs</div>
+                        <div style="font-size: 16px;">${propertyMetadata.specs}</div>
+                    </div>
+                    <div class="fact-item">
+                        <div class="fact-label">Age & History</div>
+                        <div style="font-size: 16px;">${propertyMetadata.yearBuilt}</div>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <div class="fact-label" style="margin-bottom: 5px;">Description</div>
+                    <div style="font-size: 14px; line-height: 1.6; color: #ccc;">${propertyMetadata.description}</div>
+                </div>
+            </div>
+            `;
+        } catch (e) {
+            console.error('Snapshot extraction failed', e);
+            return '<div style="color:red;">Failed to extract snapshot headers</div>';
+        }
     }
 
-    /* UI GENERATION */
+    /* UI GENERATION (FIXED SCROLLBARS & FLEX LAYOUT) */
     function createUI() {
         const existing = document.getElementById(CONFIG.overlayId);
         if (existing) existing.remove();
@@ -316,70 +187,36 @@ REQUIRED OUTPUT STRUCTURE:
         body.className = 'pc-body';
 
         const step1 = document.createElement('div');
-        step1.className = 'pc-step';
+        step1.className = 'pc-step-fixed';
         step1.innerHTML = `<label>1. Select Investment Strategy</label>`;
         
         const select = document.createElement('select');
         select.className = 'pc-select';
-        Object.keys(PROMPT_DATA).forEach(k => {
-            const opt = document.createElement('option');
-            opt.value = k;
-            opt.textContent = PROMPT_DATA[k].label;
-            select.appendChild(opt);
-        });
+        select.innerHTML = `
+            <option value="str">Short-Term Rental (Vacation/Airbnb)</option>
+            <option value="ltr">Long-Term Rental (City/Suburban)</option>
+            <option value="multi">Multi-Unit / House Hacking</option>
+            <option value="flip">Fix & Flip / Renovation</option>
+        `;
         step1.appendChild(select);
 
-        const optionsContainer = document.createElement('div');
-        optionsContainer.className = 'pc-options-container';
-
-        const sectionsGroup = document.createElement('fieldset');
-        sectionsGroup.className = 'pc-fieldset';
-        sectionsGroup.innerHTML = `<legend>Include Sections</legend>`;
-        const sectionsList = document.createElement('div');
-        sectionsList.className = 'pc-checkbox-grid';
-        sectionsGroup.appendChild(sectionsList);
-
-        const globalGroup = document.createElement('fieldset');
-        globalGroup.className = 'pc-fieldset';
-        globalGroup.innerHTML = `<legend>Advanced Options</legend>`;
-        const globalList = document.createElement('div');
-        globalList.className = 'pc-checkbox-grid';
-        globalGroup.appendChild(globalList);
-
-        const globalOpts = [
-            { id: 'deep_research', label: 'Deep Research Protocol' },
-            { id: 'renovation', label: 'Renovation Estimator' },
-            { id: 'neighborhood', label: 'Neighborhood Analysis' },
-            { id: 'skeptical', label: 'Forensic Skepticism', type: 'option' }
-        ];
-
-        globalOpts.forEach(opt => {
-            const div = document.createElement('div');
-            div.className = 'pc-checkbox-item';
-            div.innerHTML = `
-                <input type="checkbox" id="pc-opt-${opt.id}" value="${opt.id}" data-type="${opt.type || 'section'}" checked>
-                <label for="pc-opt-${opt.id}">${opt.label}</label>
-            `;
-            globalList.appendChild(div);
-        });
-
-        optionsContainer.appendChild(sectionsGroup);
-        optionsContainer.appendChild(globalGroup);
-
         const step2 = document.createElement('div');
-        step2.className = 'pc-step';
-        step2.style.flexGrow = '1';
-        step2.style.display = 'flex';
-        step2.style.flexDirection = 'column';
-        step2.innerHTML = `<label>Generated Prompt (Editable)</label>`;
+        step2.className = 'pc-step-flex';
+        step2.innerHTML = `<label>2. Generated Gemini Prompt (Editable)</label>`;
 
         const textarea = document.createElement('textarea');
         textarea.className = 'pc-textarea';
+        textarea.value = PROMPTS.str;
         
+        select.onchange = (e) => {
+            textarea.value = PROMPTS[e.target.value];
+        };
+
         const copyBtn = document.createElement('button');
         copyBtn.className = 'pc-btn secondary';
         copyBtn.textContent = "Copy Prompt to Clipboard";
-        copyBtn.style.marginTop = "8px";
+        copyBtn.style.marginTop = "12px";
+        copyBtn.style.flexShrink = "0"; // Prevent button from squishing
         copyBtn.onclick = () => {
             navigator.clipboard.writeText(textarea.value);
             copyBtn.textContent = "Copied!";
@@ -389,58 +226,25 @@ REQUIRED OUTPUT STRUCTURE:
         step2.appendChild(textarea);
         step2.appendChild(copyBtn);
 
-        function refreshPrompt() {
-            const strat = select.value;
-            const selectedSections = [];
-            const globalOptions = [];
-            sectionsList.querySelectorAll('input:checked').forEach(cb => selectedSections.push(cb.value));
-            globalList.querySelectorAll('input:checked').forEach(cb => {
-                if(cb.dataset.type === 'section') selectedSections.push(cb.value);
-                else globalOptions.push(cb.value);
-            });
-            textarea.value = buildPrompt(strat, selectedSections, globalOptions);
-        }
-
-        function renderStrategySections() {
-            const strat = select.value;
-            const data = PROMPT_DATA[strat];
-            sectionsList.innerHTML = '';
-            Object.keys(data.sections).forEach(k => {
-                const s = data.sections[k];
-                const div = document.createElement('div');
-                div.className = 'pc-checkbox-item';
-                const isChecked = data.defaults.includes(k) ? 'checked' : '';
-                div.innerHTML = `
-                    <input type="checkbox" id="pc-sec-${k}" value="${k}" ${isChecked}>
-                    <label for="pc-sec-${k}" title="${s.title}">${s.title.split(':')[1]?.trim() || s.title}</label>
-                `;
-                sectionsList.appendChild(div);
-            });
-            sectionsList.querySelectorAll('input').forEach(i => i.onchange = refreshPrompt);
-            refreshPrompt();
-        }
-
-        select.onchange = renderStrategySections;
-        globalList.querySelectorAll('input').forEach(i => i.onchange = refreshPrompt);
-        renderStrategySections();
-
         const footer = document.createElement('div');
         footer.className = 'pc-footer';
+
         const dlBtn = document.createElement('button');
         dlBtn.id = 'pc-dl-btn';
         dlBtn.className = 'pc-btn primary disabled';
         dlBtn.textContent = "Extracting Data...";
         dlBtn.disabled = true;
         dlBtn.onclick = () => handleDownload();
+
         const closeBtn = document.createElement('button');
         closeBtn.className = 'pc-btn';
         closeBtn.textContent = "Close";
         closeBtn.onclick = () => overlay.remove();
+
         footer.appendChild(closeBtn);
         footer.appendChild(dlBtn);
 
         body.appendChild(step1);
-        body.appendChild(optionsContainer);
         body.appendChild(step2);
         modal.appendChild(header);
         modal.appendChild(body);
@@ -448,16 +252,60 @@ REQUIRED OUTPUT STRUCTURE:
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
 
+        /* CSS UPDATED FOR PROPER FLEX LAYOUT (NO DOUBLE SCROLLBARS) */
         const style = document.createElement('style');
         style.textContent = `
             #${CONFIG.overlayId} { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 999999; display: flex; justify-content: center; align-items: center; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-            #${CONFIG.modalId} { background: white; width: 900px; height: 80vh; max-height: 800px; display: flex; flex-direction: column; border-radius: 12px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
-            .pc-header { padding: 16px 20px; background: #fff; border-bottom: 1px solid #e5e7eb; font-size: 16px; color: #111827; }
-            .pc-body { flex-grow: 1; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: #f9fafb; overflow-y: auto; }
-            .pc-step label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
-            .pc-select { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; background: white; color: #1f2937; }
-            .pc-textarea { width: 100%; flex-grow: 1; min-height: 400px; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-family: monospace; font-size: 12px; resize: none; color: #374151; line-height: 1.5; }
-            .pc-footer { padding: 16px 20px; background: #fff; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 10px; }
+            
+            #${CONFIG.modalId} { 
+                background: white; 
+                width: 90%; 
+                max-width: 600px; 
+                height: 85vh; 
+                max-height: 800px;
+                display: flex; 
+                flex-direction: column; 
+                border-radius: 12px; 
+                overflow: hidden; 
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); 
+            }
+            
+            .pc-header { padding: 16px 20px; background: #fff; border-bottom: 1px solid #e5e7eb; font-size: 16px; color: #111827; flex-shrink: 0; }
+            
+            .pc-body { 
+                flex-grow: 1; 
+                padding: 24px; 
+                display: flex; 
+                flex-direction: column; 
+                gap: 20px; 
+                background: #f9fafb; 
+                overflow: hidden; /* Prevent body scroll */
+            }
+            
+            .pc-step-fixed { display: flex; flex-direction: column; flex-shrink: 0; }
+            .pc-step-flex { display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; }
+            
+            .pc-step-fixed label, .pc-step-flex label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; }
+            
+            .pc-select { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; background: white; color: #1f2937; flex-shrink: 0; }
+            
+            .pc-textarea { 
+                width: 100%; 
+                flex-grow: 1; 
+                padding: 14px; 
+                border: 1px solid #d1d5db; 
+                border-radius: 6px; 
+                font-family: monospace; 
+                font-size: 13px; 
+                resize: none; 
+                color: #374151; 
+                line-height: 1.5; 
+                overflow-y: auto; /* ONLY the textarea scrolls */
+                box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            }
+            
+            .pc-footer { padding: 16px 20px; background: #fff; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 10px; flex-shrink: 0; }
+            
             .pc-btn { padding: 8px 16px; border: 1px solid #d1d5db; background: white; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; color: #374151; transition: all 0.2s; }
             .pc-btn:hover { background: #f3f4f6; }
             .pc-btn.primary { background: #3b82f6; color: white; border: none; }
@@ -465,16 +313,10 @@ REQUIRED OUTPUT STRUCTURE:
             .pc-btn.primary.disabled { background: #93c5fd; cursor: not-allowed; }
             .pc-btn.secondary { background: #fff; color: #2563eb; border: 1px solid #2563eb; width: 100%; }
             .pc-btn.secondary:hover { background: #eff6ff; }
-            .pc-pill { padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+            
+            .pc-pill { padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; display: inline-block; white-space: nowrap; }
             .pc-pill.loading { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; }
             .pc-pill.success { background: #f0fdf4; color: #15803d; border: 1px solid #dcfce7; }
-            .pc-options-container { display: flex; gap: 15px; }
-            .pc-fieldset { flex: 1; border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px; background: white; }
-            .pc-fieldset legend { font-size: 11px; font-weight: bold; color: #6b7280; padding: 0 4px; text-transform: uppercase; }
-            .pc-checkbox-grid { display: flex; flex-direction: column; gap: 6px; max-height: 150px; overflow-y: auto; }
-            .pc-checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #374151; }
-            .pc-checkbox-item input { margin: 0; cursor: pointer; }
-            .pc-checkbox-item label { margin: 0; cursor: pointer; text-transform: none; font-weight: 400; }
         `;
         overlay.appendChild(style);
     }
@@ -498,9 +340,10 @@ REQUIRED OUTPUT STRUCTURE:
 
     function handleDownload() {
         if (!extractedContent) return;
-        const rawAddr = propertyMetadata.address || document.title || 'Property';
-        const cleanAddr = BookmarkletUtils.sanitizeFilename(rawAddr.split(',')[0]);
-        const filename = `${cleanAddr}_${Date.now()}.html`;
+        const title = BookmarkletUtils.sanitizeFilename(document.title || 'Property');
+        const filename = `${CONFIG.filenamePrefix}${title}_${Date.now()}.html`;
+        
+        /* Inject BASE tag AND Custom Snapshot + Photo Grid Styles */
         const customStyle = `
             <style>
                 body { font-family: system-ui, -apple-system, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; line-height: 1.5; color: #333; }
@@ -511,33 +354,12 @@ REQUIRED OUTPUT STRUCTURE:
                 .fact-label { font-weight: bold; color: #999; font-size: 12px; text-transform: uppercase; }
                 .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin-top: 20px; }
                 .gallery-item { border: 1px solid #eee; border-radius: 8px; overflow: hidden; background: #fff; }
-                .gallery-item img { width: 100%; height: 220px; object-fit: cover; display: block; }
-                .gallery-caption { padding: 10px; font-size: 12px; color: #666; background: #f9f9f9; min-height: 40px; }
-                .content-section { margin-top: 40px; }
-                h2 { border-left: 4px solid #3b82f6; padding-left: 15px; text-transform: uppercase; font-size: 18px; }
-                .raw-data-details { margin-top: 50px; opacity: 0.6; }
-                @media print { .gallery-item { break-inside: avoid; } }
+                .gallery-item img { width: 100%; height: 200px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd; }
+                .raw-data-details { margin-top: 50px; border-top: 2px solid #000; padding-top: 20px; }
+                @media print { .gallery-item { page-break-inside: avoid; } }
             </style>
         `;
-
-        const headerHtml = `
-            <div class="forensic-header">
-                <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #3b82f6;">Forensic Asset Export</div>
-                <h1>${propertyMetadata.address || 'Property Snapshot'}</h1>
-                <div class="core-facts">
-                    <div class="fact-item"><div class="fact-label">List Price</div><div>${propertyMetadata.price || 'N/A'}</div></div>
-                    <div class="fact-item"><div class="fact-label">Specs</div><div>${propertyMetadata.specs || 'N/A'}</div></div>
-                    <div class="fact-item"><div class="fact-label">Year Built</div><div>${propertyMetadata.yearBuilt || 'N/A'}</div></div>
-                    <div class="fact-item"><div class="fact-label">Export Date</div><div>${new Date().toLocaleString()}</div></div>
-                </div>
-                <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #444;">
-                    <div class="fact-label">Marketing Summary</div>
-                    <p style="font-size: 14px; color: #ccc;">${propertyMetadata.description || 'No description extracted.'}</p>
-                </div>
-            </div>
-        `;
-
-        const fullHTML = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${cleanAddr}</title><base href="${window.location.origin}">${customStyle}</head><body>${headerHtml}${extractedContent}</body></html>`;
+        const fullHTML = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title><base href="${window.location.origin}">${customStyle}</head><body>${extractedContent}</body></html>`;
         BookmarkletUtils.downloadFile(filename, fullHTML);
     }
 
@@ -548,93 +370,92 @@ REQUIRED OUTPUT STRUCTURE:
             const el = document.querySelector(sel);
             if (el) { searchScope = el; break; }
         }
-        const targets = ['[data-testid="hero-view-more"]', '[data-testid="accordion-header"][aria-expanded="false"]', '#load-more-features', 'button[class*="show-more"]', '.BottomLink', 'button.clickable'];
+
+        const targets = [
+            '[data-testid="hero-view-more"]',
+            '[data-testid="accordion-header"][aria-expanded="false"]',
+            '#load-more-features',
+            'button[class*="show-more"]',
+            '.BottomLink',
+            'button.clickable' 
+        ];
+        
         let c = 0;
         targets.forEach(function(s) {
             const els = searchScope.querySelectorAll(s);
             els.forEach(function(e) { try{e.click(); c++;}catch(r){} });
         });
+
         const candidates = searchScope.querySelectorAll('button, a, div[role="button"], span[role="button"]');
         for (let i = 0; i < candidates.length; i++) {
             const el = candidates[i];
             const link = el.closest('a');
             if (link && link.href && !link.href.includes('javascript') && !link.href.includes('#')) continue; 
+
             const t = (el.innerText || '').toLowerCase();
             const badTerms = ['photo', 'agent', 'map', 'school', 'sell', 'buy', 'rent', 'advice', 'contact'];
             if (badTerms.some(function(term) { return t.includes(term); })) continue;
+
             if ((t.includes('see more') || t.includes('show more') || t.includes('view all') || t.includes('read more'))) {
                 if (el.offsetParent !== null) { try { el.click(); c++; } catch(e){} }
             }
         }
+        
         if (c > 0) await new Promise(function(r) { setTimeout(r, 1200); });
     }
 
+    /* ASYNC IMAGE EMBEDDER */
     async function extractAndEmbedGallery() {
-        const photoData = [];
-        const MAX_IMAGES = 20;
-        const TARGET_WIDTH = 1000;
+        const imageUrls = new Set();
+        const MAX_IMAGES = 15; /* Limit to avoid massive files */
+        const TARGET_WIDTH = 800; /* Resize to reduce weight */
 
+        /* 1. Try to find Next.js data (Highest quality) */
         const n = document.getElementById('__NEXT_DATA__');
         if(n) {
             try {
-                const data = JSON.parse(n.innerText);
-                // Attempt to find realtor.com photos with captions
-                const photos = data.props?.pageProps?.propertyData?.photos || [];
-                photos.forEach(p => {
-                    const url = p.href || p.url;
-                    if (url) {
-                        photoData.push({
-                            url: url.replace('s.jpg', 'od.jpg').replace('m.jpg', 'od.jpg'),
-                            caption: p.title || p.caption || ''
-                        });
-                    }
-                });
+                const txt = n.innerText;
+                const matches = txt.match(/https:\/\/[^"]+(jpg|jpeg|png|webp)/g);
+                if (matches) {
+                    matches.forEach(url => {
+                        if (url.includes('rdcpix') || url.includes('zillowstatic') || url.includes('photos')) {
+                            imageUrls.add(url.replace('s.jpg', 'od.jpg')); 
+                        }
+                    });
+                }
             } catch(e){}
         }
 
-        // Fallback to DOM if JSON failed
-        if (photoData.length === 0) {
-            document.querySelectorAll('img').forEach(img => {
-                let src = img.src || img.dataset.src || img.getAttribute('srcset');
-                if (src && (src.includes('rdcpix') || src.includes('zillowstatic')) && !src.includes('profile')) {
-                    if(src.indexOf(' ') > -1) src = src.split(' ')[0];
-                    photoData.push({ url: src, caption: img.alt || '' });
-                }
-            });
-        }
+        /* 2. Fallback: Scrape DOM images */
+        document.querySelectorAll('img').forEach(img => {
+            let src = img.src || img.dataset.src || img.getAttribute('srcset');
+            if (src && (src.includes('rdcpix') || src.includes('zillowstatic')) && !src.includes('profile')) {
+                if(src.indexOf(' ') > -1) src = src.split(' ')[0];
+                imageUrls.add(src);
+            }
+        });
 
-        if (photoData.length === 0) return '';
+        if (imageUrls.size === 0) return '';
 
-        const imagesArray = photoData.slice(0, MAX_IMAGES);
-        let html = '<section class="content-section" id="property-gallery">';
-        html += '<h2>Visual Evidence (Embedded Photos)</h2>';
-        html += '<p><em>Analyze for "Hoarding Clutter", "Contractor Grade Flips", and "Deferred Maintenance" (roof/mold/clutter).</em></p>';
+        const imagesArray = Array.from(imageUrls).slice(0, MAX_IMAGES);
+        let html = '<section id="property-gallery" style="margin-top: 40px; border-top: 5px solid #333; padding-top: 20px;">';
+        html += '<h2>PROPERTY PHOTOS (Embedded)</h2>';
+        html += '<p><em>Visual evidence for kitchen/bath condition and renovation quality.</em></p>';
         html += '<div class="gallery-grid">';
         
         for (let i = 0; i < imagesArray.length; i++) {
             updateStatus(`Embedding photo ${i + 1}/${imagesArray.length}...`, "loading");
-            const item = imagesArray[i];
             try {
-                const base64 = await toBase64(item.url, TARGET_WIDTH);
+                const base64 = await toBase64(imagesArray[i], TARGET_WIDTH);
                 if (base64) {
-                    html += `
-                        <div class="gallery-item">
-                            <img src="${base64}" alt="Property Photo ${i}">
-                            <div class="gallery-caption">${item.caption || `Photo ${i+1}`}</div>
-                        </div>`;
+                    html += `<div class="gallery-item"><img src="${base64}" alt="Property Photo ${i}"></div>`;
                 } else {
-                    html += `
-                        <div class="gallery-item">
-                            <img src="${item.url}" alt="Property Photo ${i} (Linked)">
-                            <div class="gallery-caption">${item.caption || `Photo ${i+1} (External Link)`}</div>
-                        </div>`;
+                    /* Fallback to hotlink if CORS fails */
+                    html += `<div class="gallery-item"><img src="${imagesArray[i]}" alt="Property Photo ${i} (Linked)"></div>`;
                 }
             } catch (e) {
-                html += `
-                    <div class="gallery-item">
-                        <img src="${item.url}" alt="Property Photo ${i} (Linked)">
-                        <div class="gallery-caption">${item.caption || `Photo ${i+1} (External Link)`}</div>
-                    </div>`;
+                /* Ignore errors, just skip or link */
+                html += `<div class="gallery-item"><img src="${imagesArray[i]}" alt="Property Photo ${i} (Linked)"></div>`;
             }
         }
         
@@ -647,22 +468,29 @@ REQUIRED OUTPUT STRUCTURE:
             const img = new Image();
             img.crossOrigin = 'Anonymous';
             img.src = url;
+            
             img.onload = () => {
                 const canvas = document.createElement('canvas');
                 let width = img.width;
                 let height = img.height;
+                
                 if (width > maxWidth) {
                     height = Math.round(height * (maxWidth / width));
                     width = maxWidth;
                 }
+                
                 canvas.width = width;
                 canvas.height = height;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
+                
                 try {
-                    resolve(canvas.toDataURL('image/jpeg', 0.6));
-                } catch (e) { resolve(null); }
+                    resolve(canvas.toDataURL('image/jpeg', 0.7));
+                } catch (e) {
+                    resolve(null); /* Canvas tainted */
+                }
             };
+            
             img.onerror = () => resolve(null);
         });
     }
@@ -689,9 +517,14 @@ REQUIRED OUTPUT STRUCTURE:
         if(!t) t = document.querySelector('main')||document.querySelector('[role="main"]')||document.querySelector('article')||document.body;
 
         const c = t.cloneNode(!0);
-        BookmarkletUtils.normalizeImages(c);
-        BookmarkletUtils.inlineStyles(t, c);
 
+        /* 1. Normalize Images */
+        normalizeImagesInSubtree(c);
+
+        /* 2. Inline Safe Styles (Minimal Stabilization) */
+        inlineSafeStyles(t, c);
+
+        /* 3. Clean the clone - SCORCHED EARTH MAP REMOVAL */
         const junk = [
             'script', 'style', 'noscript', 'iframe', 'svg', 'button', 'input', 
             'nav', 'footer', 'header', 'aside',
@@ -704,14 +537,13 @@ REQUIRED OUTPUT STRUCTURE:
         ];
         junk.forEach(function(k) { c.querySelectorAll(k).forEach(function(e) { e.remove(); }); });
 
-        BookmarkletUtils.sanitizeAttributes(c);
-
+        /* 4. Remove attributes to reduce token count (CRITICAL FIX: Do NOT remove 'style' attribute here) */
         c.querySelectorAll('*').forEach(function(el) {
             el.removeAttribute('class');
-            el.removeAttribute('style');
             el.removeAttribute('data-testid');
         });
 
+        /* 5. Clean empty lists */
         c.querySelectorAll('li').forEach(function(li) {
             if (!li.innerText.trim() && li.children.length === 0) { li.remove(); }
         });
@@ -719,7 +551,74 @@ REQUIRED OUTPUT STRUCTURE:
             if (list.children.length === 0) { list.remove(); }
         });
 
-        return `<div class="content-section"><h2>Full Listing Details</h2>${c.outerHTML}</div>`;
+        return c.outerHTML;
+    }
+
+    /* Helper: Image Normalization */
+    function normalizeImagesInSubtree(root) {
+        const imgs = root.querySelectorAll('img');
+        for (let i = 0; i < imgs.length; i++) {
+            const img = imgs[i];
+            if (img.dataset.src) img.src = img.dataset.src;
+            if (img.dataset.lazySrc) img.src = img.dataset.lazySrc;
+            if (!img.src && img.srcset) {
+                const parts = img.srcset.split(',');
+                if(parts.length > 0) {
+                     const firstSrc = parts[0].trim().split(' ')[0];
+                     if(firstSrc) img.src = firstSrc;
+                }
+            }
+            img.removeAttribute('loading');
+            img.removeAttribute('width');
+            img.removeAttribute('height');
+            img.style.maxWidth = '100%';
+            img.style.height = 'auto';
+            img.style.display = 'block';
+        }
+    }
+
+    /* Helper: Inline Safe Styles */
+    function inlineSafeStyles(source, target) {
+        const computed = window.getComputedStyle(source);
+        if (!computed) return;
+        
+        const safeProperties = [
+            'display', 'visibility', 'opacity', 'z-index',
+            'margin', 'padding', 'border', 'border-radius', 'box-shadow', 'box-sizing',
+            'background', 'background-color', 'background-image', 'color',
+            'font-family', 'font-size', 'font-weight', 'line-height', 'text-align',
+            'list-style', 'vertical-align', 'float', 'clear',
+            'flex-direction', 'justify-content', 'align-items', 'gap', 'align-self', 'flex-wrap',
+            'grid-template-columns', 'grid-template-rows', 'grid-auto-flow',
+            'grid-area', 'grid-column', 'grid-row',
+            'place-content', 'place-items', 'place-self',
+            'white-space', 'overflow', 'text-overflow', 'word-wrap', 'word-break',
+            'text-transform', 'text-decoration', 'letter-spacing', 'word-spacing',
+            'object-fit', 'object-position',
+            'position', 'top', 'bottom', 'left', 'right',
+            'transform', 'transform-origin', 'transform-style'
+        ];
+        
+        let styleString = '';
+        safeProperties.forEach(function(prop) {
+            let val = computed.getPropertyValue(prop);
+            if (val && val !== 'none' && val !== 'normal' && val !== 'static' && val !== '0px' && val !== 'auto' && val !== 'rgba(0, 0, 0, 0)') {
+                 styleString += prop + ':' + val + '; ';
+            }
+        });
+        
+        if (styleString) {
+            target.style.cssText += styleString;
+        }
+
+        const sourceChildren = source.children;
+        const targetChildren = target.children;
+        
+        if (!targetChildren || sourceChildren.length !== targetChildren.length) return;
+
+        for (let i = 0; i < sourceChildren.length; i++) {
+            inlineSafeStyles(sourceChildren[i], targetChildren[i]);
+        }
     }
 
     init();
