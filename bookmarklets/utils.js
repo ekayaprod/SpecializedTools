@@ -33,6 +33,13 @@
     ];
 
     w.BookmarkletUtils = {
+        /**
+         * Cleans a string to be safe for use as a filename.
+         * Truncates to 50 chars and replaces special chars with underscores.
+         *
+         * @param {string} s - The input string (e.g., page title).
+         * @returns {string} Safe filename string.
+         */
         sanitizeFilename: function(s) {
             /* Replace non-alphanumeric characters with underscores and truncate */
             return (s || 'export').replace(/[^a-z0-9]/gi, '_').substring(0, 50);
@@ -57,6 +64,12 @@
             }
             return r[rIdx++] % m;
         },
+        /**
+         * Stabilizes images for export by resolving lazy loading attributes (data-src)
+         * and selecting the highest resolution candidate from srcset.
+         *
+         * @param {HTMLElement} root - The root element to scan for images.
+         */
         normalizeImages: function(root) {
             /* Basic <picture> Support */
             const pictures = root.querySelectorAll('picture');

@@ -11,6 +11,7 @@ This project is built by a solo developer using AI. Documentation acts as the "S
 - **Roadmap Alignment:** The `README.md` detailed the "Prompt Engine" feature for Property Clipper, but `ROADMAP.md` did not explicitly list it. I aligned the roadmap to reflect this completed feature.
 - **Utility Documentation:** `bookmarklets/utils.js` contained critical recursive functions (`sanitizeAttributes`, `inlineStyles`) without JSDoc, making them hard for AI models to understand safely.
 - **Property Clipper Alignment:** The `README.md` described the "Prompt Engine" as generic "Investment Analysis", but the code (`bookmarklets/property-clipper.js`) includes a specific "Deep Research Verification Protocol" for forensic auditing. I aligned the documentation to reflect this advanced capability.
+- **Specific Feature Tracking:** The `ROADMAP.md` lacked granular tracking for key sub-features like "Deep Research Protocol" (Property Clipper) and "Image/Markdown Export" (Web Clipper). These features are fully implemented but were not explicitly visible to future AI agents, risking redundancy.
 
 ## Actions Taken
 - Added JSDoc to `inlineSafeStyles` in `bookmarklets/web-clipper.js` to explain the complex style inlining logic.
@@ -23,3 +24,6 @@ This project is built by a solo developer using AI. Documentation acts as the "S
 - Updated `ROADMAP.md` to include "Prompt Engine" as a completed feature of Property Clipper.
 - Added JSDoc to `sanitizeAttributes` and `inlineStyles` in `bookmarklets/utils.js` to explain security and layout preservation logic.
 - Updated `README.md` to explicitly mention "Deep Research Verification Protocol" and "Forensic Audit" for the Property Clipper.
+- Added JSDoc to `buildPrompt` and `extractAndEmbedGallery` in `bookmarklets/property-clipper.js` to explain prompt construction and image scraping strategies.
+- Added JSDoc to `normalizeImages` and `sanitizeFilename` in `bookmarklets/utils.js` to better document these shared utilities.
+- Updated `ROADMAP.md` to include "Deep Research Protocol", "Renovation Estimator", "Image Export", and "Markdown Export" as completed items.

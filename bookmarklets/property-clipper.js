@@ -170,6 +170,14 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         }
     };
 
+    /**
+     * Constructs a specialized investment analysis prompt for LLMs based on user selection.
+     *
+     * @param {string} strategyKey - The investment strategy key (e.g., 'str', 'flip').
+     * @param {string[]} selectedSections - Array of section IDs to include in the prompt.
+     * @param {string[]} globalOptions - Array of global option IDs (e.g., 'skeptical').
+     * @returns {string} The fully constructed prompt string ready for clipboard copy.
+     */
     function buildPrompt(strategyKey, selectedSections, globalOptions) {
         const strategy = PROMPT_DATA[strategyKey];
         if (!strategy) return "Error: Invalid Strategy";
@@ -600,7 +608,13 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         if (c > 0) await new Promise(function(r) { setTimeout(r, 1200); });
     }
 
-    /* GLOBAL REGEX IMAGE EMBEDDER (Captures all high-res photos bypassing JSON structures) */
+    /**
+     * Scans the page for high-resolution property photos using regex and DOM traversal.
+     * Prioritizes finding full-size images hidden in NEXT_DATA JSON blobs or Zillow/Realtor static URLs.
+     * Embeds the top 24 images as Base64 to ensure the LLM can "see" the property condition.
+     *
+     * @returns {Promise<string>} HTML string containing the gallery section.
+     */
     async function extractAndEmbedGallery() {
         const uniqueUrls = new Set();
         const photoData = [];
