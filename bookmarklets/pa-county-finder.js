@@ -63,29 +63,44 @@
     overlay.onclick = e => e.target === overlay && overlay.remove();
 
     const content = card.querySelector('#pa-content');
-    const showRes = (r, q) => {
-        content.innerHTML = r ? `<div style="color:#15803d;background:#dcfce7;padding:12px;border-radius:6px;margin-bottom:10px"><strong>Found:</strong><br>${r}</div>`
-                              : `<div style="color:#b91c1c;background:#fee2e2;padding:12px;border-radius:6px;margin-bottom:10px">No match for "<strong>${q}</strong>"</div>`;
+    const resultDiv = document.createElement('div');
+    resultDiv.id = 'pa-result';
+
+    const createCloseBtn = (marginTop = '0') => {
         const close = document.createElement('button');
         close.textContent = 'Close';
-        Object.assign(close.style, {width:'100%',padding:'8px',background:'#f3f4f6',border:'none',borderRadius:'4px',cursor:'pointer'});
+        Object.assign(close.style, {width:'100%',padding:'8px',background:'#f3f4f6',border:'none',borderRadius:'4px',cursor:'pointer',marginTop});
         close.onclick = () => overlay.remove();
-        content.appendChild(close);
+        return close;
+    };
+
+    const updateResult = (r, q) => {
+        const safeQ = q.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        resultDiv.innerHTML = r ? `<div style="color:#15803d;background:#dcfce7;padding:12px;border-radius:6px;margin-bottom:10px"><strong>Found:</strong><br>${r}</div>`
+                                : `<div style="color:#b91c1c;background:#fee2e2;padding:12px;border-radius:6px;margin-bottom:10px">No match for "<strong>${safeQ}</strong>"</div>`;
     };
 
     let s = window.getSelection().toString().trim();
     if (s) {
-        showRes(find(s), s);
+        updateResult(find(s), s);
+        content.appendChild(resultDiv);
+        content.appendChild(createCloseBtn());
     } else {
         const inp = document.createElement('input');
         Object.assign(inp.style, {width:'100%',padding:'10px',marginBottom:'10px',boxSizing:'border-box',border:'1px solid #ccc',borderRadius:'4px'});
         inp.placeholder = "Enter ZIP or City";
+
         const btn = document.createElement('button');
         btn.textContent = 'Search';
-        Object.assign(btn.style, {width:'100%',padding:'10px',background:'#2563eb',color:'white',border:'none',borderRadius:'4px',cursor:'pointer',fontWeight:'bold'});
-        btn.onclick = () => { if(inp.value.trim()) showRes(find(inp.value.trim()), inp.value.trim()); };
+        Object.assign(btn.style, {width:'100%',padding:'10px',background:'#2563eb',color:'white',border:'none',borderRadius:'4px',cursor:'pointer',fontWeight:'bold',marginBottom:'10px'});
+
+        btn.onclick = () => {
+            const val = inp.value.trim();
+            if(val) updateResult(find(val), val);
+        };
         inp.onkeydown = e => e.key === 'Enter' && btn.click();
-        content.append(inp, btn);
+
+        content.append(inp, btn, resultDiv, createCloseBtn('10px'));
         setTimeout(() => inp.focus(), 50);
     }
     document.body.appendChild(overlay);
