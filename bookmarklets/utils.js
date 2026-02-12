@@ -103,19 +103,20 @@
             if (!computed) return;
 
             /* Apply to current element */
-            let styleString = '';
-            safeProperties.forEach(function(prop) {
-                let val = computed.getPropertyValue(prop);
+            const styles = [];
+            for (let i = 0, len = safeProperties.length; i < len; i++) {
+                const prop = safeProperties[i];
+                const val = computed.getPropertyValue(prop);
 
                 /* Skip default values to keep size manageable */
                 if (val && val !== 'none' && val !== 'normal') {
-                     styleString += prop + ':' + val + '; ';
+                     styles.push(prop + ':' + val);
                 }
-            });
+            }
 
             /* Preserve existing inline styles too - using cssText to avoid overwrites */
-            if (styleString) {
-                target.style.cssText += styleString;
+            if (styles.length > 0) {
+                target.style.cssText += styles.join('; ') + '; ';
             }
 
             /* Recurse children */
