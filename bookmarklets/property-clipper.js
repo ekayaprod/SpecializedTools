@@ -181,7 +181,6 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
 
         let prompt = `${role}\n\nMISSION:\n${strategy.objective}\n\n`;
         
-        // THE DEEP RESEARCH MANDATE (This prevents tunnel vision)
         prompt += `DEEP RESEARCH MANDATE:\nDo NOT restrict yourself to a narrow checklist or tunnel-vision solely on the provided text. Use your deep research capabilities to uncover market trends, hidden risks, local regulations, neighborhood dynamics, and any other factors that are not immediately obvious from the listing itself. Give me your best professional advice and highlight what I might be missing.\n\n`;
         
         prompt += `SOURCE HIERARCHY:\n1. Official County/Township Government Records (Assessor, GIS, Permits)\n2. Official Regulatory Codes (Zoning, STR Ordinances)\n3. Primary Market Data (AirDNA, Comps)\n4. Property Listing Description (Least Trusted)\n\n`;
@@ -225,18 +224,13 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
 
         await expandDetails();
         
-        /* 1. Extract JSON-based metadata first */
         const rawJSON = extractHiddenData();
         scrapeMetadata(rawJSON);
-
-        /* 1.5 EXTRACT DOM METADATA (CRITICAL FIX: Overwrites obfuscated JSON with reliable DOM data) */
         scrapeMetadataFromDOM();
 
-        /* 2. Get cleaned body */
         const content = getCleanPageContent();
         
-        /* 3. Get images */
-        updateStatus("Embedding photos (0/20)...", "loading");
+        updateStatus("Embedding photos (0/24)...", "loading");
         const photoGallery = await extractAndEmbedGallery();
         
         extractedContent = extractSnapshotData() + content + photoGallery + rawJSON;
@@ -246,7 +240,6 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         enableDownload();
     }
 
-    /* PROPERTY SNAPSHOT METADATA EXTRACTION (JSON FALLBACK) */
     function scrapeMetadata(jsonHtml) {
         try {
             const parser = new DOMParser();
@@ -268,29 +261,23 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         } catch(e) {}
     }
 
-    /* PROPERTY SNAPSHOT METADATA EXTRACTION (RELIABLE DOM SELECTORS) */
     function scrapeMetadataFromDOM() {
         try {
-            // Price
             const priceEl = document.querySelector('[data-testid="ldp-list-price"]');
             if (priceEl) propertyMetadata.price = priceEl.innerText.replace(/\n/g, ' ').trim();
 
-            // Address (Avoid getting "View on map" text)
             const addressBtn = document.querySelector('[data-testid="address-line-ldp"] h1 button, [data-testid="address-line-ldp"] h1');
             if (addressBtn) propertyMetadata.address = addressBtn.innerText.trim();
 
-            // Specs (Beds, Baths, SqFt)
             const beds = document.querySelector('[data-testid="property-meta-beds"]')?.innerText.replace(/\n/g, ' ') || '';
             const baths = document.querySelector('[data-testid="property-meta-baths"]')?.innerText.replace(/\n/g, ' ') || '';
             const sqft = document.querySelector('[data-testid="property-meta-sqft"]')?.innerText.replace(/\n/g, ' ') || '';
             const specsStr = [beds, baths, sqft].filter(Boolean).join(' | ');
             if (specsStr) propertyMetadata.specs = specsStr;
 
-            // Description
             const descEl = document.querySelector('[data-testid="romance-paragraph"]');
             if (descEl) propertyMetadata.description = descEl.innerText.replace('Show more', '').trim();
 
-            // Year Built
             const keyFacts = document.querySelectorAll('[data-testid="key-facts"] li');
             keyFacts.forEach(li => {
                 const text = li.innerText.toLowerCase();
@@ -337,7 +324,6 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         }
     }
 
-    /* UI GENERATION (FIXED SCROLLBARS & FLEX LAYOUT) */
     function createUI() {
         const existing = document.getElementById(CONFIG.overlayId);
         if (existing) existing.remove();
@@ -422,7 +408,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         copyBtn.className = 'pc-btn secondary';
         copyBtn.textContent = "Copy Prompt to Clipboard";
         copyBtn.style.marginTop = "8px";
-        copyBtn.style.flexShrink = "0"; // Prevent squishing
+        copyBtn.style.flexShrink = "0";
         copyBtn.onclick = () => {
             navigator.clipboard.writeText(textarea.value);
             copyBtn.textContent = "Copied!";
@@ -491,7 +477,6 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
 
-        /* CSS UPDATED FOR PROPER FLEX LAYOUT (NO DOUBLE SCROLLBARS) */
         const style = document.createElement('style');
         style.textContent = `
             #${CONFIG.overlayId} { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 999999; display: flex; justify-content: center; align-items: center; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -615,39 +600,49 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         if (c > 0) await new Promise(function(r) { setTimeout(r, 1200); });
     }
 
+    /* GLOBAL REGEX IMAGE EMBEDDER (Captures all high-res photos bypassing JSON structures) */
     async function extractAndEmbedGallery() {
+        const uniqueUrls = new Set();
         const photoData = [];
-        const MAX_IMAGES = 20;
-        const TARGET_WIDTH = 1000;
+        const MAX_IMAGES = 24;
+        const TARGET_WIDTH = 800; // Optimal size for embedding 24 images
 
+        // 1. Regex search the entire NEXT_DATA blob for any hidden rdcpix/zillow URLs
         const n = document.getElementById('__NEXT_DATA__');
         if(n) {
             try {
-                const data = JSON.parse(n.innerText);
-                // Attempt to find realtor.com photos with captions
-                const photos = data.props?.pageProps?.propertyData?.photos || [];
-                photos.forEach(p => {
-                    const url = p.href || p.url;
-                    if (url) {
-                        photoData.push({
-                            url: url.replace('s.jpg', 'od.jpg').replace('m.jpg', 'od.jpg'),
-                            caption: p.title || p.caption || ''
-                        });
+                const txt = n.innerText;
+                const matches = txt.match(/https:\/\/[^"'\\]+(jpg|jpeg|png|webp)/gi) || [];
+                matches.forEach(url => {
+                    let cleanUrl = url.replace(/\\u002F/g, '/');
+                    if (cleanUrl.includes('rdcpix.com') && !cleanUrl.includes('profile')) {
+                        // Extract base URL to deduplicate and force high-res suffix
+                        let base = cleanUrl.split('-w')[0];
+                        if (base) {
+                            uniqueUrls.add(base + '-w1024_h768.jpg'); // Force high-res standard
+                        }
+                    } else if (cleanUrl.includes('zillowstatic.com') && !cleanUrl.includes('profile')) {
+                        uniqueUrls.add(cleanUrl);
                     }
                 });
             } catch(e){}
         }
 
-        // Fallback to DOM if JSON failed
-        if (photoData.length === 0) {
-            document.querySelectorAll('img').forEach(img => {
-                let src = img.src || img.dataset.src || img.getAttribute('srcset');
-                if (src && (src.includes('rdcpix') || src.includes('zillowstatic')) && !src.includes('profile')) {
-                    if(src.indexOf(' ') > -1) src = src.split(' ')[0];
-                    photoData.push({ url: src, caption: img.alt || '' });
+        // 2. Fallback to DOM images
+        document.querySelectorAll('img').forEach(img => {
+            let src = img.src || img.dataset.src || img.getAttribute('srcset');
+            if (src && (src.includes('rdcpix') || src.includes('zillowstatic')) && !src.includes('profile')) {
+                if(src.indexOf(' ') > -1) src = src.split(' ')[0];
+                let base = src.split('-w')[0];
+                if (base && src.includes('rdcpix')) {
+                    uniqueUrls.add(base + '-w1024_h768.jpg');
+                } else {
+                    uniqueUrls.add(src);
                 }
-            });
-        }
+            }
+        });
+
+        uniqueUrls.forEach(url => photoData.push({ url: url, caption: '' }));
 
         if (photoData.length === 0) return '';
 
@@ -666,20 +661,17 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
                     html += `
                         <div class="gallery-item">
                             <img src="${base64}" alt="Property Photo ${i}">
-                            <div class="gallery-caption">${item.caption || `Photo ${i+1}`}</div>
                         </div>`;
                 } else {
                     html += `
                         <div class="gallery-item">
                             <img src="${item.url}" alt="Property Photo ${i} (Linked)">
-                            <div class="gallery-caption">${item.caption || `Photo ${i+1} (External Link)`}</div>
                         </div>`;
                 }
             } catch (e) {
                 html += `
                     <div class="gallery-item">
                         <img src="${item.url}" alt="Property Photo ${i} (Linked)">
-                        <div class="gallery-caption">${item.caption || `Photo ${i+1} (External Link)`}</div>
                     </div>`;
             }
         }
@@ -738,15 +730,26 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         BookmarkletUtils.normalizeImages(c);
         BookmarkletUtils.inlineStyles(t, c);
 
+        /* SCORCHED EARTH DOM CLEANUP FOR LLM OPTIMIZATION */
         const junk = [
-            'script', 'style', 'noscript', 'iframe', 'svg', 'button', 'input', 
+            'script', 'style', 'noscript', 'iframe', 'svg', 'button', 'input', 'textarea', 'form',
             'nav', 'footer', 'header', 'aside',
             '[role="banner"]', '[role="navigation"]', '[role="contentinfo"]', '[role="dialog"]', '[role="search"]',
             '[id*="ad-"]', '[class*="ad-"]', '[class*="advert"]', '[id*="cookie"]',
             '.modal', '.popup', '.drawer', '.lightbox',
-            '[data-testid="fixed-header"]', '[data-testid="ldp-header"]', '[data-testid="search-wrapper"]',
+            /* Map Killers */
             '[data-testid*="map"]', '[id*="map"]', '.map-container', '.neighborhood-class-loader',
-            'img[alt*="map"]', 'img[src*="maps.googleapis.com"]', '[class*="SearchBox"]', '[class*="ActionBar"]'
+            'img[alt*="map"]', 'img[src*="maps.googleapis.com"]',
+            /* Search & Headers */
+            '[data-testid="fixed-header"]', '[data-testid="ldp-header"]', '[data-testid="search-wrapper"]',
+            '[class*="SearchBox"]', '[class*="ActionBar"]',
+            /* Marketing & Form Killers */
+            '[data-testid="ldp-monthly-payment-and-lender"]', /* Mortgage Calculators */
+            '[data-testid="full-screen-leadform"]', '[data-leadform="full-screen"]', /* Contact Forms */
+            '[data-testid="ldp-verteran-benefit"]', '.action-card-body', /* Loan Ads */
+            '[data-testid="OpenHouses"]', '[data-testid="ldp-property-details-cta"]',
+            '[data-testid="ldp-summarybutton"]', '[data-testid="bottom-right-overlay-component"]',
+            '[data-testid="hero-ad-slide"]', '[data-testid="popular-search-fallback"]'
         ];
         junk.forEach(function(k) { c.querySelectorAll(k).forEach(function(e) { e.remove(); }); });
 
@@ -754,7 +757,6 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
 
         c.querySelectorAll('*').forEach(function(el) {
             el.removeAttribute('class');
-            /* CRITICAL FIX: Do NOT remove 'style' attribute. We rely on the inline safe styles generated above. */
             el.removeAttribute('data-testid');
         });
 
