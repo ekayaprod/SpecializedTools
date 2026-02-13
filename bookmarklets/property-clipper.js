@@ -1,5 +1,39 @@
 (function () {
+    /**
+     * @typedef {Object} Config
+     * @property {string} modalId
+     * @property {string} overlayId
+     * @property {string} filenamePrefix
+     * @property {string} html2pdfUrl
+     */
+
+    /**
+     * @typedef {Object} PromptEntry
+     * @property {string} label
+     * @property {string} role
+     * @property {string} objective
+     */
+
+    /**
+     * @typedef {Object.<string, PromptEntry>} PromptData
+     */
+
+    /**
+     * @typedef {Object} PropertyData
+     * @property {string} address
+     * @property {string} price
+     * @property {Object.<string, string>} specs
+     * @property {Object.<string, string>} financials
+     * @property {Object.<string, string>} history
+     * @property {string[]} agents
+     * @property {string} description
+     * @property {Array<{category?: string, text?: string[]}>} features
+     * @property {Array<{url: string, label: string}>} photos
+     * @property {any} raw
+     */
+
     /* CONFIGURATION */
+    /** @type {Config} */
     const CONFIG = {
         modalId: 'pc-bookmarklet-modal',
         overlayId: 'pc-bookmarklet-overlay',
@@ -8,6 +42,7 @@
     };
 
     /* PROMPT LIBRARY (OPTIMIZED FOR DEEP RESEARCH) */
+    /** @type {string} */
     const STANDARD_OUTPUTS = `
 EXPECTED DELIVERABLES (Structure your report organically based on your findings):
 - **Executive Summary & Verdict**: Provide your final Investment Grade (Strong Buy / Qualified Buy / Hard Pass) with a clear Risk vs. Reward profile.
@@ -17,6 +52,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
 - **Comparison Tables**: If multiple properties are provided, use tables to contrast their metrics, risks, and neighborhood qualities.
 `;
 
+    /** @type {PromptData} */
     const PROMPT_DATA = {
         str: {
             label: "Short-Term Rental (STR)",
@@ -41,6 +77,11 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
     };
 
     /* UTILITIES */
+    /**
+     * Escapes HTML special characters to prevent XSS.
+     * @param {string} str - The string to escape.
+     * @returns {string} The escaped string.
+     */
     const escapeHTML = (str) => {
         if (!str) return '';
         return String(str).replace(/[&<>'"]/g, match => {
@@ -48,6 +89,14 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         });
     };
 
+    /**
+     * Helper to create DOM elements with styles.
+     * @param {string} tag - HTML tag name.
+     * @param {Partial<CSSStyleDeclaration>} [styles={}] - CSS styles object.
+     * @param {string} [text=''] - Inner text content.
+     * @param {HTMLElement|DocumentFragment|null} [parent=null] - Parent element to append to.
+     * @returns {HTMLElement} The created element.
+     */
     const buildElement = (tag, styles = {}, text = '', parent = null) => {
         const el = document.createElement(tag);
         if (text) el.innerText = text;
@@ -56,15 +105,30 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         return el;
     };
 
+    /**
+     * Formats a number as currency.
+     * @param {number|string|null} val - The value to format.
+     * @returns {string} Formatted currency string or 'N/A'.
+     */
     const formatCurrency = (val) => (val != null) ? '$' + Number(val).toLocaleString() : 'N/A';
 
+    /**
+     * Safely retrieves trimmed text from a DOM selector.
+     * @param {string} selector - CSS selector.
+     * @returns {string} The trimmed text content or empty string.
+     */
     const getDOMText = (selector) => {
-        const el = document.querySelector(selector);
+        const el = /** @type {HTMLElement} */ (document.querySelector(selector));
         return el ? el.innerText.trim() : '';
     };
 
     /* IMAGE PROCESSOR (Base64 for Embedding) */
     const ImageProcessor = {
+        /**
+         * Converts an image URL to a Base64 string.
+         * @param {string} url - The image URL.
+         * @returns {Promise<string>} A promise resolving to the Base64 string (or original URL on failure).
+         */
         toBase64: async (url) => {
             try {
                 const response = await fetch(url);
@@ -72,7 +136,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
                 const blob = await response.blob();
                 return new Promise((resolve, reject) => {
                     const reader = new FileReader();
-                    reader.onloadend = () => resolve(reader.result);
+                    reader.onloadend = () => /** @type {Function} */ (resolve)(reader.result);
                     reader.onerror = () => reject('Reader error');
                     reader.readAsDataURL(blob);
                 });
@@ -82,6 +146,11 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
             }
         },
         
+        /**
+         * Embeds photos as Base64 strings in-place.
+         * @param {Array<{url: string, label: string}>} photos - Array of photo objects.
+         * @param {function(string): void} [statusCb] - Optional status callback.
+         */
         embedPhotos: async (photos, statusCb) => {
             const total = photos.length;
             let processed = 0;
@@ -98,17 +167,27 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
 
     /* PDF PROCESSOR */
     const PdfProcessor = {
+        /**
+         * Loads the html2pdf library if not already present.
+         * @returns {Promise<void>}
+         */
         loadLibrary: async () => {
             if (window.html2pdf) return;
             return new Promise((resolve, reject) => {
                 const script = document.createElement('script');
                 script.src = CONFIG.html2pdfUrl;
-                script.onload = resolve;
+                script.onload = () => resolve();
                 script.onerror = () => reject('Failed to load html2pdf');
                 document.head.appendChild(script);
             });
         },
 
+        /**
+         * Generates and downloads the PDF report.
+         * @param {PropertyData} data - The property data.
+         * @param {string} htmlContent - The HTML content for the PDF.
+         * @param {function(string): void} [statusCb] - Optional status callback.
+         */
         generate: async (data, htmlContent, statusCb) => {
             if (statusCb) statusCb('Generating PDF Layout...');
             
@@ -138,7 +217,12 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
 
     /* CORE EXTRACTOR */
     const PropertyExtractor = {
+        /**
+         * Extracts property data from the current page.
+         * @returns {PropertyData} The extracted property data.
+         */
         getData: function() {
+            /** @type {PropertyData} */
             let data = {
                 address: 'Unknown Address', price: 'Unknown Price', specs: {},
                 financials: {}, history: {}, agents: [], description: '', features: [], photos: [],
@@ -177,7 +261,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
                         const est = pd.mortgage.estimate;
                         data.financials['Est. Monthly Payment'] = formatCurrency(est.monthly_payment);
                         if (est.monthly_payment_details) {
-                            est.monthly_payment_details.forEach(detail => {
+                            /** @type {any[]} */ (est.monthly_payment_details).forEach(detail => {
                                 data.financials[detail.display_name] = formatCurrency(detail.amount);
                             });
                         }
@@ -185,7 +269,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
 
                     if (pd.list_date) {
                         const parsedDate = new Date(pd.list_date);
-                        if (!isNaN(parsedDate)) {
+                        if (!isNaN(parsedDate.getTime())) {
                             data.history['List Date'] = parsedDate.toLocaleDateString();
                         }
                     }
@@ -248,7 +332,8 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
             }
 
             document.querySelectorAll('[data-testid="key-facts"] li, .key-fact-item').forEach(li => {
-                const textParts = li.innerText.split('\n').map(t => t.trim()).filter(t => t);
+                const el = /** @type {HTMLElement} */ (li);
+                const textParts = el.innerText.split('\n').map(t => t.trim()).filter(t => t);
                 if (textParts.length >= 2) {
                     let label = textParts[0].replace(/:$/, '');
                     let val = textParts.slice(1).join(' ');
@@ -261,7 +346,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
             // Photo Deduplication & Upscaling
             let rawPhotos = data.photos.length > 0 ? data.photos : 
                 Array.from(document.querySelectorAll('img[src*="rdcpix.com"]')).map(img => ({
-                    url: img.src,
+                    url: /** @type {HTMLImageElement} */ (img).src,
                     label: ''
                 }));
 
@@ -280,6 +365,13 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
             return data;
         },
 
+        /**
+         * Builds the HTML template for the PDF report.
+         * @param {PropertyData} data - The extracted property data.
+         * @param {string} promptText - The prompt text to display.
+         * @param {string} promptLabel - The label of the selected prompt.
+         * @returns {string} The complete HTML string.
+         */
         buildHTMLTemplate: function(data, promptText, promptLabel) {
             const renderGrid = (obj) => {
                 if (Object.keys(obj).length === 0) return '<p>No data available.</p>';
@@ -395,6 +487,11 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         }
     };
 
+    /**
+     * Coordinates extraction, packaging, and PDF generation.
+     * @param {string} promptKey - The key of the selected prompt.
+     * @param {function(string): void} [statusCallback] - Callback for status updates.
+     */
     async function extractAndPackageContent(promptKey, statusCallback) {
         const selectedPrompt = PROMPT_DATA[promptKey];
         const combinedPromptText = `${selectedPrompt.role}\n\n${selectedPrompt.objective}\n${STANDARD_OUTPUTS}`;
@@ -417,6 +514,9 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         closeModal();
     }
 
+    /**
+     * Creates and displays the modal UI.
+     */
     function createModal() {
         if (document.getElementById(CONFIG.modalId)) return;
 
@@ -478,6 +578,9 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         document.body.appendChild(fragment);
     }
 
+    /**
+     * Closes the modal and removes the overlay.
+     */
     function closeModal() {
         const modal = document.getElementById(CONFIG.modalId);
         const overlay = document.getElementById(CONFIG.overlayId);
