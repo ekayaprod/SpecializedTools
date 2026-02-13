@@ -4,7 +4,6 @@ declare global {
     interface Window {
         JSZip: any;
         BookmarkletUtils: any;
-        TEMP_PASSWORD_CONFIG: any;
         html2pdf: any;
     }
 

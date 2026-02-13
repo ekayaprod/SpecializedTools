@@ -137,106 +137,85 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
 
     /* CORE EXTRACTOR */
     const PropertyExtractor = {
-        getData: function() {
-            let data = {
-                address: 'Unknown Address', price: 'Unknown Price', specs: {},
-                financials: {}, history: {}, agents: [], description: '', features: [], photos: [],
-                raw: null
-            };
+        _extractFromJSON: function(pd, data) {
+            // 1. Preserve Raw Data (UNALTERED)
+            data.raw = JSON.parse(JSON.stringify(pd));
 
-            try {
-                (() => {
-                    const nextDataNode = document.getElementById('__NEXT_DATA__');
-                    if (!nextDataNode) return;
-                    
-                    const jsonData = JSON.parse(nextDataNode.innerText);
-                    const pd = jsonData?.props?.pageProps?.initialReduxState?.propertyDetails;
-                    if (!pd) return;
+            // 2. Extract Fields
+            const loc = pd.location?.address;
+            if (loc) {
+                data.address = `${loc.line || ''}, ${loc.city || ''}, ${loc.state_code || ''} ${loc.postal_code || ''}`.replace(/^, | ,/g, '').trim();
+            }
+            if (pd.list_price) data.price = formatCurrency(pd.list_price);
 
-                    // 1. Preserve Raw Data (UNALTERED)
-                    // We deep copy purely to ensure no mutations affect this reference
-                    data.raw = JSON.parse(JSON.stringify(pd));
+            const desc = pd.description || {};
+            data.description = desc.text || '';
+            if (desc.type) data.specs['Property Type'] = desc.type.replace('_', ' ');
+            if (desc.beds) data.specs['Beds'] = desc.beds;
+            if (desc.baths_consolidated) data.specs['Baths'] = desc.baths_consolidated;
+            if (desc.sqft) data.specs['Sq. Ft.'] = desc.sqft.toLocaleString();
+            if (desc.lot_sqft) data.specs['Lot Size'] = (desc.lot_sqft / 43560).toFixed(2) + ' Acres';
+            if (desc.year_built) data.specs['Year Built'] = desc.year_built;
 
-                    // 2. Extract Fields
-                    const loc = pd.location?.address;
-                    if (loc) {
-                        data.address = `${loc.line || ''}, ${loc.city || ''}, ${loc.state_code || ''} ${loc.postal_code || ''}`.replace(/^, | ,/g, '').trim();
-                    }
-                    if (pd.list_price) data.price = formatCurrency(pd.list_price);
-                    
-                    const desc = pd.description || {};
-                    data.description = desc.text || '';
-                    if (desc.type) data.specs['Property Type'] = desc.type.replace('_', ' ');
-                    if (desc.beds) data.specs['Beds'] = desc.beds;
-                    if (desc.baths_consolidated) data.specs['Baths'] = desc.baths_consolidated;
-                    if (desc.sqft) data.specs['Sq. Ft.'] = desc.sqft.toLocaleString();
-                    if (desc.lot_sqft) data.specs['Lot Size'] = (desc.lot_sqft / 43560).toFixed(2) + ' Acres';
-                    if (desc.year_built) data.specs['Year Built'] = desc.year_built;
-
-                    if (pd.mortgage?.estimate) {
-                        const est = pd.mortgage.estimate;
-                        data.financials['Est. Monthly Payment'] = formatCurrency(est.monthly_payment);
-                        if (est.monthly_payment_details) {
-                            est.monthly_payment_details.forEach(detail => {
-                                data.financials[detail.display_name] = formatCurrency(detail.amount);
-                            });
-                        }
-                    }
-
-                    if (pd.list_date) {
-                        const parsedDate = new Date(pd.list_date);
-                        if (!isNaN(parsedDate)) {
-                            data.history['List Date'] = parsedDate.toLocaleDateString();
-                        }
-                    }
-                    if (pd.last_sold_date) data.history['Last Sold Date'] = pd.last_sold_date;
-                    if (pd.last_sold_price) data.history['Last Sold Price'] = formatCurrency(pd.last_sold_price);
-
-                    if (pd.advertisers && Array.isArray(pd.advertisers)) {
-                        pd.advertisers.forEach(adv => {
-                            if (adv.name) {
-                                let agentStr = `${adv.type || 'Agent'}: ${adv.name}`;
-                                if (adv.broker?.name) agentStr += ` (${adv.broker.name})`;
-                                else if (adv.office?.name) agentStr += ` (${adv.office.name})`;
-                                data.agents.push(agentStr);
-                            }
-                        });
-                    }
-
-                    if (pd.details && Array.isArray(pd.details)) data.features = pd.details;
-                    
-                    // 3. Process Photos for Visual Gallery (Filtered Labels)
-                    // This creates a NEW array for data.photos, keeping data.raw untouched.
-                    if (pd.photos) {
-                        data.photos = pd.photos.map(p => {
-                            let label = '';
-                            
-                            // Strategy: Prioritize explicit category, then fall back to filtered tags
-                            if (p.category && p.category !== 'All Photos') {
-                                label = p.category;
-                            }
-                            
-                            if (!label && p.tags && Array.isArray(p.tags)) {
-                                const noise = ['house_view', 'interior', 'exterior', 'watermark', 'complete', 'white', 'blue', 'grey', 'virtual_tour', 'video', 'floor_plan', 'realtordotcom_mls_listing_image'];
-                                const validTag = p.tags.find(t => t.label && !noise.includes(t.label.toLowerCase()));
-                                if (validTag) {
-                                    label = validTag.label.replace(/_/g, ' '); 
-                                }
-                            }
-
-                            if (label) {
-                                label = label.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
-                            }
-
-                            return { url: p.href, label: label || '' };
-                        });
-                    }
-                })();
-            } catch (e) {
-                console.warn('Hidden JSON extraction partially failed', e);
+            if (pd.mortgage?.estimate) {
+                const est = pd.mortgage.estimate;
+                data.financials['Est. Monthly Payment'] = formatCurrency(est.monthly_payment);
+                if (est.monthly_payment_details) {
+                    est.monthly_payment_details.forEach(detail => {
+                        data.financials[detail.display_name] = formatCurrency(detail.amount);
+                    });
+                }
             }
 
-            // Fallbacks
+            if (pd.list_date) {
+                const parsedDate = new Date(pd.list_date);
+                if (!isNaN(parsedDate)) {
+                    data.history['List Date'] = parsedDate.toLocaleDateString();
+                }
+            }
+            if (pd.last_sold_date) data.history['Last Sold Date'] = pd.last_sold_date;
+            if (pd.last_sold_price) data.history['Last Sold Price'] = formatCurrency(pd.last_sold_price);
+
+            if (pd.advertisers && Array.isArray(pd.advertisers)) {
+                pd.advertisers.forEach(adv => {
+                    if (adv.name) {
+                        let agentStr = `${adv.type || 'Agent'}: ${adv.name}`;
+                        if (adv.broker?.name) agentStr += ` (${adv.broker.name})`;
+                        else if (adv.office?.name) agentStr += ` (${adv.office.name})`;
+                        data.agents.push(agentStr);
+                    }
+                });
+            }
+
+            if (pd.details && Array.isArray(pd.details)) data.features = pd.details;
+
+            // 3. Process Photos for Visual Gallery (Filtered Labels)
+            if (pd.photos) {
+                data.photos = pd.photos.map(p => {
+                    let label = '';
+
+                    if (p.category && p.category !== 'All Photos') {
+                        label = p.category;
+                    }
+
+                    if (!label && p.tags && Array.isArray(p.tags)) {
+                        const noise = ['house_view', 'interior', 'exterior', 'watermark', 'complete', 'white', 'blue', 'grey', 'virtual_tour', 'video', 'floor_plan', 'realtordotcom_mls_listing_image'];
+                        const validTag = p.tags.find(t => t.label && !noise.includes(t.label.toLowerCase()));
+                        if (validTag) {
+                            label = validTag.label.replace(/_/g, ' ');
+                        }
+                    }
+
+                    if (label) {
+                        label = label.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+                    }
+
+                    return { url: p.href, label: label || '' };
+                });
+            }
+        },
+
+        _applyFallbacks: function(data) {
             if (data.address === 'Unknown Address') {
                 data.address = getDOMText('h1') || data.address;
             }
@@ -246,7 +225,9 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
             if (!data.description || data.description.length < 20) {
                 data.description = getDOMText('[data-testid="property-description"]') || getDOMText('#ldp-detail-romance') || data.description;
             }
+        },
 
+        _finalizePhotos: function(data) {
             // Deduplication & Upscaling
             const photoMap = new Map();
             // Start with JSON photos
@@ -265,6 +246,31 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
                 upscaled = upscaled.replace(/-w\d+_h\d+/g, '-w1280_h960');
                 return { url: upscaled, label: p.label };
             }).filter(p => p.url && p.url.trim() !== '');
+        },
+
+        getData: function() {
+            let data = {
+                address: 'Unknown Address', price: 'Unknown Price', specs: {},
+                financials: {}, history: {}, agents: [], description: '', features: [], photos: [],
+                raw: null
+            };
+
+            try {
+                const nextDataNode = document.getElementById('__NEXT_DATA__');
+                if (nextDataNode) {
+                    const textContent = nextDataNode.textContent || nextDataNode.innerText;
+                    const jsonData = JSON.parse(textContent);
+                    const pd = jsonData?.props?.pageProps?.initialReduxState?.propertyDetails;
+                    if (pd) {
+                        this._extractFromJSON(pd, data);
+                    }
+                }
+            } catch (e) {
+                console.warn('Hidden JSON extraction partially failed', e);
+            }
+
+            this._applyFallbacks(data);
+            this._finalizePhotos(data);
 
             return data;
         },

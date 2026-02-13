@@ -24,7 +24,7 @@ global.JSZip = MockJSZip;
 // Create JSDOM
 const dom = new JSDOM(`<!DOCTYPE html>
 <body>
-    <div id="__NEXT_DATA__">{"props":{"pageProps":{"initialReduxState":{"propertyDetails":{"location":{"address":{"line":"123 Main St","city":"Anytown","state_code":"CA","postal_code":"90210"}},"list_price":1000000,"description":{"text":"Great house"},"photos":[{"href":"http://example.com/photo1.jpg","category":"Kitchen"}]}}}}}</div>
+    <script id="__NEXT_DATA__" type="application/json">{"props":{"pageProps":{"initialReduxState":{"propertyDetails":{"location":{"address":{"line":"123 Main St","city":"Anytown","state_code":"CA","postal_code":"90210"}},"list_price":1000000,"description":{"text":"Great house"},"photos":[{"href":"http://example.com/photo1.jpg","category":"Kitchen"}]}}}}}</script>
 </body>
 `, {
     url: "https://www.realtor.com/realestateandhomes-detail/123-Main-St_Anytown_CA_90210",
@@ -37,9 +37,23 @@ global.document = dom.window.document;
 global.navigator = dom.window.navigator;
 global.Blob = dom.window.Blob;
 global.URL = dom.window.URL;
+global.FileReader = dom.window.FileReader;
 // Mock URL methods
 global.URL.createObjectURL = () => 'blob:mock-url';
 global.URL.revokeObjectURL = () => {};
+
+// Mock html2pdf
+let html2pdfCalled = false;
+global.html2pdf = () => ({
+    set: () => ({
+        from: () => ({
+            save: () => {
+                html2pdfCalled = true;
+                return Promise.resolve();
+            }
+        })
+    })
+});
 
 // Mock fetch
 global.fetch = async (url) => {
@@ -106,12 +120,11 @@ strButton.click();
 // Wait for async operations (fetching photos, zipping)
 // Since we mocked fetch and JSZip, it should be relatively fast but still async.
 setTimeout(() => {
-    if (downloadLinkCreated) {
-        console.log("✅ Download triggered successfully.");
-        console.log(`   URL: ${downloadUrl}`);
+    if (html2pdfCalled) {
+        console.log("✅ PDF Generation triggered successfully.");
         process.exit(0);
     } else {
-        console.error("❌ Download not triggered within timeout.");
+        console.error("❌ PDF Generation not triggered within timeout.");
         process.exit(1);
     }
 }, 1000);
