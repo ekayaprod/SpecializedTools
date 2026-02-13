@@ -221,8 +221,8 @@
          * @returns {string} The Markdown representation.
          */
         htmlToMarkdown: function(html) {
-            let temp = document.createElement('div');
-            temp.innerHTML = html;
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
 
             let markdown = '';
 
@@ -294,7 +294,7 @@
                 }
             }
 
-            traverse(temp);
+            traverse(doc.body);
 
             /* Cleanup excessive newlines */
             return markdown.replace(/\n\s+\n/g, '\n\n').trim();
