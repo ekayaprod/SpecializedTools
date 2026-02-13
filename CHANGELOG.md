@@ -7,3 +7,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 - Updated Property Clipper: Deep Research Protocol & Image Export (PR #63)
+- Updated Property Clipper: Added JSDoc types and fixed type errors
