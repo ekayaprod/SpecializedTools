@@ -16,6 +16,7 @@ const dom = new JSDOM(`<!DOCTYPE html>
 
 global.window = dom.window;
 global.document = dom.window.document;
+global.DOMParser = dom.window.DOMParser;
 global.Blob = dom.window.Blob;
 global.URL = dom.window.URL;
 global.URL.createObjectURL = () => 'blob:mock';
