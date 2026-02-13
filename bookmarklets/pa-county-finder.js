@@ -14,7 +14,9 @@
 
             /* D Ranges */
             for (let i = 0; i < D.length; i++) {
-                if (z >= D[i][1] && z <= D[i][2]) {
+                const rangeStart = /** @type {number} */ (D[i][1]);
+                const rangeEnd = /** @type {number} */ (D[i][2]);
+                if (z >= rangeStart && z <= rangeEnd) {
                     if (!results.includes(D[i][0])) results.push(D[i][0]);
                 }
             }
@@ -36,7 +38,7 @@
 
         /* D Search */
         for (let i = 0; i < D.length; i++) {
-            const cities = D[i][3];
+            const cities = /** @type {string[]} */ (D[i][3]);
             for (let j = 0; j < cities.length; j++) {
                 if (cities[j] === l) {
                     if (!results.includes(D[i][0])) results.push(D[i][0]);

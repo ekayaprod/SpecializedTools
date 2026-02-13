@@ -4,7 +4,11 @@
     const r = new Uint32Array(BUFFER_SIZE);
     let rIdx = BUFFER_SIZE;
 
-    /* Restricted list: Stabilize layout without breaking flexible content. */
+    /*
+     * Restricted list: Stabilize layout without breaking flexible content.
+     * This whitelist ensures only safe visual styles are copied, preventing
+     * style-injection attacks (e.g. binding behaviors) and keeping the export lightweight.
+     */
     const safeProperties = [
         'display', 'visibility', 'opacity', 'z-index',
         'margin', 'padding', 'border', 'border-radius', 'box-shadow', 'box-sizing',

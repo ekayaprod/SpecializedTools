@@ -441,13 +441,18 @@
         }
     }
 
+    /**
+     * @param {HTMLElement} element
+     * @param {string} title
+     */
     function capturePng(element, title) {
+        const el = /** @type {HTMLElement} */ (/** @type {unknown} */ (element));
         /* Temporarily ensure element is visible and has white background for capture */
-        const originalBg = element.style.backgroundColor;
-        element.style.backgroundColor = '#ffffff';
+        const originalBg = el.style.backgroundColor;
+        el.style.backgroundColor = '#ffffff';
         
-        html2canvas(element, { useCORS: true, logging: false }).then(canvas => {
-            element.style.backgroundColor = originalBg; /* Restore */
+        html2canvas(el, { useCORS: true, logging: false }).then(canvas => {
+            el.style.backgroundColor = originalBg; /* Restore */
             
             const link = document.createElement('a');
             link.download = title + '_' + Date.now() + '.png';
@@ -456,7 +461,7 @@
         }).catch(err => {
             console.error('PNG Capture failed:', err);
             alert('PNG export failed. Check console for details.');
-            element.style.backgroundColor = originalBg;
+            el.style.backgroundColor = originalBg;
         });
     }
 
