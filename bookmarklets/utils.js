@@ -206,6 +206,98 @@
                     window.BookmarkletUtils.inlineStyles(sourceChildren[i], targetChildren[i]);
                 }
             }
+        },
+        /**
+         * Converts an HTML string to Markdown format.
+         * Supported tags:
+         * - Headings (h1-h4)
+         * - Text formatting (strong, b, em, i)
+         * - Paragraphs and line breaks
+         * - Lists (ul, ol)
+         * - Links and Images
+         * - Tables (basic support)
+         *
+         * @param {string} html - The HTML string to convert.
+         * @returns {string} The Markdown representation.
+         */
+        htmlToMarkdown: function(html) {
+            let temp = document.createElement('div');
+            temp.innerHTML = html;
+
+            let markdown = '';
+
+            function traverse(node) {
+                if (node.nodeType === 3) {
+                    /* Text node */
+                    markdown += node.nodeValue;
+                    return;
+                }
+
+                if (node.nodeType !== 1) return;
+
+                const tag = node.tagName.toLowerCase();
+
+                switch(tag) {
+                    case 'h1': markdown += '\n# '; break;
+                    case 'h2': markdown += '\n## '; break;
+                    case 'h3': markdown += '\n### '; break;
+                    case 'h4': markdown += '\n#### '; break;
+                    case 'strong':
+                    case 'b': markdown += '**'; break;
+                    case 'em':
+                    case 'i': markdown += '*'; break;
+                    case 'p': markdown += '\n\n'; break;
+                    case 'br': markdown += '\n'; break;
+                    case 'li':
+                        if (node.parentElement && node.parentElement.tagName.toLowerCase() === 'ol') {
+                            const index = Array.prototype.indexOf.call(node.parentElement.children, node) + 1;
+                            markdown += '\n' + index + '. ';
+                        } else {
+                            markdown += '\n- ';
+                        }
+                        break;
+                    case 'a': markdown += '['; break;
+                    case 'img':
+                        const src = node.getAttribute('src');
+                        const alt = node.getAttribute('alt') || '';
+                        markdown += '![' + alt + '](' + src + ')';
+                        return; /* Skip children of img */
+                    case 'table': markdown += '\n\n'; break;
+                case 'tr': break;
+                    case 'td':
+                    case 'th': markdown += '| '; break;
+                }
+
+                /* Traverse children */
+                for (let i = 0; i < node.childNodes.length; i++) {
+                    traverse(node.childNodes[i]);
+                }
+
+                /* Closing tags */
+                switch(tag) {
+                    case 'strong':
+                    case 'b': markdown += '**'; break;
+                    case 'em':
+                    case 'i': markdown += '*'; break;
+                    case 'a':
+                        const href = node.getAttribute('href');
+                        if (href) markdown += '](' + href + ')';
+                        else markdown += ']';
+                        break;
+                    case 'h1':
+                    case 'h2':
+                    case 'h3':
+                    case 'h4':
+                case 'p':
+                        markdown += '\n'; break;
+                    case 'tr': markdown += '|\n'; break;
+                }
+            }
+
+            traverse(temp);
+
+            /* Cleanup excessive newlines */
+            return markdown.replace(/\n\s+\n/g, '\n\n').trim();
         }
     };
 })(window);
