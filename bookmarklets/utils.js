@@ -194,6 +194,73 @@
                     window.BookmarkletUtils.inlineStyles(sourceChildren[i], targetChildren[i]);
                 }
             }
+        },
+        /**
+         * Async version of inlineStyles to prevent UI freezing.
+         * Processes the DOM tree in chunks, yielding to the main thread.
+         *
+         * @param {HTMLElement} source - Source element.
+         * @param {HTMLElement} target - Target element (clone).
+         * @param {function(number):void} [onProgress] - Callback with count of processed elements.
+         * @returns {Promise<void>}
+         */
+        inlineStylesAsync: function(source, target, onProgress) {
+            return new Promise(function(resolve) {
+                const stack = [{s: source, t: target}];
+                let processed = 0;
+
+                function loop() {
+                    const start = Date.now();
+                    /* Process for 12ms then yield (60fps target is 16ms) */
+                    while (stack.length > 0) {
+                        if (Date.now() - start > 12) {
+                             if(onProgress) onProgress(processed);
+                             setTimeout(loop, 0);
+                             return;
+                        }
+
+                        const {s, t} = stack.pop();
+
+                        /* --- APPLY STYLES --- */
+                        const computed = window.getComputedStyle(s);
+                        if (computed) {
+                            const styles = [];
+                            /* optimization: cache length */
+                            for (let i = 0, len = safeProperties.length; i < len; i++) {
+                                const prop = safeProperties[i];
+                                const val = computed.getPropertyValue(prop);
+
+                                if (val && val !== 'none' && val !== 'normal') {
+                                     styles.push(prop + ':' + val);
+                                }
+                            }
+                            if (styles.length > 0) {
+                                t.style.cssText += styles.join('; ') + '; ';
+                            }
+                        }
+                        /* -------------------- */
+
+                        processed++;
+
+                        const sChildren = s.children;
+                        const tChildren = t.children;
+                        /* Push in reverse order to maintain DFS order */
+                        for (let i = sChildren.length - 1; i >= 0; i--) {
+                            if (tChildren[i]) {
+                                stack.push({
+                                    s: /** @type {HTMLElement} */ (/** @type {unknown} */ (sChildren[i])),
+                                    t: /** @type {HTMLElement} */ (/** @type {unknown} */ (tChildren[i]))
+                                });
+                            }
+                        }
+                    }
+
+                    if(onProgress) onProgress(processed);
+                    resolve();
+                }
+
+                loop();
+            });
         }
     };
 })(window);

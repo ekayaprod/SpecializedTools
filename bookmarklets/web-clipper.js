@@ -123,7 +123,11 @@
         /* Show loading before processing */
         showLoadingOverlay();
         setTimeout(function() {
-            openEditor(target);
+            openEditor(target).catch(function(err) {
+                console.error(err);
+                alert('Error capturing content: ' + err.message);
+                hideLoadingOverlay();
+            });
         }, 50);
     }
 
@@ -144,12 +148,18 @@
         div.style.background = 'rgba(255,255,255,0.8)';
         div.style.zIndex = '2000000';
         div.style.display = 'flex';
+        div.style.flexDirection = 'column';
         div.style.justifyContent = 'center';
         div.style.alignItems = 'center';
         div.style.fontSize = '20px';
         div.style.fontFamily = 'sans-serif';
-        div.innerHTML = '<span>Capturing styles & layout...</span>';
+        div.innerHTML = '<span>Capturing styles & layout...</span><div id="wc-loading-progress" style="font-size:14px; margin-top:10px; color:#666;">Starting...</div>';
         document.body.appendChild(div);
+    }
+
+    function updateLoadingProgress(text) {
+        const el = document.getElementById('wc-loading-progress');
+        if (el) el.textContent = text;
     }
 
     function hideLoadingOverlay() {
@@ -158,7 +168,7 @@
     }
 
     /* PHASE 2: THE EDITOR */
-    function openEditor(element) {
+    async function openEditor(element) {
         /* 1. Normalize Images IN PLACE (before cloning) to capture true sources */
         BookmarkletUtils.normalizeImages(element);
         
@@ -167,7 +177,10 @@
         
         /* 3. Inline "Safe" Computed Styles */
         /* Changed strategy: Minimal stabilization to avoid layout breakage */
-        BookmarkletUtils.inlineStyles(element, clone);
+        /* Use Async version to prevent UI freezing and show progress */
+        await BookmarkletUtils.inlineStylesAsync(element, clone, function(count) {
+             updateLoadingProgress('Processed ' + count + ' elements...');
+        });
         
         /* 4. Cleanup - remove scripts but KEEP classes and styles */
         cleanupDOM(clone);
@@ -395,7 +408,8 @@
     async function handleCopy(contentArea) {
         const html = contentArea.innerHTML;
         const text = contentArea.innerText;
-        const btn = document.querySelector('#' + CONFIG.modalId + ' button.primary');
+        const btn = /** @type {HTMLElement} */ (document.querySelector('#' + CONFIG.modalId + ' button.primary'));
+        if (!btn) return;
         try {
             /* Copying as 'text/html' preserves styles when pasting into Google Docs/Word */
             const data = [new ClipboardItem({ 'text/html': new Blob([html], { type: 'text/html' }), 'text/plain': new Blob([text], { type: 'text/plain' }) })];
@@ -446,7 +460,7 @@
      * @param {string} title
      */
     function capturePng(element, title) {
-        const el = /** @type {HTMLElement} */ (/** @type {unknown} */ (element));
+        const el = /** @type {HTMLElement} */ (element);
         /* Temporarily ensure element is visible and has white background for capture */
         const originalBg = el.style.backgroundColor;
         el.style.backgroundColor = '#ffffff';
