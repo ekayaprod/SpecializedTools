@@ -4,7 +4,8 @@
         modalId: 'pc-bookmarklet-modal',
         overlayId: 'pc-bookmarklet-overlay',
         filenamePrefix: 'Property_Report',
-        jszipUrl: 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'
+        // We now load jsPDF instead of JSZip
+        jsPdfUrl: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
     };
 
     /* PROMPT LIBRARY (OPTIMIZED FOR DEEP RESEARCH) */
@@ -13,7 +14,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
 - **Executive Summary & Verdict**: Provide your final Investment Grade (Strong Buy / Qualified Buy / Hard Pass) with a clear Risk vs. Reward profile.
 - **Hidden Insights & Red Flags**: Focus heavily on off-page data (regulations, true costs, environmental/structural risks, macro trends).
 - **Financial Reality Check**: Project true cash flow, factoring in silent costs, CapEx, and local market trends.
-- **Visual & Condition Audit**: CRITICAL: You must analyze the provided Photo Gallery files in the 'photos' folder. Look for visual evidence of wear, renovation quality (luxury vs. builder grade), roof condition, HVAC age indicators, and layout flow. Match these visual findings against the text claims.
+- **Visual & Condition Audit**: CRITICAL: You must analyze the provided Photo Gallery pages in this document. Look for visual evidence of wear, renovation quality (luxury vs. builder grade), roof condition, HVAC age indicators, and layout flow. Match these visual findings against the text claims.
 - **Comparison Tables**: If multiple properties are provided, use tables to contrast their metrics, risks, and neighborhood qualities.
 `;
 
@@ -31,10 +32,6 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
      * @property {Object|null} raw - The raw JSON data extracted from Next.js state (for debugging/AI).
      */
 
-    /**
-     * Configuration for different investment analysis personas.
-     * @type {Object.<string, {label: string, role: string, objective: string}>}
-     */
     const PROMPT_DATA = {
         str: {
             label: "Short-Term Rental (STR)",
@@ -81,76 +78,144 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         return el ? el.innerText.trim() : '';
     };
 
-    /* ZIP PROCESSOR */
-    const ZipProcessor = {
-        /**
-         * Loads the JSZip library from CDN if not already present.
-         * @returns {Promise<void>}
-         */
+    /* PDF PROCESSOR */
+    const PdfProcessor = {
         loadLibrary: async () => {
-            if (window.JSZip) return;
+            if (window.jspdf) return;
             return new Promise((resolve, reject) => {
                 const script = document.createElement('script');
-                script.src = CONFIG.jszipUrl;
+                script.src = CONFIG.jsPdfUrl;
                 script.onload = () => resolve();
-                script.onerror = () => reject('Failed to load JSZip');
+                script.onerror = () => reject('Failed to load jsPDF');
                 document.head.appendChild(script);
             });
         },
 
-        /**
-         * Creates a ZIP file containing the property report and downloaded photos.
-         * @param {PropertyData} data - The extracted property data.
-         * @param {function(Array<{filename: string, label: string}>): string} htmlGeneratorCallback - Callback to generate HTML given the list of photos.
-         * @param {function(string): void} [statusCb] - Callback for status updates.
-         * @returns {Promise<Blob>} The generated ZIP file as a Blob.
-         */
-        createPackage: async (data, htmlGeneratorCallback, statusCb) => {
-            const zip = new JSZip();
-            const photoFolder = zip.folder("photos");
+        generatePdf: async (data, promptText, promptLabel, statusCb) => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const margin = 15;
+            let cursorY = 20;
 
-            // Fetch and Add Photos
-            const total = data.photos.length;
-            let processed = 0;
-            /** @type {Array<{filename: string, label: string}>} */
-            const downloadedPhotos = new Array(total);
-
-            const photoTasks = data.photos.map(async (photo, index) => {
-                try {
-                    const response = await fetch(photo.url);
-                    if (!response.ok) throw new Error(`Failed to fetch ${photo.url}`);
-                    const blob = await response.blob();
-
-                    // Sanitize label for filename
-                    const safeLabel = (photo.label || 'image').replace(/[^a-z0-9]/gi, '_').substring(0, 50);
-                    const ext = blob.type.split('/')[1] || 'jpg';
-                    const filename = `${String(index + 1).padStart(2, '0')}_${safeLabel}.${ext}`;
-
-                    photoFolder.file(filename, blob);
-                    downloadedPhotos[index] = { filename, label: photo.label };
-                } catch (e) {
-                    console.warn(`Skipped photo ${index}:`, e);
-                } finally {
-                    processed++;
-                    if (statusCb) statusCb(`Zipping ${processed}/${total}...`);
+            const addText = (text, size = 10, isBold = false) => {
+                doc.setFontSize(size);
+                doc.setFont("helvetica", isBold ? "bold" : "normal");
+                const lines = doc.splitTextToSize(text, pageWidth - (margin * 2));
+                
+                // Check page break
+                if (cursorY + (lines.length * size * 0.4) > pageHeight - margin) {
+                    doc.addPage();
+                    cursorY = 20;
                 }
-            });
+                
+                doc.text(lines, margin, cursorY);
+                cursorY += (lines.length * size * 0.4) + 2; // Line height spacing
+            };
 
-            await Promise.all(photoTasks);
+            // --- PAGE 1: TEXT REPORT ---
+            
+            // Header
+            addText("AI PROPERTY ANALYSIS DOSSIER", 10);
+            cursorY += 5;
+            addText(data.address, 18, true);
+            addText(data.price, 14, true);
+            cursorY += 10;
 
-            // Generate HTML with local photo references (filtering out failed downloads)
-            const validPhotos = downloadedPhotos.filter(p => p);
-            const htmlContent = htmlGeneratorCallback(validPhotos);
+            // System Prompt Box
+            doc.setFillColor(240, 240, 240);
+            doc.rect(margin, cursorY, pageWidth - (margin*2), 40, 'F');
+            cursorY += 5;
+            addText(`ANALYSIS MODE: ${promptLabel}`, 10, true);
+            addText(promptText, 8);
+            cursorY += 10;
 
-            // Add HTML Report
-            zip.file(`${data.address || 'Property_Report'}.html`, htmlContent);
+            // Specs
+            addText("Specifications:", 12, true);
+            const specStr = Object.entries(data.specs).map(([k, v]) => `${k}: ${v}`).join(' | ');
+            addText(specStr, 10);
+            cursorY += 5;
 
-            if (statusCb) statusCb('Finalizing ZIP...');
-            return zip.generateAsync({ type: "blob" });
+            // Description
+            addText("Description:", 12, true);
+            addText(data.description.substring(0, 2000) + (data.description.length > 2000 ? "..." : ""), 9);
+            cursorY += 5;
+
+            // Features (Brief)
+            addText("Key Features:", 12, true);
+            const featureStr = data.features.map(f => f.category).join(', ');
+            addText(featureStr, 9);
+            
+            // --- PAGES 2+: IMAGES ---
+            // Max 25 images to keep PDF manageable, but high res
+            const imagesToProcess = data.photos.slice(0, 25); 
+            
+            for (let i = 0; i < imagesToProcess.length; i++) {
+                const photo = imagesToProcess[i];
+                if (statusCb) statusCb(`Processing Image ${i + 1}/${imagesToProcess.length}...`);
+
+                try {
+                    // Fetch blob
+                    const response = await fetch(photo.url);
+                    if (!response.ok) throw new Error('Fetch failed');
+                    const blob = await response.blob();
+                    
+                    // Convert to Base64
+                    const base64 = await new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.readAsDataURL(blob);
+                    });
+
+                    // Determine format
+                    let format = 'JPEG';
+                    if (photo.url.toLowerCase().endsWith('.png')) format = 'PNG';
+                    if (photo.url.toLowerCase().endsWith('.webp')) format = 'WEBP';
+
+                    // Add new page
+                    doc.addPage();
+                    
+                    // Header for image page
+                    doc.setFontSize(10);
+                    doc.text(`Image ${i+1}: ${photo.label}`, margin, 10);
+
+                    // Calc dimensions to fit page max
+                    const imgProps = doc.getImageProperties(base64);
+                    const pdfWidth = pageWidth - (margin * 2);
+                    const pdfHeight = pageHeight - (margin * 2) - 10; // minus top header space
+                    
+                    const imgRatio = imgProps.width / imgProps.height;
+                    const pageRatio = pdfWidth / pdfHeight;
+
+                    let finalW, finalH;
+                    
+                    if (imgRatio > pageRatio) {
+                        // Image is wider than page area
+                        finalW = pdfWidth;
+                        finalH = finalW / imgRatio;
+                    } else {
+                        // Image is taller than page area
+                        finalH = pdfHeight;
+                        finalW = finalH * imgRatio;
+                    }
+
+                    // Center image
+                    const x = margin + (pdfWidth - finalW) / 2;
+                    const y = 20 + (pdfHeight - finalH) / 2;
+
+                    doc.addImage(base64, format, x, y, finalW, finalH);
+
+                } catch (e) {
+                    console.warn(`Failed to load image ${photo.url}`, e);
+                }
+            }
+            
+            return doc;
         }
     };
 
-    /* CORE EXTRACTOR - Builds Custom Data Object */
+    /* CORE EXTRACTOR - Builds Custom Data Object (FROM ORIGINAL SCRIPT) */
     const PropertyExtractor = {
         /**
          * Scrapes property details from the DOM and internal React/Next.js state.
@@ -296,159 +361,34 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
             }).filter(p => p.url && p.url.trim() !== '');
 
             return data;
-        },
-
-        buildHTMLTemplate: function(data, promptText, promptLabel, localPhotos) {
-            const renderGrid = (obj) => {
-                if (Object.keys(obj).length === 0) return '<p>No data available.</p>';
-                return Object.entries(obj).map(([key, val]) => `
-                    <div class="metric-box">
-                        <div class="metric-label">${escapeHTML(key)}</div>
-                        <div class="metric-value">${escapeHTML(val)}</div>
-                    </div>
-                `).join('');
-            };
-
-            const featuresHTML = data.features.map(f => `
-                <div class="feature-category">
-                    <h3>${escapeHTML(f.category || 'Features')}</h3>
-                    <ul>${(f.text || []).map(t => `<li>${escapeHTML(t)}</li>`).join('')}</ul>
-                </div>
-            `).join('');
-
-            // Simplified HTML - no embedded photos needed as they are in the zip
-            return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>${escapeHTML(data.address)} - Property Report</title>
-    <style>
-        :root { --primary: #2563eb; --gray-100: #f3f4f6; --gray-200: #e5e7eb; --gray-800: #1f2937; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 1200px; margin: 0 auto; padding: 20px; background: #fafafa; }
-        .report-container { background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .system-prompt { background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 8px; margin-bottom: 30px; font-family: monospace; white-space: pre-wrap; font-size: 14px; border-left: 4px solid #3b82f6; }
-        .prompt-label { font-weight: bold; color: #60a5fa; margin-bottom: 10px; display: block; text-transform: uppercase; letter-spacing: 0.05em; }
-        .header { border-bottom: 2px solid var(--gray-100); padding-bottom: 20px; margin-bottom: 30px; }
-        h1 { margin: 0; color: var(--gray-800); font-size: 28px; }
-        .price { font-size: 32px; font-weight: bold; color: var(--primary); margin: 10px 0; }
-        h2 { color: var(--gray-800); margin-top: 40px; border-bottom: 1px solid #eee; padding-bottom: 10px; font-size: 20px; }
-        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
-        .metric-box { background: var(--gray-100); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--gray-200); }
-        .metric-label { font-size: 12px; text-transform: uppercase; color: #6b7280; font-weight: 600; letter-spacing: 0.05em; }
-        .metric-value { font-size: 16px; font-weight: 500; color: var(--gray-800); margin-top: 4px; }
-        .description { font-size: 16px; white-space: pre-line; color: #4b5563; background: #f8fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #94a3b8; }
-        .features-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .feature-category h3 { font-size: 16px; color: var(--gray-800); margin-bottom: 8px; background: var(--gray-100); padding: 8px 12px; border-radius: 6px; }
-        .feature-category ul { margin: 0; padding-left: 20px; color: #4b5563; font-size: 14px; }
-        .feature-category li { margin-bottom: 4px; }
-        .agent-list { list-style: none; padding: 0; margin: 0; }
-        .agent-list li { padding: 8px 0; border-bottom: 1px solid #eee; color: #4b5563; }
-        .raw-data { margin-top: 40px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
-        .raw-data summary { cursor: pointer; font-weight: 600; color: #64748b; outline: none; }
-        .raw-data pre { white-space: pre-wrap; word-break: break-all; font-size: 12px; color: #334155; margin-top: 10px; max-height: 400px; overflow-y: auto; }
-        .photo-note { background: #fffbeb; border: 1px solid #fcd34d; padding: 15px; border-radius: 8px; margin-top: 20px; font-size: 14px; color: #92400e; }
-        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; margin-top: 20px; }
-        .photo-card { border: 1px solid var(--gray-200); border-radius: 8px; overflow: hidden; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .photo-card img { width: 100%; height: 180px; object-fit: cover; display: block; }
-        .photo-label { padding: 10px; font-size: 13px; color: #4b5563; background: #f9fafb; border-top: 1px solid #eee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    </style>
-</head>
-<body>
-    <div class="report-container">
-        <div class="system-prompt">
-            <span class="prompt-label">Analysis Objective: ${escapeHTML(promptLabel)}</span>
-            ${escapeHTML(promptText)}
-        </div>
-
-        <div class="header">
-            <h1>${escapeHTML(data.address)}</h1>
-            <div class="price">${escapeHTML(data.price)}</div>
-        </div>
-
-        <h2>Property Overview</h2>
-        <div class="metrics-grid">
-            ${renderGrid(data.specs)}
-        </div>
-
-        <h2>Financial & Market Data</h2>
-        <div class="metrics-grid">
-            ${renderGrid(data.financials)}
-            ${renderGrid(data.history)}
-        </div>
-
-        <h2>Agent & Broker Info</h2>
-        <ul class="agent-list">
-            ${data.agents.length > 0 ? data.agents.map(a => `<li>${escapeHTML(a)}</li>`).join('') : '<li>No agent information found.</li>'}
-        </ul>
-
-        <h2>Property Description</h2>
-        <div class="description">${escapeHTML(data.description) || 'No description extracted.'}</div>
-
-        <h2>Detailed Features</h2>
-        <div class="features-grid">
-            ${featuresHTML || '<p>No specific features extracted.</p>'}
-        </div>
-
-        <h2>Photo Gallery</h2>
-        ${(localPhotos && localPhotos.length > 0) ? `
-        <div class="gallery-grid">
-            ${localPhotos.map(p => `
-                <div class="photo-card">
-                    <img src="photos/${p.filename}" loading="lazy" alt="${escapeHTML(p.label)}">
-                    <div class="photo-label" title="${escapeHTML(p.label)}">${escapeHTML(p.label)}</div>
-                </div>
-            `).join('')}
-        </div>` : `
-        <div class="photo-note">
-            <strong>Note:</strong> High-resolution photos have been downloaded to the 'photos' folder in this ZIP archive. Upload the entire folder or specific images to the AI for visual analysis.
-        </div>`}
-
-        <details class="raw-data">
-            <summary>Raw Property Data (JSON - For AI Context)</summary>
-            <pre>${data.raw ? escapeHTML(JSON.stringify(data.raw, null, 2)) : 'No raw JSON detected.'}</pre>
-        </details>
-    </div>
-</body>
-</html>`;
         }
     };
 
     /* EXPORT LOGIC */
-    function downloadZip(blob, baseFileName) {
-        const cleanName = baseFileName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-        const finalName = `${cleanName}_${Date.now()}.zip`;
-
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = finalName;
-        document.body.appendChild(a);
-        a.click();
-
-        setTimeout(() => {
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-        }, 1000);
-    }
-
     async function extractAndPackageContent(promptKey, statusCallback) {
         const selectedPrompt = PROMPT_DATA[promptKey];
         const combinedPromptText = `${selectedPrompt.role}\n\n${selectedPrompt.objective}\n${STANDARD_OUTPUTS}`;
 
-        if (statusCallback) statusCallback("Loading ZIP engine...");
-        await ZipProcessor.loadLibrary();
+        if (statusCallback) statusCallback("Loading PDF engine...");
+        await PdfProcessor.loadLibrary();
 
         const propertyData = PropertyExtractor.getData();
 
-        if (statusCallback) statusCallback(`Downloading ${propertyData.photos.length} photos...`);
+        if (statusCallback) statusCallback(`Found ${propertyData.photos.length} photos. Generating PDF...`);
 
-        const zipBlob = await ZipProcessor.createPackage(
+        // Generate PDF
+        const doc = await PdfProcessor.generatePdf(
             propertyData,
-            (localPhotos) => PropertyExtractor.buildHTMLTemplate(propertyData, combinedPromptText, selectedPrompt.label, localPhotos),
+            combinedPromptText,
+            selectedPrompt.label,
             statusCallback
         );
 
-        downloadZip(zipBlob, propertyData.address || CONFIG.filenamePrefix);
+        if (statusCallback) statusCallback('Saving...');
+        
+        const safeTitle = (propertyData.address || CONFIG.filenamePrefix).replace(/[^a-z0-9]/gi, '_').substring(0, 40);
+        doc.save(`${safeTitle}_Analysis.pdf`);
+        
         closeModal();
     }
 
@@ -473,7 +413,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         }, '', fragment);
         modal.id = CONFIG.modalId;
 
-        buildElement('h2', { margin: '0 0 20px 0', fontSize: '20px', color: '#111827', textAlign: 'center' }, 'Extract Property For AI Analysis', modal);
+        buildElement('h2', { margin: '0 0 20px 0', fontSize: '20px', color: '#111827', textAlign: 'center' }, 'Generate Property PDF', modal);
 
         const btnContainer = buildElement('div', { display: 'flex', flexDirection: 'column', gap: '10px' }, '', modal);
 
