@@ -12,7 +12,7 @@
     };
 
     /* TEMP PASSWORD CONFIG */
-    const TC = window.TEMP_PASSWORD_CONFIG || { count: 5, addSymbol: true, randomNum: true };
+    const TC = { count: 5, addSymbol: true, randomNum: true };
 
     /* WORD BANK */
     const fullWordBank = {
