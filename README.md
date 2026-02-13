@@ -20,9 +20,9 @@ PA County Finder: Look up Pennsylvania county information by ZIP code or city.
 
 Installation
 
-Visit the GitHub Pages deployment of this repository.
-
-Drag the buttons to your bookmarks bar.
+1. Visit the GitHub Pages deployment of this repository (typically `https://<username>.github.io/<repo-name>`).
+   - *Note: If you are the owner, ensure GitHub Pages is enabled in Settings > Pages.*
+2. Drag the buttons to your bookmarks bar.
 
 Architecture
 

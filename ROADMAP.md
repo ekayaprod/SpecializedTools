@@ -10,6 +10,10 @@ This document tracks the status of features and tools within the Browser Toolkit
   - [x] **Rich Text Clipboard Copy**: Copy content with styles for pasting into Google Docs/Word.
 - [x] **Property Clipper**: Specialized real estate research tool.
   - [x] **Prompt Engine**: Generates investment analysis prompts.
+    - [x] Short-Term Rental (STR)
+    - [x] Long-Term Rental (LTR)
+    - [x] Fix & Flip
+    - [x] House Hacking
   - [x] **Deep Research Protocol**: Automated forensic auditing.
   - [x] **Renovation Estimator**: CapEx estimation from photos.
 - [x] **Passphrase Generator**: Strong password creation with seasonal themes.
