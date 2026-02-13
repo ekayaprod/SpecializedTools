@@ -137,12 +137,24 @@
                     if (lowerName.startsWith('on')) {
                         el.removeAttribute(name);
                     }
-                    /* 2. Malicious URIs (javascript:, vbscript:, data: except images) */
-                    else if (lowerName === 'href' || lowerName === 'src' || lowerName === 'action' || lowerName === 'data') {
+                    /* 2. SRCDOC (Always remove to prevent iframe injection) */
+                    else if (lowerName === 'srcdoc') {
+                        el.removeAttribute(name);
+                    }
+                    /* 3. Malicious URIs (javascript:, vbscript:, data: except images) */
+                    else if (lowerName === 'href' || lowerName === 'src' || lowerName === 'action' || lowerName === 'data' || lowerName === 'formaction' || lowerName === 'poster' || lowerName === 'xlink:href') {
                         if (val.startsWith('javascript:') || val.startsWith('vbscript:')) {
                             el.removeAttribute(name);
                         }
                         else if (val.startsWith('data:') && !val.startsWith('data:image/')) {
+                            el.removeAttribute(name);
+                        }
+                    }
+                    /* 4. Style Attribute (check for javascript: or expression) */
+                    else if (lowerName === 'style') {
+                        /* Remove all whitespace to catch obfuscation like 'java script:' */
+                        const checkVal = val.replace(/\s+/g, '');
+                        if (checkVal.includes('javascript:') || checkVal.includes('vbscript:') || checkVal.includes('expression(')) {
                             el.removeAttribute(name);
                         }
                     }

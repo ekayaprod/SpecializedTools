@@ -34,6 +34,14 @@ container.innerHTML = `
     <iframe id="data-iframe" src="data:text/html,<script>alert(1)</script>"></iframe>
     <img id="valid-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAFhAJ/wlseKgAAAABJRU5ErkJggg==">
     <form id="action-js" action="javascript:void(0)"></form>
+
+    <!-- New Test Cases -->
+    <iframe id="srcdoc-iframe" srcdoc="<script>alert(1)</script>"></iframe>
+    <button id="formaction-btn" formaction="javascript:alert(1)">Submit</button>
+    <video id="poster-video" poster="javascript:alert(1)"></video>
+    <svg><a id="xlink-href" xlink:href="javascript:alert(1)">Link</a></svg>
+    <div id="style-div" style="background-image: url(javascript:alert(1))">Style</div>
+    <div id="style-safe" style="color: red">Safe Style</div>
 `;
 document.body.appendChild(container);
 
@@ -48,5 +56,21 @@ assert.ok(!document.getElementById('data-iframe').hasAttribute('src'), 'data: sr
 assert.ok(document.getElementById('valid-img').hasAttribute('src'), 'data:image src should be preserved');
 assert.ok(!document.getElementById('action-js').hasAttribute('action'), 'javascript: action should be removed');
 assert.ok(document.getElementById('clean').textContent === 'Clean', 'Clean content should remain');
+
+// Assertions for new cases
+assert.ok(!document.getElementById('srcdoc-iframe').hasAttribute('srcdoc'), 'srcdoc should be removed');
+assert.ok(!document.getElementById('formaction-btn').hasAttribute('formaction'), 'javascript: formaction should be removed');
+assert.ok(!document.getElementById('poster-video').hasAttribute('poster'), 'javascript: poster should be removed');
+
+const xlinkEl = document.getElementById('xlink-href');
+// Depending on JSDOM parsing, check both namespaced and non-namespaced if possible, or just the attribute name
+assert.ok(!xlinkEl.hasAttribute('xlink:href'), 'javascript: xlink:href should be removed');
+
+const styleDiv = document.getElementById('style-div');
+const styleVal = styleDiv.getAttribute('style');
+assert.ok(!styleVal || !styleVal.includes('javascript:'), 'javascript: in style should be removed');
+
+const styleSafe = document.getElementById('style-safe');
+assert.ok(styleSafe.getAttribute('style').includes('color: red'), 'Safe style should be preserved');
 
 console.log("✅ sanitizeAttributes passed");
