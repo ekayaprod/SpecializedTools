@@ -1,11 +1,38 @@
 (function () {
     /* CONFIGURATION */
+    /**
+     * @typedef {Object} Config
+     * @property {string} modalId - ID for the modal element
+     * @property {string} overlayId - ID for the overlay element
+     * @property {string} filenamePrefix - Prefix for generated filenames
+     * @property {string} html2pdfUrl - URL for the html2pdf library
+     */
     const CONFIG = {
         modalId: 'pc-bookmarklet-modal',
         overlayId: 'pc-bookmarklet-overlay',
         filenamePrefix: 'Property_Report',
         html2pdfUrl: 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js'
     };
+
+    /**
+     * @typedef {Object} Photo
+     * @property {string} url - The URL of the photo.
+     * @property {string} label - The label or category of the photo.
+     */
+
+    /**
+     * @typedef {Object} PropertyData
+     * @property {string} address - The property address.
+     * @property {string} price - The listing price.
+     * @property {Object.<string, string|number>} specs - Key property specifications (Beds, Baths, SqFt, etc.).
+     * @property {Object.<string, string>} financials - Financial metrics (Monthly Payment, etc.).
+     * @property {Object.<string, string>} history - History data (List Date, Last Sold, etc.).
+     * @property {string[]} agents - List of agent/broker names.
+     * @property {string} description - Property description text.
+     * @property {Array<{category: string, text: string[]}>} features - Detailed features list.
+     * @property {Photo[]} photos - List of property photos.
+     * @property {any} [raw] - Raw JSON data preserved for debugging.
+     */
 
     /* PROMPT LIBRARY */
     const STANDARD_OUTPUTS = `
@@ -64,7 +91,16 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
     };
 
     /* IMAGE PROCESSOR */
+    /**
+     * Handles fetching and base64 encoding of images to embed them directly into the PDF.
+     * @namespace
+     */
     const ImageProcessor = {
+        /**
+         * Fetches an image URL and converts it to a Base64 string.
+         * @param {string} url - The URL of the image to fetch.
+         * @returns {Promise<string>} A promise that resolves to the Base64 string or the original URL on failure.
+         */
         toBase64: async (url) => {
             try {
                 const response = await fetch(url);
@@ -72,7 +108,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
                 const blob = await response.blob();
                 return new Promise((resolve, reject) => {
                     const reader = new FileReader();
-                    reader.onloadend = () => resolve(reader.result);
+                    reader.onloadend = () => resolve(/** @type {string} */ (reader.result));
                     reader.onerror = () => reject('Reader error');
                     reader.readAsDataURL(blob);
                 });
@@ -82,6 +118,11 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
             }
         },
         
+        /**
+         * Iterates over a list of photos and replaces their URLs with Base64 strings.
+         * @param {Photo[]} photos - Array of photo objects.
+         * @param {(status: string) => void} [statusCb] - Optional callback for status updates.
+         */
         embedPhotos: async (photos, statusCb) => {
             const total = photos.length;
             let processed = 0;
@@ -96,18 +137,32 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
     };
 
     /* PDF PROCESSOR */
+    /**
+     * Manages the loading of the html2pdf library and generation of the final PDF report.
+     * @namespace
+     */
     const PdfProcessor = {
+        /**
+         * Loads the html2pdf library from the CDN if not already present.
+         * @returns {Promise<void>}
+         */
         loadLibrary: async () => {
             if (window.html2pdf) return;
             return new Promise((resolve, reject) => {
                 const script = document.createElement('script');
                 script.src = CONFIG.html2pdfUrl;
-                script.onload = resolve;
+                script.onload = () => resolve();
                 script.onerror = () => reject('Failed to load html2pdf');
                 document.head.appendChild(script);
             });
         },
 
+        /**
+         * Generates and saves the PDF report.
+         * @param {PropertyData} data - The property data used for filename generation.
+         * @param {string} htmlContent - The HTML content to render into the PDF.
+         * @param {(status: string) => void} [statusCb] - Optional callback for status updates.
+         */
         generate: async (data, htmlContent, statusCb) => {
             if (statusCb) statusCb('Generating PDF Layout...');
             
@@ -136,7 +191,16 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
     };
 
     /* CORE EXTRACTOR */
+    /**
+     * Core logic for extracting property details from the DOM and hidden Next.js data.
+     * @namespace
+     */
     const PropertyExtractor = {
+        /**
+         * Extracts property details from the raw Next.js JSON data.
+         * @param {any} pd - The raw property details object from Redux state.
+         * @param {PropertyData} data - The target data object to populate.
+         */
         _extractFromJSON: function(pd, data) {
             // 1. Preserve Raw Data (UNALTERED)
             data.raw = JSON.parse(JSON.stringify(pd));
@@ -169,7 +233,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
 
             if (pd.list_date) {
                 const parsedDate = new Date(pd.list_date);
-                if (!isNaN(parsedDate)) {
+                if (!isNaN(parsedDate.getTime())) {
                     data.history['List Date'] = parsedDate.toLocaleDateString();
                 }
             }
@@ -215,6 +279,10 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
             }
         },
 
+        /**
+         * Applies fallback extraction logic using DOM selectors if JSON data is missing.
+         * @param {PropertyData} data - The data object to update.
+         */
         _applyFallbacks: function(data) {
             if (data.address === 'Unknown Address') {
                 data.address = getDOMText('h1') || data.address;
@@ -227,6 +295,10 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
             }
         },
 
+        /**
+         * Finalizes photo list by deduplicating and finding higher resolution versions.
+         * @param {PropertyData} data - The data object to update.
+         */
         _finalizePhotos: function(data) {
             // Deduplication & Upscaling
             const photoMap = new Map();
@@ -234,7 +306,8 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
             data.photos.forEach(p => photoMap.set(p.url, p));
             
             // Add DOM photos if missing
-            Array.from(document.querySelectorAll('img[src*="rdcpix.com"]')).forEach(img => {
+            Array.from(document.querySelectorAll('img[src*="rdcpix.com"]')).forEach(el => {
+                const img = /** @type {HTMLImageElement} */ (el);
                 if (!photoMap.has(img.src)) {
                     photoMap.set(img.src, { url: img.src, label: '' });
                 }
@@ -248,7 +321,12 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
             }).filter(p => p.url && p.url.trim() !== '');
         },
 
+        /**
+         * Main entry point to scrape property data.
+         * @returns {PropertyData} The extracted property data.
+         */
         getData: function() {
+            /** @type {PropertyData} */
             let data = {
                 address: 'Unknown Address', price: 'Unknown Price', specs: {},
                 financials: {}, history: {}, agents: [], description: '', features: [], photos: [],
@@ -275,6 +353,13 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
             return data;
         },
 
+        /**
+         * Builds the final HTML report string.
+         * @param {PropertyData} data - The extracted property data.
+         * @param {string} promptText - The AI analysis prompt text.
+         * @param {string} promptLabel - The label of the selected analysis type.
+         * @returns {string} The full HTML document string.
+         */
         buildHTMLTemplate: function(data, promptText, promptLabel) {
             const renderGrid = (obj) => {
                 if (Object.keys(obj).length === 0) return '<p>No data available.</p>';
