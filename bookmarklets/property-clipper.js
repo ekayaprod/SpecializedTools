@@ -12,7 +12,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
 - **Executive Summary & Verdict**: Provide your final Investment Grade (Strong Buy / Qualified Buy / Hard Pass) with a clear Risk vs. Reward profile.
 - **Hidden Insights & Red Flags**: Focus heavily on off-page data (regulations, true costs, environmental/structural risks, macro trends).
 - **Financial Reality Check**: Project true cash flow, factoring in silent costs, CapEx, and local market trends.
-- **Visual & Condition Audit**: Analyze the embedded photo gallery for renovation tiers and deferred maintenance.
+- **Visual & Condition Audit**: CRITICAL: You must analyze the provided Photo Gallery. Use the specific room labels (e.g., 'Original Kitchen', 'Unfinished Basement') to infer value-add potential. Look for visual cues in the descriptions that suggest renovation quality, roof condition, or layout flow.
 - **Comparison Tables**: If multiple properties are provided, use tables to contrast their metrics, risks, and neighborhood qualities.
 `;
 
@@ -62,18 +62,51 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         return el ? el.innerText.trim() : '';
     };
 
+    /* IMAGE PROCESSOR */
+    const ImageProcessor = {
+        toBase64: async (url) => {
+            try {
+                // Fetch blob from URL
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Network error');
+                const blob = await response.blob();
+                
+                // Convert blob to Data URI
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.onerror = () => reject('Reader error');
+                    reader.readAsDataURL(blob);
+                });
+            } catch (err) {
+                console.warn('Image embedding failed, using original link:', url);
+                return url; // Graceful fallback to hotlink
+            }
+        },
+        
+        embedPhotos: async (photos, statusCb) => {
+            const total = photos.length;
+            let processed = 0;
+            
+            // Process images in parallel
+            const tasks = photos.map(async (photo) => {
+                const base64 = await ImageProcessor.toBase64(photo.url);
+                photo.url = base64; // Mutate the object with the embedded data
+                processed++;
+                if (statusCb) statusCb(`Embedding ${processed}/${total}...`);
+            });
+            
+            await Promise.all(tasks);
+        }
+    };
+
     /* CORE EXTRACTOR - Builds Custom Data Object */
     const PropertyExtractor = {
-        /**
-         * Extracts property data from the page, prioritizing the hidden Next.js hydration state (`__NEXT_DATA__`)
-         * which contains raw, structured data. Falls back to DOM scraping for specific elements if the JSON is missing.
-         *
-         * @returns {Object} Normalized property object containing address, price, specs, financials, history, agents, and photos.
-         */
         getData: function() {
             let data = {
                 address: 'Unknown Address', price: 'Unknown Price', specs: {},
-                financials: {}, history: {}, agents: [], description: '', features: [], photos: []
+                financials: {}, history: {}, agents: [], description: '', features: [], photos: [],
+                raw: null
             };
 
             // 1. EXTRACT FROM HIDDEN JSON STATE (Most Reliable)
@@ -85,6 +118,9 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
                     const jsonData = JSON.parse(nextDataNode.innerText);
                     const pd = jsonData?.props?.pageProps?.initialReduxState?.propertyDetails;
                     if (!pd) return;
+
+                    // Capture Raw Data for AI Context
+                    data.raw = pd;
 
                     // Core Details
                     const loc = pd.location?.address;
@@ -136,9 +172,22 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
                         });
                     }
 
-                    // Granular Features & High-Res Photos
+                    // Granular Features
                     if (pd.details && Array.isArray(pd.details)) data.features = pd.details;
-                    if (pd.photos) data.photos = pd.photos.map(p => p.href);
+                    
+                    // Photos with Labels
+                    if (pd.photos) {
+                        data.photos = pd.photos.map(p => {
+                            let labelParts = [];
+                            if (p.category) labelParts.push(p.category);
+                            if (p.tags && Array.isArray(p.tags)) {
+                                p.tags.forEach(t => { if (t.label) labelParts.push(t.label); });
+                            }
+                            // Unique labels only, join with comma
+                            const cleanLabel = [...new Set(labelParts)].join(', ').replace(/_/g, ' ');
+                            return { url: p.href, label: cleanLabel || 'Property Photo' };
+                        });
+                    }
                 })();
             } catch (e) {
                 console.warn('Hidden JSON extraction partially failed', e);
@@ -167,14 +216,27 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
             });
 
             // 3. CLEANUP & NORMALIZE PHOTOS
-            let rawPhotos = data.photos.length > 0 ? data.photos : Array.from(document.querySelectorAll('img[src*="rdcpix.com"]')).map(img => img.src);
-            data.photos = [...new Set(rawPhotos)].map(url => {
-                if (typeof url !== 'string') return url;
-                let upscaled = url;
+            // If no photos from JSON, scrape DOM. Ensure photos are objects {url, label}
+            let rawPhotos = data.photos.length > 0 ? data.photos : 
+                Array.from(document.querySelectorAll('img[src*="rdcpix.com"]')).map(img => ({
+                    url: img.src,
+                    label: img.alt || 'Property Photo'
+                }));
+
+            // Deduplicate by URL
+            const photoMap = new Map();
+            rawPhotos.forEach(p => {
+                if (typeof p.url === 'string') {
+                    photoMap.set(p.url, p);
+                }
+            });
+            
+            data.photos = Array.from(photoMap.values()).map(p => {
+                let upscaled = p.url;
                 if (upscaled.endsWith('s.jpg')) upscaled = upscaled.replace('s.jpg', 'rd-w1280_h960.webp'); 
                 upscaled = upscaled.replace(/-w\d+_h\d+/g, '-w1280_h960');
-                return upscaled;
-            }).filter(url => typeof url === 'string' && url.trim() !== '');
+                return { url: upscaled, label: p.label };
+            }).filter(p => p.url && p.url.trim() !== '');
 
             return data;
         },
@@ -229,10 +291,16 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         .feature-category li { margin-bottom: 4px; }
         
         .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; margin-top: 20px; }
-        .photo-grid img { width: 100%; height: 260px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .photo-card { position: relative; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); background: #eee; }
+        .photo-card img { width: 100%; height: 260px; object-fit: cover; display: block; }
+        .photo-label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); color: #fff; padding: 8px 12px; font-size: 12px; font-weight: 500; text-transform: capitalize; backdrop-filter: blur(2px); }
         
         .agent-list { list-style: none; padding: 0; margin: 0; }
         .agent-list li { padding: 8px 0; border-bottom: 1px solid #eee; color: #4b5563; }
+
+        .raw-data { margin-top: 40px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .raw-data summary { cursor: pointer; font-weight: 600; color: #64748b; outline: none; }
+        .raw-data pre { white-space: pre-wrap; word-break: break-all; font-size: 12px; color: #334155; margin-top: 10px; max-height: 400px; overflow-y: auto; }
     </style>
 </head>
 <body>
@@ -273,8 +341,18 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
 
         <h2>Photo Gallery</h2>
         <div class="photo-grid">
-            ${data.photos.map(url => `<img src="${escapeHTML(url)}" alt="Property Photo" loading="lazy" onerror="this.style.display='none'">`).join('')}
+            ${data.photos.map(p => `
+                <div class="photo-card">
+                    <img src="${escapeHTML(p.url)}" alt="${escapeHTML(p.label)}" loading="lazy" onerror="this.style.display='none'">
+                    ${p.label ? `<div class="photo-label">${escapeHTML(p.label)}</div>` : ''}
+                </div>
+            `).join('')}
         </div>
+
+        <details class="raw-data">
+            <summary>Raw Property Data (JSON - For AI Context)</summary>
+            <pre>${data.raw ? escapeHTML(JSON.stringify(data.raw, null, 2)) : 'No raw JSON detected.'}</pre>
+        </details>
     </div>
 </body>
 </html>`;
@@ -301,11 +379,18 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         }, 1000);
     }
 
-    function extractAndPackageContent(promptKey) {
+    async function extractAndPackageContent(promptKey, statusCallback) {
         const selectedPrompt = PROMPT_DATA[promptKey];
         const combinedPromptText = `${selectedPrompt.role}\n\n${selectedPrompt.objective}\n${STANDARD_OUTPUTS}`;
         
         const propertyData = PropertyExtractor.getData();
+        
+        // Asynchronously embed photos if they exist
+        if (propertyData.photos && propertyData.photos.length > 0) {
+            if (statusCallback) statusCallback(`Initializing download (${propertyData.photos.length} images)...`);
+            await ImageProcessor.embedPhotos(propertyData.photos, statusCallback);
+        }
+
         const finalHTML = PropertyExtractor.buildHTMLTemplate(propertyData, combinedPromptText, selectedPrompt.label);
         
         downloadHTML(finalHTML, propertyData.address || CONFIG.filenamePrefix);
@@ -354,10 +439,11 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
             btn.onmouseout = () => { btn.style.backgroundColor = BTN_COLORS.defaultBg; btn.style.borderColor = BTN_COLORS.defaultBorder; btn.style.color = BTN_COLORS.defaultText; };
             
             btn.onclick = () => {
-                btn.innerText = 'Extracting Data...';
                 btnContainer.style.pointerEvents = 'none';
                 btn.style.opacity = '0.7';
-                setTimeout(() => extractAndPackageContent(key), 100);
+                extractAndPackageContent(key, (statusText) => {
+                    btn.innerText = statusText;
+                });
             };
         });
 
