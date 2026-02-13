@@ -9,3 +9,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated Property Clipper: Deep Research Protocol & Image Export (PR #63)
 - Updated Property Clipper: Added JSDoc types and fixed type errors
 - ✍️ Scribe: Aligned `property-clipper.js` JSDoc with actual code implementation (PdfProcessor vs ZipProcessor) and fixed type definitions.
+- 🆙 Modernizer: Replaced var with const in utils.js
