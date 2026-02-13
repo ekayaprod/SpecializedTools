@@ -17,6 +17,24 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
 - **Comparison Tables**: If multiple properties are provided, use tables to contrast their metrics, risks, and neighborhood qualities.
 `;
 
+    /**
+     * @typedef {Object} PropertyData
+     * @property {string} address - Full address of the property.
+     * @property {string} price - Listing price.
+     * @property {Object.<string, string>} specs - Key specs like Beds, Baths, Sqft.
+     * @property {Object.<string, string>} financials - Financial details like tax, HOA, estimated payment.
+     * @property {Object.<string, string>} history - Listing and sale history.
+     * @property {string[]} agents - List of agents and brokers involved.
+     * @property {string} description - Full property description text.
+     * @property {Array<{category: string, text: string[]}>} features - Detailed features by category.
+     * @property {Array<{url: string, label: string}>} photos - List of photo URLs and labels.
+     * @property {Object|null} raw - The raw JSON data extracted from Next.js state (for debugging/AI).
+     */
+
+    /**
+     * Configuration for different investment analysis personas.
+     * @type {Object.<string, {label: string, role: string, objective: string}>}
+     */
     const PROMPT_DATA = {
         str: {
             label: "Short-Term Rental (STR)",
@@ -65,17 +83,28 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
 
     /* ZIP PROCESSOR */
     const ZipProcessor = {
+        /**
+         * Loads the JSZip library from CDN if not already present.
+         * @returns {Promise<void>}
+         */
         loadLibrary: async () => {
             if (window.JSZip) return;
             return new Promise((resolve, reject) => {
                 const script = document.createElement('script');
                 script.src = CONFIG.jszipUrl;
-                script.onload = resolve;
+                script.onload = () => resolve();
                 script.onerror = () => reject('Failed to load JSZip');
                 document.head.appendChild(script);
             });
         },
 
+        /**
+         * Creates a ZIP file containing the property report and downloaded photos.
+         * @param {PropertyData} data - The extracted property data.
+         * @param {string} htmlContent - The generated HTML report string.
+         * @param {function(string): void} [statusCb] - Callback for status updates.
+         * @returns {Promise<Blob>} The generated ZIP file as a Blob.
+         */
         createPackage: async (data, htmlContent, statusCb) => {
             const zip = new JSZip();
             const photoFolder = zip.folder("photos");
@@ -116,6 +145,10 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
 
     /* CORE EXTRACTOR - Builds Custom Data Object */
     const PropertyExtractor = {
+        /**
+         * Scrapes property details from the DOM and internal React/Next.js state.
+         * @returns {PropertyData} Normalized property data object.
+         */
         getData: function() {
             let data = {
                 address: 'Unknown Address', price: 'Unknown Price', specs: {},
@@ -167,7 +200,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
                     // History
                     if (pd.list_date) {
                         const parsedDate = new Date(pd.list_date);
-                        if (!isNaN(parsedDate)) {
+                        if (!isNaN(parsedDate.getTime())) {
                             data.history['List Date'] = parsedDate.toLocaleDateString();
                         }
                     }
@@ -219,7 +252,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
             }
 
             document.querySelectorAll('[data-testid="key-facts"] li, .key-fact-item').forEach(li => {
-                const textParts = li.innerText.split('\n').map(t => t.trim()).filter(t => t);
+                const textParts = /** @type {HTMLElement} */ (li).innerText.split('\n').map(t => t.trim()).filter(t => t);
                 if (textParts.length >= 2) {
                     let label = textParts[0].replace(/:$/, '');
                     let val = textParts.slice(1).join(' ');
@@ -232,10 +265,13 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
             // 3. CLEANUP & NORMALIZE PHOTOS
             // If no photos from JSON, scrape DOM. Ensure photos are objects {url, label}
             let rawPhotos = data.photos.length > 0 ? data.photos :
-                Array.from(document.querySelectorAll('img[src*="rdcpix.com"]')).map(img => ({
-                    url: img.src,
-                    label: img.alt || 'Property Photo'
-                }));
+                Array.from(document.querySelectorAll('img[src*="rdcpix.com"]')).map(img => {
+                    const image = /** @type {HTMLImageElement} */ (img);
+                    return {
+                        url: image.src,
+                        label: image.alt || 'Property Photo'
+                    };
+                });
 
             // Deduplicate by URL
             const photoMap = new Map();
