@@ -169,7 +169,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
 
             if (pd.list_date) {
                 const parsedDate = new Date(pd.list_date);
-                if (!isNaN(parsedDate)) {
+                if (!isNaN(parsedDate.getTime())) {
                     data.history['List Date'] = parsedDate.toLocaleDateString();
                 }
             }
@@ -234,7 +234,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
             data.photos.forEach(p => photoMap.set(p.url, p));
             
             // Add DOM photos if missing
-            Array.from(document.querySelectorAll('img[src*="rdcpix.com"]')).forEach(img => {
+            Array.from(document.querySelectorAll('img[src*="rdcpix.com"]')).forEach((/** @type {HTMLImageElement} */ img) => {
                 if (!photoMap.has(img.src)) {
                     photoMap.set(img.src, { url: img.src, label: '' });
                 }
