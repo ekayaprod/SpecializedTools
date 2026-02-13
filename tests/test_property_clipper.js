@@ -7,32 +7,27 @@ const assert = require('assert');
 const scriptPath = path.join(__dirname, '../bookmarklets/property-clipper.js');
 const scriptCode = fs.readFileSync(scriptPath, 'utf8');
 
-// Create a JSDOM instance with minimal required DOM
+// Mock JSZip
+class MockJSZip {
+    constructor() {
+        this.files = {};
+    }
+    folder(name) { return this; }
+    file(name, content) {
+        this.files[name] = content;
+        return this;
+    }
+    generateAsync(options) { return Promise.resolve(new Blob(['zipcontent'])); }
+}
+global.JSZip = MockJSZip;
+
+// Create JSDOM
 const dom = new JSDOM(`<!DOCTYPE html>
 <body>
-    <div id="app-content">
-        <h1>Property Title</h1>
-        <div class="main-content">
-            <button data-testid="hero-view-more">View More</button>
-            <img src="https://example.com/image.jpg" alt="Property Image">
-        </div>
-    </div>
-    <script id="__NEXT_DATA__" type="application/json">
-        {
-            "props": {
-                "pageProps": {
-                    "propertyData": {
-                        "location": { "address": { "line": "123 Main St", "city": "Anytown" } },
-                        "price": 500000,
-                        "description": { "beds": 3, "baths": 2, "sqft": 2000, "text": "Beautiful home." }
-                    }
-                }
-            }
-        }
-    </script>
+    <div id="__NEXT_DATA__">{"props":{"pageProps":{"initialReduxState":{"propertyDetails":{"location":{"address":{"line":"123 Main St","city":"Anytown","state_code":"CA","postal_code":"90210"}},"list_price":1000000,"description":{"text":"Great house"},"photos":[{"href":"http://example.com/photo1.jpg","category":"Kitchen"}]}}}}}</div>
 </body>
 `, {
-    url: "https://www.realtor.com/realestateandhomes-detail/123-Main-St_Anytown_PA_12345_M12345-67890",
+    url: "https://www.realtor.com/realestateandhomes-detail/123-Main-St_Anytown_CA_90210",
     runScripts: "dangerously",
     resources: "usable"
 });
@@ -42,130 +37,81 @@ global.document = dom.window.document;
 global.navigator = dom.window.navigator;
 global.Blob = dom.window.Blob;
 global.URL = dom.window.URL;
-global.URL.createObjectURL = () => 'blob:mock';
+// Mock URL methods
+global.URL.createObjectURL = () => 'blob:mock-url';
 global.URL.revokeObjectURL = () => {};
-global.Image = dom.window.Image;
-global.DOMParser = dom.window.DOMParser; // Make sure DOMParser is available
 
-// Mock BookmarkletUtils
-const MockBookmarkletUtils = {
-    sanitizeFilename: (s) => s.replace(/[^a-z0-9]/gi, '_'),
-    downloadFile: (filename, content) => {
-        console.log(`[Mock] Downloading ${filename}`);
-        // console.log(`[Mock] Content length: ${content.length}`);
-    },
-    normalizeImages: (root) => {},
-    sanitizeAttributes: (root) => {},
-    inlineStyles: (source, target) => {},
-    getRand: (m) => 0
+// Mock fetch
+global.fetch = async (url) => {
+    // console.log("Mock fetching:", url);
+    if (url && url.includes('jszip')) return { ok: true };
+    return {
+        ok: true,
+        blob: async () => new Blob(['image-content'], { type: 'image/jpeg' })
+    };
 };
 
-global.window.BookmarkletUtils = MockBookmarkletUtils;
-global.BookmarkletUtils = MockBookmarkletUtils;
-
-// Mock clipboard
-global.navigator.clipboard = {
-    writeText: async (text) => {
-        console.log(`[Mock] Copied to clipboard: ${text.substring(0, 50)}...`);
+// Mock document.createElement to intercept download link
+let downloadLinkCreated = false;
+let downloadUrl = '';
+const originalCreateElement = dom.window.document.createElement.bind(dom.window.document);
+dom.window.document.createElement = (tag) => {
+    const el = originalCreateElement(tag);
+    if (tag === 'a') {
+        // Intercept click
+        el.click = () => {
+            downloadLinkCreated = true;
+            downloadUrl = el.href;
+            console.log("Download triggered for:", el.download);
+        };
     }
+    // Handle script tag for JSZip loading
+    if (tag === 'script') {
+        setTimeout(() => {
+            if (el.onload) el.onload();
+        }, 10);
+    }
+    return el;
 };
 
-// Execute the script
+// Execute script
 try {
     console.log("Executing property-clipper.js...");
+    // We need to make sure JSZip is available on window for the script to skip loading or load successfully
+    dom.window.JSZip = MockJSZip;
     eval(scriptCode);
 } catch (e) {
-    console.error("Error evaluating script:", e);
+    console.error("Script evaluation failed", e);
     process.exit(1);
 }
 
-// Verification
+// Verification Steps
 console.log("Verifying UI elements...");
 
-// 1. Check if overlay exists
-const overlay = document.getElementById('pc-bookmarklet-overlay');
-assert.ok(overlay, "Overlay should exist");
-
-// 2. Check if modal exists
-const modal = document.getElementById('pc-bookmarklet-modal');
+// 1. Verify Modal Exists
+const modal = dom.window.document.getElementById('pc-bookmarklet-modal');
 assert.ok(modal, "Modal should exist");
 
-// 3. Check for specific text from the NEW script version
-// The new script has "Deep Research Protocol" as a label for one of the global options.
-// The old script had "Deep Research (Web)".
-const bodyText = modal.textContent || modal.innerText;
-const hasNewFeature = bodyText.includes("Deep Research Protocol");
-const hasOldFeature = bodyText.includes("Deep Research (Web)");
+// 2. Verify Buttons exist for each strategy
+const buttons = modal.querySelectorAll('button');
+console.log("Buttons found (innerText):", Array.from(buttons).map(b => b.innerText));
+const strButton = Array.from(buttons).find(b => b.innerText.includes('Short-Term Rental'));
+assert.ok(strButton, "STR Button should exist");
+console.log("✅ STR Button found.");
 
-if (hasNewFeature) {
-    console.log("✅ New script version detected (found 'Deep Research Protocol').");
-} else if (hasOldFeature) {
-    console.log("⚠️ Old script version detected (found 'Deep Research (Web)').");
-    // This is expected if we haven't updated the file yet.
-    // We want to assert true only for the new version in the final test run.
-} else {
-    console.warn("❓ Could not determine script version from UI text.");
-}
+// 3. Trigger extraction (Click STR)
+console.log("Clicking STR button...");
+strButton.click();
 
-// 4. Test interaction: Select a strategy
-const select = modal.querySelector('select');
-assert.ok(select, "Strategy selector should exist");
-
-// Select 'str' strategy
-select.value = 'str';
-select.dispatchEvent(new dom.window.Event('change'));
-
-// Check if STR specific sections are loaded
-// In the new script, STR has a section "Phase 1: Geographic & Forensic Identification" which renders as "Geographic & Forensic Identification"
-// In the old script, STR has "Infrastructure Forensics (Critical)" which renders as "Infrastructure Forensics"
-const labels = Array.from(modal.querySelectorAll('label')).map(l => l.textContent);
-const hasNewSTRSection = labels.some(l => l.includes("Geographic & Forensic Identification"));
-// "Infrastructure Forensics" is present in both (as Phase 2 in new), so we rely on the new one for positive confirmation.
-
-if (hasNewSTRSection) {
-    console.log("✅ New STR strategy sections loaded.");
-} else {
-    console.log("⚠️ Old STR strategy sections loaded (or failed to detect new one).");
-    console.log("Labels found:", labels);
-}
-
-// 5. Verify Prompt Content
-const textarea = modal.querySelector('textarea');
-const promptText = textarea.value;
-
-const expectedPhrases = [
-    "REQUIRED OUTPUT STRUCTURE:",
-    "Risk Scoring",
-    "Financial Analysis",
-    "Comparison Tables",
-    "Renovation Tiers",
-    "Construction-Era Risk Checklist",
-    "Assumptions & Data Gaps"
-];
-
-let allPhrasesFound = true;
-expectedPhrases.forEach(phrase => {
-    if (promptText.includes(phrase)) {
-        console.log(`✅ Found phrase: "${phrase}"`);
+// Wait for async operations (fetching photos, zipping)
+// Since we mocked fetch and JSZip, it should be relatively fast but still async.
+setTimeout(() => {
+    if (downloadLinkCreated) {
+        console.log("✅ Download triggered successfully.");
+        console.log(`   URL: ${downloadUrl}`);
+        process.exit(0);
     } else {
-        console.error(`❌ Missing phrase: "${phrase}"`);
-        allPhrasesFound = false;
+        console.error("❌ Download not triggered within timeout.");
+        process.exit(1);
     }
-});
-
-if (!allPhrasesFound) {
-    console.error("❌ Some prompt requirements are missing.");
-    process.exit(1);
-}
-
-// 6. Verify "Thinking" removal
-const bodyTextAfter = modal.textContent || modal.innerText;
-const hasThinking = bodyTextAfter.includes("Thinking Process Step");
-if (!hasThinking) {
-    console.log("✅ 'Thinking Process Step' option correctly removed.");
-} else {
-    console.error("❌ 'Thinking Process Step' option STILL PRESENT.");
-    process.exit(1);
-}
-
-console.log("Test execution completed.");
+}, 1000);

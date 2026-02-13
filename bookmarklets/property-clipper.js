@@ -3,7 +3,8 @@
     const CONFIG = {
         modalId: 'pc-bookmarklet-modal',
         overlayId: 'pc-bookmarklet-overlay',
-        filenamePrefix: 'Property_Report'
+        filenamePrefix: 'Property_Report',
+        jszipUrl: 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'
     };
 
     /* PROMPT LIBRARY (OPTIMIZED FOR DEEP RESEARCH) */
@@ -12,7 +13,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
 - **Executive Summary & Verdict**: Provide your final Investment Grade (Strong Buy / Qualified Buy / Hard Pass) with a clear Risk vs. Reward profile.
 - **Hidden Insights & Red Flags**: Focus heavily on off-page data (regulations, true costs, environmental/structural risks, macro trends).
 - **Financial Reality Check**: Project true cash flow, factoring in silent costs, CapEx, and local market trends.
-- **Visual & Condition Audit**: CRITICAL: You must analyze the provided Photo Gallery. Use the specific room labels (e.g., 'Original Kitchen', 'Unfinished Basement') to infer value-add potential. Look for visual cues in the descriptions that suggest renovation quality, roof condition, or layout flow.
+- **Visual & Condition Audit**: CRITICAL: You must analyze the provided Photo Gallery files in the 'photos' folder. Look for visual evidence of wear, renovation quality (luxury vs. builder grade), roof condition, HVAC age indicators, and layout flow. Match these visual findings against the text claims.
 - **Comparison Tables**: If multiple properties are provided, use tables to contrast their metrics, risks, and neighborhood qualities.
 `;
 
@@ -62,41 +63,54 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         return el ? el.innerText.trim() : '';
     };
 
-    /* IMAGE PROCESSOR */
-    const ImageProcessor = {
-        toBase64: async (url) => {
-            try {
-                // Fetch blob from URL
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('Network error');
-                const blob = await response.blob();
-                
-                // Convert blob to Data URI
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => resolve(reader.result);
-                    reader.onerror = () => reject('Reader error');
-                    reader.readAsDataURL(blob);
-                });
-            } catch (err) {
-                console.warn('Image embedding failed, using original link:', url);
-                return url; // Graceful fallback to hotlink
-            }
-        },
-        
-        embedPhotos: async (photos, statusCb) => {
-            const total = photos.length;
-            let processed = 0;
-            
-            // Process images in parallel
-            const tasks = photos.map(async (photo) => {
-                const base64 = await ImageProcessor.toBase64(photo.url);
-                photo.url = base64; // Mutate the object with the embedded data
-                processed++;
-                if (statusCb) statusCb(`Embedding ${processed}/${total}...`);
+    /* ZIP PROCESSOR */
+    const ZipProcessor = {
+        loadLibrary: async () => {
+            if (window.JSZip) return;
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = CONFIG.jszipUrl;
+                script.onload = resolve;
+                script.onerror = () => reject('Failed to load JSZip');
+                document.head.appendChild(script);
             });
-            
-            await Promise.all(tasks);
+        },
+
+        createPackage: async (data, htmlContent, statusCb) => {
+            const zip = new JSZip();
+            const photoFolder = zip.folder("photos");
+
+            // Add HTML Report
+            zip.file(`${data.address || 'Property_Report'}.html`, htmlContent);
+
+            // Fetch and Add Photos
+            const total = data.photos.length;
+            let processed = 0;
+
+            const photoTasks = data.photos.map(async (photo, index) => {
+                try {
+                    const response = await fetch(photo.url);
+                    if (!response.ok) throw new Error(`Failed to fetch ${photo.url}`);
+                    const blob = await response.blob();
+
+                    // Sanitize label for filename
+                    const safeLabel = (photo.label || 'image').replace(/[^a-z0-9]/gi, '_').substring(0, 50);
+                    const ext = blob.type.split('/')[1] || 'jpg';
+                    const filename = `${String(index + 1).padStart(2, '0')}_${safeLabel}.${ext}`;
+
+                    photoFolder.file(filename, blob);
+                } catch (e) {
+                    console.warn(`Skipped photo ${index}:`, e);
+                } finally {
+                    processed++;
+                    if (statusCb) statusCb(`Zipping ${processed}/${total}...`);
+                }
+            });
+
+            await Promise.all(photoTasks);
+
+            if (statusCb) statusCb('Finalizing ZIP...');
+            return zip.generateAsync({ type: "blob" });
         }
     };
 
@@ -114,7 +128,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
                 (() => {
                     const nextDataNode = document.getElementById('__NEXT_DATA__');
                     if (!nextDataNode) return;
-                    
+
                     const jsonData = JSON.parse(nextDataNode.innerText);
                     const pd = jsonData?.props?.pageProps?.initialReduxState?.propertyDetails;
                     if (!pd) return;
@@ -128,7 +142,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
                         data.address = `${loc.line || ''}, ${loc.city || ''}, ${loc.state_code || ''} ${loc.postal_code || ''}`.replace(/^, | ,/g, '').trim();
                     }
                     if (pd.list_price) data.price = formatCurrency(pd.list_price);
-                    
+
                     // Specs & Description
                     const desc = pd.description || {};
                     data.description = desc.text || '';
@@ -174,7 +188,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
 
                     // Granular Features
                     if (pd.details && Array.isArray(pd.details)) data.features = pd.details;
-                    
+
                     // Photos with Labels
                     if (pd.photos) {
                         data.photos = pd.photos.map(p => {
@@ -217,7 +231,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
 
             // 3. CLEANUP & NORMALIZE PHOTOS
             // If no photos from JSON, scrape DOM. Ensure photos are objects {url, label}
-            let rawPhotos = data.photos.length > 0 ? data.photos : 
+            let rawPhotos = data.photos.length > 0 ? data.photos :
                 Array.from(document.querySelectorAll('img[src*="rdcpix.com"]')).map(img => ({
                     url: img.src,
                     label: img.alt || 'Property Photo'
@@ -230,10 +244,10 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
                     photoMap.set(p.url, p);
                 }
             });
-            
+
             data.photos = Array.from(photoMap.values()).map(p => {
                 let upscaled = p.url;
-                if (upscaled.endsWith('s.jpg')) upscaled = upscaled.replace('s.jpg', 'rd-w1280_h960.webp'); 
+                if (upscaled.endsWith('s.jpg')) upscaled = upscaled.replace('s.jpg', 'rd-w1280_h960.webp');
                 upscaled = upscaled.replace(/-w\d+_h\d+/g, '-w1280_h960');
                 return { url: upscaled, label: p.label };
             }).filter(p => p.url && p.url.trim() !== '');
@@ -259,6 +273,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
                 </div>
             `).join('');
 
+            // Simplified HTML - no embedded photos needed as they are in the zip
             return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -268,39 +283,27 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         :root { --primary: #2563eb; --gray-100: #f3f4f6; --gray-200: #e5e7eb; --gray-800: #1f2937; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 1200px; margin: 0 auto; padding: 20px; background: #fafafa; }
         .report-container { background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        
         .system-prompt { background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 8px; margin-bottom: 30px; font-family: monospace; white-space: pre-wrap; font-size: 14px; border-left: 4px solid #3b82f6; }
         .prompt-label { font-weight: bold; color: #60a5fa; margin-bottom: 10px; display: block; text-transform: uppercase; letter-spacing: 0.05em; }
-        
         .header { border-bottom: 2px solid var(--gray-100); padding-bottom: 20px; margin-bottom: 30px; }
         h1 { margin: 0; color: var(--gray-800); font-size: 28px; }
         .price { font-size: 32px; font-weight: bold; color: var(--primary); margin: 10px 0; }
-        
         h2 { color: var(--gray-800); margin-top: 40px; border-bottom: 1px solid #eee; padding-bottom: 10px; font-size: 20px; }
-        
         .metrics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
         .metric-box { background: var(--gray-100); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--gray-200); }
         .metric-label { font-size: 12px; text-transform: uppercase; color: #6b7280; font-weight: 600; letter-spacing: 0.05em; }
         .metric-value { font-size: 16px; font-weight: 500; color: var(--gray-800); margin-top: 4px; }
-        
         .description { font-size: 16px; white-space: pre-line; color: #4b5563; background: #f8fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #94a3b8; }
-        
         .features-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
         .feature-category h3 { font-size: 16px; color: var(--gray-800); margin-bottom: 8px; background: var(--gray-100); padding: 8px 12px; border-radius: 6px; }
         .feature-category ul { margin: 0; padding-left: 20px; color: #4b5563; font-size: 14px; }
         .feature-category li { margin-bottom: 4px; }
-        
-        .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; margin-top: 20px; }
-        .photo-card { position: relative; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); background: #eee; }
-        .photo-card img { width: 100%; height: 260px; object-fit: cover; display: block; }
-        .photo-label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); color: #fff; padding: 8px 12px; font-size: 12px; font-weight: 500; text-transform: capitalize; backdrop-filter: blur(2px); }
-        
         .agent-list { list-style: none; padding: 0; margin: 0; }
         .agent-list li { padding: 8px 0; border-bottom: 1px solid #eee; color: #4b5563; }
-
         .raw-data { margin-top: 40px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
         .raw-data summary { cursor: pointer; font-weight: 600; color: #64748b; outline: none; }
         .raw-data pre { white-space: pre-wrap; word-break: break-all; font-size: 12px; color: #334155; margin-top: 10px; max-height: 400px; overflow-y: auto; }
+        .photo-note { background: #fffbeb; border: 1px solid #fcd34d; padding: 15px; border-radius: 8px; margin-top: 20px; font-size: 14px; color: #92400e; }
     </style>
 </head>
 <body>
@@ -309,7 +312,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
             <span class="prompt-label">Analysis Objective: ${escapeHTML(promptLabel)}</span>
             ${escapeHTML(promptText)}
         </div>
-        
+
         <div class="header">
             <h1>${escapeHTML(data.address)}</h1>
             <div class="price">${escapeHTML(data.price)}</div>
@@ -340,13 +343,8 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         </div>
 
         <h2>Photo Gallery</h2>
-        <div class="photo-grid">
-            ${data.photos.map(p => `
-                <div class="photo-card">
-                    <img src="${escapeHTML(p.url)}" alt="${escapeHTML(p.label)}" loading="lazy" onerror="this.style.display='none'">
-                    ${p.label ? `<div class="photo-label">${escapeHTML(p.label)}</div>` : ''}
-                </div>
-            `).join('')}
+        <div class="photo-note">
+            <strong>Note:</strong> High-resolution photos have been downloaded to the 'photos' folder in this ZIP archive. Upload the entire folder or specific images to the AI for visual analysis.
         </div>
 
         <details class="raw-data">
@@ -360,19 +358,17 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
     };
 
     /* EXPORT LOGIC */
-    function downloadHTML(htmlContent, baseFileName) {
+    function downloadZip(blob, baseFileName) {
         const cleanName = baseFileName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-        const finalName = `${cleanName}_${Date.now()}.html`;
-        
-        const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+        const finalName = `${cleanName}_${Date.now()}.zip`;
+
         const url = URL.createObjectURL(blob);
-        
         const a = document.createElement('a');
         a.href = url;
         a.download = finalName;
         document.body.appendChild(a);
         a.click();
-        
+
         setTimeout(() => {
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
@@ -382,18 +378,17 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
     async function extractAndPackageContent(promptKey, statusCallback) {
         const selectedPrompt = PROMPT_DATA[promptKey];
         const combinedPromptText = `${selectedPrompt.role}\n\n${selectedPrompt.objective}\n${STANDARD_OUTPUTS}`;
-        
-        const propertyData = PropertyExtractor.getData();
-        
-        // Asynchronously embed photos if they exist
-        if (propertyData.photos && propertyData.photos.length > 0) {
-            if (statusCallback) statusCallback(`Initializing download (${propertyData.photos.length} images)...`);
-            await ImageProcessor.embedPhotos(propertyData.photos, statusCallback);
-        }
 
+        if (statusCallback) statusCallback("Loading ZIP engine...");
+        await ZipProcessor.loadLibrary();
+
+        const propertyData = PropertyExtractor.getData();
         const finalHTML = PropertyExtractor.buildHTMLTemplate(propertyData, combinedPromptText, selectedPrompt.label);
-        
-        downloadHTML(finalHTML, propertyData.address || CONFIG.filenamePrefix);
+
+        if (statusCallback) statusCallback(`Downloading ${propertyData.photos.length} photos...`);
+        const zipBlob = await ZipProcessor.createPackage(propertyData, finalHTML, statusCallback);
+
+        downloadZip(zipBlob, propertyData.address || CONFIG.filenamePrefix);
         closeModal();
     }
 
@@ -434,10 +429,10 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
                 fontWeight: '500', cursor: 'pointer', transition: 'all 0.15s',
                 textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
             }, prompt.label, btnContainer);
-            
+
             btn.onmouseover = () => { btn.style.backgroundColor = BTN_COLORS.hoverBg; btn.style.borderColor = BTN_COLORS.hoverBorder; btn.style.color = BTN_COLORS.hoverText; };
             btn.onmouseout = () => { btn.style.backgroundColor = BTN_COLORS.defaultBg; btn.style.borderColor = BTN_COLORS.defaultBorder; btn.style.color = BTN_COLORS.defaultText; };
-            
+
             btn.onclick = () => {
                 btnContainer.style.pointerEvents = 'none';
                 btn.style.opacity = '0.7';
@@ -451,7 +446,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
             marginTop: '20px', padding: '10px', border: 'none', background: 'none',
             color: '#6b7280', fontSize: '14px', cursor: 'pointer', width: '100%'
         }, 'Cancel', modal);
-        
+
         cancelBtn.onclick = closeModal;
         cancelBtn.onmouseover = () => cancelBtn.style.color = '#111827';
         cancelBtn.onmouseout = () => cancelBtn.style.color = '#6b7280';
