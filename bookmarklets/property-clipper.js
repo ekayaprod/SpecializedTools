@@ -4,8 +4,7 @@
         modalId: 'pc-bookmarklet-modal',
         overlayId: 'pc-bookmarklet-overlay',
         filenamePrefix: 'Property_Report',
-        // We now load jsPDF instead of JSZip
-        jsPdfUrl: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
+        html2pdfUrl: 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js'
     };
 
     /* PROMPT LIBRARY (OPTIMIZED FOR DEEP RESEARCH) */
@@ -14,23 +13,9 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
 - **Executive Summary & Verdict**: Provide your final Investment Grade (Strong Buy / Qualified Buy / Hard Pass) with a clear Risk vs. Reward profile.
 - **Hidden Insights & Red Flags**: Focus heavily on off-page data (regulations, true costs, environmental/structural risks, macro trends).
 - **Financial Reality Check**: Project true cash flow, factoring in silent costs, CapEx, and local market trends.
-- **Visual & Condition Audit**: CRITICAL: You must analyze the provided Photo Gallery pages in this document. Look for visual evidence of wear, renovation quality (luxury vs. builder grade), roof condition, HVAC age indicators, and layout flow. Match these visual findings against the text claims.
+- **Visual & Condition Audit**: CRITICAL: You must analyze the embedded photos in the report below. Use the specific room labels (e.g., 'Original Kitchen', 'Unfinished Basement') to infer value-add potential. Look for visual cues in the descriptions that suggest renovation quality, roof condition, or layout flow.
 - **Comparison Tables**: If multiple properties are provided, use tables to contrast their metrics, risks, and neighborhood qualities.
 `;
-
-    /**
-     * @typedef {Object} PropertyData
-     * @property {string} address - Full address of the property.
-     * @property {string} price - Listing price.
-     * @property {Object.<string, string>} specs - Key specs like Beds, Baths, Sqft.
-     * @property {Object.<string, string>} financials - Financial details like tax, HOA, estimated payment.
-     * @property {Object.<string, string>} history - Listing and sale history.
-     * @property {string[]} agents - List of agents and brokers involved.
-     * @property {string} description - Full property description text.
-     * @property {Array<{category: string, text: string[]}>} features - Detailed features by category.
-     * @property {Array<{url: string, label: string}>} photos - List of photo URLs and labels.
-     * @property {Object|null} raw - The raw JSON data extracted from Next.js state (for debugging/AI).
-     */
 
     const PROMPT_DATA = {
         str: {
@@ -78,149 +63,81 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         return el ? el.innerText.trim() : '';
     };
 
+    /* IMAGE PROCESSOR (Base64 for Embedding) */
+    const ImageProcessor = {
+        toBase64: async (url) => {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Network error');
+                const blob = await response.blob();
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.onerror = () => reject('Reader error');
+                    reader.readAsDataURL(blob);
+                });
+            } catch (err) {
+                console.warn('Image embedding failed, using original link:', url);
+                return url;
+            }
+        },
+        
+        embedPhotos: async (photos, statusCb) => {
+            const total = photos.length;
+            let processed = 0;
+            // Sequential processing to avoid browser resource exhaustion
+            for (let i = 0; i < photos.length; i++) {
+                const photo = photos[i];
+                const base64 = await ImageProcessor.toBase64(photo.url);
+                photo.url = base64;
+                processed++;
+                if (statusCb) statusCb(`Embedding Image ${processed}/${total}...`);
+            }
+        }
+    };
+
     /* PDF PROCESSOR */
     const PdfProcessor = {
         loadLibrary: async () => {
-            if (window.jspdf) return;
+            if (window.html2pdf) return;
             return new Promise((resolve, reject) => {
                 const script = document.createElement('script');
-                script.src = CONFIG.jsPdfUrl;
-                script.onload = () => resolve();
-                script.onerror = () => reject('Failed to load jsPDF');
+                script.src = CONFIG.html2pdfUrl;
+                script.onload = resolve;
+                script.onerror = () => reject('Failed to load html2pdf');
                 document.head.appendChild(script);
             });
         },
 
-        generatePdf: async (data, promptText, promptLabel, statusCb) => {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const pageHeight = doc.internal.pageSize.getHeight();
-            const margin = 15;
-            let cursorY = 20;
+        generate: async (data, htmlContent, statusCb) => {
+            if (statusCb) statusCb('Generating PDF Layout...');
+            
+            const container = document.createElement('div');
+            container.innerHTML = htmlContent;
+            container.style.width = '800px'; 
+            container.style.position = 'absolute';
+            container.style.left = '-9999px';
+            document.body.appendChild(container);
 
-            const addText = (text, size = 10, isBold = false) => {
-                doc.setFontSize(size);
-                doc.setFont("helvetica", isBold ? "bold" : "normal");
-                const lines = doc.splitTextToSize(text, pageWidth - (margin * 2));
-                
-                // Check page break
-                if (cursorY + (lines.length * size * 0.4) > pageHeight - margin) {
-                    doc.addPage();
-                    cursorY = 20;
-                }
-                
-                doc.text(lines, margin, cursorY);
-                cursorY += (lines.length * size * 0.4) + 2; // Line height spacing
+            const opt = {
+                margin: 0.3, 
+                filename: `${data.address || 'Property_Report'}.pdf`,
+                image: { type: 'jpeg', quality: 0.95 },
+                html2canvas: { scale: 1.5, useCORS: true },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
             };
 
-            // --- PAGE 1: TEXT REPORT ---
-            
-            // Header
-            addText("AI PROPERTY ANALYSIS DOSSIER", 10);
-            cursorY += 5;
-            addText(data.address, 18, true);
-            addText(data.price, 14, true);
-            cursorY += 10;
-
-            // System Prompt Box
-            doc.setFillColor(240, 240, 240);
-            doc.rect(margin, cursorY, pageWidth - (margin*2), 40, 'F');
-            cursorY += 5;
-            addText(`ANALYSIS MODE: ${promptLabel}`, 10, true);
-            addText(promptText, 8);
-            cursorY += 10;
-
-            // Specs
-            addText("Specifications:", 12, true);
-            const specStr = Object.entries(data.specs).map(([k, v]) => `${k}: ${v}`).join(' | ');
-            addText(specStr, 10);
-            cursorY += 5;
-
-            // Description
-            addText("Description:", 12, true);
-            addText(data.description.substring(0, 2000) + (data.description.length > 2000 ? "..." : ""), 9);
-            cursorY += 5;
-
-            // Features (Brief)
-            addText("Key Features:", 12, true);
-            const featureStr = data.features.map(f => f.category).join(', ');
-            addText(featureStr, 9);
-            
-            // --- PAGES 2+: IMAGES ---
-            // Max 25 images to keep PDF manageable, but high res
-            const imagesToProcess = data.photos.slice(0, 25); 
-            
-            for (let i = 0; i < imagesToProcess.length; i++) {
-                const photo = imagesToProcess[i];
-                if (statusCb) statusCb(`Processing Image ${i + 1}/${imagesToProcess.length}...`);
-
-                try {
-                    // Fetch blob
-                    const response = await fetch(photo.url);
-                    if (!response.ok) throw new Error('Fetch failed');
-                    const blob = await response.blob();
-                    
-                    // Convert to Base64
-                    const base64 = await new Promise((resolve) => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => resolve(reader.result);
-                        reader.readAsDataURL(blob);
-                    });
-
-                    // Determine format
-                    let format = 'JPEG';
-                    if (photo.url.toLowerCase().endsWith('.png')) format = 'PNG';
-                    if (photo.url.toLowerCase().endsWith('.webp')) format = 'WEBP';
-
-                    // Add new page
-                    doc.addPage();
-                    
-                    // Header for image page
-                    doc.setFontSize(10);
-                    doc.text(`Image ${i+1}: ${photo.label}`, margin, 10);
-
-                    // Calc dimensions to fit page max
-                    const imgProps = doc.getImageProperties(base64);
-                    const pdfWidth = pageWidth - (margin * 2);
-                    const pdfHeight = pageHeight - (margin * 2) - 10; // minus top header space
-                    
-                    const imgRatio = imgProps.width / imgProps.height;
-                    const pageRatio = pdfWidth / pdfHeight;
-
-                    let finalW, finalH;
-                    
-                    if (imgRatio > pageRatio) {
-                        // Image is wider than page area
-                        finalW = pdfWidth;
-                        finalH = finalW / imgRatio;
-                    } else {
-                        // Image is taller than page area
-                        finalH = pdfHeight;
-                        finalW = finalH * imgRatio;
-                    }
-
-                    // Center image
-                    const x = margin + (pdfWidth - finalW) / 2;
-                    const y = 20 + (pdfHeight - finalH) / 2;
-
-                    doc.addImage(base64, format, x, y, finalW, finalH);
-
-                } catch (e) {
-                    console.warn(`Failed to load image ${photo.url}`, e);
-                }
+            try {
+                await html2pdf().set(opt).from(container).save();
+            } finally {
+                document.body.removeChild(container);
             }
-            
-            return doc;
         }
     };
 
-    /* CORE EXTRACTOR - Builds Custom Data Object (FROM ORIGINAL SCRIPT) */
+    /* CORE EXTRACTOR */
     const PropertyExtractor = {
-        /**
-         * Scrapes property details from the DOM and internal React/Next.js state.
-         * @returns {PropertyData} Normalized property data object.
-         */
         getData: function() {
             let data = {
                 address: 'Unknown Address', price: 'Unknown Price', specs: {},
@@ -228,27 +145,25 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
                 raw: null
             };
 
-            // 1. EXTRACT FROM HIDDEN JSON STATE (Most Reliable)
             try {
                 (() => {
                     const nextDataNode = document.getElementById('__NEXT_DATA__');
                     if (!nextDataNode) return;
-
+                    
                     const jsonData = JSON.parse(nextDataNode.innerText);
                     const pd = jsonData?.props?.pageProps?.initialReduxState?.propertyDetails;
                     if (!pd) return;
 
-                    // Capture Raw Data for AI Context
+                    // 1. Preserve Raw Data (Unfiltered)
                     data.raw = pd;
 
-                    // Core Details
+                    // 2. Extract Fields
                     const loc = pd.location?.address;
                     if (loc) {
                         data.address = `${loc.line || ''}, ${loc.city || ''}, ${loc.state_code || ''} ${loc.postal_code || ''}`.replace(/^, | ,/g, '').trim();
                     }
                     if (pd.list_price) data.price = formatCurrency(pd.list_price);
-
-                    // Specs & Description
+                    
                     const desc = pd.description || {};
                     data.description = desc.text || '';
                     if (desc.type) data.specs['Property Type'] = desc.type.replace('_', ' ');
@@ -258,7 +173,6 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
                     if (desc.lot_sqft) data.specs['Lot Size'] = (desc.lot_sqft / 43560).toFixed(2) + ' Acres';
                     if (desc.year_built) data.specs['Year Built'] = desc.year_built;
 
-                    // Financials
                     if (pd.mortgage?.estimate) {
                         const est = pd.mortgage.estimate;
                         data.financials['Est. Monthly Payment'] = formatCurrency(est.monthly_payment);
@@ -269,17 +183,15 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
                         }
                     }
 
-                    // History
                     if (pd.list_date) {
                         const parsedDate = new Date(pd.list_date);
-                        if (!isNaN(parsedDate.getTime())) {
+                        if (!isNaN(parsedDate)) {
                             data.history['List Date'] = parsedDate.toLocaleDateString();
                         }
                     }
                     if (pd.last_sold_date) data.history['Last Sold Date'] = pd.last_sold_date;
                     if (pd.last_sold_price) data.history['Last Sold Price'] = formatCurrency(pd.last_sold_price);
 
-                    // Agents & Advertisers
                     if (pd.advertisers && Array.isArray(pd.advertisers)) {
                         pd.advertisers.forEach(adv => {
                             if (adv.name) {
@@ -291,20 +203,32 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
                         });
                     }
 
-                    // Granular Features
                     if (pd.details && Array.isArray(pd.details)) data.features = pd.details;
-
-                    // Photos with Labels
+                    
+                    // 3. Process Photos for Gallery (Filtered Labels)
                     if (pd.photos) {
                         data.photos = pd.photos.map(p => {
-                            let labelParts = [];
-                            if (p.category) labelParts.push(p.category);
-                            if (p.tags && Array.isArray(p.tags)) {
-                                p.tags.forEach(t => { if (t.label) labelParts.push(t.label); });
+                            let label = '';
+                            
+                            // Category First
+                            if (p.category && p.category !== 'All Photos') {
+                                label = p.category;
                             }
-                            // Unique labels only, join with comma
-                            const cleanLabel = [...new Set(labelParts)].join(', ').replace(/_/g, ' ');
-                            return { url: p.href, label: cleanLabel || 'Property Photo' };
+                            
+                            // Tag Fallback (Strict Room Filter)
+                            if (!label && p.tags && Array.isArray(p.tags)) {
+                                const noise = ['house_view', 'interior', 'exterior', 'watermark', 'complete', 'white', 'blue', 'grey', 'virtual_tour', 'video', 'floor_plan', 'realtordotcom_mls_listing_image'];
+                                const validTag = p.tags.find(t => t.label && !noise.includes(t.label.toLowerCase()));
+                                if (validTag) {
+                                    label = validTag.label.replace(/_/g, ' '); 
+                                }
+                            }
+
+                            if (label) {
+                                label = label.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+                            }
+
+                            return { url: p.href, label: label || '' };
                         });
                     }
                 })();
@@ -312,7 +236,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
                 console.warn('Hidden JSON extraction partially failed', e);
             }
 
-            // 2. EXTRACT & ENRICH FROM DOM (Fallback & Catch-All)
+            // Fallbacks
             if (data.address === 'Unknown Address') {
                 data.address = getDOMText('h1') || data.address;
             }
@@ -324,7 +248,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
             }
 
             document.querySelectorAll('[data-testid="key-facts"] li, .key-fact-item').forEach(li => {
-                const textParts = /** @type {HTMLElement} */ (li).innerText.split('\n').map(t => t.trim()).filter(t => t);
+                const textParts = li.innerText.split('\n').map(t => t.trim()).filter(t => t);
                 if (textParts.length >= 2) {
                     let label = textParts[0].replace(/:$/, '');
                     let val = textParts.slice(1).join(' ');
@@ -334,65 +258,165 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
                 }
             });
 
-            // 3. CLEANUP & NORMALIZE PHOTOS
-            // If no photos from JSON, scrape DOM. Ensure photos are objects {url, label}
-            let rawPhotos = data.photos.length > 0 ? data.photos :
-                Array.from(document.querySelectorAll('img[src*="rdcpix.com"]')).map(img => {
-                    const image = /** @type {HTMLImageElement} */ (img);
-                    return {
-                        url: image.src,
-                        label: image.alt || 'Property Photo'
-                    };
-                });
+            // Photo Deduplication & Upscaling
+            let rawPhotos = data.photos.length > 0 ? data.photos : 
+                Array.from(document.querySelectorAll('img[src*="rdcpix.com"]')).map(img => ({
+                    url: img.src,
+                    label: ''
+                }));
 
-            // Deduplicate by URL
             const photoMap = new Map();
             rawPhotos.forEach(p => {
-                if (typeof p.url === 'string') {
-                    photoMap.set(p.url, p);
-                }
+                if (typeof p.url === 'string') photoMap.set(p.url, p);
             });
-
+            
             data.photos = Array.from(photoMap.values()).map(p => {
                 let upscaled = p.url;
-                if (upscaled.endsWith('s.jpg')) upscaled = upscaled.replace('s.jpg', 'rd-w1280_h960.webp');
+                if (upscaled.endsWith('s.jpg')) upscaled = upscaled.replace('s.jpg', 'rd-w1280_h960.webp'); 
                 upscaled = upscaled.replace(/-w\d+_h\d+/g, '-w1280_h960');
                 return { url: upscaled, label: p.label };
             }).filter(p => p.url && p.url.trim() !== '');
 
             return data;
+        },
+
+        buildHTMLTemplate: function(data, promptText, promptLabel) {
+            const renderGrid = (obj) => {
+                if (Object.keys(obj).length === 0) return '<p>No data available.</p>';
+                return Object.entries(obj).map(([key, val]) => `
+                    <div class="metric-box">
+                        <div class="metric-label">${escapeHTML(key)}</div>
+                        <div class="metric-value">${escapeHTML(val)}</div>
+                    </div>
+                `).join('');
+            };
+
+            const featuresHTML = data.features.map(f => `
+                <div class="feature-category">
+                    <h3>${escapeHTML(f.category || 'Features')}</h3>
+                    <ul>${(f.text || []).map(t => `<li>${escapeHTML(t)}</li>`).join('')}</ul>
+                </div>
+            `).join('');
+
+            return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Helvetica, Arial, sans-serif; line-height: 1.4; color: #333; font-size: 12px; margin: 0; padding: 20px; }
+        h1 { margin: 0; color: #1f2937; font-size: 24px; }
+        h2 { color: #1f2937; margin-top: 25px; border-bottom: 2px solid #f3f4f6; padding-bottom: 5px; font-size: 16px; page-break-after: avoid; }
+        h3 { font-size: 14px; margin: 10px 0 5px 0; color: #374151; page-break-after: avoid; }
+        
+        .header { margin-bottom: 20px; border-bottom: 3px solid #2563eb; padding-bottom: 15px; }
+        .price { font-size: 20px; font-weight: bold; color: #2563eb; margin-top: 5px; }
+        
+        .system-prompt { background: #f1f5f9; color: #475569; padding: 15px; border-radius: 6px; margin-bottom: 20px; white-space: pre-wrap; font-family: monospace; font-size: 10px; border-left: 4px solid #94a3b8; page-break-inside: avoid; }
+        .prompt-label { font-weight: bold; color: #2563eb; display: block; margin-bottom: 5px; text-transform: uppercase; }
+        
+        .metrics-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .metric-box { flex: 1 1 30%; min-width: 150px; background: #f9fafb; padding: 10px; border: 1px solid #e5e7eb; border-radius: 4px; page-break-inside: avoid; }
+        .metric-label { font-size: 10px; text-transform: uppercase; color: #6b7280; font-weight: 700; }
+        .metric-value { font-size: 12px; font-weight: 500; color: #111827; margin-top: 2px; }
+        
+        .description { font-size: 11px; white-space: pre-wrap; color: #374151; text-align: justify; }
+        
+        .features-grid { display: flex; flex-wrap: wrap; gap: 15px; }
+        .feature-category { flex: 1 1 45%; page-break-inside: avoid; }
+        .feature-category ul { margin: 0; padding-left: 15px; }
+        
+        .photo-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+        .photo-card { width: 48%; margin-bottom: 10px; page-break-inside: avoid; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; background: #fff; position: relative; }
+        .photo-card img { width: 100%; height: 200px; object-fit: cover; display: block; }
+        .photo-label { background: #f3f4f6; color: #374151; padding: 5px 8px; font-size: 10px; font-weight: bold; text-align: center; border-bottom: 1px solid #ddd; }
+        
+        .agent-list { list-style: none; padding: 0; margin: 0; }
+        .agent-list li { padding: 5px 0; border-bottom: 1px solid #eee; }
+
+        .raw-data-section { margin-top: 30px; border-top: 4px solid #cbd5e1; padding-top: 10px; page-break-before: always; }
+        .raw-data-content { white-space: pre-wrap; word-break: break-all; font-family: monospace; font-size: 8px; color: #475569; background: #f8fafc; padding: 10px; }
+    </style>
+</head>
+<body>
+    <div class="system-prompt">
+        <span class="prompt-label">Analysis Objective: ${escapeHTML(promptLabel)}</span>
+        ${escapeHTML(promptText)}
+    </div>
+    
+    <div class="header">
+        <h1>${escapeHTML(data.address)}</h1>
+        <div class="price">${escapeHTML(data.price)}</div>
+    </div>
+
+    <h2>Property Overview</h2>
+    <div class="metrics-grid">
+        ${renderGrid(data.specs)}
+    </div>
+
+    <h2>Financial & Market Data</h2>
+    <div class="metrics-grid">
+        ${renderGrid(data.financials)}
+        ${renderGrid(data.history)}
+    </div>
+
+    <h2>Agent & Broker Info</h2>
+    <ul class="agent-list">
+        ${data.agents.length > 0 ? data.agents.map(a => `<li>${escapeHTML(a)}</li>`).join('') : '<li>No agent information found.</li>'}
+    </ul>
+
+    <h2>Property Description</h2>
+    <div class="description">${escapeHTML(data.description) || 'No description extracted.'}</div>
+
+    <h2>Detailed Features</h2>
+    <div class="features-grid">
+        ${featuresHTML || '<p>No specific features extracted.</p>'}
+    </div>
+
+    <h2>Photo Gallery</h2>
+    <div class="photo-grid">
+        ${data.photos.map(p => `
+            <div class="photo-card">
+                ${p.label ? `<div class="photo-label">${escapeHTML(p.label)}</div>` : ''}
+                <img src="${escapeHTML(p.url)}" alt="${escapeHTML(p.label)}">
+            </div>
+        `).join('')}
+    </div>
+
+    <div class="raw-data-section">
+        <h2>Appendix: Raw Data</h2>
+        <div class="raw-data-content">${(() => {
+            try {
+                return data.raw ? escapeHTML(JSON.stringify(data.raw, null, 2)) : 'No raw JSON detected.';
+            } catch(e) { return 'Error parsing raw data.'; }
+        })()}</div>
+    </div>
+</body>
+</html>`;
         }
     };
 
-    /* EXPORT LOGIC */
     async function extractAndPackageContent(promptKey, statusCallback) {
         const selectedPrompt = PROMPT_DATA[promptKey];
         const combinedPromptText = `${selectedPrompt.role}\n\n${selectedPrompt.objective}\n${STANDARD_OUTPUTS}`;
-
-        if (statusCallback) statusCallback("Loading PDF engine...");
+        
+        if (statusCallback) statusCallback("Loading PDF Engine...");
         await PdfProcessor.loadLibrary();
 
         const propertyData = PropertyExtractor.getData();
-
-        if (statusCallback) statusCallback(`Found ${propertyData.photos.length} photos. Generating PDF...`);
-
-        // Generate PDF
-        const doc = await PdfProcessor.generatePdf(
-            propertyData,
-            combinedPromptText,
-            selectedPrompt.label,
-            statusCallback
-        );
-
-        if (statusCallback) statusCallback('Saving...');
         
-        const safeTitle = (propertyData.address || CONFIG.filenamePrefix).replace(/[^a-z0-9]/gi, '_').substring(0, 40);
-        doc.save(`${safeTitle}_Analysis.pdf`);
+        if (propertyData.photos && propertyData.photos.length > 0) {
+            if (statusCallback) statusCallback(`Embedding ${propertyData.photos.length} photos...`);
+            await ImageProcessor.embedPhotos(propertyData.photos, statusCallback);
+        }
+
+        const finalHTML = PropertyExtractor.buildHTMLTemplate(propertyData, combinedPromptText, selectedPrompt.label);
+        
+        if (statusCallback) statusCallback("Rendering PDF...");
+        await PdfProcessor.generate(propertyData, finalHTML, statusCallback);
         
         closeModal();
     }
 
-    /* UI MANAGEMENT */
     function createModal() {
         if (document.getElementById(CONFIG.modalId)) return;
 
@@ -413,7 +437,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         }, '', fragment);
         modal.id = CONFIG.modalId;
 
-        buildElement('h2', { margin: '0 0 20px 0', fontSize: '20px', color: '#111827', textAlign: 'center' }, 'Generate Property PDF', modal);
+        buildElement('h2', { margin: '0 0 20px 0', fontSize: '20px', color: '#111827', textAlign: 'center' }, 'Extract Property For AI Analysis', modal);
 
         const btnContainer = buildElement('div', { display: 'flex', flexDirection: 'column', gap: '10px' }, '', modal);
 
@@ -429,10 +453,10 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
                 fontWeight: '500', cursor: 'pointer', transition: 'all 0.15s',
                 textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
             }, prompt.label, btnContainer);
-
+            
             btn.onmouseover = () => { btn.style.backgroundColor = BTN_COLORS.hoverBg; btn.style.borderColor = BTN_COLORS.hoverBorder; btn.style.color = BTN_COLORS.hoverText; };
             btn.onmouseout = () => { btn.style.backgroundColor = BTN_COLORS.defaultBg; btn.style.borderColor = BTN_COLORS.defaultBorder; btn.style.color = BTN_COLORS.defaultText; };
-
+            
             btn.onclick = () => {
                 btnContainer.style.pointerEvents = 'none';
                 btn.style.opacity = '0.7';
@@ -446,7 +470,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
             marginTop: '20px', padding: '10px', border: 'none', background: 'none',
             color: '#6b7280', fontSize: '14px', cursor: 'pointer', width: '100%'
         }, 'Cancel', modal);
-
+        
         cancelBtn.onclick = closeModal;
         cancelBtn.onmouseover = () => cancelBtn.style.color = '#111827';
         cancelBtn.onmouseout = () => cancelBtn.style.color = '#6b7280';
