@@ -101,20 +101,19 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         /**
          * Creates a ZIP file containing the property report and downloaded photos.
          * @param {PropertyData} data - The extracted property data.
-         * @param {string} htmlContent - The generated HTML report string.
+         * @param {function(Array<{filename: string, label: string}>): string} htmlGeneratorCallback - Callback to generate HTML given the list of photos.
          * @param {function(string): void} [statusCb] - Callback for status updates.
          * @returns {Promise<Blob>} The generated ZIP file as a Blob.
          */
-        createPackage: async (data, htmlContent, statusCb) => {
+        createPackage: async (data, htmlGeneratorCallback, statusCb) => {
             const zip = new JSZip();
             const photoFolder = zip.folder("photos");
-
-            // Add HTML Report
-            zip.file(`${data.address || 'Property_Report'}.html`, htmlContent);
 
             // Fetch and Add Photos
             const total = data.photos.length;
             let processed = 0;
+            /** @type {Array<{filename: string, label: string}>} */
+            const downloadedPhotos = new Array(total);
 
             const photoTasks = data.photos.map(async (photo, index) => {
                 try {
@@ -128,6 +127,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
                     const filename = `${String(index + 1).padStart(2, '0')}_${safeLabel}.${ext}`;
 
                     photoFolder.file(filename, blob);
+                    downloadedPhotos[index] = { filename, label: photo.label };
                 } catch (e) {
                     console.warn(`Skipped photo ${index}:`, e);
                 } finally {
@@ -137,6 +137,13 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
             });
 
             await Promise.all(photoTasks);
+
+            // Generate HTML with local photo references (filtering out failed downloads)
+            const validPhotos = downloadedPhotos.filter(p => p);
+            const htmlContent = htmlGeneratorCallback(validPhotos);
+
+            // Add HTML Report
+            zip.file(`${data.address || 'Property_Report'}.html`, htmlContent);
 
             if (statusCb) statusCb('Finalizing ZIP...');
             return zip.generateAsync({ type: "blob" });
@@ -291,7 +298,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
             return data;
         },
 
-        buildHTMLTemplate: function(data, promptText, promptLabel) {
+        buildHTMLTemplate: function(data, promptText, promptLabel, localPhotos) {
             const renderGrid = (obj) => {
                 if (Object.keys(obj).length === 0) return '<p>No data available.</p>';
                 return Object.entries(obj).map(([key, val]) => `
@@ -340,6 +347,10 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         .raw-data summary { cursor: pointer; font-weight: 600; color: #64748b; outline: none; }
         .raw-data pre { white-space: pre-wrap; word-break: break-all; font-size: 12px; color: #334155; margin-top: 10px; max-height: 400px; overflow-y: auto; }
         .photo-note { background: #fffbeb; border: 1px solid #fcd34d; padding: 15px; border-radius: 8px; margin-top: 20px; font-size: 14px; color: #92400e; }
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; margin-top: 20px; }
+        .photo-card { border: 1px solid var(--gray-200); border-radius: 8px; overflow: hidden; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .photo-card img { width: 100%; height: 180px; object-fit: cover; display: block; }
+        .photo-label { padding: 10px; font-size: 13px; color: #4b5563; background: #f9fafb; border-top: 1px solid #eee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     </style>
 </head>
 <body>
@@ -379,9 +390,18 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         </div>
 
         <h2>Photo Gallery</h2>
+        ${(localPhotos && localPhotos.length > 0) ? `
+        <div class="gallery-grid">
+            ${localPhotos.map(p => `
+                <div class="photo-card">
+                    <img src="photos/${p.filename}" loading="lazy" alt="${escapeHTML(p.label)}">
+                    <div class="photo-label" title="${escapeHTML(p.label)}">${escapeHTML(p.label)}</div>
+                </div>
+            `).join('')}
+        </div>` : `
         <div class="photo-note">
             <strong>Note:</strong> High-resolution photos have been downloaded to the 'photos' folder in this ZIP archive. Upload the entire folder or specific images to the AI for visual analysis.
-        </div>
+        </div>`}
 
         <details class="raw-data">
             <summary>Raw Property Data (JSON - For AI Context)</summary>
@@ -419,10 +439,14 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         await ZipProcessor.loadLibrary();
 
         const propertyData = PropertyExtractor.getData();
-        const finalHTML = PropertyExtractor.buildHTMLTemplate(propertyData, combinedPromptText, selectedPrompt.label);
 
         if (statusCallback) statusCallback(`Downloading ${propertyData.photos.length} photos...`);
-        const zipBlob = await ZipProcessor.createPackage(propertyData, finalHTML, statusCallback);
+
+        const zipBlob = await ZipProcessor.createPackage(
+            propertyData,
+            (localPhotos) => PropertyExtractor.buildHTMLTemplate(propertyData, combinedPromptText, selectedPrompt.label, localPhotos),
+            statusCallback
+        );
 
         downloadZip(zipBlob, propertyData.address || CONFIG.filenamePrefix);
         closeModal();
