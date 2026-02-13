@@ -395,7 +395,7 @@
     async function handleCopy(contentArea) {
         const html = contentArea.innerHTML;
         const text = contentArea.innerText;
-        const btn = document.querySelector('#' + CONFIG.modalId + ' button.primary');
+        const btn = /** @type {HTMLElement} */ (document.querySelector('#' + CONFIG.modalId + ' button.primary'));
         try {
             /* Copying as 'text/html' preserves styles when pasting into Google Docs/Word */
             const data = [new ClipboardItem({ 'text/html': new Blob([html], { type: 'text/html' }), 'text/plain': new Blob([text], { type: 'text/plain' }) })];
@@ -446,7 +446,7 @@
      * @param {string} title
      */
     function capturePng(element, title) {
-        const el = /** @type {HTMLElement} */ (/** @type {unknown} */ (element));
+        const el = /** @type {any} */ (element);
         /* Temporarily ensure element is visible and has white background for capture */
         const originalBg = el.style.backgroundColor;
         el.style.backgroundColor = '#ffffff';
