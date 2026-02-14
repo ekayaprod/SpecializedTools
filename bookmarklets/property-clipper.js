@@ -6,6 +6,7 @@
         filenamePrefix: 'Property_Report',
         // Libraries required for PDF generation
         jspdfUrl: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+        jspdfIntegrity: 'sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk',
         // Max width for images in PDF (pixels) - ensures manageable file size
         imgMaxWidth: 1000,
         imgQuality: 0.7 // JPEG quality 0-1
@@ -181,10 +182,13 @@ EXPECTED DELIVERABLES:
     const PDFGenerator = {
         loadLib: async () => {
             if (window.jspdf) return;
-            return new Promise(resolve => {
+            return new Promise((resolve, reject) => {
                 const script = document.createElement('script');
                 script.src = CONFIG.jspdfUrl;
+                script.integrity = CONFIG.jspdfIntegrity;
+                script.crossOrigin = 'anonymous';
                 script.onload = resolve;
+                script.onerror = reject;
                 document.head.appendChild(script);
             });
         },
