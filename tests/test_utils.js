@@ -98,4 +98,34 @@ console.log("Running BookmarkletUtils tests...");
     console.log("✅ normalizeImages passed");
 }
 
+// Test 3: sanitizeFilename
+{
+    console.log("Test 3: sanitizeFilename");
+
+    // 1. Basic happy path
+    const safe = window.BookmarkletUtils.sanitizeFilename('My File Name!');
+    assert.strictEqual(safe, 'My_File_Name_', 'Basic sanitization failed');
+
+    // 2. Empty/Null
+    assert.strictEqual(window.BookmarkletUtils.sanitizeFilename(''), 'export', 'Empty string should return export');
+    assert.strictEqual(window.BookmarkletUtils.sanitizeFilename(null), 'export', 'Null should return export');
+    assert.strictEqual(window.BookmarkletUtils.sanitizeFilename(undefined), 'export', 'Undefined should return export');
+
+    // 3. Length check
+    const long = 'a'.repeat(100);
+    assert.strictEqual(window.BookmarkletUtils.sanitizeFilename(long).length, 50, 'Should truncate to 50 chars');
+
+    // 4. Non-string input (Regression Test)
+    // This is expected to crash until fixed
+    try {
+        const numResult = window.BookmarkletUtils.sanitizeFilename(12345);
+        assert.strictEqual(numResult, '12345', 'Number should be converted to string');
+    } catch (e) {
+        console.error("❌ sanitizeFilename crashed on number input: " + e.message);
+        throw e; // Rethrow to fail the test suite
+    }
+
+    console.log("✅ sanitizeFilename passed");
+}
+
 console.log("All tests passed!");
