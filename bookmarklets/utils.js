@@ -46,7 +46,7 @@
          */
         sanitizeFilename: function(s) {
             /* Replace non-alphanumeric characters with underscores and truncate */
-            return (s || 'export').replace(/[^a-z0-9]/gi, '_').substring(0, 50);
+            return String(s || 'export').replace(/[^a-z0-9]/gi, '_').substring(0, 50);
         },
         downloadFile: function(filename, content, type) {
             /* Create blob and download link */
