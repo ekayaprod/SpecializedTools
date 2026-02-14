@@ -173,21 +173,8 @@ EXPECTED DELIVERABLES:
 
     /* 3. PDF GENERATOR */
     const PDFGenerator = {
-        loadLib: async () => {
-            if (window.jspdf) return;
-            return new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = CONFIG.jspdfUrl;
-                script.integrity = CONFIG.jspdfIntegrity;
-                script.crossOrigin = 'anonymous';
-                script.onload = resolve;
-                script.onerror = reject;
-                document.head.appendChild(script);
-            });
-        },
-
         create: async (data, selectedPhotos, promptData, statusCb) => {
-            await PDFGenerator.loadLib();
+            await BookmarkletUtils.loadLibrary('jspdf', CONFIG.jspdfUrl, CONFIG.jspdfIntegrity);
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ unit: 'mm', format: 'a4' }); // 210 x 297 mm
             
