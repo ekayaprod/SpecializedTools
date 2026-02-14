@@ -50,9 +50,9 @@
         },
         downloadFile: function(filename, content, type) {
             /* Create blob and download link */
-            var blob = new Blob([content], { type: type || 'text/html' });
-            var url = URL.createObjectURL(blob);
-            var a = document.createElement('a');
+            const blob = new Blob([content], { type: type || 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
             a.href = url;
             a.download = filename;
             document.body.appendChild(a);
