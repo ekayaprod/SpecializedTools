@@ -165,7 +165,14 @@
         showLoadingOverlay();
         setTimeout(function() {
             openEditor(target).catch(function(err) {
-                console.error(err);
+                console.error('Web Clipper editor open failed', {
+                    target: {
+                        tagName: target.tagName,
+                        id: target.id,
+                        className: target.className
+                    },
+                    error: err
+                });
                 hideLoadingOverlay();
                 alert('Error opening editor: ' + err.message);
             });
