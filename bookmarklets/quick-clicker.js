@@ -254,7 +254,9 @@
                     t.style.opacity = '1';
                     setTimeout(()=>t.style.opacity='0', 3000);
                 }
-            } catch(e){}
+            } catch(e){
+                console.warn('Wake Lock failed:', e);
+            }
 
             this.q('#v1').classList.add('hidden');
             this.q('#v2').classList.remove('hidden');
