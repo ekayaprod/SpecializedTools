@@ -345,24 +345,8 @@ EXPECTED DELIVERABLES:
         }
     };
 
-    /* 4. WIZARD UI */
-    const Wizard = {
-        state: {
-            data: null,
-            prompt: null,
-            mode: null, // 'all' or 'manual'
-            step: 0,
-            selectedPhotos: [] // Flat array of {url, label}
-        },
-
-        init: (data, promptKey) => {
-            Wizard.state.data = data;
-            Wizard.state.prompt = PROMPT_DATA[promptKey];
-            Wizard.state.selectedPhotos = [];
-            Wizard.state.step = 0;
-            Wizard.renderStartScreen();
-        },
-
+    /* 4. WIZARD UI (Presentation) */
+    const WizardUI = {
         renderModalFrame: (title) => {
             const container = document.getElementById(CONFIG.modalId);
             container.innerHTML = '';
@@ -389,16 +373,9 @@ EXPECTED DELIVERABLES:
             return { content, footer };
         },
 
-        renderStartScreen: () => {
-            const { content, footer } = Wizard.renderModalFrame('Select Photo Strategy');
+        renderStartScreen: (totalPhotos, interactiveCount, autoCount, onIncludeAll, onManual) => {
+            const { content, footer } = WizardUI.renderModalFrame('Select Photo Strategy');
             
-            const totalPhotos = Wizard.state.data.photoGroups.reduce((acc, g) => acc + g.photos.length, 0);
-            const groupsCount = Wizard.state.data.photoGroups.length;
-            
-            // Calculate rooms that actually need review (>1 photo)
-            const interactiveCount = Wizard.state.data.photoGroups.filter(g => g.photos.length > 1).length;
-            const autoCount = groupsCount - interactiveCount;
-
             const makeChoice = (title, sub, onClick) => {
                 const box = BookmarkletUtils.buildElement('div', {
                     border: '1px solid #ddd', borderRadius: '8px', padding: '15px',
@@ -412,42 +389,15 @@ EXPECTED DELIVERABLES:
                 box.onclick = onClick;
             };
 
-            makeChoice(`Include All Photos (${totalPhotos})`, 'Fastest. Includes every available photo in the report.', () => {
-                // Flatten all
-                Wizard.state.selectedPhotos = Wizard.state.data.photoGroups.flatMap(g => g.photos);
-                Wizard.generate();
-            });
-
-            makeChoice(`Manual Selection (${interactiveCount} Rooms)`, `Curated. You will review ${interactiveCount} rooms. ${autoCount} single-photo rooms will be added automatically.`, () => {
-                Wizard.state.mode = 'manual';
-                Wizard.renderStep();
-            });
+            makeChoice(`Include All Photos (${totalPhotos})`, 'Fastest. Includes every available photo in the report.', onIncludeAll);
+            makeChoice(`Manual Selection (${interactiveCount} Rooms)`, `Curated. You will review ${interactiveCount} rooms. ${autoCount} single-photo rooms will be added automatically.`, onManual);
             
             // Footer
             BookmarkletUtils.buildElement('button', { padding: '8px 15px', cursor: 'pointer' }, 'Cancel', footer).onclick = closeModal;
         },
 
-        renderStep: () => {
-            const groupIndex = Wizard.state.step;
-            const groups = Wizard.state.data.photoGroups;
-
-            // Finish Condition
-            if (groupIndex >= groups.length) {
-                Wizard.generate();
-                return;
-            }
-
-            const group = groups[groupIndex];
-
-            // AUTO-SKIP: If only 1 photo, add it automatically and skip UI
-            if (group.photos.length === 1) {
-                Wizard.state.selectedPhotos.push(group.photos[0]);
-                Wizard.state.step++;
-                Wizard.renderStep(); // Recursively call next step to find next interactive group
-                return;
-            }
-
-            const { content, footer } = Wizard.renderModalFrame(`Step ${groupIndex + 1} of ${groups.length}: ${group.category}`);
+        renderStep: (group, groupIndex, totalGroups, onNext, onFinish) => {
+            const { content, footer } = WizardUI.renderModalFrame(`Step ${groupIndex + 1} of ${totalGroups}: ${group.category}`);
 
             // Toolbar
             const toolbar = BookmarkletUtils.buildElement('div', { marginBottom: '10px', display: 'flex', gap: '10px', fontSize: '12px' }, '', content);
@@ -494,19 +444,14 @@ EXPECTED DELIVERABLES:
             btnSelectNone.onclick = () => checks.forEach(c => { c.check.checked = false; c.check.nextSibling.style.borderColor = 'transparent'; });
 
             // Footer Nav
-            const saveSelection = () => {
-                const selected = checks.filter(c => c.check.checked).map(c => c.photo);
-                Wizard.state.selectedPhotos.push(...selected);
-            };
+            const getSelection = () => checks.filter(c => c.check.checked).map(c => c.photo);
 
             const btnNext = BookmarkletUtils.buildElement('button', {
                 backgroundColor: '#2563eb', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer'
             }, 'Next Category >', footer);
             
             btnNext.onclick = () => {
-                saveSelection();
-                Wizard.state.step++;
-                Wizard.renderStep();
+                onNext(getSelection());
             };
 
             const btnFinish = BookmarkletUtils.buildElement('button', {
@@ -514,29 +459,99 @@ EXPECTED DELIVERABLES:
             }, 'Finish & Generate Now', footer);
             
             btnFinish.onclick = () => {
-                saveSelection();
-                Wizard.generate();
+                onFinish(getSelection());
             };
         },
 
-        generate: () => {
+        renderLoading: (msg) => {
             const container = document.getElementById(CONFIG.modalId);
-            container.innerHTML = '<div style="padding:40px;text-align:center;"><h3>Generating PDF...</h3><div id="pdf-status" style="margin-top:10px;color:#666">Initializing...</div></div>';
+            container.innerHTML = `<div style="padding:40px;text-align:center;"><h3>Generating PDF...</h3><div id="pdf-status" style="margin-top:10px;color:#666">${msg}</div></div>`;
+        },
+
+        updateStatus: (msg) => {
+            const el = document.getElementById('pdf-status');
+            if (el) el.innerText = msg;
+        }
+    };
+
+    /* 5. WIZARD CONTROLLER (Logic) */
+    const Wizard = {
+        state: {
+            data: null,
+            prompt: null,
+            mode: null, // 'all' or 'manual'
+            step: 0,
+            selectedPhotos: [] // Flat array of {url, label}
+        },
+
+        init: (data, promptKey) => {
+            Wizard.state.data = data;
+            Wizard.state.prompt = PROMPT_DATA[promptKey];
+            Wizard.state.selectedPhotos = [];
+            Wizard.state.step = 0;
             
-            const updateStatus = (msg) => {
-                const el = document.getElementById('pdf-status');
-                if (el) el.innerText = msg;
-            };
+            const totalPhotos = Wizard.state.data.photoGroups.reduce((acc, g) => acc + g.photos.length, 0);
+            const groupsCount = Wizard.state.data.photoGroups.length;
+            const interactiveCount = Wizard.state.data.photoGroups.filter(g => g.photos.length > 1).length;
+            const autoCount = groupsCount - interactiveCount;
+
+            WizardUI.renderStartScreen(totalPhotos, interactiveCount, autoCount,
+                () => { // onIncludeAll
+                    Wizard.state.selectedPhotos = Wizard.state.data.photoGroups.flatMap(g => g.photos);
+                    Wizard.generate();
+                },
+                () => { // onManual
+                    Wizard.state.mode = 'manual';
+                    Wizard.nextStep();
+                }
+            );
+        },
+
+        nextStep: () => {
+            const groupIndex = Wizard.state.step;
+            const groups = Wizard.state.data.photoGroups;
+
+            // Finish Condition
+            if (groupIndex >= groups.length) {
+                Wizard.generate();
+                return;
+            }
+
+            const group = groups[groupIndex];
+
+            // AUTO-SKIP: If only 1 photo, add it automatically and skip UI
+            if (group.photos.length === 1) {
+                Wizard.state.selectedPhotos.push(group.photos[0]);
+                Wizard.state.step++;
+                Wizard.nextStep(); // Recursively call next step to find next interactive group
+                return;
+            }
+
+            WizardUI.renderStep(group, groupIndex, groups.length,
+                (selected) => { // onNext
+                    Wizard.state.selectedPhotos.push(...selected);
+                    Wizard.state.step++;
+                    Wizard.nextStep();
+                },
+                (selected) => { // onFinish
+                    Wizard.state.selectedPhotos.push(...selected);
+                    Wizard.generate();
+                }
+            );
+        },
+
+        generate: () => {
+            WizardUI.renderLoading('Initializing...');
 
             // Capture raw output
             console.log('Generating PDF with', Wizard.state.selectedPhotos.length, 'photos');
             
-            PDFGenerator.create(Wizard.state.data, Wizard.state.selectedPhotos, Wizard.state.prompt, updateStatus)
+            PDFGenerator.create(Wizard.state.data, Wizard.state.selectedPhotos, Wizard.state.prompt, WizardUI.updateStatus)
                 .then(() => {
                     closeModal();
                 })
                 .catch(err => {
-                    updateStatus('Error: ' + err.message);
+                    WizardUI.updateStatus('Error: ' + err.message);
                     console.error(err);
                 });
         }

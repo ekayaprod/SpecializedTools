@@ -190,46 +190,6 @@
             }
         },
         /**
-         * Recursively applies computed styles from a source element to a target element.
-         * Only properties listed in the 'safeProperties' whitelist are copied to preserve layout
-         * without breaking flexibility or security.
-         *
-         * @param {HTMLElement} source - The original DOM element to read styles from.
-         * @param {HTMLElement} target - The cloned/target element to apply styles to.
-         */
-        inlineStyles(source, target) {
-            /* Recursively apply SAFE computed styles from source to target */
-            const computed = window.getComputedStyle(source);
-            if (!computed) return;
-
-            /* Apply to current element */
-            const styles = [];
-            for (let i = 0, len = safeProperties.length; i < len; i++) {
-                const prop = safeProperties[i];
-                const val = computed.getPropertyValue(prop);
-
-                /* Skip default values to keep size manageable */
-                if (val && val !== 'none' && val !== 'normal') {
-                     styles.push(prop + ':' + val);
-                }
-            }
-
-            /* Preserve existing inline styles too - using cssText to avoid overwrites */
-            if (styles.length > 0) {
-                target.style.cssText += styles.join('; ') + '; ';
-            }
-
-            /* Recurse children */
-            const sourceChildren = source.children;
-            const targetChildren = target.children;
-
-            for (let i = 0; i < sourceChildren.length; i++) {
-                if (targetChildren[i]) {
-                    window.BookmarkletUtils.inlineStyles(sourceChildren[i], targetChildren[i]);
-                }
-            }
-        },
-        /**
          * Asynchronously applies computed styles from a source element to a target element.
          * Processes elements in chunks to avoid blocking the main thread.
          *
