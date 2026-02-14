@@ -41,6 +41,72 @@ EXPECTED DELIVERABLES:
 
     /* 1. CORE EXTRACTOR */
     const PropertyExtractor = {
+        // Helper to extract clean data from the raw property details object
+        parseDetails: function(pd, data) {
+             data.raw = pd;
+                        
+            // Basic Info
+            const loc = pd.location?.address;
+            if (loc) data.address = `${loc.line || ''}, ${loc.city || ''}, ${loc.state_code || ''} ${loc.postal_code || ''}`.replace(/^, | ,/g, '').trim();
+            if (pd.list_price) data.price = formatCurrency(pd.list_price);
+            
+            // Description
+            data.description = pd.description?.text || '';
+
+            // Specs
+            const desc = pd.description || {};
+            if (desc.beds) data.specs['Beds'] = desc.beds;
+            if (desc.baths_consolidated) data.specs['Baths'] = desc.baths_consolidated;
+            if (desc.sqft) data.specs['Sq. Ft.'] = desc.sqft.toLocaleString();
+            if (desc.lot_sqft) data.specs['Lot Size'] = (desc.lot_sqft / 43560).toFixed(2) + ' Acres';
+            if (desc.year_built) data.specs['Year Built'] = desc.year_built;
+
+            // Financials
+            if (pd.mortgage?.estimate) {
+                data.financials['Est. Payment'] = formatCurrency(pd.mortgage.estimate.monthly_payment);
+                const tax = pd.mortgage.estimate.monthly_payment_details?.find(d => d.type === 'property_tax');
+                if (tax) data.financials['Tax'] = formatCurrency(tax.amount);
+                
+                const hoa = pd.mortgage.estimate.monthly_payment_details?.find(d => d.type === 'hoa_fees');
+                if (hoa) data.financials['HOA'] = formatCurrency(hoa.amount);
+            }
+
+            // Features
+            if (pd.details && Array.isArray(pd.details)) data.features = pd.details;
+
+            // SMART PHOTO EXTRACTION (Group by Category)
+            if (pd.augmented_gallery && Array.isArray(pd.augmented_gallery)) {
+                pd.augmented_gallery.forEach(group => {
+                    // Skip the "all_photos" duplicate group
+                    if (group.key === 'all_photos') return;
+                    
+                    const categoryName = group.category || group.key || 'Other';
+                    const validPhotos = (group.photos || [])
+                        .filter(p => p.href)
+                        .map(p => ({
+                            // Try to grab higher res if available in standard RDCPix format
+                            url: p.href.replace('s.jpg', 'od-w1024_h768.webp'), 
+                            label: categoryName
+                        }));
+                    
+                    if (validPhotos.length > 0) {
+                        data.photoGroups.push({
+                            category: categoryName,
+                            photos: validPhotos
+                        });
+                    }
+                });
+            }
+
+            // Fallback if no groups found but photos exist
+            if (data.photoGroups.length === 0 && pd.photos) {
+                data.photoGroups.push({
+                    category: 'Gallery',
+                    photos: pd.photos.map(p => ({ url: p.href, label: 'Property Photo' }))
+                });
+            }
+        },
+
         getData: function () {
             let data = {
                 address: 'Unknown Address', price: 'Unknown Price', specs: {},
@@ -50,78 +116,26 @@ EXPECTED DELIVERABLES:
             };
 
             try {
-                // Parse Next.js Data
+                // 1. Try Realtor.com Live Data (Standard)
                 const nextDataNode = document.getElementById('__NEXT_DATA__');
+                
+                // 2. Try Offline Report Data (Fallback for generated HTML reports)
+                const rawPreNode = document.querySelector('.raw-data pre');
+
                 if (nextDataNode) {
                     const jsonData = JSON.parse(nextDataNode.innerText);
                     const pd = jsonData?.props?.pageProps?.initialReduxState?.propertyDetails;
-                    
-                    if (pd) {
-                        data.raw = pd;
-                        
-                        // Basic Info
-                        const loc = pd.location?.address;
-                        if (loc) data.address = `${loc.line || ''}, ${loc.city || ''}, ${loc.state_code || ''} ${loc.postal_code || ''}`.replace(/^, | ,/g, '').trim();
-                        if (pd.list_price) data.price = formatCurrency(pd.list_price);
-                        
-                        // Description
-                        data.description = pd.description?.text || '';
-
-                        // Specs
-                        const desc = pd.description || {};
-                        if (desc.beds) data.specs['Beds'] = desc.beds;
-                        if (desc.baths_consolidated) data.specs['Baths'] = desc.baths_consolidated;
-                        if (desc.sqft) data.specs['Sq. Ft.'] = desc.sqft.toLocaleString();
-                        if (desc.lot_sqft) data.specs['Lot Size'] = (desc.lot_sqft / 43560).toFixed(2) + ' Acres';
-                        if (desc.year_built) data.specs['Year Built'] = desc.year_built;
-
-                        // Financials
-                        if (pd.mortgage?.estimate) {
-                            data.financials['Est. Payment'] = formatCurrency(pd.mortgage.estimate.monthly_payment);
-                            data.financials['Tax'] = formatCurrency(pd.mortgage.estimate.monthly_payment_details?.find(d => d.type === 'property_tax')?.amount);
-                            data.financials['HOA'] = formatCurrency(pd.mortgage.estimate.monthly_payment_details?.find(d => d.type === 'hoa_fees')?.amount);
-                        }
-
-                        // Features
-                        if (pd.details && Array.isArray(pd.details)) data.features = pd.details;
-
-                        // SMART PHOTO EXTRACTION (Group by Category)
-                        if (pd.augmented_gallery && Array.isArray(pd.augmented_gallery)) {
-                            pd.augmented_gallery.forEach(group => {
-                                // Skip the "all_photos" duplicate group to avoid double counting
-                                if (group.key === 'all_photos') return;
-                                
-                                const categoryName = group.category || group.key || 'Other';
-                                const validPhotos = (group.photos || [])
-                                    .filter(p => p.href)
-                                    .map(p => ({
-                                        url: p.href.replace('s.jpg', 'od-w1024_h768.webp'), // Get better quality
-                                        label: categoryName // Use category as label
-                                    }));
-                                
-                                if (validPhotos.length > 0) {
-                                    data.photoGroups.push({
-                                        category: categoryName,
-                                        photos: validPhotos
-                                    });
-                                }
-                            });
-                        }
-
-                        // Fallback if no groups found but photos exist
-                        if (data.photoGroups.length === 0 && pd.photos) {
-                            data.photoGroups.push({
-                                category: 'Gallery',
-                                photos: pd.photos.map(p => ({ url: p.href, label: 'Property Photo' }))
-                            });
-                        }
-                    }
+                    if (pd) PropertyExtractor.parseDetails(pd, data);
+                } else if (rawPreNode) {
+                    // Extract from the pre-generated report's raw data block
+                    const pd = JSON.parse(rawPreNode.innerText);
+                    if (pd) PropertyExtractor.parseDetails(pd, data);
                 }
             } catch (e) {
                 console.warn('Extraction Warning:', e);
             }
 
-            // DOM Fallback for essentials
+            // DOM Fallback for essentials if extraction failed
             if (data.address === 'Unknown Address') data.address = document.querySelector('h1')?.innerText || data.address;
             
             return data;
@@ -571,7 +585,9 @@ EXPECTED DELIVERABLES:
             btn.onclick = () => {
                 // Extract Data First
                 const data = PropertyExtractor.getData();
-                if (!data.raw) alert("Warning: Could not find raw hidden data. Report will be limited.");
+                if (!data.raw) {
+                     alert("Warning: Could not find raw hidden data. Report will be limited.");
+                }
                 
                 // Launch Wizard
                 Wizard.init(data, key);
