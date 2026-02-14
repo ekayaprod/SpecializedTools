@@ -30,7 +30,7 @@ EXPECTED DELIVERABLES:
     /* UTILITIES */
     const buildElement = (tag, styles = {}, text = '', parent = null, props = {}) => {
         const el = document.createElement(tag);
-        if (text) el.innerText = text;
+        if (text) el.textContent = text;
         Object.assign(el.style, styles);
         Object.assign(el, props);
         if (parent) parent.appendChild(el);
@@ -123,12 +123,12 @@ EXPECTED DELIVERABLES:
                 const rawPreNode = document.querySelector('.raw-data pre');
 
                 if (nextDataNode) {
-                    const jsonData = JSON.parse(nextDataNode.innerText);
+                    const jsonData = JSON.parse(nextDataNode.textContent);
                     const pd = jsonData?.props?.pageProps?.initialReduxState?.propertyDetails;
                     if (pd) PropertyExtractor.parseDetails(pd, data);
                 } else if (rawPreNode) {
                     // Extract from the pre-generated report's raw data block
-                    const pd = JSON.parse(rawPreNode.innerText);
+                    const pd = JSON.parse(rawPreNode.textContent);
                     if (pd) PropertyExtractor.parseDetails(pd, data);
                 }
             } catch (e) {
