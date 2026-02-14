@@ -1,5 +1,17 @@
 (function () {
     /* CONFIGURATION */
+    /**
+     * @typedef {Object} WebClipperConfig
+     * @property {string} highlightColor
+     * @property {string} outlineStyle
+     * @property {string} parentHighlightColor
+     * @property {string} parentOutlineStyle
+     * @property {string} modalId
+     * @property {string} overlayId
+     * @property {string} highlightId
+     * @property {string} parentHighlightId
+     * @property {string[]} ignoreTags
+     */
     const CONFIG = {
         highlightColor: 'rgba(0, 0, 255, 0.1)',
         outlineStyle: '2px solid blue',
@@ -12,8 +24,16 @@
         ignoreTags: ['HTML', 'BODY', 'SCRIPT', 'STYLE', 'NOSCRIPT', 'IFRAME']
     };
 
+    /** @type {HTMLElement|null} */
     let activeElement = null;
 
+    /**
+     * @param {string} id
+     * @param {string} outline
+     * @param {string} color
+     * @param {string} zIndex
+     * @returns {HTMLElement}
+     */
     function getOrCreateHighlightEl(id, outline, color, zIndex) {
         let el = document.getElementById(id);
         if (!el) {
@@ -36,6 +56,9 @@
     }
 
     /* PHASE 1: THE FINDER */
+    /**
+     * Starts the element selection phase.
+     */
     function startFinder() {
         document.body.style.cursor = 'crosshair';
         document.addEventListener('mouseover', handleMouseOver);
@@ -44,6 +67,9 @@
         document.addEventListener('keydown', handleEscape);
     }
 
+    /**
+     * Stops the element selection phase and cleans up highlights.
+     */
     function stopFinder() {
         document.body.style.cursor = 'default';
         document.removeEventListener('mouseover', handleMouseOver);
@@ -58,10 +84,14 @@
         if (h2) h2.remove();
     }
 
+    /**
+     * Handles mouse over events to highlight elements.
+     * @param {MouseEvent} e
+     */
     function handleMouseOver(e) {
-        if (CONFIG.ignoreTags.includes(e.target.tagName) || e.target.closest('#' + CONFIG.overlayId) || e.target.closest('#' + CONFIG.highlightId)) return;
+        if (CONFIG.ignoreTags.includes(/** @type {HTMLElement} */(e.target).tagName) || /** @type {HTMLElement} */(e.target).closest('#' + CONFIG.overlayId) || /** @type {HTMLElement} */(e.target).closest('#' + CONFIG.highlightId)) return;
         
-        activeElement = e.target;
+        activeElement = /** @type {HTMLElement} */ (e.target);
         const rect = activeElement.getBoundingClientRect();
 
         /* 1. Highlight Active Element */
@@ -100,6 +130,10 @@
         }
     }
 
+    /**
+     * Handles mouse out events to clear highlights.
+     * @param {MouseEvent} e
+     */
     function handleMouseOut(e) {
         if (e.target === activeElement) {
             clearHighlights();
@@ -107,6 +141,9 @@
         }
     }
 
+    /**
+     * Hides highlight elements.
+     */
     function clearHighlights() {
         const h1 = document.getElementById(CONFIG.highlightId);
         if (h1) h1.style.display = 'none';
@@ -114,6 +151,10 @@
         if (h2) h2.style.display = 'none';
     }
 
+    /**
+     * Handles click events to select an element.
+     * @param {MouseEvent} e
+     */
     function handleClick(e) {
         if (!activeElement) return;
         e.preventDefault();
@@ -131,12 +172,20 @@
         }, 50);
     }
 
+    /**
+     * Handles escape key press to cancel selection.
+     * @param {KeyboardEvent} e
+     */
     function handleEscape(e) {
         if (e.key === 'Escape') {
             stopFinder();
         }
     }
 
+    /**
+     * Shows a loading overlay.
+     * @param {string} [message]
+     */
     function showLoadingOverlay(message) {
         const msg = message || 'Capturing styles & layout...';
         let div = document.getElementById('wc-loading');
@@ -160,18 +209,25 @@
         div.innerHTML = '<span>' + msg + '</span>';
     }
 
+    /**
+     * Hides the loading overlay.
+     */
     function hideLoadingOverlay() {
         const div = document.getElementById('wc-loading');
         if (div) div.remove();
     }
 
     /* PHASE 2: THE EDITOR */
+    /**
+     * Opens the editor modal with the selected element.
+     * @param {HTMLElement} element
+     */
     async function openEditor(element) {
         /* 1. Normalize Images IN PLACE (before cloning) to capture true sources */
         BookmarkletUtils.normalizeImages(element);
         
         /* 2. Clone node deeply */
-        const clone = element.cloneNode(true);
+        const clone = /** @type {HTMLElement} */ (element.cloneNode(true));
         
         /* 3. Inline "Safe" Computed Styles */
         /* Changed strategy: Minimal stabilization to avoid layout breakage */
@@ -304,11 +360,18 @@
         contentArea.focus();
     }
 
+    /**
+     * Closes the editor modal.
+     */
     function closeEditor() {
         const overlay = document.getElementById(CONFIG.overlayId);
         if (overlay) overlay.remove();
     }
 
+    /**
+     * Cleans up the DOM by removing dangerous elements and attributes.
+     * @param {HTMLElement} node
+     */
     function cleanupDOM(node) {
         /* General Cleanup: Remove active scripts and dangerous elements only. */
         const dangerous = node.querySelectorAll('script, iframe, object, embed, noscript, form, input, button, select, textarea');
@@ -318,6 +381,10 @@
         BookmarkletUtils.sanitizeAttributes(node);
     }
 
+    /**
+     * Handles copying content to the clipboard.
+     * @param {HTMLElement} contentArea
+     */
     async function handleCopy(contentArea) {
         const html = contentArea.innerHTML;
         const text = contentArea.innerText;
@@ -340,6 +407,12 @@
         }
     }
 
+    /**
+     * Handles downloading content in the selected format.
+     * @param {HTMLElement} contentArea
+     * @param {string} format
+     * @param {HTMLButtonElement} [btn]
+     */
     function handleDownload(contentArea, format, btn) {
         const cleanTitle = BookmarkletUtils.sanitizeFilename(document.title || 'Web_Clip');
 
@@ -389,6 +462,7 @@
     }
 
     /**
+     * Captures the element as a PNG image using html2canvas.
      * @param {HTMLElement} element
      * @param {string} title
      * @param {HTMLButtonElement} [btn]
