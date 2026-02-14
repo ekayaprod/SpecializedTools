@@ -360,6 +360,8 @@
             if (typeof html2canvas === 'undefined') {
                 const script = document.createElement('script');
                 script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                script.integrity = 'sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H';
+                script.crossOrigin = 'anonymous';
                 script.onload = () => capturePng(contentArea, cleanTitle, btn, originalText);
                 script.onerror = () => {
                     alert('Failed to load html2canvas for PNG export.');
