@@ -19,6 +19,9 @@ This document tracks the status of features and tools within the Browser Toolkit
 - [x] **Passphrase Generator**: Strong password creation with seasonal themes.
   - [x] **Temp Password Mode**: Quick disposable passwords.
 - [x] **PA County Finder**: ZIP code and city lookup for Pennsylvania.
+- [x] **Quick Clicker**: Automated single-target clicking with scheduled execution and wake lock.
+- [x] **Macro Builder**: Record and replay complex click sequences with shadow DOM support.
+- [x] **Interaction Recorder**: Debug automation issues by logging click paths and element attributes.
 - [x] **Bookmarklet Compilation**: Automated build process to minify and encode scripts.
 
 ## In Progress

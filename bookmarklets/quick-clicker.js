@@ -2,14 +2,33 @@
     if(window.__dc_v27){window.__dc_v27.destroy();return}
     if(!document.body) return alert('Page has no body.');
 
+    /**
+     * @typedef {Object} QuickClickerState
+     * @property {HTMLElement|null} t1 - The target element to click.
+     * @property {string|null} t1Val - The value to type into the target input (if applicable).
+     * @property {boolean} loop - Whether to loop the action (currently unused/false).
+     * @property {boolean} pressEnter - Whether to press Enter after typing.
+     * @property {WakeLockSentinel|null} wakeLock - The Screen Wake Lock sentinel to prevent sleep.
+     * @property {'delay'|'clock'} timeMode - The timing mode: 'delay' (countdown) or 'clock' (specific time).
+     */
+
+    /**
+     * Quick Clicker V27
+     * A powerful bookmarklet for automating clicks on a single target element.
+     * Supports delayed execution, scheduled clock time, text input, and wake lock.
+     */
     class DC27 {
         constructor(){
             this.id = 'dc27-'+Math.random().toString(36).slice(2);
+            /** @type {QuickClickerState} */
             this.state = { t1: null, t1Val: null, loop: false, pressEnter: false, wakeLock: null, timeMode: 'delay' };
             this.cleanupFns = [];
             this.init();
         }
 
+        /**
+         * Initializes the UI and injects it into the DOM.
+         */
         init(){
             this.h = document.createElement('div');
             this.h.id = this.id;
@@ -70,6 +89,9 @@
             document.body.appendChild(this.h);
         }
 
+        /**
+         * Binds event listeners to UI elements.
+         */
         bind(){
             this.q('#x').onclick=()=>this.destroy();
             this.q('#pk').onclick=()=>this.pick();
@@ -92,6 +114,10 @@
             });
         }
 
+        /**
+         * Makes the UI window draggable.
+         * @param {HTMLElement} head - The header element to use as a drag handle.
+         */
         makeDraggable(head){
             let pos1=0,pos2=0,pos3=0,pos4=0;
             const dragMouseDown = e => {
@@ -119,8 +145,15 @@
             head.onmousedown = dragMouseDown;
         }
 
+        /**
+         * Adds an event listener with cleanup tracking.
+         */
         add(t, ev, fn, opt) { t.addEventListener(ev, fn, opt); this.cleanupFns.push(()=>t.removeEventListener(ev, fn, opt)); }
 
+        /**
+         * Checks the target element for visibility issues and warns the user.
+         * @param {HTMLElement} el - The element to audit.
+         */
         audit(el){
             const style = window.getComputedStyle(el);
             const rect = el.getBoundingClientRect();
@@ -140,6 +173,9 @@
             }
         }
 
+        /**
+         * Helper to pierce Shadow DOM boundaries to find the true target.
+         */
         getDeepTarget(e) {
             let t = e.target;
             while (t.shadowRoot && t.shadowRoot.elementFromPoint) {
@@ -150,6 +186,9 @@
             return t;
         }
 
+        /**
+         * Heuristic to select the most relevant clickable element (button, link, input).
+         */
         getTarget(e) {
             let t = this.getDeepTarget(e);
 
@@ -166,6 +205,9 @@
             return targetEl;
         }
 
+        /**
+         * Starts the element picker mode.
+         */
         pick(){
             this.h.style.display='none';
             const hl=document.createElement('div');
@@ -228,6 +270,9 @@
 
         clearListeners() { this.cleanupFns.forEach(fn=>fn()); this.cleanupFns = []; }
 
+        /**
+         * Starts the countdown or waits for the scheduled time.
+         */
         async start(){
             let targetTime;
 
@@ -272,6 +317,9 @@
             },1000);
         }
 
+        /**
+         * Executes the action (click or type) on the target element.
+         */
         exec(elTm){
             const el = this.state.t1;
             const display = elTm || this.q('#tm');
@@ -295,6 +343,9 @@
             display.innerText='DONE';
         }
 
+        /**
+         * Resets the timer and UI to the initial state.
+         */
         reset(){
             clearInterval(this.iv);
             if(this.state.wakeLock) this.state.wakeLock.release();
@@ -304,6 +355,9 @@
             this.q('#v2').classList.add('hidden');
         }
 
+        /**
+         * Completely removes the tool from the DOM.
+         */
         destroy(){ this.reset(); this.h.remove(); delete window.__dc_v27; }
     }
     window.__dc_v27 = new DC27();
