@@ -1,14 +1,5 @@
 (function () {
     /* CONFIGURATION */
-    /**
-     * @typedef {Object} Config
-     * @property {string} modalId - The DOM ID for the modal container.
-     * @property {string} overlayId - The DOM ID for the overlay background.
-     * @property {string} filenamePrefix - The prefix for the generated PDF filename.
-     * @property {string} html2pdfUrl - The CDN URL for the html2pdf library.
-     */
-
-    /** @type {Config} */
     const CONFIG = {
         modalId: 'pc-bookmarklet-modal',
         overlayId: 'pc-bookmarklet-overlay',
@@ -17,7 +8,6 @@
     };
 
     /* PROMPT LIBRARY */
-    /** @type {string} */
     const STANDARD_OUTPUTS = `
 EXPECTED DELIVERABLES (Structure your report organically based on your findings):
 - **Executive Summary & Verdict**: Provide your final Investment Grade (Strong Buy / Qualified Buy / Hard Pass) with a clear Risk vs. Reward profile.
@@ -27,14 +17,6 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
 - **Comparison Tables**: If multiple properties are provided, use tables to contrast their metrics, risks, and neighborhood qualities.
 `;
 
-    /**
-     * @typedef {Object} PromptConfig
-     * @property {string} label - The display label for the button.
-     * @property {string} role - The role description for the AI.
-     * @property {string} objective - The specific analysis objective.
-     */
-
-    /** @type {Record<string, PromptConfig>} */
     const PROMPT_DATA = {
         str: {
             label: "Short-Term Rental (STR)",
@@ -59,11 +41,6 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
     };
 
     /* UTILITIES */
-    /**
-     * Escapes HTML characters to prevent XSS.
-     * @param {string|null|undefined} str - The string to escape.
-     * @returns {string} The escaped string.
-     */
     const escapeHTML = (str) => {
         if (!str) return '';
         return String(str).replace(/[&<>'"]/g, match => {
@@ -71,14 +48,6 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         });
     };
 
-    /**
-     * Helper to build a DOM element.
-     * @param {string} tag - The HTML tag name.
-     * @param {Partial<CSSStyleDeclaration>} [styles={}] - Inline styles.
-     * @param {string} [text=''] - Inner text content.
-     * @param {Node|null} [parent=null] - Parent element to append to.
-     * @returns {HTMLElement} The created element.
-     */
     const buildElement = (tag, styles = {}, text = '', parent = null) => {
         const el = document.createElement(tag);
         if (text) el.innerText = text;
@@ -91,26 +60,11 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
 
     const getDOMText = (selector) => {
         const el = document.querySelector(selector);
-        return el ? (/** @type {HTMLElement} */ (el)).innerText.trim() : '';
+        return el ? el.innerText.trim() : '';
     };
 
-    /**
-     * @typedef {Object} PhotoData
-     * @property {string} url - The URL or Base64 data of the photo.
-     * @property {string} label - A descriptive label for the photo.
-     */
-
     /* IMAGE PROCESSOR */
-    /**
-     * Handles fetching and embedding images.
-     * @namespace ImageProcessor
-     */
     const ImageProcessor = {
-        /**
-         * Fetches an image URL and converts it to a Base64 string.
-         * @param {string} url - The image URL.
-         * @returns {Promise<string>} The Base64 string or original URL on failure.
-         */
         toBase64: async (url) => {
             try {
                 const response = await fetch(url);
@@ -118,21 +72,17 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
                 const blob = await response.blob();
                 return new Promise((resolve, reject) => {
                     const reader = new FileReader();
-                    reader.onloadend = () => resolve(/** @type {string} */ (reader.result));
+                    reader.onloadend = () => resolve(reader.result);
                     reader.onerror = () => reject('Reader error');
                     reader.readAsDataURL(blob);
                 });
             } catch (err) {
-                console.warn('Image embedding failed, using original link:', url);
-                return url;
+                console.warn('Image embedding failed:', url);
+                // Return a 1x1 transparent pixel to prevent html2canvas CORS crash
+                return 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
             }
         },
         
-        /**
-         * Embeds photos by converting their URLs to Base64 in-place.
-         * @param {PhotoData[]} photos - The list of photos to process.
-         * @param {(status: string) => void} [statusCb] - Optional status callback.
-         */
         embedPhotos: async (photos, statusCb) => {
             const total = photos.length;
             let processed = 0;
@@ -147,167 +97,157 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
     };
 
     /* PDF PROCESSOR */
-    /**
-     * Handles PDF generation using html2pdf.
-     * @namespace PdfProcessor
-     */
     const PdfProcessor = {
-        /**
-         * Loads the html2pdf library from CDN if not already loaded.
-         * @returns {Promise<void>}
-         */
         loadLibrary: async () => {
             if (window.html2pdf) return;
             return new Promise((resolve, reject) => {
                 const script = document.createElement('script');
                 script.src = CONFIG.html2pdfUrl;
-                script.onload = () => resolve();
+                script.onload = resolve;
                 script.onerror = () => reject('Failed to load html2pdf');
                 document.head.appendChild(script);
             });
         },
 
-        /**
-         * Generates and saves the PDF.
-         * @param {PropertyData} data - The property data used for filename.
-         * @param {string} htmlContent - The HTML content to render.
-         * @param {(status: string) => void} [statusCb] - Optional status callback.
-         */
         generate: async (data, htmlContent, statusCb) => {
             if (statusCb) statusCb('Generating PDF Layout...');
             
+            // Create a temporary container. 
+            // NOTE: We place it fixed at top/left with z-index -9999 to ensure it renders but isn't seen.
+            // "left: -9999px" can sometimes cause empty renders in html2canvas.
             const container = document.createElement('div');
             container.innerHTML = htmlContent;
-            container.style.width = '800px'; 
-            container.style.position = 'absolute';
-            container.style.left = '-9999px';
+            Object.assign(container.style, {
+                position: 'fixed',
+                top: '0',
+                left: '0',
+                width: '800px', // Standardize width for PDF
+                zIndex: '-9999',
+                backgroundColor: 'white' // Ensure background isn't transparent
+            });
             document.body.appendChild(container);
 
             const opt = {
-                margin: 0.3,
+                margin: 0.3, 
                 filename: `${data.address || 'Property_Report'}.pdf`,
                 image: { type: 'jpeg', quality: 0.95 },
-                html2canvas: { scale: 1.5, useCORS: true },
+                html2canvas: { scale: 1.5, useCORS: true, logging: false },
                 jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
                 pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
             };
 
             try {
+                // We pause briefly to ensure DOM paint
+                await new Promise(r => setTimeout(r, 500));
                 await html2pdf().set(opt).from(container).save();
+            } catch (e) {
+                console.error("PDF Generation failed:", e);
+                alert("PDF Generation failed. Check console for details.");
             } finally {
                 document.body.removeChild(container);
             }
         }
     };
 
-    /**
-     * @typedef {Object} PropertyData
-     * @property {string} address
-     * @property {string} price
-     * @property {Object.<string, string|number>} specs
-     * @property {Object.<string, string>} financials
-     * @property {Object.<string, string>} history
-     * @property {string[]} agents
-     * @property {string} description
-     * @property {Array<{category?: string, text?: string[]}>} features
-     * @property {PhotoData[]} photos
-     * @property {any} raw
-     */
-
     /* CORE EXTRACTOR */
-    /**
-     * Core logic for extracting property data.
-     * @namespace PropertyExtractor
-     */
     const PropertyExtractor = {
-        /**
-         * Extracts data from the JSON object found in __NEXT_DATA__.
-         * @param {any} pd - The property details object from JSON.
-         * @param {PropertyData} data - The data object to populate.
-         */
-        _extractFromJSON: function(pd, data) {
-            // 1. Preserve Raw Data (UNALTERED)
-            data.raw = JSON.parse(JSON.stringify(pd));
+        getData: function() {
+            let data = {
+                address: 'Unknown Address', price: 'Unknown Price', specs: {},
+                financials: {}, history: {}, agents: [], description: '', features: [], photos: [],
+                raw: null
+            };
 
-            // 2. Extract Fields
-            const loc = pd.location?.address;
-            if (loc) {
-                data.address = `${loc.line || ''}, ${loc.city || ''}, ${loc.state_code || ''} ${loc.postal_code || ''}`.replace(/^, | ,/g, '').trim();
-            }
-            if (pd.list_price) data.price = formatCurrency(pd.list_price);
+            try {
+                (() => {
+                    const nextDataNode = document.getElementById('__NEXT_DATA__');
+                    if (!nextDataNode) return;
+                    
+                    const jsonData = JSON.parse(nextDataNode.innerText);
+                    const pd = jsonData?.props?.pageProps?.initialReduxState?.propertyDetails;
+                    if (!pd) return;
 
-            const desc = pd.description || {};
-            data.description = desc.text || '';
-            if (desc.type) data.specs['Property Type'] = desc.type.replace('_', ' ');
-            if (desc.beds) data.specs['Beds'] = desc.beds;
-            if (desc.baths_consolidated) data.specs['Baths'] = desc.baths_consolidated;
-            if (desc.sqft) data.specs['Sq. Ft.'] = desc.sqft.toLocaleString();
-            if (desc.lot_sqft) data.specs['Lot Size'] = (desc.lot_sqft / 43560).toFixed(2) + ' Acres';
-            if (desc.year_built) data.specs['Year Built'] = desc.year_built;
+                    // 1. Preserve Raw Data (UNALTERED)
+                    data.raw = JSON.parse(JSON.stringify(pd));
 
-            if (pd.mortgage?.estimate) {
-                const est = pd.mortgage.estimate;
-                data.financials['Est. Monthly Payment'] = formatCurrency(est.monthly_payment);
-                if (est.monthly_payment_details) {
-                    est.monthly_payment_details.forEach(detail => {
-                        data.financials[detail.display_name] = formatCurrency(detail.amount);
-                    });
-                }
-            }
-
-            if (pd.list_date) {
-                const parsedDate = new Date(pd.list_date);
-                if (!isNaN(parsedDate.getTime())) {
-                    data.history['List Date'] = parsedDate.toLocaleDateString();
-                }
-            }
-            if (pd.last_sold_date) data.history['Last Sold Date'] = pd.last_sold_date;
-            if (pd.last_sold_price) data.history['Last Sold Price'] = formatCurrency(pd.last_sold_price);
-
-            if (pd.advertisers && Array.isArray(pd.advertisers)) {
-                pd.advertisers.forEach(adv => {
-                    if (adv.name) {
-                        let agentStr = `${adv.type || 'Agent'}: ${adv.name}`;
-                        if (adv.broker?.name) agentStr += ` (${adv.broker.name})`;
-                        else if (adv.office?.name) agentStr += ` (${adv.office.name})`;
-                        data.agents.push(agentStr);
+                    // 2. Extract Fields
+                    const loc = pd.location?.address;
+                    if (loc) {
+                        data.address = `${loc.line || ''}, ${loc.city || ''}, ${loc.state_code || ''} ${loc.postal_code || ''}`.replace(/^, | ,/g, '').trim();
                     }
-                });
-            }
+                    if (pd.list_price) data.price = formatCurrency(pd.list_price);
+                    
+                    const desc = pd.description || {};
+                    data.description = desc.text || '';
+                    if (desc.type) data.specs['Property Type'] = desc.type.replace('_', ' ');
+                    if (desc.beds) data.specs['Beds'] = desc.beds;
+                    if (desc.baths_consolidated) data.specs['Baths'] = desc.baths_consolidated;
+                    if (desc.sqft) data.specs['Sq. Ft.'] = desc.sqft.toLocaleString();
+                    if (desc.lot_sqft) data.specs['Lot Size'] = (desc.lot_sqft / 43560).toFixed(2) + ' Acres';
+                    if (desc.year_built) data.specs['Year Built'] = desc.year_built;
 
-            if (pd.details && Array.isArray(pd.details)) data.features = pd.details;
-
-            // 3. Process Photos for Visual Gallery (Filtered Labels)
-            if (pd.photos) {
-                data.photos = pd.photos.map(p => {
-                    let label = '';
-
-                    if (p.category && p.category !== 'All Photos') {
-                        label = p.category;
-                    }
-
-                    if (!label && p.tags && Array.isArray(p.tags)) {
-                        const noise = ['house_view', 'interior', 'exterior', 'watermark', 'complete', 'white', 'blue', 'grey', 'virtual_tour', 'video', 'floor_plan', 'realtordotcom_mls_listing_image'];
-                        const validTag = p.tags.find(t => t.label && !noise.includes(t.label.toLowerCase()));
-                        if (validTag) {
-                            label = validTag.label.replace(/_/g, ' ');
+                    if (pd.mortgage?.estimate) {
+                        const est = pd.mortgage.estimate;
+                        data.financials['Est. Monthly Payment'] = formatCurrency(est.monthly_payment);
+                        if (est.monthly_payment_details) {
+                            est.monthly_payment_details.forEach(detail => {
+                                data.financials[detail.display_name] = formatCurrency(detail.amount);
+                            });
                         }
                     }
 
-                    if (label) {
-                        label = label.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+                    if (pd.list_date) {
+                        const parsedDate = new Date(pd.list_date);
+                        if (!isNaN(parsedDate)) {
+                            data.history['List Date'] = parsedDate.toLocaleDateString();
+                        }
+                    }
+                    if (pd.last_sold_date) data.history['Last Sold Date'] = pd.last_sold_date;
+                    if (pd.last_sold_price) data.history['Last Sold Price'] = formatCurrency(pd.last_sold_price);
+
+                    if (pd.advertisers && Array.isArray(pd.advertisers)) {
+                        pd.advertisers.forEach(adv => {
+                            if (adv.name) {
+                                let agentStr = `${adv.type || 'Agent'}: ${adv.name}`;
+                                if (adv.broker?.name) agentStr += ` (${adv.broker.name})`;
+                                else if (adv.office?.name) agentStr += ` (${adv.office.name})`;
+                                data.agents.push(agentStr);
+                            }
+                        });
                     }
 
-                    return { url: p.href, label: label || '' };
-                });
-            }
-        },
+                    if (pd.details && Array.isArray(pd.details)) data.features = pd.details;
+                    
+                    // 3. Process Photos for Gallery (Filtered Labels)
+                    if (pd.photos) {
+                        data.photos = pd.photos.map(p => {
+                            let label = '';
+                            
+                            if (p.category && p.category !== 'All Photos') {
+                                label = p.category;
+                            }
+                            
+                            if (!label && p.tags && Array.isArray(p.tags)) {
+                                const noise = ['house_view', 'interior', 'exterior', 'watermark', 'complete', 'white', 'blue', 'grey', 'virtual_tour', 'video', 'floor_plan', 'realtordotcom_mls_listing_image'];
+                                const validTag = p.tags.find(t => t.label && !noise.includes(t.label.toLowerCase()));
+                                if (validTag) {
+                                    label = validTag.label.replace(/_/g, ' '); 
+                                }
+                            }
 
-        /**
-         * Applies fallback extraction logic using DOM selectors.
-         * @param {PropertyData} data - The data object to populate.
-         */
-        _applyFallbacks: function(data) {
+                            if (label) {
+                                label = label.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+                            }
+
+                            return { url: p.href, label: label || '' };
+                        });
+                    }
+                })();
+            } catch (e) {
+                console.warn('Hidden JSON extraction partially failed', e);
+            }
+
+            // Fallbacks
             if (data.address === 'Unknown Address') {
                 data.address = getDOMText('h1') || data.address;
             }
@@ -317,20 +257,12 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
             if (!data.description || data.description.length < 20) {
                 data.description = getDOMText('[data-testid="property-description"]') || getDOMText('#ldp-detail-romance') || data.description;
             }
-        },
 
-        /**
-         * Deduplicates and finalizes the photo list, including DOM images.
-         * @param {PropertyData} data - The data object to update.
-         */
-        _finalizePhotos: function(data) {
             // Deduplication & Upscaling
             const photoMap = new Map();
-            // Start with JSON photos
             data.photos.forEach(p => photoMap.set(p.url, p));
             
-            // Add DOM photos if missing
-            Array.from(document.querySelectorAll('img[src*="rdcpix.com"]')).forEach((/** @type {HTMLImageElement} */ img) => {
+            Array.from(document.querySelectorAll('img[src*="rdcpix.com"]')).forEach(img => {
                 if (!photoMap.has(img.src)) {
                     photoMap.set(img.src, { url: img.src, label: '' });
                 }
@@ -342,47 +274,10 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
                 upscaled = upscaled.replace(/-w\d+_h\d+/g, '-w1280_h960');
                 return { url: upscaled, label: p.label };
             }).filter(p => p.url && p.url.trim() !== '');
-        },
-
-        /**
-         * Main entry point to get property data.
-         * @returns {PropertyData} The extracted property data.
-         */
-        getData: function() {
-            /** @type {PropertyData} */
-            let data = {
-                address: 'Unknown Address', price: 'Unknown Price', specs: {},
-                financials: {}, history: {}, agents: [], description: '', features: [], photos: [],
-                raw: null
-            };
-
-            try {
-                const nextDataNode = document.getElementById('__NEXT_DATA__');
-                if (nextDataNode) {
-                    const textContent = nextDataNode.textContent || nextDataNode.innerText;
-                    const jsonData = JSON.parse(textContent);
-                    const pd = jsonData?.props?.pageProps?.initialReduxState?.propertyDetails;
-                    if (pd) {
-                        this._extractFromJSON(pd, data);
-                    }
-                }
-            } catch (e) {
-                console.warn('Hidden JSON extraction partially failed', e);
-            }
-
-            this._applyFallbacks(data);
-            this._finalizePhotos(data);
 
             return data;
         },
 
-        /**
-         * Builds the HTML template for the PDF report.
-         * @param {PropertyData} data - The property data.
-         * @param {string} promptText - The prompt text to display.
-         * @param {string} promptLabel - The label of the selected prompt.
-         * @returns {string} The HTML string.
-         */
         buildHTMLTemplate: function(data, promptText, promptLabel) {
             const renderGrid = (obj) => {
                 if (Object.keys(obj).length === 0) return '<p>No data available.</p>';
@@ -431,14 +326,7 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         .photo-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
         .photo-card { width: 48%; margin-bottom: 10px; page-break-inside: avoid; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; background: #fff; position: relative; }
         .photo-card img { width: 100%; height: 200px; object-fit: cover; display: block; }
-        
-        /* Label Positioned Above the Photo */
-        .photo-label { 
-            background: #f3f4f6; color: #1f2937; 
-            padding: 6px 10px; font-size: 11px; font-weight: 700; 
-            text-align: center; border-bottom: 1px solid #ddd;
-            display: block; width: 100%;
-        }
+        .photo-label { background: #f3f4f6; color: #374151; padding: 5px 8px; font-size: 10px; font-weight: bold; text-align: center; border-bottom: 1px solid #ddd; }
         
         .agent-list { list-style: none; padding: 0; margin: 0; }
         .agent-list li { padding: 5px 0; border-bottom: 1px solid #eee; }
@@ -505,11 +393,6 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
         }
     };
 
-    /**
-     * Orchestrates the extraction and PDF generation process.
-     * @param {string} promptKey - The key of the selected prompt.
-     * @param {(status: string) => void} [statusCallback] - Optional status callback.
-     */
     async function extractAndPackageContent(promptKey, statusCallback) {
         const selectedPrompt = PROMPT_DATA[promptKey];
         const combinedPromptText = `${selectedPrompt.role}\n\n${selectedPrompt.objective}\n${STANDARD_OUTPUTS}`;
