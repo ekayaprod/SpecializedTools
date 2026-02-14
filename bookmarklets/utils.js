@@ -290,12 +290,12 @@
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
 
-            let markdown = '';
+            const parts = [];
 
             function traverse(node) {
                 if (node.nodeType === 3) {
                     /* Text node */
-                    markdown += node.nodeValue;
+                    parts.push(node.nodeValue);
                     return;
                 }
 
@@ -306,34 +306,34 @@
                 if (tag === 'script' || tag === 'style' || tag === 'noscript') return;
 
                 switch(tag) {
-                    case 'h1': markdown += '\n# '; break;
-                    case 'h2': markdown += '\n## '; break;
-                    case 'h3': markdown += '\n### '; break;
-                    case 'h4': markdown += '\n#### '; break;
+                    case 'h1': parts.push('\n# '); break;
+                    case 'h2': parts.push('\n## '); break;
+                    case 'h3': parts.push('\n### '); break;
+                    case 'h4': parts.push('\n#### '); break;
                     case 'strong':
-                    case 'b': markdown += '**'; break;
+                    case 'b': parts.push('**'); break;
                     case 'em':
-                    case 'i': markdown += '*'; break;
-                    case 'p': markdown += '\n\n'; break;
-                    case 'br': markdown += '\n'; break;
+                    case 'i': parts.push('*'); break;
+                    case 'p': parts.push('\n\n'); break;
+                    case 'br': parts.push('\n'); break;
                     case 'li':
                         if (node.parentElement && node.parentElement.tagName.toLowerCase() === 'ol') {
                             const index = Array.prototype.indexOf.call(node.parentElement.children, node) + 1;
-                            markdown += '\n' + index + '. ';
+                            parts.push('\n' + index + '. ');
                         } else {
-                            markdown += '\n- ';
+                            parts.push('\n- ');
                         }
                         break;
-                    case 'a': markdown += '['; break;
+                    case 'a': parts.push('['); break;
                     case 'img':
                         const src = node.getAttribute('src');
                         const alt = node.getAttribute('alt') || '';
-                        markdown += '![' + alt + '](' + src + ')';
+                        parts.push('![' + alt + '](' + src + ')');
                         return; /* Skip children of img */
-                    case 'table': markdown += '\n\n'; break;
+                    case 'table': parts.push('\n\n'); break;
                 case 'tr': break;
                     case 'td':
-                    case 'th': markdown += '| '; break;
+                    case 'th': parts.push('| '); break;
                 }
 
                 /* Traverse children */
@@ -344,28 +344,28 @@
                 /* Closing tags */
                 switch(tag) {
                     case 'strong':
-                    case 'b': markdown += '**'; break;
+                    case 'b': parts.push('**'); break;
                     case 'em':
-                    case 'i': markdown += '*'; break;
+                    case 'i': parts.push('*'); break;
                     case 'a':
                         const href = node.getAttribute('href');
-                        if (href) markdown += '](' + href + ')';
-                        else markdown += ']';
+                        if (href) parts.push('](' + href + ')');
+                        else parts.push(']');
                         break;
                     case 'h1':
                     case 'h2':
                     case 'h3':
                     case 'h4':
                 case 'p':
-                        markdown += '\n'; break;
-                    case 'tr': markdown += '|\n'; break;
+                        parts.push('\n'); break;
+                    case 'tr': parts.push('|\n'); break;
                 }
             }
 
             traverse(doc.body);
 
             /* Cleanup excessive newlines */
-            return markdown.replace(/\n\s+\n/g, '\n\n').trim();
+            return parts.join('').replace(/\n\s+\n/g, '\n\n').trim();
         }
     };
 })(window);

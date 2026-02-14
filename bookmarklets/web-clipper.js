@@ -340,49 +340,85 @@
         }
     }
 
-    function handleDownload(contentArea, format, btn) {
+    async function handleDownload(contentArea, format, btn) {
         const cleanTitle = BookmarkletUtils.sanitizeFilename(document.title || 'Web_Clip');
+        const originalText = btn ? btn.textContent : 'Download';
 
-        if (format === 'md') {
-            const content = BookmarkletUtils.htmlToMarkdown(contentArea.innerHTML);
-            BookmarkletUtils.downloadFile(cleanTitle + '_' + Date.now() + '.md', content, 'text/markdown');
-        } else if (format === 'txt') {
-            const content = contentArea.innerText;
-            BookmarkletUtils.downloadFile(cleanTitle + '_' + Date.now() + '.txt', content, 'text/plain');
-        } else if (format === 'png') {
-            const originalText = btn ? btn.textContent : 'Download';
-            if (btn) {
-                btn.textContent = 'Generating...';
-                btn.disabled = true;
-            }
+        /* Add immediate feedback for all formats */
+        if (btn) {
+            btn.textContent = 'Preparing...';
+            btn.disabled = true;
+            /* Yield to UI thread to allow text update */
+            await new Promise(r => setTimeout(r, 20));
+        }
 
-            /* Dynamically load html2canvas if needed */
-            if (typeof html2canvas === 'undefined') {
-                const script = document.createElement('script');
-                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-                script.onload = () => capturePng(contentArea, cleanTitle, btn, originalText);
-                script.onerror = () => {
-                    alert('Failed to load html2canvas for PNG export.');
-                    if (btn) {
-                        btn.textContent = 'Error';
-                        btn.style.background = '#dc3545';
-                        btn.style.color = 'white';
-                        setTimeout(() => {
-                             btn.textContent = originalText;
-                             btn.disabled = false;
-                             btn.style.background = '';
-                             btn.style.color = '';
-                        }, 2000);
-                    }
-                };
-                document.body.appendChild(script);
+        try {
+            if (format === 'md') {
+                const content = BookmarkletUtils.htmlToMarkdown(contentArea.innerHTML);
+                BookmarkletUtils.downloadFile(cleanTitle + '_' + Date.now() + '.md', content, 'text/markdown');
+            } else if (format === 'txt') {
+                const content = contentArea.innerText;
+                BookmarkletUtils.downloadFile(cleanTitle + '_' + Date.now() + '.txt', content, 'text/plain');
+            } else if (format === 'png') {
+                /* Update text for PNG generation phase */
+                if (btn) btn.textContent = 'Generating...';
+
+                /* Dynamically load html2canvas if needed */
+                if (typeof html2canvas === 'undefined') {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                    script.onload = () => capturePng(contentArea, cleanTitle, btn, originalText);
+                    script.onerror = () => {
+                        alert('Failed to load html2canvas for PNG export.');
+                        if (btn) {
+                            btn.textContent = 'Error';
+                            btn.style.background = '#dc3545';
+                            btn.style.color = 'white';
+                            setTimeout(() => {
+                                 btn.textContent = originalText;
+                                 btn.disabled = false;
+                                 btn.style.background = '';
+                                 btn.style.color = '';
+                            }, 2000);
+                        }
+                    };
+                    document.body.appendChild(script);
+                } else {
+                    capturePng(contentArea, cleanTitle, btn, originalText);
+                }
+                /* Return early so we don't restore button state prematurely for async PNG */
+                return;
             } else {
-                capturePng(contentArea, cleanTitle, btn, originalText);
+                /* HTML Default */
+                const content = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + cleanTitle + '</title></head><body>' + contentArea.innerHTML + '</body></html>';
+                BookmarkletUtils.downloadFile(cleanTitle + '_' + Date.now() + '.html', content, 'text/html');
             }
-        } else {
-            /* HTML Default */
-            const content = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + cleanTitle + '</title></head><body>' + contentArea.innerHTML + '</body></html>';
-            BookmarkletUtils.downloadFile(cleanTitle + '_' + Date.now() + '.html', content, 'text/html');
+        } catch (e) {
+            console.error('Download failed:', e);
+            if (btn) {
+                btn.textContent = 'Error';
+                btn.style.background = '#dc3545';
+                btn.style.color = 'white';
+            }
+        } finally {
+            /* Restore button state for synchronous downloads (MD, TXT, HTML) */
+            if (btn && format !== 'png') {
+                /* Small delay to ensure "Preparing" was visible */
+                setTimeout(() => {
+                    if (btn.textContent === 'Error') {
+                        /* Reset error state after 2s */
+                        setTimeout(() => {
+                            btn.textContent = originalText;
+                            btn.disabled = false;
+                            btn.style.background = '';
+                            btn.style.color = '';
+                        }, 2000);
+                    } else {
+                        btn.textContent = originalText;
+                        btn.disabled = false;
+                    }
+                }, 500);
+            }
         }
     }
 
