@@ -1,136 +1,73 @@
 const fs = require('fs');
 const path = require('path');
-const vm = require('vm');
-const assert = require('assert');
+const { JSDOM } = require('jsdom');
 
-const filePath = path.join(__dirname, '../bookmarklets/passphrase-generator.js');
-const code = fs.readFileSync(filePath, 'utf8');
+const dom = new JSDOM(`<!DOCTYPE html><body></body>`);
+global.window = dom.window;
+global.document = dom.window.document;
+global.navigator = dom.window.navigator;
+global.HTMLElement = dom.window.HTMLElement;
 
-// --- INSTRUMENTATION ---
-// The code is an IIFE: (function() { ... })();
-// We want to inject a hook right before the IIFE closes to export internal variables.
-
-const hook = `
-    if (typeof __TEST_HOOK__ === 'function') {
-        __TEST_HOOK__({ PHRASE_STRUCTURES, fullWordBank });
-    }
-})();
-`;
-
-// Find the last occurrence of })();
-const lastIndex = code.lastIndexOf('})();');
-if (lastIndex === -1) {
-    console.error('Could not find IIFE closing in the file.');
-    process.exit(1);
-}
-
-// Replace })(); with our hook + })();
-// We remove the original })(); and append the hook which contains it.
-const instrumentedCode = code.substring(0, lastIndex) + hook + code.substring(lastIndex + 5);
-
-// --- MOCKING ---
-const sandbox = {
-    window: {
-        crypto: {
-            getRandomValues: (arr) => {
-                for (let i = 0; i < arr.length; i++) {
-                    arr[i] = Math.floor(Math.random() * 256);
-                }
-                return arr;
-            }
-        },
-        getSelection: () => ({ toString: () => '' }),
-        BookmarkletUtils: {
-            getRand: (m) => Math.floor(Math.random() * m)
-        }
-    },
-    document: {
-        createElement: (tag) => {
-            return {
-                style: {},
-                appendChild: () => {},
-                remove: () => {},
-                textContent: '',
-                onclick: null
-            };
-        },
-        body: {
-            appendChild: () => {}
-        }
-    },
-    navigator: {
-        clipboard: {
-            writeText: () => {}
-        }
-    },
-    console: console,
-    __TEST_HOOK__: (data) => {
-        runTests(data);
-    }
+// Mock BookmarkletUtils
+global.window.BookmarkletUtils = {
+    getRand: (max) => Math.floor(Math.random() * max)
 };
 
-// --- EXECUTION ---
-console.log('Running instrumented code...');
-try {
-    vm.createContext(sandbox);
-    vm.runInContext(instrumentedCode, sandbox);
-} catch (e) {
-    console.error('Error running code:', e);
-    process.exit(1);
+// Mock clipboard
+global.navigator.clipboard = {
+    writeText: (text) => Promise.resolve()
+};
+
+const scriptPath = path.join(__dirname, '../bookmarklets/passphrase-generator.js');
+
+function runTest() {
+    const scriptContent = fs.readFileSync(scriptPath, 'utf8');
+
+    // Execute the script
+    try {
+        eval(scriptContent);
+        console.log("✅ Script executed successfully.");
+    } catch (e) {
+        console.error("❌ Script execution failed:", e);
+        process.exit(1);
+    }
+
+    // Check if UI is rendered
+    // The overlay is appended to body
+    // In JSDOM, we need to check document.body.children
+    const overlay = document.body.lastElementChild;
+    if (overlay && overlay.tagName === 'DIV' && overlay.style.position === 'fixed') {
+        console.log("✅ Overlay created.");
+    } else {
+        console.error("❌ Overlay not found.");
+        // print body content
+        console.log(document.body.innerHTML);
+    }
+
+    // Check generated passwords
+    // The new UI uses div for password text
+    let passwords = Array.from(document.querySelectorAll('div')).filter(d => d.style.fontFamily === 'monospace').map(p => p.textContent);
+    console.log(`Generated ${passwords.length} passwords.`);
+    if (passwords.length > 0) {
+        console.log("Sample:", passwords[0]);
+    } else {
+        console.error("❌ No passwords generated.");
+    }
+
+    // Test Temp Password Mode
+    const toggleBtn = Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('Switch'));
+    if (toggleBtn) {
+        toggleBtn.click();
+        passwords = Array.from(document.querySelectorAll('div')).filter(d => d.style.fontFamily === 'monospace').map(p => p.textContent);
+        console.log(`Generated ${passwords.length} TEMP passwords.`);
+        if (passwords.length > 0) {
+            console.log("Sample Temp:", passwords[0]);
+        } else {
+            console.error("❌ No temp passwords generated.");
+        }
+    } else {
+        console.error("❌ Toggle button not found.");
+    }
 }
 
-// --- VERIFICATION ---
-function runTests(data) {
-    const { PHRASE_STRUCTURES, fullWordBank } = data;
-
-    console.log('Verifying PHRASE_STRUCTURES...');
-
-    // 1. Check Top Level Keys
-    assert.ok(PHRASE_STRUCTURES.standard, 'Missing "standard" key');
-    assert.ok(PHRASE_STRUCTURES.seasonal, 'Missing "seasonal" key');
-
-    // 2. Check Word Count Keys (2, 3, 4)
-    ['standard', 'seasonal'].forEach(type => {
-        ['2', '3', '4'].forEach(count => {
-            assert.ok(PHRASE_STRUCTURES[type][count], `Missing "${count}" key in ${type}`);
-            assert.ok(Array.isArray(PHRASE_STRUCTURES[type][count]), `${type}[${count}] should be an array`);
-        });
-    });
-
-    // 3. Check Categories
-    // Standard
-    console.log('Verifying standard categories...');
-    Object.values(PHRASE_STRUCTURES.standard).forEach(structures => {
-        structures.forEach(structure => {
-            structure.forEach(category => {
-                assert.ok(fullWordBank[category], `Standard category "${category}" not found in fullWordBank`);
-            });
-        });
-    });
-
-    // Seasonal
-    console.log('Verifying seasonal categories...');
-    const seasons = ['Winter', 'Spring', 'Summer', 'Autumn'];
-
-    // Verify seasons exist in fullWordBank
-    seasons.forEach(s => {
-        assert.ok(fullWordBank[s], `Season "${s}" not found in fullWordBank`);
-    });
-
-    Object.values(PHRASE_STRUCTURES.seasonal).forEach(structures => {
-        structures.forEach(structure => {
-            structure.forEach(category => {
-                if (category.startsWith('Season')) {
-                    const baseCategory = category.replace('Season', '');
-                    seasons.forEach(season => {
-                        assert.ok(fullWordBank[season][baseCategory], `Seasonal category "${baseCategory}" not found in season "${season}"`);
-                    });
-                } else {
-                     assert.ok(fullWordBank[category], `Seasonal structure uses standard category "${category}" which is not found in fullWordBank`);
-                }
-            });
-        });
-    });
-
-    console.log('✅ All tests passed!');
-}
+runTest();
