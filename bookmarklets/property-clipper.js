@@ -1,421 +1,541 @@
 (function () {
     /* CONFIGURATION */
     const CONFIG = {
-        modalId: 'pc-bookmarklet-modal',
-        overlayId: 'pc-bookmarklet-overlay',
+        modalId: 'pc-pdf-modal',
+        overlayId: 'pc-pdf-overlay',
         filenamePrefix: 'Property_Report',
-        html2pdfUrl: 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js'
+        // Libraries required for PDF generation
+        jspdfUrl: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+        // Max width for images in PDF (pixels) - ensures manageable file size
+        imgMaxWidth: 1000,
+        imgQuality: 0.7 // JPEG quality 0-1
     };
 
     /* PROMPT LIBRARY */
     const STANDARD_OUTPUTS = `
-EXPECTED DELIVERABLES (Structure your report organically based on your findings):
-- **Executive Summary & Verdict**: Provide your final Investment Grade (Strong Buy / Qualified Buy / Hard Pass) with a clear Risk vs. Reward profile.
-- **Hidden Insights & Red Flags**: Focus heavily on off-page data (regulations, true costs, environmental/structural risks, macro trends).
-- **Financial Reality Check**: Project true cash flow, factoring in silent costs, CapEx, and local market trends.
-- **Visual & Condition Audit**: CRITICAL: You must analyze the embedded photos in the report below. Use the specific room labels (e.g., 'Original Kitchen', 'Unfinished Basement') to infer value-add potential. Look for visual cues in the descriptions that suggest renovation quality, roof condition, or layout flow.
-- **Comparison Tables**: If multiple properties are provided, use tables to contrast their metrics, risks, and neighborhood qualities.
+EXPECTED DELIVERABLES:
+- **Executive Summary & Verdict**: Investment Grade (Strong Buy / Qualified Buy / Hard Pass).
+- **Hidden Insights**: Off-page data, regulations, true costs.
+- **Financial Reality Check**: True cash flow, silent costs, CapEx.
+- **Visual & Condition Audit**: Analyze the appended Photo Gallery. Look for wear, renovation quality, and layout flow.
 `;
 
     const PROMPT_DATA = {
-        str: {
-            label: "Short-Term Rental (STR)",
-            role: "Act as a Senior Real Estate Investment Analyst specializing in Short-Term Rentals (STR).",
-            objective: 'Conduct a Deep Research audit of this STR target. Analyze macro/micro location data, saturation, regulatory environment, and revenue potential. Output a highly structured, data-dense report. Identify constraints that a novice investor would miss.'
-        },
-        ltr: {
-            label: "Long-Term Rental (LTR)",
-            role: "Act as a Senior Real Estate Investment Analyst specializing in Long-Term Buy-and-Hold Rentals.",
-            objective: 'Conduct a Deep Research audit of this LTR target. Analyze population growth, tenant demographics, local economic drivers, and long-term appreciation vs. cash flow balance. Output a highly structured, data-dense report.'
-        },
-        flip: {
-            label: "Fix & Flip",
-            role: "Act as a Senior Real Estate Investment Analyst and Project Manager specializing in Fix-and-Flip properties.",
-            objective: 'Conduct a Deep Research audit of this flip target. Estimate After Repair Value (ARV) based on comparable data, estimate CapEx for necessary rehab (based on visual/condition analysis), and identify deal-breaking structural or permitting risks.'
-        },
-        househack: {
-            label: "House Hacking",
-            role: "Act as a Senior Real Estate Investment Analyst specializing in House Hacking and Multi-Family Owner-Occupied strategies.",
-            objective: 'Conduct a Deep Research audit of this property. Analyze its layout for unit-splitting or ADU potential, estimate offset rental income against the primary mortgage, and review zoning compliance.'
-        }
+        str: { label: "Short-Term Rental (STR)", role: "Act as a Senior STR Analyst.", objective: 'Analyze macro/micro location, saturation, regulations, and revenue potential.' },
+        ltr: { label: "Long-Term Rental (LTR)", role: "Act as a Senior Buy-and-Hold Analyst.", objective: 'Analyze population growth, tenant demographics, and cash flow stability.' },
+        flip: { label: "Fix & Flip", role: "Act as a Fix-and-Flip Project Manager.", objective: 'Estimate ARV, rehab CapEx based on visual condition, and identify structural risks.' },
+        househack: { label: "House Hacking", role: "Act as a House Hacking Specialist.", objective: 'Analyze layout for unit-splitting/ADU potential and zoning compliance.' }
     };
 
     /* UTILITIES */
-    const escapeHTML = (str) => {
-        if (!str) return '';
-        return String(str).replace(/[&<>'"]/g, match => {
-            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[match];
-        });
-    };
-
-    const buildElement = (tag, styles = {}, text = '', parent = null) => {
+    const buildElement = (tag, styles = {}, text = '', parent = null, props = {}) => {
         const el = document.createElement(tag);
         if (text) el.innerText = text;
         Object.assign(el.style, styles);
+        Object.assign(el, props);
         if (parent) parent.appendChild(el);
         return el;
     };
 
     const formatCurrency = (val) => (val != null) ? '$' + Number(val).toLocaleString() : 'N/A';
 
-    const getDOMText = (selector) => {
-        const el = document.querySelector(selector);
-        return el ? el.innerText.trim() : '';
-    };
-
-    /* IMAGE PROCESSOR */
-    const ImageProcessor = {
-        toBase64: async (url) => {
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('Network error');
-                const blob = await response.blob();
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => resolve(reader.result);
-                    reader.onerror = () => reject('Reader error');
-                    reader.readAsDataURL(blob);
-                });
-            } catch (err) {
-                console.warn('Image embedding failed:', url);
-                // Return a 1x1 transparent pixel to prevent html2canvas CORS crash
-                return 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-            }
-        },
-        
-        embedPhotos: async (photos, statusCb) => {
-            const total = photos.length;
-            let processed = 0;
-            for (let i = 0; i < photos.length; i++) {
-                const photo = photos[i];
-                const base64 = await ImageProcessor.toBase64(photo.url);
-                photo.url = base64;
-                processed++;
-                if (statusCb) statusCb(`Embedding Image ${processed}/${total}...`);
-            }
-        }
-    };
-
-    /* PDF PROCESSOR */
-    const PdfProcessor = {
-        loadLibrary: async () => {
-            if (window.html2pdf) return;
-            return new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = CONFIG.html2pdfUrl;
-                script.onload = resolve;
-                script.onerror = () => reject('Failed to load html2pdf');
-                document.head.appendChild(script);
-            });
-        },
-
-        generate: async (data, htmlContent, statusCb) => {
-            if (statusCb) statusCb('Generating PDF Layout...');
-            
-            // Create a temporary container. 
-            // NOTE: We place it fixed at top/left with z-index -9999 to ensure it renders but isn't seen.
-            // "left: -9999px" can sometimes cause empty renders in html2canvas.
-            const container = document.createElement('div');
-            container.innerHTML = htmlContent;
-            Object.assign(container.style, {
-                position: 'fixed',
-                top: '0',
-                left: '0',
-                width: '800px', // Standardize width for PDF
-                zIndex: '-9999',
-                backgroundColor: 'white' // Ensure background isn't transparent
-            });
-            document.body.appendChild(container);
-
-            const opt = {
-                margin: 0.3, 
-                filename: `${data.address || 'Property_Report'}.pdf`,
-                image: { type: 'jpeg', quality: 0.95 },
-                html2canvas: { scale: 1.5, useCORS: true, logging: false },
-                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
-                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-            };
-
-            try {
-                // We pause briefly to ensure DOM paint
-                await new Promise(r => setTimeout(r, 500));
-                await html2pdf().set(opt).from(container).save();
-            } catch (e) {
-                console.error("PDF Generation failed:", e);
-                alert("PDF Generation failed. Check console for details.");
-            } finally {
-                document.body.removeChild(container);
-            }
-        }
-    };
-
-    /* CORE EXTRACTOR */
+    /* 1. CORE EXTRACTOR */
     const PropertyExtractor = {
-        getData: function() {
+        getData: function () {
             let data = {
                 address: 'Unknown Address', price: 'Unknown Price', specs: {},
-                financials: {}, history: {}, agents: [], description: '', features: [], photos: [],
+                financials: {}, history: {}, agents: [], description: '', features: [],
+                photoGroups: [], // { category: string, photos: [] }
                 raw: null
             };
 
             try {
-                (() => {
-                    const nextDataNode = document.getElementById('__NEXT_DATA__');
-                    if (!nextDataNode) return;
-                    
+                // Parse Next.js Data
+                const nextDataNode = document.getElementById('__NEXT_DATA__');
+                if (nextDataNode) {
                     const jsonData = JSON.parse(nextDataNode.innerText);
                     const pd = jsonData?.props?.pageProps?.initialReduxState?.propertyDetails;
-                    if (!pd) return;
-
-                    // 1. Preserve Raw Data (UNALTERED)
-                    data.raw = JSON.parse(JSON.stringify(pd));
-
-                    // 2. Extract Fields
-                    const loc = pd.location?.address;
-                    if (loc) {
-                        data.address = `${loc.line || ''}, ${loc.city || ''}, ${loc.state_code || ''} ${loc.postal_code || ''}`.replace(/^, | ,/g, '').trim();
-                    }
-                    if (pd.list_price) data.price = formatCurrency(pd.list_price);
                     
-                    const desc = pd.description || {};
-                    data.description = desc.text || '';
-                    if (desc.type) data.specs['Property Type'] = desc.type.replace('_', ' ');
-                    if (desc.beds) data.specs['Beds'] = desc.beds;
-                    if (desc.baths_consolidated) data.specs['Baths'] = desc.baths_consolidated;
-                    if (desc.sqft) data.specs['Sq. Ft.'] = desc.sqft.toLocaleString();
-                    if (desc.lot_sqft) data.specs['Lot Size'] = (desc.lot_sqft / 43560).toFixed(2) + ' Acres';
-                    if (desc.year_built) data.specs['Year Built'] = desc.year_built;
+                    if (pd) {
+                        data.raw = pd;
+                        
+                        // Basic Info
+                        const loc = pd.location?.address;
+                        if (loc) data.address = `${loc.line || ''}, ${loc.city || ''}, ${loc.state_code || ''} ${loc.postal_code || ''}`.replace(/^, | ,/g, '').trim();
+                        if (pd.list_price) data.price = formatCurrency(pd.list_price);
+                        
+                        // Description
+                        data.description = pd.description?.text || '';
 
-                    if (pd.mortgage?.estimate) {
-                        const est = pd.mortgage.estimate;
-                        data.financials['Est. Monthly Payment'] = formatCurrency(est.monthly_payment);
-                        if (est.monthly_payment_details) {
-                            est.monthly_payment_details.forEach(detail => {
-                                data.financials[detail.display_name] = formatCurrency(detail.amount);
+                        // Specs
+                        const desc = pd.description || {};
+                        if (desc.beds) data.specs['Beds'] = desc.beds;
+                        if (desc.baths_consolidated) data.specs['Baths'] = desc.baths_consolidated;
+                        if (desc.sqft) data.specs['Sq. Ft.'] = desc.sqft.toLocaleString();
+                        if (desc.lot_sqft) data.specs['Lot Size'] = (desc.lot_sqft / 43560).toFixed(2) + ' Acres';
+                        if (desc.year_built) data.specs['Year Built'] = desc.year_built;
+
+                        // Financials
+                        if (pd.mortgage?.estimate) {
+                            data.financials['Est. Payment'] = formatCurrency(pd.mortgage.estimate.monthly_payment);
+                            data.financials['Tax'] = formatCurrency(pd.mortgage.estimate.monthly_payment_details?.find(d => d.type === 'property_tax')?.amount);
+                            data.financials['HOA'] = formatCurrency(pd.mortgage.estimate.monthly_payment_details?.find(d => d.type === 'hoa_fees')?.amount);
+                        }
+
+                        // Features
+                        if (pd.details && Array.isArray(pd.details)) data.features = pd.details;
+
+                        // SMART PHOTO EXTRACTION (Group by Category)
+                        if (pd.augmented_gallery && Array.isArray(pd.augmented_gallery)) {
+                            pd.augmented_gallery.forEach(group => {
+                                // Skip the "all_photos" duplicate group to avoid double counting
+                                if (group.key === 'all_photos') return;
+                                
+                                const categoryName = group.category || group.key || 'Other';
+                                const validPhotos = (group.photos || [])
+                                    .filter(p => p.href)
+                                    .map(p => ({
+                                        url: p.href.replace('s.jpg', 'od-w1024_h768.webp'), // Get better quality
+                                        label: categoryName // Use category as label
+                                    }));
+                                
+                                if (validPhotos.length > 0) {
+                                    data.photoGroups.push({
+                                        category: categoryName,
+                                        photos: validPhotos
+                                    });
+                                }
+                            });
+                        }
+
+                        // Fallback if no groups found but photos exist
+                        if (data.photoGroups.length === 0 && pd.photos) {
+                            data.photoGroups.push({
+                                category: 'Gallery',
+                                photos: pd.photos.map(p => ({ url: p.href, label: 'Property Photo' }))
                             });
                         }
                     }
-
-                    if (pd.list_date) {
-                        const parsedDate = new Date(pd.list_date);
-                        if (!isNaN(parsedDate)) {
-                            data.history['List Date'] = parsedDate.toLocaleDateString();
-                        }
-                    }
-                    if (pd.last_sold_date) data.history['Last Sold Date'] = pd.last_sold_date;
-                    if (pd.last_sold_price) data.history['Last Sold Price'] = formatCurrency(pd.last_sold_price);
-
-                    if (pd.advertisers && Array.isArray(pd.advertisers)) {
-                        pd.advertisers.forEach(adv => {
-                            if (adv.name) {
-                                let agentStr = `${adv.type || 'Agent'}: ${adv.name}`;
-                                if (adv.broker?.name) agentStr += ` (${adv.broker.name})`;
-                                else if (adv.office?.name) agentStr += ` (${adv.office.name})`;
-                                data.agents.push(agentStr);
-                            }
-                        });
-                    }
-
-                    if (pd.details && Array.isArray(pd.details)) data.features = pd.details;
-                    
-                    // 3. Process Photos for Gallery (Filtered Labels)
-                    if (pd.photos) {
-                        data.photos = pd.photos.map(p => {
-                            let label = '';
-                            
-                            if (p.category && p.category !== 'All Photos') {
-                                label = p.category;
-                            }
-                            
-                            if (!label && p.tags && Array.isArray(p.tags)) {
-                                const noise = ['house_view', 'interior', 'exterior', 'watermark', 'complete', 'white', 'blue', 'grey', 'virtual_tour', 'video', 'floor_plan', 'realtordotcom_mls_listing_image'];
-                                const validTag = p.tags.find(t => t.label && !noise.includes(t.label.toLowerCase()));
-                                if (validTag) {
-                                    label = validTag.label.replace(/_/g, ' '); 
-                                }
-                            }
-
-                            if (label) {
-                                label = label.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
-                            }
-
-                            return { url: p.href, label: label || '' };
-                        });
-                    }
-                })();
-            } catch (e) {
-                console.warn('Hidden JSON extraction partially failed', e);
-            }
-
-            // Fallbacks
-            if (data.address === 'Unknown Address') {
-                data.address = getDOMText('h1') || data.address;
-            }
-            if (data.price === 'Unknown Price') {
-                data.price = getDOMText('[data-testid="ldp-list-price"]') || data.price;
-            }
-            if (!data.description || data.description.length < 20) {
-                data.description = getDOMText('[data-testid="property-description"]') || getDOMText('#ldp-detail-romance') || data.description;
-            }
-
-            // Deduplication & Upscaling
-            const photoMap = new Map();
-            data.photos.forEach(p => photoMap.set(p.url, p));
-            
-            Array.from(document.querySelectorAll('img[src*="rdcpix.com"]')).forEach(img => {
-                if (!photoMap.has(img.src)) {
-                    photoMap.set(img.src, { url: img.src, label: '' });
                 }
-            });
+            } catch (e) {
+                console.warn('Extraction Warning:', e);
+            }
+
+            // DOM Fallback for essentials
+            if (data.address === 'Unknown Address') data.address = document.querySelector('h1')?.innerText || data.address;
             
-            data.photos = Array.from(photoMap.values()).map(p => {
-                let upscaled = p.url;
-                if (upscaled.endsWith('s.jpg')) upscaled = upscaled.replace('s.jpg', 'rd-w1280_h960.webp'); 
-                upscaled = upscaled.replace(/-w\d+_h\d+/g, '-w1280_h960');
-                return { url: upscaled, label: p.label };
-            }).filter(p => p.url && p.url.trim() !== '');
-
             return data;
-        },
-
-        buildHTMLTemplate: function(data, promptText, promptLabel) {
-            const renderGrid = (obj) => {
-                if (Object.keys(obj).length === 0) return '<p>No data available.</p>';
-                return Object.entries(obj).map(([key, val]) => `
-                    <div class="metric-box">
-                        <div class="metric-label">${escapeHTML(key)}</div>
-                        <div class="metric-value">${escapeHTML(val)}</div>
-                    </div>
-                `).join('');
-            };
-
-            const featuresHTML = data.features.map(f => `
-                <div class="feature-category">
-                    <h3>${escapeHTML(f.category || 'Features')}</h3>
-                    <ul>${(f.text || []).map(t => `<li>${escapeHTML(t)}</li>`).join('')}</ul>
-                </div>
-            `).join('');
-
-            return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <style>
-        body { font-family: Helvetica, Arial, sans-serif; line-height: 1.4; color: #333; font-size: 12px; margin: 0; padding: 20px; }
-        h1 { margin: 0; color: #1f2937; font-size: 24px; }
-        h2 { color: #1f2937; margin-top: 25px; border-bottom: 2px solid #f3f4f6; padding-bottom: 5px; font-size: 16px; page-break-after: avoid; }
-        h3 { font-size: 14px; margin: 10px 0 5px 0; color: #374151; page-break-after: avoid; }
-        
-        .header { margin-bottom: 20px; border-bottom: 3px solid #2563eb; padding-bottom: 15px; }
-        .price { font-size: 20px; font-weight: bold; color: #2563eb; margin-top: 5px; }
-        
-        .system-prompt { background: #f1f5f9; color: #475569; padding: 15px; border-radius: 6px; margin-bottom: 20px; white-space: pre-wrap; font-family: monospace; font-size: 10px; border-left: 4px solid #94a3b8; page-break-inside: avoid; }
-        .prompt-label { font-weight: bold; color: #2563eb; display: block; margin-bottom: 5px; text-transform: uppercase; }
-        
-        .metrics-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
-        .metric-box { flex: 1 1 30%; min-width: 150px; background: #f9fafb; padding: 10px; border: 1px solid #e5e7eb; border-radius: 4px; page-break-inside: avoid; }
-        .metric-label { font-size: 10px; text-transform: uppercase; color: #6b7280; font-weight: 700; }
-        .metric-value { font-size: 12px; font-weight: 500; color: #111827; margin-top: 2px; }
-        
-        .description { font-size: 11px; white-space: pre-wrap; color: #374151; text-align: justify; }
-        
-        .features-grid { display: flex; flex-wrap: wrap; gap: 15px; }
-        .feature-category { flex: 1 1 45%; page-break-inside: avoid; }
-        .feature-category ul { margin: 0; padding-left: 15px; }
-        
-        .photo-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
-        .photo-card { width: 48%; margin-bottom: 10px; page-break-inside: avoid; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; background: #fff; position: relative; }
-        .photo-card img { width: 100%; height: 200px; object-fit: cover; display: block; }
-        .photo-label { background: #f3f4f6; color: #374151; padding: 5px 8px; font-size: 10px; font-weight: bold; text-align: center; border-bottom: 1px solid #ddd; }
-        
-        .agent-list { list-style: none; padding: 0; margin: 0; }
-        .agent-list li { padding: 5px 0; border-bottom: 1px solid #eee; }
-
-        .raw-data-section { margin-top: 30px; border-top: 4px solid #cbd5e1; padding-top: 10px; page-break-before: always; }
-        .raw-data-content { white-space: pre-wrap; word-break: break-all; font-family: monospace; font-size: 8px; color: #475569; background: #f8fafc; padding: 10px; }
-    </style>
-</head>
-<body>
-    <div class="system-prompt">
-        <span class="prompt-label">Analysis Objective: ${escapeHTML(promptLabel)}</span>
-        ${escapeHTML(promptText)}
-    </div>
-    
-    <div class="header">
-        <h1>${escapeHTML(data.address)}</h1>
-        <div class="price">${escapeHTML(data.price)}</div>
-    </div>
-
-    <h2>Property Overview</h2>
-    <div class="metrics-grid">
-        ${renderGrid(data.specs)}
-    </div>
-
-    <h2>Financial & Market Data</h2>
-    <div class="metrics-grid">
-        ${renderGrid(data.financials)}
-        ${renderGrid(data.history)}
-    </div>
-
-    <h2>Agent & Broker Info</h2>
-    <ul class="agent-list">
-        ${data.agents.length > 0 ? data.agents.map(a => `<li>${escapeHTML(a)}</li>`).join('') : '<li>No agent information found.</li>'}
-    </ul>
-
-    <h2>Property Description</h2>
-    <div class="description">${escapeHTML(data.description) || 'No description extracted.'}</div>
-
-    <h2>Detailed Features</h2>
-    <div class="features-grid">
-        ${featuresHTML || '<p>No specific features extracted.</p>'}
-    </div>
-
-    <h2>Photo Gallery</h2>
-    <div class="photo-grid">
-        ${data.photos.map(p => `
-            <div class="photo-card">
-                ${p.label ? `<div class="photo-label">${escapeHTML(p.label)}</div>` : ''}
-                <img src="${escapeHTML(p.url)}" alt="${escapeHTML(p.label)}">
-            </div>
-        `).join('')}
-    </div>
-
-    <div class="raw-data-section">
-        <h2>Appendix: Raw Data</h2>
-        <div class="raw-data-content">${(() => {
-            try {
-                return data.raw ? escapeHTML(JSON.stringify(data.raw, null, 2)) : 'No raw JSON detected.';
-            } catch(e) { return 'Error parsing raw data.'; }
-        })()}</div>
-    </div>
-</body>
-</html>`;
         }
     };
 
-    async function extractAndPackageContent(promptKey, statusCallback) {
-        const selectedPrompt = PROMPT_DATA[promptKey];
-        const combinedPromptText = `${selectedPrompt.role}\n\n${selectedPrompt.objective}\n${STANDARD_OUTPUTS}`;
-        
-        if (statusCallback) statusCallback("Loading PDF Engine...");
-        await PdfProcessor.loadLibrary();
+    /* 2. IMAGE PROCESSOR (Resize & Base64) */
+    const ImageProcessor = {
+        process: async (url) => {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = 'Anonymous';
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
 
-        const propertyData = PropertyExtractor.getData();
-        
-        if (propertyData.photos && propertyData.photos.length > 0) {
-            if (statusCallback) statusCallback(`Embedding ${propertyData.photos.length} photos...`);
-            await ImageProcessor.embedPhotos(propertyData.photos, statusCallback);
+                    // Resize logic
+                    if (width > CONFIG.imgMaxWidth) {
+                        height = Math.round(height * (CONFIG.imgMaxWidth / width));
+                        width = CONFIG.imgMaxWidth;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    try {
+                        const dataUrl = canvas.toDataURL('image/jpeg', CONFIG.imgQuality);
+                        resolve({ dataUrl, width, height, ratio: width / height });
+                    } catch (e) {
+                        resolve(null); // Canvas tainted (CORS failure)
+                    }
+                };
+                img.onerror = () => resolve(null);
+                img.src = url;
+            });
         }
+    };
 
-        const finalHTML = PropertyExtractor.buildHTMLTemplate(propertyData, combinedPromptText, selectedPrompt.label);
-        
-        if (statusCallback) statusCallback("Rendering PDF...");
-        await PdfProcessor.generate(propertyData, finalHTML, statusCallback);
-        
-        closeModal();
-    }
+    /* 3. PDF GENERATOR */
+    const PDFGenerator = {
+        loadLib: async () => {
+            if (window.jspdf) return;
+            return new Promise(resolve => {
+                const script = document.createElement('script');
+                script.src = CONFIG.jspdfUrl;
+                script.onload = resolve;
+                document.head.appendChild(script);
+            });
+        },
 
-    function createModal() {
+        create: async (data, selectedPhotos, promptData, statusCb) => {
+            await PDFGenerator.loadLib();
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ unit: 'mm', format: 'a4' }); // 210 x 297 mm
+            
+            const margin = 15;
+            let y = 20;
+            const pageWidth = 210;
+            const contentWidth = pageWidth - (margin * 2);
+
+            // --- PAGE 1: REPORT HEADER & SPECS ---
+            
+            // Title
+            doc.setFontSize(18);
+            doc.setFont('helvetica', 'bold');
+            doc.text(data.address, margin, y);
+            y += 10;
+
+            // Price
+            doc.setFontSize(14);
+            doc.setTextColor(37, 99, 235); // Blue
+            doc.text(data.price, margin, y);
+            doc.setTextColor(0); // Reset black
+            y += 15;
+
+            // Prompt Box
+            doc.setFillColor(240, 240, 240);
+            doc.rect(margin, y, contentWidth, 35, 'F');
+            doc.setFontSize(10);
+            doc.setFont('courier', 'normal');
+            const splitPrompt = doc.splitTextToSize(`ANALYSIS OBJECTIVE: ${promptData.label}\n\n${promptData.objective}`, contentWidth - 10);
+            doc.text(splitPrompt, margin + 5, y + 7);
+            y += 45;
+
+            // Specs Grid (Simple text layout)
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.text("Property Details", margin, y);
+            y += 8;
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            const specs = { ...data.specs, ...data.financials };
+            const keys = Object.keys(specs);
+            let xOffset = margin;
+            keys.forEach((k, i) => {
+                doc.text(`${k}: ${specs[k]}`, xOffset, y);
+                // 2 columns
+                if (i % 2 === 0) xOffset += 90;
+                else {
+                    xOffset = margin;
+                    y += 6;
+                }
+            });
+            y += 10;
+
+            // Description
+            if (y > 250) { doc.addPage(); y = 20; }
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.text("Description", margin, y);
+            y += 8;
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            const descLines = doc.splitTextToSize(data.description, contentWidth);
+            doc.text(descLines, margin, y);
+            
+            // --- PHOTO APPENDIX (2x3 Grid) ---
+            if (selectedPhotos.length > 0) {
+                doc.addPage();
+                y = 20;
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(16);
+                doc.text("Photo Appendix", margin, y);
+                y += 10;
+
+                const colWidth = 85; 
+                const rowHeight = 65; // Fixed height allocated for image + label
+                const imgMaxH = 55;   // Max height for actual image
+                const gap = 10;
+
+                let col = 0;
+                let row = 0; // 0, 1, 2
+
+                for (let i = 0; i < selectedPhotos.length; i++) {
+                    const photo = selectedPhotos[i];
+                    statusCb(`Processing photo ${i+1}/${selectedPhotos.length}`);
+                    
+                    const processed = await ImageProcessor.process(photo.url);
+                    if (!processed) continue; // Skip broken images
+
+                    // Check page break
+                    if (row > 2) {
+                        doc.addPage();
+                        row = 0;
+                        col = 0;
+                        y = 20;
+                    }
+
+                    const xPos = margin + (col * (colWidth + gap));
+                    const yPos = y + (row * (rowHeight + gap));
+
+                    // Label (Room Name)
+                    doc.setFontSize(9);
+                    doc.setFont('helvetica', 'bold');
+                    // Ensure label fits
+                    const label = (photo.label || 'Photo').substring(0, 40);
+                    doc.text(label, xPos, yPos);
+
+                    // Image placement
+                    const imgY = yPos + 3;
+                    
+                    // Calc dimensions to fit in box
+                    let finalW = colWidth;
+                    let finalH = colWidth / processed.ratio;
+
+                    if (finalH > imgMaxH) {
+                        finalH = imgMaxH;
+                        finalW = imgMaxH * processed.ratio;
+                    }
+
+                    doc.addImage(processed.dataUrl, 'JPEG', xPos, imgY, finalW, finalH);
+
+                    col++;
+                    if (col > 1) {
+                        col = 0;
+                        row++;
+                    }
+                }
+            }
+
+            // --- RAW DATA ---
+            if (data.raw) {
+                doc.addPage();
+                doc.setFont('courier', 'normal');
+                doc.setFontSize(8);
+                doc.text("RAW PROPERTY DATA (For AI Context)", margin, 15);
+                
+                const jsonStr = JSON.stringify(data.raw, null, 2);
+                const lines = doc.splitTextToSize(jsonStr, contentWidth);
+                
+                // Simple pagination for massive JSON
+                let lineIdx = 0;
+                let pageY = 20;
+                while (lineIdx < lines.length) {
+                    if (pageY > 280) {
+                        doc.addPage();
+                        pageY = 15;
+                    }
+                    doc.text(lines[lineIdx], margin, pageY);
+                    pageY += 4; // Line height
+                    lineIdx++;
+                }
+            }
+
+            doc.save(`${data.address || 'Property_Report'}.pdf`);
+        }
+    };
+
+    /* 4. WIZARD UI */
+    const Wizard = {
+        state: {
+            data: null,
+            prompt: null,
+            mode: null, // 'all' or 'manual'
+            step: 0,
+            selectedPhotos: [] // Flat array of {url, label}
+        },
+
+        init: (data, promptKey) => {
+            Wizard.state.data = data;
+            Wizard.state.prompt = PROMPT_DATA[promptKey];
+            Wizard.state.selectedPhotos = [];
+            Wizard.state.step = 0;
+            Wizard.renderStartScreen();
+        },
+
+        renderModalFrame: (title) => {
+            const container = document.getElementById(CONFIG.modalId);
+            container.innerHTML = '';
+            
+            // Header
+            const header = buildElement('div', { 
+                borderBottom: '1px solid #eee', paddingBottom: '15px', marginBottom: '15px',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+            }, '', container);
+            
+            buildElement('h3', { margin: 0, fontSize: '18px' }, title, header);
+            
+            // Content Area
+            const content = buildElement('div', { 
+                flex: '1', overflowY: 'auto', minHeight: '300px', maxHeight: '500px'
+            }, '', container);
+
+            // Footer
+            const footer = buildElement('div', { 
+                borderTop: '1px solid #eee', paddingTop: '15px', marginTop: '15px',
+                display: 'flex', justifyContent: 'flex-end', gap: '10px'
+            }, '', container);
+
+            return { content, footer };
+        },
+
+        renderStartScreen: () => {
+            const { content, footer } = Wizard.renderModalFrame('Select Photo Strategy');
+            
+            const totalPhotos = Wizard.state.data.photoGroups.reduce((acc, g) => acc + g.photos.length, 0);
+            const groupsCount = Wizard.state.data.photoGroups.length;
+            
+            // Calculate rooms that actually need review (>1 photo)
+            const interactiveCount = Wizard.state.data.photoGroups.filter(g => g.photos.length > 1).length;
+            const autoCount = groupsCount - interactiveCount;
+
+            const makeChoice = (title, sub, onClick) => {
+                const box = buildElement('div', {
+                    border: '1px solid #ddd', borderRadius: '8px', padding: '15px',
+                    marginBottom: '10px', cursor: 'pointer', transition: '0.2s', backgroundColor: '#f9f9f9'
+                }, '', content);
+                box.onmouseover = () => box.style.background = '#eff6ff';
+                box.onmouseout = () => box.style.background = '#f9f9f9';
+                
+                buildElement('div', { fontWeight: 'bold', marginBottom: '4px' }, title, box);
+                buildElement('div', { fontSize: '13px', color: '#666' }, sub, box);
+                box.onclick = onClick;
+            };
+
+            makeChoice(`Include All Photos (${totalPhotos})`, 'Fastest. Includes every available photo in the report.', () => {
+                // Flatten all
+                Wizard.state.selectedPhotos = Wizard.state.data.photoGroups.flatMap(g => g.photos);
+                Wizard.generate();
+            });
+
+            makeChoice(`Manual Selection (${interactiveCount} Rooms)`, `Curated. You will review ${interactiveCount} rooms. ${autoCount} single-photo rooms will be added automatically.`, () => {
+                Wizard.state.mode = 'manual';
+                Wizard.renderStep();
+            });
+            
+            // Footer
+            buildElement('button', { padding: '8px 15px', cursor: 'pointer' }, 'Cancel', footer).onclick = closeModal;
+        },
+
+        renderStep: () => {
+            const groupIndex = Wizard.state.step;
+            const groups = Wizard.state.data.photoGroups;
+
+            // Finish Condition
+            if (groupIndex >= groups.length) {
+                Wizard.generate();
+                return;
+            }
+
+            const group = groups[groupIndex];
+
+            // AUTO-SKIP: If only 1 photo, add it automatically and skip UI
+            if (group.photos.length === 1) {
+                Wizard.state.selectedPhotos.push(group.photos[0]);
+                Wizard.state.step++;
+                Wizard.renderStep(); // Recursively call next step to find next interactive group
+                return;
+            }
+
+            const { content, footer } = Wizard.renderModalFrame(`Step ${groupIndex + 1} of ${groups.length}: ${group.category}`);
+
+            // Toolbar
+            const toolbar = buildElement('div', { marginBottom: '10px', display: 'flex', gap: '10px', fontSize: '12px' }, '', content);
+            const btnSelectAll = buildElement('button', {}, 'Select All', toolbar);
+            const btnSelectNone = buildElement('button', {}, 'Select None', toolbar);
+
+            // Grid
+            const grid = buildElement('div', { 
+                display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '8px'
+            }, '', content);
+
+            // Checkboxes ref
+            const checks = [];
+
+            group.photos.forEach(photo => {
+                const wrapper = buildElement('div', { position: 'relative', height: '100px' }, '', grid);
+                
+                const img = buildElement('img', { 
+                    width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px', border: '2px solid transparent'
+                }, '', wrapper, { src: photo.url });
+
+                const check = buildElement('input', { 
+                    type: 'checkbox', 
+                    position: 'absolute', top: '5px', left: '5px', transform: 'scale(1.2)'
+                }, '', wrapper);
+                
+                // Toggle logic
+                const toggle = (force) => {
+                    check.checked = (force !== undefined) ? force : !check.checked;
+                    img.style.borderColor = check.checked ? '#2563eb' : 'transparent';
+                    img.style.opacity = check.checked ? '1' : '0.7';
+                };
+
+                // Default: Select first photo of every room automatically? 
+                // Let's default to selecting NONE so user actively picks, OR Select ALL.
+                // User said "present user with options". Let's Select ALL by default for convenience.
+                toggle(true);
+
+                wrapper.onclick = (e) => { if (e.target !== check) toggle(); };
+                check.onclick = (e) => e.stopPropagation(); // prevent double toggle
+                
+                checks.push({ check, photo });
+            });
+
+            // Toolbar Actions
+            btnSelectAll.onclick = () => checks.forEach(c => { c.check.checked = true; c.check.nextSibling.style.borderColor = '#2563eb'; });
+            btnSelectNone.onclick = () => checks.forEach(c => { c.check.checked = false; c.check.nextSibling.style.borderColor = 'transparent'; });
+
+            // Footer Nav
+            const saveSelection = () => {
+                const selected = checks.filter(c => c.check.checked).map(c => c.photo);
+                Wizard.state.selectedPhotos.push(...selected);
+            };
+
+            const btnNext = buildElement('button', { 
+                backgroundColor: '#2563eb', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer'
+            }, 'Next Category >', footer);
+            
+            btnNext.onclick = () => {
+                saveSelection();
+                Wizard.state.step++;
+                Wizard.renderStep();
+            };
+
+            const btnFinish = buildElement('button', { 
+                background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', marginRight: 'auto'
+            }, 'Finish & Generate Now', footer);
+            
+            btnFinish.onclick = () => {
+                saveSelection();
+                Wizard.generate();
+            };
+        },
+
+        generate: () => {
+            const container = document.getElementById(CONFIG.modalId);
+            container.innerHTML = '<div style="padding:40px;text-align:center;"><h3>Generating PDF...</h3><div id="pdf-status" style="margin-top:10px;color:#666">Initializing...</div></div>';
+            
+            const updateStatus = (msg) => {
+                const el = document.getElementById('pdf-status');
+                if (el) el.innerText = msg;
+            };
+
+            // Capture raw output
+            console.log('Generating PDF with', Wizard.state.selectedPhotos.length, 'photos');
+            
+            PDFGenerator.create(Wizard.state.data, Wizard.state.selectedPhotos, Wizard.state.prompt, updateStatus)
+                .then(() => {
+                    closeModal();
+                })
+                .catch(err => {
+                    updateStatus('Error: ' + err.message);
+                    console.error(err);
+                });
+        }
+    };
+
+    /* MAIN UI */
+    function createPersonaModal() {
         if (document.getElementById(CONFIG.modalId)) return;
 
         const fragment = document.createDocumentFragment();
@@ -429,59 +549,47 @@ EXPECTED DELIVERABLES (Structure your report organically based on your findings)
 
         const modal = buildElement('div', {
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-            backgroundColor: '#ffffff', padding: '30px', borderRadius: '12px',
-            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)',
-            zIndex: '999999', width: '90%', maxWidth: '400px', fontFamily: 'system-ui, sans-serif'
+            backgroundColor: '#ffffff', padding: '0', borderRadius: '12px', overflow: 'hidden',
+            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
+            zIndex: '999999', width: '90%', maxWidth: '600px', maxHeight: '80vh', display: 'flex', flexDirection: 'column',
+            fontFamily: 'system-ui, sans-serif'
         }, '', fragment);
         modal.id = CONFIG.modalId;
 
-        buildElement('h2', { margin: '0 0 20px 0', fontSize: '20px', color: '#111827', textAlign: 'center' }, 'Extract Property For AI Analysis', modal);
-
-        const btnContainer = buildElement('div', { display: 'flex', flexDirection: 'column', gap: '10px' }, '', modal);
-
-        const BTN_COLORS = {
-            defaultBg: '#f9fafb', defaultBorder: '#e5e7eb', defaultText: '#374151',
-            hoverBg: '#eff6ff', hoverBorder: '#bfdbfe', hoverText: '#1d4ed8'
-        };
-
+        // Initial Persona Selection Screen
+        const pContainer = buildElement('div', { padding: '30px' }, '', modal);
+        buildElement('h2', { margin: '0 0 20px 0', textAlign: 'center' }, 'AI Property Analysis', pContainer);
+        
+        const btnDiv = buildElement('div', { display: 'grid', gap: '10px' }, '', pContainer);
+        
         Object.entries(PROMPT_DATA).forEach(([key, prompt]) => {
             const btn = buildElement('button', {
-                padding: '12px 16px', border: `1px solid ${BTN_COLORS.defaultBorder}`, borderRadius: '8px',
-                backgroundColor: BTN_COLORS.defaultBg, color: BTN_COLORS.defaultText, fontSize: '15px',
-                fontWeight: '500', cursor: 'pointer', transition: 'all 0.15s',
-                textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-            }, prompt.label, btnContainer);
-            
-            btn.onmouseover = () => { btn.style.backgroundColor = BTN_COLORS.hoverBg; btn.style.borderColor = BTN_COLORS.hoverBorder; btn.style.color = BTN_COLORS.hoverText; };
-            btn.onmouseout = () => { btn.style.backgroundColor = BTN_COLORS.defaultBg; btn.style.borderColor = BTN_COLORS.defaultBorder; btn.style.color = BTN_COLORS.defaultText; };
+                padding: '12px', border: '1px solid #ddd', borderRadius: '6px',
+                background: '#f8f9fa', cursor: 'pointer', textAlign: 'left', fontWeight: '500'
+            }, prompt.label, btnDiv);
             
             btn.onclick = () => {
-                btnContainer.style.pointerEvents = 'none';
-                btn.style.opacity = '0.7';
-                extractAndPackageContent(key, (statusText) => {
-                    btn.innerText = statusText;
-                });
+                // Extract Data First
+                const data = PropertyExtractor.getData();
+                if (!data.raw) alert("Warning: Could not find raw hidden data. Report will be limited.");
+                
+                // Launch Wizard
+                Wizard.init(data, key);
             };
         });
 
-        const cancelBtn = buildElement('button', {
-            marginTop: '20px', padding: '10px', border: 'none', background: 'none',
-            color: '#6b7280', fontSize: '14px', cursor: 'pointer', width: '100%'
-        }, 'Cancel', modal);
-        
-        cancelBtn.onclick = closeModal;
-        cancelBtn.onmouseover = () => cancelBtn.style.color = '#111827';
-        cancelBtn.onmouseout = () => cancelBtn.style.color = '#6b7280';
+        const cancel = buildElement('button', { 
+            marginTop: '20px', width: '100%', padding: '10px', background: 'none', border: 'none', color: '#666', cursor: 'pointer' 
+        }, 'Cancel', pContainer);
+        cancel.onclick = closeModal;
 
         document.body.appendChild(fragment);
     }
 
     function closeModal() {
-        const modal = document.getElementById(CONFIG.modalId);
-        const overlay = document.getElementById(CONFIG.overlayId);
-        if (modal) modal.remove();
-        if (overlay) overlay.remove();
+        document.getElementById(CONFIG.modalId)?.remove();
+        document.getElementById(CONFIG.overlayId)?.remove();
     }
 
-    createModal();
+    createPersonaModal();
 })();
