@@ -29,14 +29,6 @@ EXPECTED DELIVERABLES:
     };
 
     /* UTILITIES */
-    const buildElement = (tag, styles = {}, text = '', parent = null, props = {}) => {
-        const el = document.createElement(tag);
-        if (text) el.textContent = text;
-        Object.assign(el.style, styles);
-        Object.assign(el, props);
-        if (parent) parent.appendChild(el);
-        return el;
-    };
 
     const formatCurrency = (val) => (val != null) ? '$' + Number(val).toLocaleString() : 'N/A';
 
@@ -376,20 +368,20 @@ EXPECTED DELIVERABLES:
             container.innerHTML = '';
             
             // Header
-            const header = buildElement('div', { 
+            const header = BookmarkletUtils.buildElement('div', {
                 borderBottom: '1px solid #eee', paddingBottom: '15px', marginBottom: '15px',
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center'
             }, '', container);
             
-            buildElement('h3', { margin: 0, fontSize: '18px' }, title, header);
+            BookmarkletUtils.buildElement('h3', { margin: 0, fontSize: '18px' }, title, header);
             
             // Content Area
-            const content = buildElement('div', { 
+            const content = BookmarkletUtils.buildElement('div', {
                 flex: '1', overflowY: 'auto', minHeight: '300px', maxHeight: '500px'
             }, '', container);
 
             // Footer
-            const footer = buildElement('div', { 
+            const footer = BookmarkletUtils.buildElement('div', {
                 borderTop: '1px solid #eee', paddingTop: '15px', marginTop: '15px',
                 display: 'flex', justifyContent: 'flex-end', gap: '10px'
             }, '', container);
@@ -408,15 +400,15 @@ EXPECTED DELIVERABLES:
             const autoCount = groupsCount - interactiveCount;
 
             const makeChoice = (title, sub, onClick) => {
-                const box = buildElement('div', {
+                const box = BookmarkletUtils.buildElement('div', {
                     border: '1px solid #ddd', borderRadius: '8px', padding: '15px',
                     marginBottom: '10px', cursor: 'pointer', transition: '0.2s', backgroundColor: '#f9f9f9'
                 }, '', content);
                 box.onmouseover = () => box.style.background = '#eff6ff';
                 box.onmouseout = () => box.style.background = '#f9f9f9';
                 
-                buildElement('div', { fontWeight: 'bold', marginBottom: '4px' }, title, box);
-                buildElement('div', { fontSize: '13px', color: '#666' }, sub, box);
+                BookmarkletUtils.buildElement('div', { fontWeight: 'bold', marginBottom: '4px' }, title, box);
+                BookmarkletUtils.buildElement('div', { fontSize: '13px', color: '#666' }, sub, box);
                 box.onclick = onClick;
             };
 
@@ -432,7 +424,7 @@ EXPECTED DELIVERABLES:
             });
             
             // Footer
-            buildElement('button', { padding: '8px 15px', cursor: 'pointer' }, 'Cancel', footer).onclick = closeModal;
+            BookmarkletUtils.buildElement('button', { padding: '8px 15px', cursor: 'pointer' }, 'Cancel', footer).onclick = closeModal;
         },
 
         renderStep: () => {
@@ -458,12 +450,12 @@ EXPECTED DELIVERABLES:
             const { content, footer } = Wizard.renderModalFrame(`Step ${groupIndex + 1} of ${groups.length}: ${group.category}`);
 
             // Toolbar
-            const toolbar = buildElement('div', { marginBottom: '10px', display: 'flex', gap: '10px', fontSize: '12px' }, '', content);
-            const btnSelectAll = buildElement('button', {}, 'Select All', toolbar);
-            const btnSelectNone = buildElement('button', {}, 'Select None', toolbar);
+            const toolbar = BookmarkletUtils.buildElement('div', { marginBottom: '10px', display: 'flex', gap: '10px', fontSize: '12px' }, '', content);
+            const btnSelectAll = BookmarkletUtils.buildElement('button', {}, 'Select All', toolbar);
+            const btnSelectNone = BookmarkletUtils.buildElement('button', {}, 'Select None', toolbar);
 
             // Grid
-            const grid = buildElement('div', { 
+            const grid = BookmarkletUtils.buildElement('div', {
                 display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '8px'
             }, '', content);
 
@@ -471,13 +463,13 @@ EXPECTED DELIVERABLES:
             const checks = [];
 
             group.photos.forEach(photo => {
-                const wrapper = buildElement('div', { position: 'relative', height: '100px' }, '', grid);
+                const wrapper = BookmarkletUtils.buildElement('div', { position: 'relative', height: '100px' }, '', grid);
                 
-                const img = buildElement('img', { 
+                const img = BookmarkletUtils.buildElement('img', {
                     width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px', border: '2px solid transparent'
                 }, '', wrapper, { src: photo.url, alt: photo.label || 'Property Photo' });
 
-                const check = buildElement('input', { 
+                const check = BookmarkletUtils.buildElement('input', {
                     type: 'checkbox', 
                     position: 'absolute', top: '5px', left: '5px', transform: 'scale(1.2)'
                 }, '', wrapper);
@@ -489,9 +481,6 @@ EXPECTED DELIVERABLES:
                     img.style.opacity = check.checked ? '1' : '0.7';
                 };
 
-                // Default: Select first photo of every room automatically? 
-                // Let's default to selecting NONE so user actively picks, OR Select ALL.
-                // User said "present user with options". Let's Select ALL by default for convenience.
                 toggle(true);
 
                 wrapper.onclick = (e) => { if (e.target !== check) toggle(); };
@@ -510,7 +499,7 @@ EXPECTED DELIVERABLES:
                 Wizard.state.selectedPhotos.push(...selected);
             };
 
-            const btnNext = buildElement('button', { 
+            const btnNext = BookmarkletUtils.buildElement('button', {
                 backgroundColor: '#2563eb', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer'
             }, 'Next Category >', footer);
             
@@ -520,7 +509,7 @@ EXPECTED DELIVERABLES:
                 Wizard.renderStep();
             };
 
-            const btnFinish = buildElement('button', { 
+            const btnFinish = BookmarkletUtils.buildElement('button', {
                 background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', marginRight: 'auto'
             }, 'Finish & Generate Now', footer);
             
@@ -559,14 +548,14 @@ EXPECTED DELIVERABLES:
 
         const fragment = document.createDocumentFragment();
 
-        const overlay = buildElement('div', {
+        const overlay = BookmarkletUtils.buildElement('div', {
             position: 'fixed', top: '0', left: '0', width: '100%', height: '100%',
             backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
             zIndex: '999998', transition: 'opacity 0.2s'
         }, '', fragment);
         overlay.id = CONFIG.overlayId;
 
-        const modal = buildElement('div', {
+        const modal = BookmarkletUtils.buildElement('div', {
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
             backgroundColor: '#ffffff', padding: '0', borderRadius: '12px', overflow: 'hidden',
             boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
@@ -576,13 +565,13 @@ EXPECTED DELIVERABLES:
         modal.id = CONFIG.modalId;
 
         // Initial Persona Selection Screen
-        const pContainer = buildElement('div', { padding: '30px' }, '', modal);
-        buildElement('h2', { margin: '0 0 20px 0', textAlign: 'center' }, 'AI Property Analysis', pContainer);
+        const pContainer = BookmarkletUtils.buildElement('div', { padding: '30px' }, '', modal);
+        BookmarkletUtils.buildElement('h2', { margin: '0 0 20px 0', textAlign: 'center' }, 'AI Property Analysis', pContainer);
         
-        const btnDiv = buildElement('div', { display: 'grid', gap: '10px' }, '', pContainer);
+        const btnDiv = BookmarkletUtils.buildElement('div', { display: 'grid', gap: '10px' }, '', pContainer);
         
         Object.entries(PROMPT_DATA).forEach(([key, prompt]) => {
-            const btn = buildElement('button', {
+            const btn = BookmarkletUtils.buildElement('button', {
                 padding: '12px', border: '1px solid #ddd', borderRadius: '6px',
                 background: '#f8f9fa', cursor: 'pointer', textAlign: 'left', fontWeight: '500'
             }, prompt.label, btnDiv);
@@ -599,7 +588,7 @@ EXPECTED DELIVERABLES:
             };
         });
 
-        const cancel = buildElement('button', { 
+        const cancel = BookmarkletUtils.buildElement('button', {
             marginTop: '20px', width: '100%', padding: '10px', background: 'none', border: 'none', color: '#666', cursor: 'pointer' 
         }, 'Cancel', pContainer);
         cancel.onclick = closeModal;

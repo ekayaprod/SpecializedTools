@@ -158,4 +158,28 @@ console.log("Running BookmarkletUtils tests...");
     console.log("✅ normalizeImages <picture> passed");
 }
 
+// Test 5: buildElement
+{
+    console.log("Test 5: buildElement");
+    const parent = document.createElement('div');
+    document.body.appendChild(parent);
+
+    // 1. Basic Creation
+    const el = window.BookmarkletUtils.buildElement('div', { color: 'red' }, 'Hello', parent, { id: 'my-el' });
+
+    assert.strictEqual(el.tagName, 'DIV', 'Tag name match');
+    assert.strictEqual(el.style.color, 'red', 'Style match');
+    assert.strictEqual(el.textContent, 'Hello', 'Text content match');
+    assert.strictEqual(el.parentElement, parent, 'Parent append match');
+    assert.strictEqual(el.id, 'my-el', 'Props match');
+
+    // 2. Nested Creation
+    const child = window.BookmarkletUtils.buildElement('span', {}, 'Child', el);
+    assert.strictEqual(child.parentElement, el, 'Child appended correctly');
+    assert.strictEqual(child.textContent, 'Child', 'Child text match');
+
+    document.body.removeChild(parent);
+    console.log("✅ buildElement passed");
+}
+
 console.log("All tests passed!");
