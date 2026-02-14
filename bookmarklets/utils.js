@@ -208,6 +208,72 @@
             }
         },
         /**
+         * Asynchronously applies computed styles from a source element to a target element.
+         * Processes elements in chunks to avoid blocking the main thread.
+         *
+         * @param {HTMLElement} source - The original DOM element.
+         * @param {HTMLElement} target - The cloned element.
+         * @param {function(number): void} [onProgress] - Callback reporting processed count.
+         * @returns {Promise<void>}
+         */
+        inlineStylesAsync: function(source, target, onProgress) {
+            return new Promise(function(resolve) {
+                const queue = [{s: source, t: target}];
+                let count = 0;
+                const CHUNK_SIZE = 50;
+
+                function processChunk() {
+                    const startTime = performance.now();
+
+                    while (queue.length > 0) {
+                        const item = queue.shift();
+                        const s = item.s;
+                        const t = item.t;
+
+                        /* Apply styles to current element */
+                        const computed = window.getComputedStyle(s);
+                        if (computed) {
+                            const styles = [];
+                            for (let i = 0, len = safeProperties.length; i < len; i++) {
+                                const prop = safeProperties[i];
+                                const val = computed.getPropertyValue(prop);
+                                if (val && val !== 'none' && val !== 'normal') {
+                                    styles.push(prop + ':' + val);
+                                }
+                            }
+                            if (styles.length > 0) {
+                                t.style.cssText += styles.join('; ') + '; ';
+                            }
+                        }
+
+                        count++;
+
+                        /* Add children to queue */
+                        const sourceChildren = s.children;
+                        const targetChildren = t.children;
+                        for (let i = 0; i < sourceChildren.length; i++) {
+                            if (targetChildren[i]) {
+                                queue.push({s: sourceChildren[i], t: targetChildren[i]});
+                            }
+                        }
+
+                        /* Yield if chunk size reached or time exceeded */
+                        if (count % CHUNK_SIZE === 0 || (performance.now() - startTime) > 12) {
+                             if (onProgress) onProgress(count);
+                             setTimeout(processChunk, 0);
+                             return;
+                        }
+                    }
+
+                    /* Done */
+                    if (onProgress) onProgress(count);
+                    resolve();
+                }
+
+                processChunk();
+            });
+        },
+        /**
          * Converts an HTML string to Markdown format.
          * Supported tags:
          * - Headings (h1-h4)

@@ -123,7 +123,11 @@
         /* Show loading before processing */
         showLoadingOverlay();
         setTimeout(function() {
-            openEditor(target);
+            openEditor(target).catch(function(err) {
+                console.error(err);
+                hideLoadingOverlay();
+                alert('Error opening editor: ' + err.message);
+            });
         }, 50);
     }
 
@@ -133,23 +137,27 @@
         }
     }
 
-    function showLoadingOverlay() {
-        const div = document.createElement('div');
-        div.id = 'wc-loading';
-        div.style.position = 'fixed';
-        div.style.top = '0';
-        div.style.left = '0';
-        div.style.width = '100%';
-        div.style.height = '100%';
-        div.style.background = 'rgba(255,255,255,0.8)';
-        div.style.zIndex = '2000000';
-        div.style.display = 'flex';
-        div.style.justifyContent = 'center';
-        div.style.alignItems = 'center';
-        div.style.fontSize = '20px';
-        div.style.fontFamily = 'sans-serif';
-        div.innerHTML = '<span>Capturing styles & layout...</span>';
-        document.body.appendChild(div);
+    function showLoadingOverlay(message) {
+        const msg = message || 'Capturing styles & layout...';
+        let div = document.getElementById('wc-loading');
+        if (!div) {
+            div = document.createElement('div');
+            div.id = 'wc-loading';
+            div.style.position = 'fixed';
+            div.style.top = '0';
+            div.style.left = '0';
+            div.style.width = '100%';
+            div.style.height = '100%';
+            div.style.background = 'rgba(255,255,255,0.8)';
+            div.style.zIndex = '2000000';
+            div.style.display = 'flex';
+            div.style.justifyContent = 'center';
+            div.style.alignItems = 'center';
+            div.style.fontSize = '20px';
+            div.style.fontFamily = 'sans-serif';
+            document.body.appendChild(div);
+        }
+        div.innerHTML = '<span>' + msg + '</span>';
     }
 
     function hideLoadingOverlay() {
@@ -158,7 +166,7 @@
     }
 
     /* PHASE 2: THE EDITOR */
-    function openEditor(element) {
+    async function openEditor(element) {
         /* 1. Normalize Images IN PLACE (before cloning) to capture true sources */
         BookmarkletUtils.normalizeImages(element);
         
@@ -167,7 +175,9 @@
         
         /* 3. Inline "Safe" Computed Styles */
         /* Changed strategy: Minimal stabilization to avoid layout breakage */
-        BookmarkletUtils.inlineStyles(element, clone);
+        await BookmarkletUtils.inlineStylesAsync(element, clone, function(count) {
+             showLoadingOverlay('Capturing styles & layout... (' + count + ' elements)');
+        });
         
         /* 4. Cleanup - remove scripts but KEEP classes and styles */
         cleanupDOM(clone);
@@ -187,7 +197,7 @@
                     <span style="font-weight:700; font-size:16px;">Web Clipper</span> 
                     <span style="font-size:12px; color:#666; margin-left:8px;">(Snapshot Preview)</span>
                 </div>
-                <div id="wc-close-icon" style="cursor:pointer; font-size:20px; color:#999; line-height:1;">&times;</div>
+                <div id="wc-close-icon" role="button" aria-label="Close" tabindex="0" style="cursor:pointer; font-size:20px; color:#999; line-height:1;">&times;</div>
             </div>
         `;
 
@@ -243,7 +253,7 @@
 
         const btnDownload = document.createElement('button');
         btnDownload.textContent = 'Download';
-        btnDownload.onclick = function() { handleDownload(contentArea, formatSelect.value); };
+        btnDownload.onclick = function() { handleDownload(contentArea, formatSelect.value, btnDownload); };
 
         const btnCopy = document.createElement('button');
         btnCopy.textContent = 'Copy to Clipboard';
@@ -264,7 +274,15 @@
         /* Event Listener for Close Icon */
         setTimeout(function() {
             const closeIcon = document.getElementById('wc-close-icon');
-            if(closeIcon) closeIcon.onclick = closeEditor;
+            if(closeIcon) {
+                closeIcon.onclick = closeEditor;
+                closeIcon.onkeydown = function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        closeEditor();
+                    }
+                };
+            }
         }, 0);
 
         const style = document.createElement('style');
@@ -322,7 +340,7 @@
         }
     }
 
-    function handleDownload(contentArea, format) {
+    function handleDownload(contentArea, format, btn) {
         const cleanTitle = BookmarkletUtils.sanitizeFilename(document.title || 'Web_Clip');
 
         if (format === 'md') {
@@ -332,15 +350,34 @@
             const content = contentArea.innerText;
             BookmarkletUtils.downloadFile(cleanTitle + '_' + Date.now() + '.txt', content, 'text/plain');
         } else if (format === 'png') {
+            const originalText = btn ? btn.textContent : 'Download';
+            if (btn) {
+                btn.textContent = 'Generating...';
+                btn.disabled = true;
+            }
+
             /* Dynamically load html2canvas if needed */
             if (typeof html2canvas === 'undefined') {
                 const script = document.createElement('script');
                 script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-                script.onload = () => capturePng(contentArea, cleanTitle);
-                script.onerror = () => alert('Failed to load html2canvas for PNG export.');
+                script.onload = () => capturePng(contentArea, cleanTitle, btn, originalText);
+                script.onerror = () => {
+                    alert('Failed to load html2canvas for PNG export.');
+                    if (btn) {
+                        btn.textContent = 'Error';
+                        btn.style.background = '#dc3545';
+                        btn.style.color = 'white';
+                        setTimeout(() => {
+                             btn.textContent = originalText;
+                             btn.disabled = false;
+                             btn.style.background = '';
+                             btn.style.color = '';
+                        }, 2000);
+                    }
+                };
                 document.body.appendChild(script);
             } else {
-                capturePng(contentArea, cleanTitle);
+                capturePng(contentArea, cleanTitle, btn, originalText);
             }
         } else {
             /* HTML Default */
@@ -352,8 +389,10 @@
     /**
      * @param {HTMLElement} element
      * @param {string} title
+     * @param {HTMLButtonElement} [btn]
+     * @param {string} [originalText]
      */
-    function capturePng(element, title) {
+    function capturePng(element, title, btn, originalText) {
         /* Temporarily ensure element is visible and has white background for capture */
         const originalBg = element.style.backgroundColor;
         element.style.backgroundColor = '#ffffff';
@@ -365,10 +404,28 @@
             link.download = title + '_' + Date.now() + '.png';
             link.href = canvas.toDataURL();
             link.click();
+
+            if (btn) {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
         }).catch(err => {
             console.error('PNG Capture failed:', err);
-            alert('PNG export failed. Check console for details.');
             element.style.backgroundColor = originalBg;
+
+            if (btn) {
+                btn.textContent = 'Error';
+                btn.style.background = '#dc3545';
+                btn.style.color = 'white';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                    btn.style.background = '';
+                    btn.style.color = '';
+                }, 2000);
+            } else {
+                alert('PNG export failed. Check console for details.');
+            }
         });
     }
 
