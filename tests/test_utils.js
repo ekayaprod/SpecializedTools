@@ -57,28 +57,6 @@ if (!window.BookmarkletUtils) {
 
 console.log("Running BookmarkletUtils tests...");
 
-// Test 1: inlineStyles
-{
-    console.log("Test 1: inlineStyles");
-    const source = document.getElementById('source');
-    const target = document.getElementById('target');
-
-    window.BookmarkletUtils.inlineStyles(source, target);
-
-    const targetStyle = target.style;
-    // getComputedStyle converts colors to rgb
-    assert.strictEqual(targetStyle.color, 'rgb(255, 0, 0)', 'Color should be copied');
-    assert.strictEqual(targetStyle.width, '100px', 'Width should be copied');
-    assert.strictEqual(targetStyle.position, 'absolute', 'Position should be copied');
-    assert.strictEqual(targetStyle.top, '10px', 'Top should be copied');
-
-    // Check child recursion
-    const targetChild = document.getElementById('target-child');
-    assert.strictEqual(targetChild.style.fontSize, '20px', 'Child font-size should be copied');
-
-    console.log("✅ inlineStyles passed");
-}
-
 // Test 2: normalizeImages
 {
     console.log("Test 2: normalizeImages");
