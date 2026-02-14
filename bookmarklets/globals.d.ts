@@ -5,6 +5,7 @@ declare global {
         JSZip: any;
         BookmarkletUtils: any;
         html2pdf: any;
+        jspdf: any;
     }
 
     const JSZip: any;

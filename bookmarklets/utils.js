@@ -253,7 +253,7 @@
                         const targetChildren = t.children;
                         for (let i = 0; i < sourceChildren.length; i++) {
                             if (targetChildren[i]) {
-                                queue.push({s: sourceChildren[i], t: targetChildren[i]});
+                                queue.push({s: /** @type {HTMLElement} */ (sourceChildren[i]), t: /** @type {HTMLElement} */ (targetChildren[i])});
                             }
                         }
 
