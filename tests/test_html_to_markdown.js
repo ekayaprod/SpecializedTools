@@ -147,4 +147,18 @@ describe('BookmarkletUtils.htmlToMarkdown', () => {
         const result = window.BookmarkletUtils.htmlToMarkdown(input);
         assert.strictEqual(result.trim(), expected);
     });
+
+    // 11. Excluded Tags
+    it('should exclude script, style, and noscript tags', () => {
+        const input = `
+            <h1>Content</h1>
+            <script>alert('bad');</script>
+            <style>.bad { color: red; }</style>
+            <noscript>You need JS</noscript>
+            <p>End</p>
+        `;
+        const expected = '# Content\n\nEnd';
+        const result = window.BookmarkletUtils.htmlToMarkdown(input);
+        assert.strictEqual(result.trim(), expected);
+    });
 });

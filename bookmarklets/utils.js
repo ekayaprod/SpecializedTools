@@ -237,6 +237,8 @@
 
                 const tag = node.tagName.toLowerCase();
 
+                if (tag === 'script' || tag === 'style' || tag === 'noscript') return;
+
                 switch(tag) {
                     case 'h1': markdown += '\n# '; break;
                     case 'h2': markdown += '\n## '; break;
