@@ -475,7 +475,7 @@ EXPECTED DELIVERABLES:
                 
                 const img = buildElement('img', { 
                     width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px', border: '2px solid transparent'
-                }, '', wrapper, { src: photo.url });
+                }, '', wrapper, { src: photo.url, alt: photo.label || 'Property Photo' });
 
                 const check = buildElement('input', { 
                     type: 'checkbox', 
