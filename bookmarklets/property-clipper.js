@@ -169,6 +169,7 @@ EXPECTED DELIVERABLES:
                         const dataUrl = canvas.toDataURL('image/jpeg', CONFIG.imgQuality);
                         resolve({ dataUrl, width, height, ratio: width / height });
                     } catch (e) {
+                        console.warn('Image processing failed for', url, e);
                         resolve(null); // Canvas tainted (CORS failure)
                     }
                 };
