@@ -10,6 +10,10 @@
     <link rel="preload" href="bookmarklets/property-clipper.js" as="fetch" crossorigin>
     <link rel="preload" href="bookmarklets/passphrase-generator.js" as="fetch" crossorigin>
     <link rel="preload" href="bookmarklets/pa-county-finder.js" as="fetch" crossorigin>
+    <link rel="preload" href="bookmarklets/quick-clicker.js" as="fetch" crossorigin>
+    <link rel="preload" href="bookmarklets/macro-builder.js" as="fetch" crossorigin>
+    <link rel="preload" href="bookmarklets/interaction-recorder.js" as="fetch" crossorigin>
+    <link rel="preload" href="bookmarklets/delayed-clicker.js" as="fetch" crossorigin>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -134,6 +138,103 @@
                             Loading...
                         </a>
                         <button id="copy-btn-pa-county" class="bg-slate-800 text-white px-4 hover:bg-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-500 transition-colors flex items-center justify-center opacity-50 cursor-not-allowed border-l border-white/20" title="Copy Code">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">Drag to Bookmarks Bar or Click to Test</p>
+                </div>
+            </section>
+
+            <!-- AUTOMATION TOOLS -->
+            <section class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 flex flex-col md:flex-row gap-6">
+                <div class="flex-1">
+                    <h2 class="text-xl font-semibold text-slate-900">Quick Clicker V27</h2>
+                    <p class="text-sm text-slate-600 mt-2">
+                        Single-target automation. Supports Delay or Clock Time (e.g., 3:30 PM). Includes draggable window, text input support, and Shadow DOM support.
+                    </p>
+                </div>
+                <div class="w-full md:w-64 flex flex-col items-center">
+                    <div class="flex w-full shadow-md rounded-full overflow-hidden">
+                        <a id="btn-quick-clicker" href="#" onclick="return false;" aria-busy="true" class="bookmarklet-btn flex-1 bg-blue-600 text-white font-bold py-3 px-4 text-center hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 transition-colors truncate">
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Loading...
+                        </a>
+                        <button id="copy-btn-quick-clicker" class="bg-blue-800 text-white px-4 hover:bg-blue-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 transition-colors flex items-center justify-center opacity-50 cursor-not-allowed border-l border-white/20" title="Copy Code">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">Drag to Bookmarks Bar or Click to Test</p>
+                </div>
+            </section>
+
+            <section class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 flex flex-col md:flex-row gap-6">
+                <div class="flex-1">
+                    <h2 class="text-xl font-semibold text-slate-900">Macro Builder V22</h2>
+                    <p class="text-sm text-slate-600 mt-2">
+                        Generates robust, comment-free bookmarklets. Pure record & replay logic with no menu configuration.
+                    </p>
+                </div>
+                <div class="w-full md:w-64 flex flex-col items-center">
+                    <div class="flex w-full shadow-md rounded-full overflow-hidden">
+                        <a id="btn-macro-builder" href="#" onclick="return false;" aria-busy="true" class="bookmarklet-btn flex-1 bg-violet-600 text-white font-bold py-3 px-4 text-center hover:bg-violet-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-violet-500 transition-colors truncate">
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Loading...
+                        </a>
+                        <button id="copy-btn-macro-builder" class="bg-violet-800 text-white px-4 hover:bg-violet-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-violet-500 transition-colors flex items-center justify-center opacity-50 cursor-not-allowed border-l border-white/20" title="Copy Code">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">Drag to Bookmarks Bar or Click to Test</p>
+                </div>
+            </section>
+
+            <section class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 flex flex-col md:flex-row gap-6">
+                <div class="flex-1">
+                    <h2 class="text-xl font-semibold text-slate-900">Interaction Recorder</h2>
+                    <p class="text-sm text-slate-600 mt-2">
+                        Troubleshoot automation issues by recording your exact clicks. Captures Shadow DOM, ID/Class/Aria, and exports analysis file.
+                    </p>
+                </div>
+                <div class="w-full md:w-64 flex flex-col items-center">
+                    <div class="flex w-full shadow-md rounded-full overflow-hidden">
+                        <a id="btn-interaction-recorder" href="#" onclick="return false;" aria-busy="true" class="bookmarklet-btn flex-1 bg-amber-500 text-white font-bold py-3 px-4 text-center hover:bg-amber-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-500 transition-colors truncate">
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Loading...
+                        </a>
+                        <button id="copy-btn-interaction-recorder" class="bg-amber-700 text-white px-4 hover:bg-amber-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-500 transition-colors flex items-center justify-center opacity-50 cursor-not-allowed border-l border-white/20" title="Copy Code">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">Drag to Bookmarks Bar or Click to Test</p>
+                </div>
+            </section>
+
+            <section class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 flex flex-col md:flex-row gap-6">
+                <div class="flex-1">
+                    <h2 class="text-xl font-semibold text-slate-900">Delayed Clicker V5</h2>
+                    <p class="text-sm text-slate-600 mt-2">
+                        Simple timer clicker. Set a delay and a target. Stable version.
+                    </p>
+                </div>
+                <div class="w-full md:w-64 flex flex-col items-center">
+                    <div class="flex w-full shadow-md rounded-full overflow-hidden">
+                        <a id="btn-delayed-clicker" href="#" onclick="return false;" aria-busy="true" class="bookmarklet-btn flex-1 bg-slate-600 text-white font-bold py-3 px-4 text-center hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-500 transition-colors truncate">
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Loading...
+                        </a>
+                        <button id="copy-btn-delayed-clicker" class="bg-slate-800 text-white px-4 hover:bg-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-500 transition-colors flex items-center justify-center opacity-50 cursor-not-allowed border-l border-white/20" title="Copy Code">
                              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                         </button>
                     </div>
@@ -280,6 +381,10 @@
         load('btn-prop-clipper', 'bookmarklets/property-clipper.js', 'Property Clipper');
         load('btn-passphrase', 'bookmarklets/passphrase-generator.js', 'Passphrase Gen');
         load('btn-pa-county', 'bookmarklets/pa-county-finder.js', 'PA County');
+        load('btn-quick-clicker', 'bookmarklets/quick-clicker.js', 'Quick Clicker V27');
+        load('btn-macro-builder', 'bookmarklets/macro-builder.js', 'Macro Builder V22');
+        load('btn-interaction-recorder', 'bookmarklets/interaction-recorder.js', 'Interaction Recorder');
+        load('btn-delayed-clicker', 'bookmarklets/delayed-clicker.js', 'Delayed Clicker V5');
     </script>
 </body>
 </html>

@@ -7,7 +7,11 @@ const files = [
   'bookmarklets/passphrase-generator.js',
   'bookmarklets/web-clipper.js',
   'bookmarklets/property-clipper.js',
-  'bookmarklets/utils.js'
+  'bookmarklets/utils.js',
+  'bookmarklets/quick-clicker.js',
+  'bookmarklets/macro-builder.js',
+  'bookmarklets/interaction-recorder.js',
+  'bookmarklets/delayed-clicker.js'
 ];
 
 if (require.main === module) {
