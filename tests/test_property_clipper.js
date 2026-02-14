@@ -6,6 +6,8 @@ const assert = require('assert');
 
 const scriptPath = path.join(__dirname, '../bookmarklets/property-clipper.js');
 const scriptCode = fs.readFileSync(scriptPath, 'utf8');
+const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
+const utilsCode = fs.readFileSync(utilsPath, 'utf8');
 
 // Create JSDOM
 const dom = new JSDOM(`<!DOCTYPE html>
@@ -63,6 +65,17 @@ global.FileReader = dom.window.FileReader;
 global.HTMLElement = dom.window.HTMLElement;
 global.HTMLCanvasElement = dom.window.HTMLCanvasElement;
 global.window.alert = console.log;
+global.Uint32Array = Uint32Array;
+
+// Mock crypto
+global.window.crypto = {
+    getRandomValues: (arr) => {
+        for (let i = 0; i < arr.length; i++) {
+            arr[i] = Math.floor(Math.random() * 256);
+        }
+        return arr;
+    }
+};
 
 // Mock URL methods
 if (!global.URL.createObjectURL) {
@@ -126,8 +139,14 @@ global.fetch = async (url) => {
     };
 };
 
-// Execute script
+// Execute scripts
 try {
+    console.log("Executing utils.js...");
+    eval(utilsCode);
+
+    // Propagate to global for the next script
+    global.BookmarkletUtils = window.BookmarkletUtils;
+
     console.log("Executing property-clipper.js...");
     eval(scriptCode);
 } catch (e) {

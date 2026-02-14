@@ -38,6 +38,24 @@
 
     w.BookmarkletUtils = {
         /**
+         * Creates a DOM element with specified properties.
+         * @param {string} tag - The tag name of the element.
+         * @param {Object} [styles={}] - The style object to apply.
+         * @param {string} [text=''] - The text content of the element.
+         * @param {HTMLElement|null} [parent=null] - The parent element to append to.
+         * @param {Object} [props={}] - Additional properties to assign to the element.
+         * @returns {HTMLElement} The created element.
+         */
+        buildElement(tag, styles = {}, text = '', parent = null, props = {}) {
+            const el = document.createElement(tag);
+            if (text) el.textContent = text;
+            Object.assign(el.style, styles);
+            Object.assign(el, props);
+            if (parent) parent.appendChild(el);
+            return /** @type {HTMLElement} */ (el);
+        },
+
+        /**
          * Cleans a string to be safe for use as a filename.
          * Truncates to 50 chars and replaces special chars with underscores.
          *
