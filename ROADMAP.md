@@ -28,4 +28,5 @@ This document tracks the status of features and tools within the Browser Toolkit
 ## Future Ideas
 
 - [ ] Performance optimizations for large DOM trees in Web Clipper.
-- [ ] Additional specialized clippers for other domains.
+- [ ] **Job Post Clipper** (Recruiter Mode): Extract job descriptions for resume tailoring.
+- [ ] **Recipe Clipper** (Chef Mode): Extract schema.org recipes for distraction-free cooking.
