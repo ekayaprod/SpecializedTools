@@ -44,11 +44,11 @@
          * @param {string} s - The input string (e.g., page title).
          * @returns {string} Safe filename string.
          */
-        sanitizeFilename: function(s) {
+        sanitizeFilename(s) {
             /* Replace non-alphanumeric characters with underscores and truncate */
             return String(s || 'export').replace(/[^a-z0-9]/gi, '_').substring(0, 50);
         },
-        downloadFile: function(filename, content, type) {
+        downloadFile(filename, content, type) {
             /* Create blob and download link */
             const blob = new Blob([content], { type: type || 'text/html' });
             const url = URL.createObjectURL(blob);
@@ -61,7 +61,7 @@
             /* Revoke URL after short delay to free memory */
             setTimeout(function() { URL.revokeObjectURL(url); }, 100);
         },
-        getRand: function(m) {
+        getRand(m) {
             if (rIdx >= BUFFER_SIZE) {
                 window.crypto.getRandomValues(r);
                 rIdx = 0;
@@ -74,7 +74,7 @@
          *
          * @param {HTMLElement} root - The root element to scan for images.
          */
-        normalizeImages: function(root) {
+        normalizeImages(root) {
             /* Basic <picture> Support */
             const pictures = root.querySelectorAll('picture');
             pictures.forEach(function(pic) {
@@ -124,7 +124,7 @@
          *
          * @param {HTMLElement} root - The root element to sanitize.
          */
-        sanitizeAttributes: function(root) {
+        sanitizeAttributes(root) {
             /* Recursively remove dangerous attributes from root and its descendants */
             const process = function(el) {
                 if (!el.attributes) return;
@@ -179,7 +179,7 @@
          * @param {HTMLElement} source - The original DOM element to read styles from.
          * @param {HTMLElement} target - The cloned/target element to apply styles to.
          */
-        inlineStyles: function(source, target) {
+        inlineStyles(source, target) {
             /* Recursively apply SAFE computed styles from source to target */
             const computed = window.getComputedStyle(source);
             if (!computed) return;
@@ -220,7 +220,7 @@
          * @param {function(number): void} [onProgress] - Callback reporting processed count.
          * @returns {Promise<void>}
          */
-        inlineStylesAsync: function(source, target, onProgress) {
+        inlineStylesAsync(source, target, onProgress) {
             return new Promise(function(resolve) {
                 const queue = [{s: source, t: target}];
                 let count = 0;
@@ -290,7 +290,7 @@
          * @param {string} html - The HTML string to convert.
          * @returns {string} The Markdown representation.
          */
-        htmlToMarkdown: function(html) {
+        htmlToMarkdown(html) {
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
 
