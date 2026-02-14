@@ -80,8 +80,12 @@
             pictures.forEach(function(pic) {
                 const img = pic.querySelector('img');
                 const source = pic.querySelector('source');
-                if (source && source.srcset && img && !img.src) {
-                    img.src = source.srcset.split(',')[0].trim().split(' ')[0];
+                if (source && source.srcset && img) {
+                    /* Check if image is missing or placeholder */
+                    const isPlaceholder = !img.src || img.src.startsWith('data:') || img.src.includes('spacer');
+                    if (isPlaceholder) {
+                         img.src = source.srcset.split(',')[0].trim().split(' ')[0];
+                    }
                 }
             });
 

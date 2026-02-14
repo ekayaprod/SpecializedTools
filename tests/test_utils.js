@@ -128,4 +128,34 @@ console.log("Running BookmarkletUtils tests...");
     console.log("✅ sanitizeFilename passed");
 }
 
+// Test 4: normalizeImages with <picture> (New Robust Test)
+{
+    console.log("Test 4: normalizeImages <picture> support");
+    const container = document.createElement('div');
+    container.innerHTML = `
+        <picture id="pic-1">
+            <source srcset="source-large.jpg">
+            <img id="pic-img-1" src="spacer.gif" alt="Picture 1">
+        </picture>
+        <picture id="pic-2">
+            <source srcset="source-missing.jpg">
+            <img id="pic-img-2" alt="Picture 2">
+        </picture>
+    `;
+    document.body.appendChild(container);
+
+    const img1 = document.getElementById('pic-img-1');
+    const img2 = document.getElementById('pic-img-2');
+
+    window.BookmarkletUtils.normalizeImages(container);
+
+    // Assertions
+    // JSDOM resolves relative URLs, so check for inclusion
+    assert.ok(img1.src.includes('source-large.jpg'), 'Picture 1: source should replace spacer img src');
+    assert.ok(img2.src.includes('source-missing.jpg'), 'Picture 2: source should fill missing img src');
+
+    document.body.removeChild(container);
+    console.log("✅ normalizeImages <picture> passed");
+}
+
 console.log("All tests passed!");
