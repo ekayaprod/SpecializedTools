@@ -1,6 +1,20 @@
 {
+  "name": "browser-toolkit",
+  "version": "1.0.0",
+  "description": "A collection of utility bookmarklets for web development and content management.",
+  "keywords": [
+    "bookmarklet",
+    "browser",
+    "automation",
+    "tools"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "test": "node test_bookmarklet_generation.js && node test_pa_county_finder.js && node tests/test_delayed_clicker.js && node tests/test_download_file.js && node tests/test_html_to_markdown.js && node tests/test_inline_styles.js && node tests/test_load_library.js && node tests/test_passphrase_generator.js && node tests/test_property_clipper.js && node tests/test_quick_clicker.js && node tests/test_sanitize.js && node tests/test_utils.js",
+    "build": "node verify_bookmarklet_generation.js"
   },
   "devDependencies": {
     "jsdom": "^28.0.0",
