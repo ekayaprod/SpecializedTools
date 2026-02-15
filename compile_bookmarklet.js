@@ -11,10 +11,21 @@
         return code;
     }
 
+    function extractDependencies(code) {
+        const deps = [];
+        // Extract @require directives from block comments
+        const regex = /\/\*+\s*@require\s+(\S+)\s*\*\//g;
+        let match;
+        while ((match = regex.exec(code)) !== null) {
+            deps.push(match[1]);
+        }
+        return deps;
+    }
+
     if (typeof module !== 'undefined' && module.exports) {
-        module.exports = { compile };
+        module.exports = { compile, extractDependencies };
     } else {
-        root.BookmarkletCompiler = { compile };
+        root.BookmarkletCompiler = { compile, extractDependencies };
     }
 
 })(typeof self !== 'undefined' ? self : this);
