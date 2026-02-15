@@ -84,7 +84,8 @@
                 '</div>' +
             '</div>';
 
-            this.q = s => this.s.querySelector(s);
+            /** @type {(s:string)=>HTMLElement} */
+            this.q = s => /** @type {HTMLElement} */ (this.s.querySelector(s));
             this.bind();
             document.body.appendChild(this.h);
         }
@@ -97,14 +98,14 @@
             this.q('#pk').onclick=()=>this.pick();
             this.q('#go').onclick=()=>this.start();
             this.q('#cn').onclick=()=>this.reset();
-            this.q('#val').onchange=e=>this.state.t1Val=e.target.value;
-            this.q('#ent').onchange=e=>this.state.pressEnter=e.target.checked;
+            /** @type {HTMLInputElement} */ (this.q('#val')).onchange=e=>this.state.t1Val=/** @type {HTMLInputElement} */ (e.target).value;
+            /** @type {HTMLInputElement} */ (this.q('#ent')).onchange=e=>this.state.pressEnter=/** @type {HTMLInputElement} */ (e.target).checked;
             this.makeDraggable(this.q('#drag'));
 
             const radios = this.s.querySelectorAll('input[name="tm_mode"]');
-            radios.forEach(r => r.onchange = (e) => {
-                this.state.timeMode = e.target.value;
-                if(e.target.value === 'delay') {
+            radios.forEach(r => /** @type {HTMLInputElement} */ (r).onchange = (e) => {
+                this.state.timeMode = /** @type {HTMLInputElement} */ (e.target).value === 'delay' ? 'delay' : 'clock';
+                if(this.state.timeMode === 'delay') {
                     this.q('#box_delay').classList.remove('hidden');
                     this.q('#box_clock').classList.add('hidden');
                 } else {
@@ -252,7 +253,7 @@
                 if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT') inp.classList.remove('hidden');
                 else inp.classList.add('hidden');
 
-                this.q('#go').disabled=false;
+                /** @type {HTMLButtonElement} */ (this.q('#go')).disabled=false;
                 this.q('#pk').style.background='#059669';
                 this.q('#pk').innerText = 'Target: '+t;
 
@@ -277,19 +278,20 @@
             let targetTime;
 
             if(this.state.timeMode === 'delay') {
-                const m = parseFloat(this.q('#mn').value)||0;
+                const m = parseFloat(/** @type {HTMLInputElement} */ (this.q('#mn')).value)||0;
                 if(m<=0) return alert('Invalid Time');
                 targetTime = Date.now() + (m*60000);
             } else {
-                const timeStr = this.q('#clk').value;
+                const timeStr = /** @type {HTMLInputElement} */ (this.q('#clk')).value;
                 if(!timeStr) return alert('Please set a clock time');
                 const [h, m] = timeStr.split(':');
                 const now = new Date();
-                targetTime = new Date();
-                targetTime.setHours(parseInt(h), parseInt(m), 0, 0);
-                if(targetTime < now) {
-                    targetTime.setDate(targetTime.getDate() + 1);
+                const d = new Date();
+                d.setHours(parseInt(h), parseInt(m), 0, 0);
+                if(d < now) {
+                    d.setDate(d.getDate() + 1);
                 }
+                targetTime = d.getTime();
             }
 
             try {
@@ -332,13 +334,14 @@
             }
 
             if(this.state.t1Val && (el.matches('input,textarea,select'))){
-                el.focus(); el.value=this.state.t1Val;
-                el.dispatchEvent(new Event('input',{bubbles:true}));
-                el.dispatchEvent(new Event('change',{bubbles:true}));
+                const inputEl = /** @type {HTMLInputElement} */ (el);
+                inputEl.focus(); inputEl.value=this.state.t1Val;
+                inputEl.dispatchEvent(new Event('input',{bubbles:true}));
+                inputEl.dispatchEvent(new Event('change',{bubbles:true}));
                 if(this.state.pressEnter){
                     const k={key:'Enter',code:'Enter',keyCode:13,which:13,bubbles:true};
-                    el.dispatchEvent(new KeyboardEvent('keydown',k));
-                    el.dispatchEvent(new KeyboardEvent('keyup',k));
+                    inputEl.dispatchEvent(new KeyboardEvent('keydown',k));
+                    inputEl.dispatchEvent(new KeyboardEvent('keyup',k));
                 }
             }
             ['mousedown','mouseup','click'].forEach(e=>el.dispatchEvent(new MouseEvent(e,{bubbles:true, cancelable:true})));
