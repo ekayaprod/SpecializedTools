@@ -53,7 +53,7 @@
                 '.mode-opt{cursor:pointer;display:flex;align-items:center;gap:4px}' +
             '</style>' +
             '<div class="box">' +
-                '<div class="row" id="drag"><b>QUICK CLICKER V27</b><span id="x" style="cursor:pointer">✕</span></div>' +
+                '<div class="row" id="drag"><b>QUICK CLICKER V27</b><button id="x" aria-label="Close" style="background:transparent;border:none;color:#e2e8f0;font-size:14px;cursor:pointer;padding:0;">✕</button></div>' +
                 '<div id="v1">' +
                     '<button id="pk">🎯 Pick Target</button>' +
                     '<div id="warn" class="hidden warn"></div>' +
@@ -88,6 +88,7 @@
             this.q = s => /** @type {HTMLElement} */ (this.s.querySelector(s));
             this.bind();
             document.body.appendChild(this.h);
+            setTimeout(() => this.q('#pk').focus(), 50);
         }
 
         /**
@@ -101,6 +102,8 @@
             /** @type {HTMLInputElement} */ (this.q('#val')).onchange=e=>this.state.t1Val=/** @type {HTMLInputElement} */ (e.target).value;
             /** @type {HTMLInputElement} */ (this.q('#ent')).onchange=e=>this.state.pressEnter=/** @type {HTMLInputElement} */ (e.target).checked;
             this.makeDraggable(this.q('#drag'));
+
+            this.h.onkeydown = (e) => { if(e.key === 'Escape') this.destroy(); };
 
             const radios = this.s.querySelectorAll('input[name="tm_mode"]');
             radios.forEach(r => /** @type {HTMLInputElement} */ (r).onchange = (e) => {
