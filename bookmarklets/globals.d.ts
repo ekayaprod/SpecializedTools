@@ -6,6 +6,7 @@ declare global {
         BookmarkletUtils: any;
         html2pdf: any;
         jspdf: any;
+        __dc_v27: any;
     }
 
     const JSZip: any;
