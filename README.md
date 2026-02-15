@@ -18,6 +18,14 @@ Passphrase Generator: Creates strong, memorable passwords using seasonal themes 
 
 PA County Finder: Look up Pennsylvania county information by ZIP code or city.
 
+Automation Tools: Advanced browser automation utilities.
+
+Quick Clicker: Single-target auto-clicker with support for delayed start, specific clock time (e.g., 3:00 PM), and text input.
+
+Macro Builder: Record complex sequences of clicks and text inputs to create a custom bookmarklet that replays them automatically.
+
+Interaction Recorder: A debugging tool that logs click targets and their attributes to help troubleshoot automation scripts.
+
 Installation
 
 1. Visit the GitHub Pages deployment of this repository (typically `https://<username>.github.io/<repo-name>`).
