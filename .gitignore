@@ -1,1 +1,4 @@
 node_modules/
+tests/__pycache__/
+tests/*.png
+tests/*.html
