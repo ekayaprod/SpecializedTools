@@ -437,13 +437,9 @@
             }
 
             /* Dynamically load html2canvas if needed */
-            if (typeof html2canvas === 'undefined') {
-                const script = document.createElement('script');
-                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-                script.integrity = 'sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H';
-                script.crossOrigin = 'anonymous';
-                script.onload = () => capturePng(contentArea, cleanTitle, btn, originalText);
-                script.onerror = () => {
+            BookmarkletUtils.loadLibrary('html2canvas', 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', 'sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H')
+                .then(() => capturePng(contentArea, cleanTitle, btn, originalText))
+                .catch(() => {
                     alert('Failed to load html2canvas for PNG export.');
                     if (btn) {
                         btn.textContent = 'Error';
@@ -456,11 +452,7 @@
                              btn.style.color = '';
                         }, 2000);
                     }
-                };
-                document.body.appendChild(script);
-            } else {
-                capturePng(contentArea, cleanTitle, btn, originalText);
-            }
+                });
         } else {
             /* HTML Default */
             const content = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + cleanTitle + '</title></head><body>' + contentArea.innerHTML + '</body></html>';

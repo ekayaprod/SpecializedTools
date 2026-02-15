@@ -1,9 +1,4 @@
 (function(w) {
-    /* Shared Random Buffer */
-    const BUFFER_SIZE = 256;
-    const r = new Uint32Array(BUFFER_SIZE);
-    let rIdx = BUFFER_SIZE;
-
     /*
      * Restricted list: Stabilize layout without breaking flexible content.
      * This whitelist ensures only safe visual styles are copied, preventing
@@ -79,12 +74,30 @@
             /* Revoke URL after short delay to free memory */
             setTimeout(function() { URL.revokeObjectURL(url); }, 100);
         },
-        getRand(m) {
-            if (rIdx >= BUFFER_SIZE) {
-                window.crypto.getRandomValues(r);
-                rIdx = 0;
-            }
-            return r[rIdx++] % m;
+        /**
+         * Loads an external script (library) dynamically if not already present.
+         *
+         * @param {string} globalVar - The global variable name to check (e.g., 'jspdf').
+         * @param {string} url - The URL of the script.
+         * @param {string} [integrity] - Optional SRI hash.
+         * @returns {Promise<void>} Resolves when loaded or already present.
+         */
+        loadLibrary(globalVar, url, integrity) {
+            return new Promise(function(resolve, reject) {
+                if (window[globalVar]) {
+                    resolve();
+                    return;
+                }
+                const script = document.createElement('script');
+                script.src = url;
+                if (integrity) {
+                    script.integrity = integrity;
+                    script.crossOrigin = 'anonymous';
+                }
+                script.onload = function() { resolve(); };
+                script.onerror = function() { reject(new Error('Failed to load ' + globalVar)); };
+                document.head.appendChild(script);
+            });
         },
         /**
          * Stabilizes images for export by resolving lazy loading attributes (data-src)
