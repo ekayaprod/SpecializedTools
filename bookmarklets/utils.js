@@ -102,52 +102,84 @@
         /**
          * Stabilizes images for export by resolving lazy loading attributes (data-src)
          * and selecting the highest resolution candidate from srcset.
+         * Processes in chunks to avoid blocking the UI.
          *
          * @param {HTMLElement} root - The root element to scan for images.
+         * @param {function(number): void} [onProgress] - Callback reporting processed count.
+         * @returns {Promise<void>}
          */
-        normalizeImages(root) {
-            /* Basic <picture> Support */
-            const pictures = root.querySelectorAll('picture');
-            pictures.forEach(function(pic) {
-                const img = pic.querySelector('img');
-                const source = pic.querySelector('source');
-                if (source && source.srcset && img) {
-                    /* Check if image is missing or placeholder */
-                    const isPlaceholder = !img.src || img.src.startsWith('data:') || img.src.includes('spacer');
-                    if (isPlaceholder) {
-                         img.src = source.srcset.split(',')[0].trim().split(' ')[0];
+        normalizeImages(root, onProgress) {
+            return new Promise(function(resolve) {
+                /* Collect all items to process */
+                const pictures = Array.prototype.slice.call(root.querySelectorAll('picture'));
+                const imgs = Array.prototype.slice.call(root.querySelectorAll('img'));
+
+                /* Combine into a single queue */
+                const queue = pictures.concat(imgs);
+                let count = 0;
+                const CHUNK_SIZE = 50;
+
+                function processChunk() {
+                    const startTime = performance.now();
+
+                    while (queue.length > 0) {
+                        const el = queue.shift();
+
+                        if (el.tagName.toLowerCase() === 'picture') {
+                            const pic = el;
+                            const img = pic.querySelector('img');
+                            const source = pic.querySelector('source');
+                            if (source && source.srcset && img) {
+                                /* Check if image is missing or placeholder */
+                                const isPlaceholder = !img.src || img.src.startsWith('data:') || img.src.includes('spacer');
+                                if (isPlaceholder) {
+                                     img.src = source.srcset.split(',')[0].trim().split(' ')[0];
+                                }
+                            }
+                        } else {
+                            const img = el;
+                            /* 1. Resolve Lazy Loading */
+                            if (img.dataset.src) img.src = img.dataset.src;
+                            if (img.dataset.lazySrc) img.src = img.dataset.lazySrc;
+
+                            /* Check for placeholder or missing src */
+                            const isPlaceholder = !img.src || img.src.startsWith('data:') || img.src.includes('spacer');
+                            if (isPlaceholder && img.srcset) {
+                                const parts = img.srcset.split(',');
+                                if(parts.length > 0) {
+                                     /* Pick the last candidate (usually highest res) */
+                                     const bestCandidate = parts[parts.length - 1].trim().split(' ')[0];
+                                     if(bestCandidate) img.src = bestCandidate;
+                                }
+                            }
+
+                            /* 2. Remove lazy loading attributes to force render */
+                            img.removeAttribute('loading');
+
+                            /* 3. Stabilize Dimensions: remove specific width/height attrs to let CSS max-width work */
+                            img.removeAttribute('width');
+                            img.removeAttribute('height');
+                            img.style.maxWidth = '100%';
+                            img.style.height = 'auto';
+                            img.style.display = 'block';
+                        }
+
+                        count++;
+
+                        /* Yield if chunk size reached or time exceeded */
+                        if (count % CHUNK_SIZE === 0 || (performance.now() - startTime) > 12) {
+                             if (onProgress) onProgress(count);
+                             setTimeout(processChunk, 0);
+                             return;
+                        }
                     }
+
+                    if (onProgress) onProgress(count);
+                    resolve();
                 }
+
+                processChunk();
             });
-
-            const imgs = root.querySelectorAll('img');
-            for (let i = 0; i < imgs.length; i++) {
-                const img = imgs[i];
-                /* 1. Resolve Lazy Loading */
-                if (img.dataset.src) img.src = img.dataset.src;
-                if (img.dataset.lazySrc) img.src = img.dataset.lazySrc;
-
-                /* Check for placeholder or missing src */
-                const isPlaceholder = !img.src || img.src.startsWith('data:') || img.src.includes('spacer');
-                if (isPlaceholder && img.srcset) {
-                    const parts = img.srcset.split(',');
-                    if(parts.length > 0) {
-                         /* Pick the last candidate (usually highest res) */
-                         const bestCandidate = parts[parts.length - 1].trim().split(' ')[0];
-                         if(bestCandidate) img.src = bestCandidate;
-                    }
-                }
-
-                /* 2. Remove lazy loading attributes to force render */
-                img.removeAttribute('loading');
-
-                /* 3. Stabilize Dimensions: remove specific width/height attrs to let CSS max-width work */
-                img.removeAttribute('width');
-                img.removeAttribute('height');
-                img.style.maxWidth = '100%';
-                img.style.height = 'auto';
-                img.style.display = 'block';
-            }
         },
         /**
          * Recursively removes dangerous attributes (event handlers, javascript: URIs)
