@@ -42,6 +42,20 @@ container.innerHTML = `
     <svg><a id="xlink-href" xlink:href="javascript:alert(1)">Link</a></svg>
     <div id="style-div" style="background-image: url(javascript:alert(1))">Style</div>
     <div id="style-safe" style="color: red">Safe Style</div>
+
+    <!-- Security Hardening Tests -->
+    <a id="tab-href" href="java\tscript:alert(1)">Tab Link</a>
+    <img id="srcset-img" srcset="foo.jpg 1x, javascript:alert(1) 2x">
+    <iframe id="svg-iframe" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxzY3JpcHQ+YWxlcnQoMSk8L3NjcmlwdD48L3N2Zz4="></iframe>
+    <iframe id="png-iframe" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAFhAJ/wlseKgAAAABJRU5ErkJggg=="></iframe>
+    <img id="svg-img" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxzY3JpcHQ+YWxlcnQoMSk8L3NjcmlwdD48L3N2Zz4=">
+    <img id="valid-png" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAFhAJ/wlseKgAAAABJRU5ErkJggg==">
+
+    <!-- Mixed Case Tests -->
+    <a id="mixed-href" href="JaVaScRiPt:alert(1)">Mixed Case JS</a>
+    <a id="mixed-vb" href="VbScRiPt:alert(1)">Mixed Case VB</a>
+    <iframe id="mixed-data" src="DaTa:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxzY3JpcHQ+YWxlcnQoMSk8L3NjcmlwdD48L3N2Zz4="></iframe>
+    <img id="mixed-valid" src="DaTa:ImAgE/PnG;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAFhAJ/wlseKgAAAABJRU5ErkJggg==">
 `;
 document.body.appendChild(container);
 
@@ -72,5 +86,19 @@ assert.ok(!styleVal || !styleVal.includes('javascript:'), 'javascript: in style 
 
 const styleSafe = document.getElementById('style-safe');
 assert.ok(styleSafe.getAttribute('style').includes('color: red'), 'Safe style should be preserved');
+
+// Security Hardening Assertions
+assert.ok(!document.getElementById('tab-href').hasAttribute('href'), 'java\\tscript: href should be removed');
+assert.ok(!document.getElementById('srcset-img').hasAttribute('srcset'), 'srcset with javascript: should be removed');
+assert.ok(!document.getElementById('svg-iframe').hasAttribute('src'), 'data:image/svg+xml in iframe should be removed');
+assert.ok(!document.getElementById('png-iframe').hasAttribute('src'), 'data:image/png in iframe should be removed (only allowed on image tags)');
+assert.ok(!document.getElementById('svg-img').hasAttribute('src'), 'data:image/svg+xml in img should be removed');
+assert.ok(document.getElementById('valid-png').hasAttribute('src'), 'data:image/png in img should be preserved');
+
+// Mixed Case Assertions
+assert.ok(!document.getElementById('mixed-href').hasAttribute('href'), 'Mixed case javascript: href should be removed');
+assert.ok(!document.getElementById('mixed-vb').hasAttribute('href'), 'Mixed case vbscript: href should be removed');
+assert.ok(!document.getElementById('mixed-data').hasAttribute('src'), 'Mixed case data:image/svg+xml should be removed');
+assert.ok(document.getElementById('mixed-valid').hasAttribute('src'), 'Mixed case valid data:image/png should be preserved');
 
 console.log("✅ sanitizeAttributes passed");
