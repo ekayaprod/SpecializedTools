@@ -1,0 +1,5 @@
+Loading http://localhost:8000/index.html
+Button text updated.
+✅ href starts with javascript:
+✅ utils.js injected (verified in decoded href)
+Screenshot saved to verification/index_verified.png

@@ -5,15 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Browser Toolkit</title>
     <!-- Preload bookmarklet scripts to improve perceived load time -->
-    <link rel="preload" href="bookmarklets/utils.js" as="fetch" crossorigin>
-    <link rel="preload" href="bookmarklets/web-clipper.js" as="fetch" crossorigin>
-    <link rel="preload" href="bookmarklets/property-clipper.js" as="fetch" crossorigin>
-    <link rel="preload" href="bookmarklets/passphrase-generator.js" as="fetch" crossorigin>
-    <link rel="preload" href="bookmarklets/pa-county-finder.js" as="fetch" crossorigin>
-    <link rel="preload" href="bookmarklets/quick-clicker.js" as="fetch" crossorigin>
-    <link rel="preload" href="bookmarklets/macro-builder.js" as="fetch" crossorigin>
-    <link rel="preload" href="bookmarklets/interaction-recorder.js" as="fetch" crossorigin>
-    <link rel="preload" href="bookmarklets/delayed-clicker.js" as="fetch" crossorigin>
+    <link rel="preload" href="dist/web-clipper.js" as="fetch" crossorigin>
+    <link rel="preload" href="dist/property-clipper.js" as="fetch" crossorigin>
+    <link rel="preload" href="dist/passphrase-generator.js" as="fetch" crossorigin>
+    <link rel="preload" href="dist/pa-county-finder.js" as="fetch" crossorigin>
+    <link rel="preload" href="dist/quick-clicker.js" as="fetch" crossorigin>
+    <link rel="preload" href="dist/macro-builder.js" as="fetch" crossorigin>
+    <link rel="preload" href="dist/interaction-recorder.js" as="fetch" crossorigin>
+    <link rel="preload" href="dist/delayed-clicker.js" as="fetch" crossorigin>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -251,7 +250,6 @@
     <!-- Toast Container -->
     <div id="toast-container" class="fixed bottom-5 right-5 flex flex-col gap-3 z-50" aria-live="polite" aria-atomic="true"></div>
 
-    <script src="compile_bookmarklet.js"></script>
     <script>
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
@@ -276,22 +274,6 @@
                 toast.classList.add('toast-exit');
                 toast.addEventListener('animationend', () => toast.remove());
             }, 3000);
-        }
-
-        let utilsPromise = null;
-        function getUtilsCode() {
-            if (utilsPromise) return utilsPromise;
-            utilsPromise = fetch('bookmarklets/utils.js')
-                .then(res => {
-                    if (!res.ok) throw new Error('Failed to load utils');
-                    return res.text();
-                })
-                .catch(e => {
-                    console.error('Error loading utils', e);
-                    utilsPromise = null;
-                    return '';
-                });
-            return utilsPromise;
         }
 
         function animateCopyButton(btn) {
@@ -325,18 +307,7 @@
             try {
                 const res = await fetch(file);
                 if (!res.ok) throw new Error('Failed');
-                let code = await res.text();
-
-                // Inject shared utils via @require directive
-                const deps = BookmarkletCompiler.extractDependencies(code);
-                if (deps.includes('utils.js')) {
-                    const utils = await getUtilsCode();
-                    code = utils + '\n' + code;
-                }
-
-                // --- SAFE BOOKMARKLET COMPILATION ---
-                // Uses shared compilation logic (compile_bookmarklet.js) to prevent drift
-                code = BookmarkletCompiler.compile(code);
+                const code = await res.text();
 
                 // 3. Encode URI (Handles the newlines via %0A)
                 const href = `javascript:${encodeURIComponent(code)}`;
@@ -378,14 +349,14 @@
         }
 
         // Execute immediately since script is at end of body
-        load('btn-web-clipper', 'bookmarklets/web-clipper.js', 'Web Clipper'); // Renamed
-        load('btn-prop-clipper', 'bookmarklets/property-clipper.js', 'Property Clipper');
-        load('btn-passphrase', 'bookmarklets/passphrase-generator.js', 'Passphrase Gen');
-        load('btn-pa-county', 'bookmarklets/pa-county-finder.js', 'PA County');
-        load('btn-quick-clicker', 'bookmarklets/quick-clicker.js', 'Quick Clicker V27');
-        load('btn-macro-builder', 'bookmarklets/macro-builder.js', 'Macro Builder V22');
-        load('btn-interaction-recorder', 'bookmarklets/interaction-recorder.js', 'Interaction Recorder');
-        load('btn-delayed-clicker', 'bookmarklets/delayed-clicker.js', 'Delayed Clicker V5');
+        load('btn-web-clipper', 'dist/web-clipper.js', 'Web Clipper'); // Renamed
+        load('btn-prop-clipper', 'dist/property-clipper.js', 'Property Clipper');
+        load('btn-passphrase', 'dist/passphrase-generator.js', 'Passphrase Gen');
+        load('btn-pa-county', 'dist/pa-county-finder.js', 'PA County');
+        load('btn-quick-clicker', 'dist/quick-clicker.js', 'Quick Clicker V27');
+        load('btn-macro-builder', 'dist/macro-builder.js', 'Macro Builder V22');
+        load('btn-interaction-recorder', 'dist/interaction-recorder.js', 'Interaction Recorder');
+        load('btn-delayed-clicker', 'dist/delayed-clicker.js', 'Delayed Clicker V5');
     </script>
 </body>
 </html>
