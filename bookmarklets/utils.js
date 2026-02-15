@@ -208,13 +208,24 @@
                     else if (lowerName === 'srcdoc') {
                         el.removeAttribute(name);
                     }
-                    /* 3. Malicious URIs (javascript:, vbscript:, data: except images) */
-                    else if (lowerName === 'href' || lowerName === 'src' || lowerName === 'action' || lowerName === 'data' || lowerName === 'formaction' || lowerName === 'poster' || lowerName === 'xlink:href') {
-                        if (val.startsWith('javascript:') || val.startsWith('vbscript:')) {
+                    /* 3. Malicious URIs (javascript:, vbscript:, data: strict check) */
+                    else if (['href', 'src', 'action', 'data', 'formaction', 'poster', 'xlink:href', 'srcset'].includes(lowerName)) {
+                        /* Remove all whitespace to prevent bypasses like 'java\tscript:' */
+                        const checkVal = val.replace(/\s+/g, '').toLowerCase();
+                        const isSrcset = lowerName === 'srcset';
+
+                        if (checkVal.startsWith('javascript:') || checkVal.startsWith('vbscript:') || (isSrcset && (checkVal.includes('javascript:') || checkVal.includes('vbscript:')))) {
                             el.removeAttribute(name);
                         }
-                        else if (val.startsWith('data:') && !val.startsWith('data:image/')) {
-                            el.removeAttribute(name);
+                        else if (checkVal.startsWith('data:')) {
+                            /* Only allow data:image/ (excluding SVG) on specific image tags */
+                            const isImageTag = ['img', 'source', 'picture'].includes(el.tagName.toLowerCase());
+                            const isImageMime = checkVal.startsWith('data:image/');
+                            const isSvg = checkVal.includes('svg+xml');
+
+                            if (!isImageTag || !isImageMime || isSvg) {
+                                el.removeAttribute(name);
+                            }
                         }
                     }
                     /* 4. Style Attribute (check for javascript: or expression) */
