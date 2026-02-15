@@ -353,6 +353,9 @@
         const style = document.createElement('style');
         style.textContent = '#' + CONFIG.overlayId + '{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:999999;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif;}' +
             '#' + CONFIG.modalId + '{background:white;width:80%;max-width:900px;max-height:90vh;display:flex;flex-direction:column;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,0.5);overflow:hidden;}' +
+            '@keyframes wc-fade-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }' +
+            '.wc-animate-in { animation: wc-fade-in 0.2s ease-out forwards; }' +
+            '@media (prefers-reduced-motion: reduce) { .wc-animate-in { animation: none; } }' +
             '.wc-header{padding:16px 24px;border-bottom:1px solid #eee;background:#fff;color:#333;}' +
             '.wc-content{padding:24px;overflow-y:auto;flex-grow:1;min-height:200px;outline:none;color:#000;line-height:1.6;background:#fff;}' +
             '.wc-content h1,.wc-content h2,.wc-content h3{margin-top:0;}' +
@@ -362,6 +365,9 @@
             '#' + CONFIG.modalId + ' button:hover{background:#f3f4f6;}' +
             '#' + CONFIG.modalId + ' button.primary{background:#2563eb;color:white;border:none;}' +
             '#' + CONFIG.modalId + ' button.primary:hover{background:#1d4ed8;}';
+
+        /* Apply animation class */
+        modal.classList.add('wc-animate-in');
 
         overlay.appendChild(style);
         document.body.appendChild(overlay);

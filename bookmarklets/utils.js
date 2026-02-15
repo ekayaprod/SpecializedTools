@@ -264,7 +264,8 @@
                     const startTime = performance.now();
 
                     while (queue.length > 0) {
-                        const item = queue.shift();
+                        /* OPTIMIZATION: Use pop() (DFS) instead of shift() (BFS) to avoid O(N) array re-indexing */
+                        const item = queue.pop();
                         const s = item.s;
                         const t = item.t;
 
@@ -289,7 +290,8 @@
                         /* Add children to queue */
                         const sourceChildren = s.children;
                         const targetChildren = t.children;
-                        for (let i = 0; i < sourceChildren.length; i++) {
+                        /* Use reverse loop for DFS to maintain visual order in stack */
+                        for (let i = sourceChildren.length - 1; i >= 0; i--) {
                             if (targetChildren[i]) {
                                 queue.push({s: /** @type {HTMLElement} */ (sourceChildren[i]), t: /** @type {HTMLElement} */ (targetChildren[i])});
                             }
