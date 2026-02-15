@@ -533,8 +533,6 @@ EXPECTED DELIVERABLES:
             WizardUI.renderLoading('Initializing...');
 
             // Capture raw output
-            console.log('Generating PDF with', Wizard.state.selectedPhotos.length, 'photos');
-            
             PDFGenerator.create(Wizard.state.data, Wizard.state.selectedPhotos, Wizard.state.prompt, WizardUI.updateStatus)
                 .then(() => {
                     closeModal();

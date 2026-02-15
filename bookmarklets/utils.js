@@ -31,6 +31,40 @@
         'transform', 'transform-origin', 'transform-style'
     ];
 
+    /* Sanitization Helpers */
+    function isEventAttribute(name) {
+        return name.toLowerCase().startsWith('on');
+    }
+
+    function isUnsafeAttribute(name) {
+        const lower = name.toLowerCase();
+        return ['href', 'src', 'action', 'data', 'formaction', 'poster', 'xlink:href', 'srcset'].includes(lower);
+    }
+
+    function containsMaliciousProtocol(value, isSrcset) {
+        const checkVal = value.replace(/\s+/g, '').toLowerCase();
+        if (isSrcset) {
+            return checkVal.includes('javascript:') || checkVal.includes('vbscript:');
+        }
+        return checkVal.startsWith('javascript:') || checkVal.startsWith('vbscript:');
+    }
+
+    function isValidDataUri(tagName, value) {
+        const checkVal = value.replace(/\s+/g, '').toLowerCase();
+        if (!checkVal.startsWith('data:')) return true;
+
+        const isImageTag = ['img', 'source', 'picture'].includes(tagName.toLowerCase());
+        const isImageMime = checkVal.startsWith('data:image/');
+        const isSvg = checkVal.includes('svg+xml');
+
+        return isImageTag && isImageMime && !isSvg;
+    }
+
+    function isSafeStyle(value) {
+        const checkVal = value.replace(/\s+/g, '').toLowerCase();
+        return !(checkVal.includes('javascript:') || checkVal.includes('vbscript:') || checkVal.includes('expression('));
+    }
+
     w.BookmarkletUtils = {
         /**
          * Creates a DOM element with specified properties.
@@ -201,7 +235,7 @@
                     const val = (el.getAttribute(name) || '').toLowerCase().trim();
 
                     /* 1. Event Handlers (on*) */
-                    if (lowerName.startsWith('on')) {
+                    if (isEventAttribute(lowerName)) {
                         el.removeAttribute(name);
                     }
                     /* 2. SRCDOC (Always remove to prevent iframe injection) */
@@ -209,30 +243,18 @@
                         el.removeAttribute(name);
                     }
                     /* 3. Malicious URIs (javascript:, vbscript:, data: strict check) */
-                    else if (['href', 'src', 'action', 'data', 'formaction', 'poster', 'xlink:href', 'srcset'].includes(lowerName)) {
-                        /* Remove all whitespace to prevent bypasses like 'java\tscript:' */
-                        const checkVal = val.replace(/\s+/g, '').toLowerCase();
+                    else if (isUnsafeAttribute(lowerName)) {
                         const isSrcset = lowerName === 'srcset';
-
-                        if (checkVal.startsWith('javascript:') || checkVal.startsWith('vbscript:') || (isSrcset && (checkVal.includes('javascript:') || checkVal.includes('vbscript:')))) {
+                        if (containsMaliciousProtocol(val, isSrcset)) {
                             el.removeAttribute(name);
                         }
-                        else if (checkVal.startsWith('data:')) {
-                            /* Only allow data:image/ (excluding SVG) on specific image tags */
-                            const isImageTag = ['img', 'source', 'picture'].includes(el.tagName.toLowerCase());
-                            const isImageMime = checkVal.startsWith('data:image/');
-                            const isSvg = checkVal.includes('svg+xml');
-
-                            if (!isImageTag || !isImageMime || isSvg) {
-                                el.removeAttribute(name);
-                            }
+                        else if (!isValidDataUri(el.tagName, val)) {
+                            el.removeAttribute(name);
                         }
                     }
                     /* 4. Style Attribute (check for javascript: or expression) */
                     else if (lowerName === 'style') {
-                        /* Remove all whitespace to catch obfuscation like 'java script:' */
-                        const checkVal = val.replace(/\s+/g, '');
-                        if (checkVal.includes('javascript:') || checkVal.includes('vbscript:') || checkVal.includes('expression(')) {
+                        if (!isSafeStyle(val)) {
                             el.removeAttribute(name);
                         }
                     }
