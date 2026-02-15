@@ -96,25 +96,25 @@
 
             anl(){
                 const q=s=>this.s.querySelector(s);
-                q('#pk').innerText = 'Target: ' + this.el.tagName;
-                q('#pk').style.background = '#2ea44f';
-                q('#go').disabled = false;
+                /** @type {HTMLElement} */ (q('#pk')).innerText = 'Target: ' + this.el.tagName;
+                /** @type {HTMLElement} */ (q('#pk')).style.background = '#2ea44f';
+                /** @type {HTMLButtonElement} */ (q('#go')).disabled = false;
 
                 if(this.el.tagName === 'SELECT'){
                     q('#so').classList.remove('hd');
-                    const sd=q('#sd');
+                    const sd=/** @type {HTMLSelectElement} */ (q('#sd'));
                     sd.innerHTML='';
-                    Array.from(this.el.options).forEach(o=>sd.add(new Option(o.text,o.value)));
-                    sd.value=this.el.value;
-                    this.val=this.el.value;
-                    sd.onchange=e=>this.val=e.target.value;
+                    Array.from(/** @type {HTMLSelectElement} */ (this.el).options).forEach(o=>sd.add(new Option(o.text,o.value)));
+                    sd.value=/** @type {HTMLSelectElement} */ (this.el).value;
+                    this.val=/** @type {HTMLSelectElement} */ (this.el).value;
+                    sd.onchange=e=>this.val=/** @type {HTMLSelectElement} */ (e.target).value;
                 } else {
                     q('#so').classList.add('hd');
                 }
             }
 
             start(){
-                const min = parseFloat(this.s.querySelector('#mn').value)||0;
+                const min = parseFloat(/** @type {HTMLInputElement} */ (this.s.querySelector('#mn')).value)||0;
                 const end = Date.now() + (min*60000);
                 this.s.querySelector('#p1').classList.add('hd');
                 this.s.querySelector('#p2').classList.remove('hd');
@@ -124,7 +124,7 @@
                     if(r<=0) { this.exec(); return; }
                     const m = Math.floor(r/60000).toString().padStart(2,'0');
                     const s = Math.floor((r%60000)/1000).toString().padStart(2,'0');
-                    this.s.querySelector('#cd').innerText = m+':'+s;
+                    /** @type {HTMLElement} */ (this.s.querySelector('#cd')).innerText = m+':'+s;
                 }, 1000);
             }
 
@@ -132,15 +132,15 @@
                 clearInterval(this.tm);
                 this.s.querySelector('#p1').classList.remove('hd');
                 this.s.querySelector('#p2').classList.add('hd');
-                this.s.querySelector('#cd').innerText='00:00:00';
+                /** @type {HTMLElement} */ (this.s.querySelector('#cd')).innerText='00:00:00';
             }
 
             exec(){
                 clearInterval(this.tm);
-                this.s.querySelector('#cd').innerText='DONE';
+                /** @type {HTMLElement} */ (this.s.querySelector('#cd')).innerText='DONE';
                 try {
                     if(this.el.tagName==='SELECT'){
-                        this.el.value=this.val;
+                        /** @type {HTMLSelectElement} */ (this.el).value=this.val;
                         this.el.dispatchEvent(new Event('input',{bubbles:true}));
                         this.el.dispatchEvent(new Event('change',{bubbles:true}));
                     } else {
