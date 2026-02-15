@@ -96,18 +96,18 @@
 
             anl(){
                 const q=s=>this.s.querySelector(s);
-                q('#pk').innerText = 'Target: ' + this.el.tagName;
-                q('#pk').style.background = '#2ea44f';
-                q('#go').disabled = false;
+                /** @type {HTMLElement} */ (q('#pk')).innerText = 'Target: ' + this.el.tagName;
+                /** @type {HTMLElement} */ (q('#pk')).style.background = '#2ea44f';
+                /** @type {HTMLButtonElement} */ (q('#go')).disabled = false;
 
                 if(this.el.tagName === 'SELECT'){
                     q('#so').classList.remove('hd');
-                    const sd=q('#sd');
+                    const sd=/** @type {HTMLSelectElement} */ (q('#sd'));
                     sd.innerHTML='';
-                    Array.from(this.el.options).forEach(o=>sd.add(new Option(o.text,o.value)));
-                    sd.value=this.el.value;
-                    this.val=this.el.value;
-                    sd.onchange=e=>this.val=e.target.value;
+                    Array.from(/** @type {HTMLSelectElement} */ (this.el).options).forEach(o=>sd.add(new Option(o.text,o.value)));
+                    sd.value=/** @type {HTMLSelectElement} */ (this.el).value;
+                    this.val=/** @type {HTMLSelectElement} */ (this.el).value;
+                    sd.onchange=e=>this.val=/** @type {HTMLSelectElement} */ (e.target).value;
                 } else {
                     q('#so').classList.add('hd');
                 }
@@ -140,7 +140,7 @@
                 /** @type {HTMLElement} */ (this.s.querySelector('#cd')).innerText='DONE';
                 try {
                     if(this.el.tagName==='SELECT'){
-                        this.el.value=this.val;
+                        /** @type {HTMLSelectElement} */ (this.el).value=this.val;
                         this.el.dispatchEvent(new Event('input',{bubbles:true}));
                         this.el.dispatchEvent(new Event('change',{bubbles:true}));
                     } else {
