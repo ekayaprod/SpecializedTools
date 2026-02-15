@@ -327,8 +327,9 @@
                 if (!res.ok) throw new Error('Failed');
                 let code = await res.text();
 
-                // Inject shared utils for specific bookmarklets
-                if (file.includes('web-clipper.js') || file.includes('property-clipper.js') || file.includes('passphrase-generator.js')) {
+                // Inject shared utils via @require directive
+                const deps = BookmarkletCompiler.extractDependencies(code);
+                if (deps.includes('utils.js')) {
                     const utils = await getUtilsCode();
                     code = utils + '\n' + code;
                 }
