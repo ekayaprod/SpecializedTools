@@ -114,7 +114,7 @@
             }
 
             start(){
-                const min = parseFloat(this.s.querySelector('#mn').value)||0;
+                const min = parseFloat(/** @type {HTMLInputElement} */ (this.s.querySelector('#mn')).value)||0;
                 const end = Date.now() + (min*60000);
                 this.s.querySelector('#p1').classList.add('hd');
                 this.s.querySelector('#p2').classList.remove('hd');
@@ -124,7 +124,7 @@
                     if(r<=0) { this.exec(); return; }
                     const m = Math.floor(r/60000).toString().padStart(2,'0');
                     const s = Math.floor((r%60000)/1000).toString().padStart(2,'0');
-                    this.s.querySelector('#cd').innerText = m+':'+s;
+                    /** @type {HTMLElement} */ (this.s.querySelector('#cd')).innerText = m+':'+s;
                 }, 1000);
             }
 
@@ -132,12 +132,12 @@
                 clearInterval(this.tm);
                 this.s.querySelector('#p1').classList.remove('hd');
                 this.s.querySelector('#p2').classList.add('hd');
-                this.s.querySelector('#cd').innerText='00:00:00';
+                /** @type {HTMLElement} */ (this.s.querySelector('#cd')).innerText='00:00:00';
             }
 
             exec(){
                 clearInterval(this.tm);
-                this.s.querySelector('#cd').innerText='DONE';
+                /** @type {HTMLElement} */ (this.s.querySelector('#cd')).innerText='DONE';
                 try {
                     if(this.el.tagName==='SELECT'){
                         this.el.value=this.val;

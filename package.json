@@ -13,7 +13,7 @@
   },
   "scripts": {
     "lint": "tsc --noEmit",
-    "test": "node test_bookmarklet_generation.js && node test_pa_county_finder.js && node tests/test_delayed_clicker.js && node tests/test_download_file.js && node tests/test_html_to_markdown.js && node tests/test_inline_styles.js && node tests/test_load_library.js && node tests/test_passphrase_generator.js && node tests/test_property_clipper.js && node tests/test_quick_clicker.js && node tests/test_sanitize.js && node tests/test_utils.js",
+    "test": "node tests/test_bookmarklet_generation.js && node tests/test_delayed_clicker.js && node tests/test_download_file.js && node tests/test_html_to_markdown.js && node tests/test_inline_styles.js && node tests/test_load_library.js && node tests/test_pa_county_finder.js && node tests/test_passphrase_generator.js && node tests/test_property_clipper.js && node tests/test_quick_clicker.js && node tests/test_sanitize.js && node tests/test_utils.js",
     "build": "node verify_bookmarklet_generation.js"
   },
   "devDependencies": {

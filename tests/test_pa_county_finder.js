@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { find } = require('./bookmarklets/pa-county-finder.js');
+const { find } = require('../bookmarklets/pa-county-finder.js');
 
 console.log('Running PA County Finder Tests...');
 

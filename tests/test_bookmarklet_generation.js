@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { compile } = require('./compile_bookmarklet');
+const { compile } = require('../compile_bookmarklet');
 
 console.log('Running tests for bookmarklet generation logic...');
 
