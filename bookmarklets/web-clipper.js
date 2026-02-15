@@ -231,7 +231,7 @@
      */
     async function openEditor(element) {
         /* 1. Normalize Images IN PLACE (before cloning) to capture true sources */
-        BookmarkletUtils.normalizeImages(element);
+        await BookmarkletUtils.normalizeImages(element);
         
         /* 2. Clone node deeply */
         const clone = /** @type {HTMLElement} */ (element.cloneNode(true));
