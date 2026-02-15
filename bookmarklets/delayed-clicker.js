@@ -148,7 +148,15 @@
                             this.el.dispatchEvent(new MouseEvent(ev,{view:window,bubbles:true,cancelable:true}));
                         });
                     }
-                } catch(e){ console.error(e); }
+                } catch(e){
+                    console.error("Delayed click execution failed", {
+                        tagName: this.el ? this.el.tagName : 'null',
+                        id: this.el ? this.el.id : 'null',
+                        className: this.el ? this.el.className : 'null',
+                        val: this.val,
+                        error: e
+                    });
+                }
                 setTimeout(()=>this.h.remove(), 2000);
             }
 
