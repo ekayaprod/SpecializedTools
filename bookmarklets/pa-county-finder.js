@@ -31,15 +31,6 @@
         if (/^\d{5}$/.test(c)) {
             const z = parseInt(c, 10);
 
-            /* D Ranges */
-            for (let i = 0; i < D.length; i++) {
-                const rangeStart = /** @type {number} */ (D[i][1]);
-                const rangeEnd = /** @type {number} */ (D[i][2]);
-                if (z >= rangeStart && z <= rangeEnd) {
-                    if (!results.includes(D[i][0])) results.push(D[i][0]);
-                }
-            }
-
             /* O Specifics */
             for (const city in O) {
                 const counties = O[city];
@@ -49,6 +40,20 @@
                     }
                 }
             }
+            // If found in overrides (exact match), return immediately to avoid range false positives
+            if (results.length > 0) {
+                return c + ': ' + results.join(', ');
+            }
+
+            /* D Ranges */
+            for (let i = 0; i < D.length; i++) {
+                const rangeStart = /** @type {number} */ (D[i][1]);
+                const rangeEnd = /** @type {number} */ (D[i][2]);
+                if (z >= rangeStart && z <= rangeEnd) {
+                    if (!results.includes(D[i][0])) results.push(D[i][0]);
+                }
+            }
+
             return results.length ? c + ': ' + results.join(', ') : null;
         }
 

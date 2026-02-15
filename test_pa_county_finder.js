@@ -12,15 +12,27 @@ console.log('Running PA County Finder Tests...');
     console.log(`✅ Valid ZIP ${input}`);
 }
 
-// 2. Split ZIP Code (Allegheny and Westmoreland)
-// 15085 is in both Allegheny and Westmoreland counties based on the O object.
+// 2. Split ZIP Code (Allegheny and Westmoreland) - Corrected Logic Test
+// 15085 is in Allegheny and Westmoreland. It overlaps with Beaver range (15001-15099) but is NOT in Beaver.
+// The override (O) should take precedence and exclude Beaver.
 {
     const input = '15085';
+    const expected = '15085: Allegheny, Westmoreland';
     const result = find(input);
-    assert.ok(result.includes('Allegheny'), `Result for ${input} should include Allegheny`);
-    assert.ok(result.includes('Westmoreland'), `Result for ${input} should include Westmoreland`);
-    console.log(`✅ Split ZIP ${input}`);
+    assert.strictEqual(result, expected, `Failed for input ${input}. Got: ${result}`);
+    console.log(`✅ Split ZIP ${input} (Exact Match)`);
 }
+
+// 2b. Split ZIP Code (Lehigh vs Northampton)
+// 18015 is in Lehigh (Bethlehem). It overlaps with Northampton range (18013-18109) but O says Lehigh only.
+{
+    const input = '18015';
+    const expected = '18015: Lehigh';
+    const result = find(input);
+    assert.strictEqual(result, expected, `Failed for input ${input}. Got: ${result}`);
+    console.log(`✅ Split ZIP ${input} (Exact Match)`);
+}
+
 
 // 3. Valid City (Gettysburg)
 {
