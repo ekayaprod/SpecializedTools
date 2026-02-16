@@ -31,40 +31,6 @@
         'transform', 'transform-origin', 'transform-style'
     ];
 
-    /* Sanitization Helpers */
-    function isEventAttribute(name) {
-        return name.toLowerCase().startsWith('on');
-    }
-
-    function isUnsafeAttribute(name) {
-        const lower = name.toLowerCase();
-        return ['href', 'src', 'action', 'data', 'formaction', 'poster', 'xlink:href', 'srcset'].includes(lower);
-    }
-
-    function containsMaliciousProtocol(value, isSrcset) {
-        const checkVal = value.replace(/\s+/g, '').toLowerCase();
-        if (isSrcset) {
-            return checkVal.includes('javascript:') || checkVal.includes('vbscript:');
-        }
-        return checkVal.startsWith('javascript:') || checkVal.startsWith('vbscript:');
-    }
-
-    function isValidDataUri(tagName, value) {
-        const checkVal = value.replace(/\s+/g, '').toLowerCase();
-        if (!checkVal.startsWith('data:')) return true;
-
-        const isImageTag = ['img', 'source', 'picture'].includes(tagName.toLowerCase());
-        const isImageMime = checkVal.startsWith('data:image/');
-        const isSvg = checkVal.includes('svg+xml');
-
-        return isImageTag && isImageMime && !isSvg;
-    }
-
-    function isSafeStyle(value) {
-        const checkVal = value.replace(/\s+/g, '').toLowerCase();
-        return !(checkVal.includes('javascript:') || checkVal.includes('vbscript:') || checkVal.includes('expression('));
-    }
-
     w.BookmarkletUtils = {
         /**
          * Creates a DOM element with specified properties.
@@ -232,6 +198,40 @@
          */
         sanitizeAttributes(root) {
             /* Recursively remove dangerous attributes from root and its descendants */
+            /* Sanitization Helpers */
+            function isEventAttribute(name) {
+                return name.toLowerCase().startsWith('on');
+            }
+
+            function isUnsafeAttribute(name) {
+                const lower = name.toLowerCase();
+                return ['href', 'src', 'action', 'data', 'formaction', 'poster', 'xlink:href', 'srcset'].includes(lower);
+            }
+
+            function containsMaliciousProtocol(value, isSrcset) {
+                const checkVal = value.replace(/\s+/g, '').toLowerCase();
+                if (isSrcset) {
+                    return checkVal.includes('javascript:') || checkVal.includes('vbscript:');
+                }
+                return checkVal.startsWith('javascript:') || checkVal.startsWith('vbscript:');
+            }
+
+            function isValidDataUri(tagName, value) {
+                const checkVal = value.replace(/\s+/g, '').toLowerCase();
+                if (!checkVal.startsWith('data:')) return true;
+
+                const isImageTag = ['img', 'source', 'picture'].includes(tagName.toLowerCase());
+                const isImageMime = checkVal.startsWith('data:image/');
+                const isSvg = checkVal.includes('svg+xml');
+
+                return isImageTag && isImageMime && !isSvg;
+            }
+
+            function isSafeStyle(value) {
+                const checkVal = value.replace(/\s+/g, '').toLowerCase();
+                return !(checkVal.includes('javascript:') || checkVal.includes('vbscript:') || checkVal.includes('expression('));
+            }
+
             const process = function(el) {
                 if (!el.attributes) return;
                 const attrs = [];
