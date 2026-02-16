@@ -128,7 +128,7 @@ EXPECTED DELIVERABLES:
             try {
                 const keyFacts = document.querySelectorAll('[data-testid="key-facts"] li, .key-fact-item, ul[data-testid*="detail"] li');
                 keyFacts.forEach(li => {
-                    const text = li.innerText || '';
+                    const text = /** @type {HTMLElement} */ (li).innerText || '';
                     let parts = text.includes(':') ? text.split(':') : text.split('\n');
                     parts = parts.map(s => s.trim()).filter(s => s);
                     
@@ -141,8 +141,8 @@ EXPECTED DELIVERABLES:
                     }
                 });
                 
-                if (data.address === 'Unknown Address') data.address = document.querySelector('h1')?.innerText || data.address;
-                if (data.price === 'Unknown Price') data.price = document.querySelector('[data-testid="ldp-list-price"]')?.innerText || data.price;
+                if (data.address === 'Unknown Address') data.address = /** @type {HTMLElement} */ (document.querySelector('h1'))?.innerText || data.address;
+                if (data.price === 'Unknown Price') data.price = /** @type {HTMLElement} */ (document.querySelector('[data-testid="ldp-list-price"]'))?.innerText || data.price;
                 
             } catch (e) { console.warn('DOM Extraction Warning:', e); }
 
@@ -170,9 +170,15 @@ EXPECTED DELIVERABLES:
                     ctx.drawImage(img, 0, 0, width, height);
                     try {
                         resolve({ dataUrl: canvas.toDataURL('image/jpeg', CONFIG.imgQuality), width, height, ratio: width / height });
-                    } catch (e) { resolve(null); }
+                    } catch (e) {
+                        console.warn('Image processing failed:', e);
+                        resolve(null);
+                    }
                 };
-                img.onerror = () => resolve(null);
+                img.onerror = (e) => {
+                    console.warn('Image load failed:', url, e);
+                    resolve(null);
+                };
                 img.src = url;
             });
         }
