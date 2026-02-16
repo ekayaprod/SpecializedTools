@@ -269,7 +269,7 @@
          * @returns {Promise<void>} Resolves when loaded or already present.
          */
         loadLibrary(globalVar, url, integrity) {
-            return new Promise(function(resolve, reject) {
+            return new Promise((resolve, reject) => {
                 if (window[globalVar]) {
                     resolve();
                     return;
@@ -280,8 +280,8 @@
                     script.integrity = integrity;
                     script.crossOrigin = 'anonymous';
                 }
-                script.onload = function() { resolve(); };
-                script.onerror = function() { reject(new Error('Failed to load ' + globalVar)); };
+                script.onload = () => resolve();
+                script.onerror = () => reject(new Error('Failed to load ' + globalVar));
                 document.head.appendChild(script);
             });
         },
@@ -305,11 +305,7 @@
         normalizeImages(root, onProgress) {
             return new Promise(function(resolve) {
                 /* Collect all items to process */
-                const pictures = Array.prototype.slice.call(root.querySelectorAll('picture'));
-                const imgs = Array.prototype.slice.call(root.querySelectorAll('img'));
-
-                /* Combine into a single queue */
-                const queue = pictures.concat(imgs);
+                const queue = Array.prototype.slice.call(root.querySelectorAll('picture, img'));
                 let count = 0;
                 const CHUNK_SIZE = 50;
 
