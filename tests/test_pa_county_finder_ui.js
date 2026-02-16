@@ -123,6 +123,36 @@ async function runUITest() {
         closeBtn.click();
         if (document.body.contains(overlay2)) throw new Error("Close button failed to close");
 
+        // --- Test 5: XSS Prevention ---
+        console.log("\n--- Test 5: XSS Prevention ---");
+
+        // Mock selection to be empty so input appears
+        global.window.getSelection = () => ({ toString: () => "" });
+
+        // Run script again to get fresh instance
+        eval(scriptContent);
+
+        const overlay3 = document.querySelector('.pa-overlay');
+        const card3 = overlay3.querySelector('.pa-card');
+        const input3 = card3.querySelector('.pa-input');
+        const searchBtn3 = card3.querySelector('.pa-btn-primary');
+
+        // Inject malicious payload that passes parseInt (starts with number)
+        const xssInput = '15201<img src=x onerror=alert(1)>';
+        input3.value = xssInput;
+        searchBtn3.click();
+
+        const resultDiv3 = card3.querySelector('#pa-result');
+        const resultHTML = resultDiv3.innerHTML;
+
+        // Check that HTML tags are escaped
+        if (resultHTML.includes("<img")) throw new Error("XSS vulnerability detected! Payload was not escaped.");
+        if (!resultHTML.includes("&lt;img")) throw new Error("Expected escaped HTML entities.");
+        console.log("✅ XSS payload escaped correctly");
+
+        // Clean up
+        overlay3.remove();
+
     } catch (e) {
         console.error("❌ Test Failed:", e);
         passed = false;
