@@ -196,7 +196,7 @@
                         error: err
                     });
                     this.hideLoadingOverlay();
-                    alert('Error opening editor: ' + err.message);
+                    BookmarkletUtils.showToast('Error opening editor: ' + err.message, 'error');
                 });
             }, 50);
         }
@@ -468,7 +468,7 @@
                 BookmarkletUtils.loadLibrary('html2canvas', 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', 'sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H')
                     .then(() => this.capturePng(contentArea, cleanTitle, btn, originalText))
                     .catch(() => {
-                        alert('Failed to load html2canvas for PNG export.');
+                        BookmarkletUtils.showToast('Failed to load html2canvas for PNG export.', 'error');
                         if (btn) {
                             btn.textContent = 'Error';
                             btn.style.background = '#dc3545';
@@ -527,7 +527,7 @@
                         btn.style.color = '';
                     }, 2000);
                 } else {
-                    alert('PNG export failed. Check console for details.');
+                    BookmarkletUtils.showToast('PNG export failed. Check console for details.', 'error');
                 }
             });
         }
