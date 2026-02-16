@@ -66,6 +66,12 @@ const dom = new JSDOM(`<!DOCTYPE html>
     resources: "usable"
 });
 
+// Mock Meta og:image
+const meta = dom.window.document.createElement('meta');
+meta.setAttribute('property', 'og:image');
+meta.content = 'http://example.com/hero-og.jpg';
+dom.window.document.head.appendChild(meta);
+
 global.window = dom.window;
 global.document = dom.window.document;
 global.navigator = dom.window.navigator;
@@ -138,7 +144,12 @@ const MockJsPDF = class {
     text(txt) { pdfContent.push(txt); }
     splitTextToSize(txt) { return [txt]; }
     getTextDimensions(txt) { return { w: 100, h: 10 }; }
-    addImage(dataUrl) { console.log("Image added to PDF:", dataUrl.substring(0, 30) + "..."); }
+    addImage(dataUrl) {
+        // We can't easily verify the source URL here because ImageProcessor converts it to dataUrl.
+        // But we can check if ImageProcessor was called with the correct URL if we spy on it.
+        // For now, just log.
+        console.log("Image added to PDF:", dataUrl.substring(0, 30) + "...");
+    }
     addPage() { console.log("New page added to PDF"); }
     save(filename) {
         console.log("PDF saved:", filename);

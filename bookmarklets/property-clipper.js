@@ -160,8 +160,14 @@ Calculate the final data-supported baseline value. Multiply the **Mid Comp's** p
             let data = {
                 address: 'Unknown Address', price: 'Unknown Price', specs: {},
                 financials: {}, market: {}, history: [], agents: [], description: '', features: [],
-                photoGroups: [], raw: null
+                photoGroups: [], raw: null, heroUrl: null
             };
+
+            /* Extract Hero Image (OG:IMAGE is usually most reliable) */
+            try {
+                const ogImage = document.querySelector('meta[property="og:image"]');
+                if (ogImage && ogImage.content) data.heroUrl = ogImage.content;
+            } catch (e) { console.warn('Hero Image Extraction Warning:', e); }
 
             // 1. JSON Extraction
             try {
@@ -256,11 +262,11 @@ Calculate the final data-supported baseline value. Multiply the **Mid Comp's** p
 
             // HERO IMAGE LOGIC
             let heroHtml = '';
-            if (selectedPhotos.length > 0) {
-                const hero = selectedPhotos[0];
+            const heroUrl = data.heroUrl || (selectedPhotos.length > 0 ? selectedPhotos[0].url : null);
+            if (heroUrl) {
                 heroHtml = `
                 <div class="hero-section" style="margin-bottom: 30px; border-radius: 8px; overflow: hidden; border: 1px solid #e5e7eb;">
-                    <img src="${hero.url}" alt="Hero Image" style="width: 100%; height: auto; max-height: 500px; object-fit: cover; display: block;">
+                    <img src="${heroUrl}" alt="Primary view of the property" style="width: 100%; height: auto; max-height: 500px; object-fit: cover; display: block;">
                 </div>`;
             }
 
@@ -348,10 +354,10 @@ Calculate the final data-supported baseline value. Multiply the **Mid Comp's** p
             y += 15;
 
             // HERO IMAGE (Replaces Prompt Box)
-            if (selectedPhotos.length > 0) {
+            const heroUrl = data.heroUrl || (selectedPhotos.length > 0 ? selectedPhotos[0].url : null);
+            if (heroUrl) {
                 if(statusCb) statusCb('Processing Hero Image...');
-                const hero = selectedPhotos[0];
-                const heroProcessed = await ImageProcessor.process(hero.url);
+                const heroProcessed = await ImageProcessor.process(heroUrl);
                 
                 if (heroProcessed) {
                     const heroWidth = contentWidth;
