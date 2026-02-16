@@ -37,5 +37,3 @@ Architecture
 index.html: The landing page that fetches and compiles the bookmarklets directly from the source.
 
 bookmarklets/: Source code for each tool. Edit these files to update the tools.
-
-dist/: Optional build artifacts for manual distribution. Not used by `index.html`.

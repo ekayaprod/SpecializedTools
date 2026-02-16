@@ -12,7 +12,7 @@ The `index.html` file serves as both the installer interface and the build syste
 graph TD
     %% Nodes
     Index[("🌐 index.html <br/>(Installer UI)")]
-    Compiler[("⚙️ compile_bookmarklet.js <br/>(Minifier/Packer)")]
+    Compiler[("⚙️ bookmarklet-builder.js <br/>(Minifier/Packer)")]
     Utils[("🧰 utils.js <br/>(Shared Library)")]
 
     subgraph "Content Tools"
@@ -29,10 +29,10 @@ graph TD
         DC[("⏱️ Delayed Clicker")]
     end
 
-    Verifier[("✅ verify_bookmarklet_generation.js")]
+    Verifier[("✅ test_bookmarklet_generation.js")]
 
     %% Relationships
-    Index -->|Fetches & Compiles| Compiler
+    Index -->|Loads| Compiler
     Index -->|Injects| Utils
     Index -->|Installs| WC & PC & PG & CF
     Index -->|Installs| QC & MB & IR & DC
@@ -50,5 +50,5 @@ graph TD
 
 1.  **Distribution (`index.html`)**: The entry point. It fetches source code, injects dependencies, runs the compiler, and generates the drag-and-drop bookmarklet buttons.
 2.  **Shared Library (`utils.js`)**: A collection of common functions (DOM manipulation, sanitation, Markdown conversion) used by content-heavy bookmarklets.
-3.  **Compiler (`compile_bookmarklet.js`)**: A utility that strips comments and formats code for use in `javascript:` URIs.
-4.  **Verification (`verify_bookmarklet_generation.js`)**: A CI/CD script that ensures all bookmarklets compile correctly and adhere to safety standards (e.g., no single-line comments).
+3.  **Compiler (`bookmarklet-builder.js`)**: A utility that strips comments and formats code for use in `javascript:` URIs.
+4.  **Verification (`test_bookmarklet_generation.js`)**: A CI/CD script that ensures all bookmarklets compile correctly and adhere to safety standards (e.g., no single-line comments).
