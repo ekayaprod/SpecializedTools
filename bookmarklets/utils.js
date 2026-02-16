@@ -74,6 +74,16 @@
          * @param {HTMLElement|null} [parent=null] - The parent element to append to.
          * @param {Object} [props={}] - Additional properties to assign to the element.
          * @returns {HTMLElement} The created element.
+         *
+         * @example
+         * const btn = BookmarkletUtils.buildElement('button', {
+         *   backgroundColor: 'blue',
+         *   color: 'white',
+         *   padding: '10px'
+         * }, 'Click Me', document.body, {
+         *   id: 'my-btn',
+         *   onclick: () => alert('Clicked!')
+         * });
          */
         buildElement(tag, styles, text, parent, props) {
             const el = document.createElement(tag);
@@ -238,6 +248,14 @@
          * @param {HTMLElement} root - The root element to scan for images.
          * @param {function(number): void} [onProgress] - Callback reporting processed count.
          * @returns {Promise<void>}
+         *
+         * @example
+         * const container = document.getElementById('content');
+         * BookmarkletUtils.normalizeImages(container, (count) => {
+         *   console.log(`Processed ${count} images...`);
+         * }).then(() => {
+         *   console.log('All images normalized!');
+         * });
          */
         normalizeImages(root, onProgress) {
             return new Promise(function(resolve) {
@@ -451,6 +469,14 @@
          *
          * @param {string} html - The HTML string to convert.
          * @returns {string} The Markdown representation.
+         *
+         * @example
+         * const html = '<h1>Title</h1><p>Check <a href="https://example.com">this</a>.</p>';
+         * const md = BookmarkletUtils.htmlToMarkdown(html);
+         * // Returns:
+         * // "# Title"
+         * // ""
+         * // "Check [this](https://example.com)."
          */
         htmlToMarkdown(html) {
             const parser = new DOMParser();
