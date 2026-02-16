@@ -381,10 +381,9 @@ doc.save(`${data.address || 'Property_Report'}.pdf`);
 }
 };
 const Wizard = {
-state: { data: null, promptText: '', step: 0, selectedPhotos: [], format: 'pdf' },
-init: (data, promptText, format) => {
+state: { data: null, step: 0, selectedPhotos: [], format: 'pdf' },
+init: (data, format) => {
 Wizard.state.data = data;
-Wizard.state.promptText = promptText;
 Wizard.state.format = format;
 Wizard.state.selectedPhotos = [];
 Wizard.state.step = 0;
@@ -474,7 +473,7 @@ const htmlBtn = buildElement('button', { padding: '10px 15px', background: '#10b
 const pdfBtn = buildElement('button', { padding: '10px 15px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }, 'Generate PDF', rightGroup);
 // Handlers
 const launchWizard = (fmt) => {
-Wizard.init(data, txtArea.value, fmt);
+Wizard.init(data, fmt);
 };
 cancelBtn.onclick = closeModal;
 htmlBtn.onclick = () => launchWizard('html');
