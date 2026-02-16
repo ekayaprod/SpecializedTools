@@ -118,6 +118,7 @@ global.Image = MockImage;
 
 // Mock jsPDF
 let pdfSaved = false;
+let pdfSavedFilename = '';
 let pdfContent = [];
 const MockJsPDF = class {
     constructor(opts) {
@@ -141,6 +142,7 @@ const MockJsPDF = class {
     save(filename) {
         console.log("PDF saved:", filename);
         pdfSaved = true;
+        pdfSavedFilename = filename;
     }
 };
 
@@ -221,7 +223,23 @@ async function runTest() {
 
     if (pdfSaved) {
         console.log("✅ PDF Generation successful (save() called).");
-        // Verify prompt content
+        // Verify Filename (regex: FirstLine_YYYYMMDD-HHmm.pdf)
+        // Mock date logic might make it hard to predict exact time, but we can regex structure.
+        // Address: "123 Main St, Anytown, CA 90210" -> "123_Main_St"
+        // Pattern: /^123_Main_St_\d{8}-\d{4}\.pdf$/
+        // But since we can't easily access the saved filename from `runTest` scope unless we hook the MockJsPDF.save,
+        // let's rely on the console log from the Mock.
+        // Or update MockJsPDF to store the last saved filename.
+
+        // Verify filename structure
+        const filenameRegex = /^123_Main_St_\d{8}-\d{4}\.pdf$/;
+        if (filenameRegex.test(pdfSavedFilename)) {
+            console.log(`✅ Filename format correct: ${pdfSavedFilename}`);
+        } else {
+            console.error(`❌ Filename format INCORRECT: ${pdfSavedFilename}`);
+            process.exit(1);
+        }
+
         const flatContent = pdfContent.flat(Infinity).join(' ');
         // Check for Description (Prompt is no longer included in PDF, replaced by Hero Image)
         if (flatContent.includes('Great house with many features')) {

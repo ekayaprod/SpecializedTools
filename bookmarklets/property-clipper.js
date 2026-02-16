@@ -73,6 +73,20 @@ Calculate the final data-supported baseline value. Multiply the **Mid Comp's** p
 
     const formatCurrency = (val) => (val != null) ? '$' + Number(val).toLocaleString() : 'N/A';
 
+    const generateFilename = (address) => {
+        // Extract first line (e.g. "123 Main St" from "123 Main St, City, ST 12345")
+        let firstLine = (address || 'Property_Report').split(',')[0].trim();
+        // Sanitize: replace spaces/slashes with underscores, remove special chars
+        firstLine = firstLine.replace(/[\s/]/g, '_').replace(/[^a-zA-Z0-9_\-]/g, '');
+
+        // Compact Timestamp: YYYYMMDD-HHmm
+        const now = new Date();
+        const pad = (n) => String(n).padStart(2, '0');
+        const ts = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
+
+        return `${firstLine}_${ts}`;
+    };
+
     const getFullPrompt = (key, data) => {
         const p = PROMPT_DATA[key];
         if (!p) return '';
@@ -306,7 +320,7 @@ Calculate the final data-supported baseline value. Multiply the **Mid Comp's** p
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${data.address || 'Property_Report'}.html`;
+            a.download = `${generateFilename(data.address)}.html`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -386,9 +400,9 @@ Calculate the final data-supported baseline value. Multiply the **Mid Comp's** p
                 const boxH = 14;
                 const gap = 3;
                 let col = 0;
-
-                const keys = Object.keys(items);
                 
+                const keys = Object.keys(items);
+
                 keys.forEach((key) => {
                     // Check width overflow
                     if (margin + (col * (boxWidth + gap)) + boxWidth > pageWidth - margin) {
@@ -585,7 +599,7 @@ Calculate the final data-supported baseline value. Multiply the **Mid Comp's** p
                 }
             }
 
-            doc.save(`${data.address || 'Property_Report'}.pdf`);
+            doc.save(`${generateFilename(data.address)}.pdf`);
         }
     };
 
