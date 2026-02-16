@@ -1,4 +1,6 @@
 (function () {
+    /** @require utils.js */
+
     /* CONFIGURATION */
     const CONFIG = {
         modalId: 'pc-pdf-modal',
@@ -667,7 +669,7 @@ Calculate the final data-supported baseline value. Multiply the **Mid Comp's** p
             
             if (Wizard.state.format === 'pdf') {
                 PDFGenerator.create(Wizard.state.data, Wizard.state.selectedPhotos, (msg) => document.getElementById('pdf-status').innerText = msg)
-                    .then(closeModal).catch(e => alert(e.message));
+                    .then(closeModal).catch(e => BookmarkletUtils.showToast(e.message, 'error'));
             } else {
                 HTMLGenerator.create(Wizard.state.data, Wizard.state.selectedPhotos);
                 closeModal();
@@ -685,7 +687,7 @@ Calculate the final data-supported baseline value. Multiply the **Mid Comp's** p
 
         // Data Pre-fetch for Prompt Placeholders
         const data = PropertyExtractor.getData();
-        if (!data.raw) alert('Warning: Raw data not found. Report limited.');
+        if (!data.raw) BookmarkletUtils.showToast('Warning: Raw data not found. Report limited.', 'error');
 
         // 1. Dropdown
         const row1 = buildElement('div', { display: 'flex', flexDirection: 'column', gap: '5px' }, '', mo);

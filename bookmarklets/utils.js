@@ -67,6 +67,113 @@
 
     w.BookmarkletUtils = {
         /**
+         * Creates a DOM element with specified properties.
+         * @param {string} tag - The tag name of the element.
+         * @param {Object} [styles={}] - The style object to apply.
+         * @param {string} [text=''] - The text content of the element.
+         * @param {HTMLElement|null} [parent=null] - The parent element to append to.
+         * @param {Object} [props={}] - Additional properties to assign to the element.
+         * @returns {HTMLElement} The created element.
+         */
+        buildElement(tag, styles, text, parent, props) {
+            const el = document.createElement(tag);
+            if (styles) {
+                for (let key in styles) {
+                    if (styles.hasOwnProperty(key)) {
+                        el.style[key] = styles[key];
+                    }
+                }
+            }
+            if (text) el.textContent = text;
+            if (props) {
+                for (let key in props) {
+                    if (props.hasOwnProperty(key)) {
+                        if (key.startsWith('on') && typeof props[key] === 'function') {
+                            el[key] = props[key];
+                        } else {
+                            el.setAttribute(key, props[key]);
+                        }
+                    }
+                }
+            }
+            if (parent) parent.appendChild(el);
+            return el;
+        },
+
+        /**
+         * Shows a toast notification.
+         * @param {string} message - The message to display.
+         * @param {'info'|'success'|'error'} [type='info'] - The type of notification.
+         * @param {number} [duration=3000] - Duration in ms before auto-dismissing.
+         */
+        showToast(message, type, duration) {
+            type = type || 'info';
+            duration = duration || 3000;
+
+            let container = document.getElementById('bm-toast-container');
+            if (!container) {
+                container = this.buildElement('div', {
+                    position: 'fixed',
+                    top: '20px',
+                    right: '20px',
+                    zIndex: '10000',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px',
+                    pointerEvents: 'none' /* Allow clicks to pass through container */
+                }, '', document.body, { id: 'bm-toast-container' });
+            }
+
+            const colors = {
+                info: '#2563eb',    // Blue
+                success: '#10b981', // Green
+                error: '#ef4444'    // Red
+            };
+
+            const toast = this.buildElement('div', {
+                background: colors[type] || colors.info,
+                color: 'white',
+                padding: '12px 24px',
+                borderRadius: '8px',
+                boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                fontFamily: 'system-ui, -apple-system, sans-serif',
+                fontSize: '14px',
+                opacity: '0',
+                transform: 'translateY(-20px)',
+                transition: 'opacity 0.3s ease, transform 0.3s ease',
+                pointerEvents: 'auto', /* Make toast interactive */
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                maxWidth: '300px'
+            }, message, container, {
+                role: 'alert'
+            });
+
+            /* Click to dismiss */
+            toast.onclick = function() {
+                if (toast.parentElement) toast.remove();
+            };
+
+            /* Trigger animation */
+            requestAnimationFrame(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateY(0)';
+            });
+
+            /* Auto-dismiss */
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-20px)';
+                    setTimeout(() => {
+                        if (toast.parentElement) toast.remove();
+                    }, 300);
+                }
+            }, duration);
+        },
+
+        /**
          * Cleans a string to be safe for use as a filename.
          * Truncates to 50 chars and replaces special chars with underscores.
          *
