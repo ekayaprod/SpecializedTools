@@ -24,17 +24,42 @@ EXPECTED DELIVERABLES:
         flip: { label: "Fix & Flip", role: "Act as a Fix-and-Flip Project Manager.", objective: 'Estimate ARV, rehab CapEx based on visual condition, and identify structural risks.' },
         househack: { label: "House Hacking", role: "Act as a House Hacking Specialist.", objective: 'Analyze layout for unit-splitting/ADU potential and zoning compliance.' },
         appraisal: {
-            label: "Property Appraisal",
-            role: "Act as an expert real estate investment analyst.",
-            objective: `Conduct a conservative, risk-adjusted valuation to establish a mathematically sound entry price.
-            
-1. SUBJECT PROPERTY BASELINE: List List Price, Sq. Ft., Price/Sq. Ft., Beds/Baths/Year, and Market Exposure.
-2. MACRO-MARKET DYNAMICS: Zip code median price, YoY growth, avg days on market.
-3. DIRECT COMPARABLE TRANSACTIONS: Create a table of 4-5 recent sales (Anchor, Floor, Ceiling).
-4. COMPARABLE ANALYSIS BREAKDOWN: Analyze variance between asking price and comps.
-5. CAPEX PARITY REQUIREMENTS: Estimate costs to bring property to Upper Bound condition.
-6. HOLDING COST EROSION: Analyze tax history and HOA impact on NOI.
-7. VALUATION CONCLUSION: Calculate strict Target Offer Price based on conservative metrics.`
+            label: "Valuation Analyst",
+            role: "Act as an Expert Real Estate Valuation Analyst.",
+            objective: `**Context:** I am providing a single PDF document that contains the listing details, specifications, and embedded photos of a target property.
+
+**Task:** Conduct comprehensive web research to gather hard data on the subject property, the local macro-market, and specific recent comparable sales. Generate a "Technical Comparable Analysis & Valuation Exhibit."
+
+**Objective:** The objective is to establish a mathematically sound, data-driven baseline valuation. This document will be shared directly with listing agents and sellers to provide a logical, market-based assessment. Therefore, the tone must be strictly objective, highly professional, and devoid of internal investment strategy verdicts.
+
+**Output Structure:**
+Generate a concise, technical document organized exactly with the following sections. Stick strictly to the facts, math, and data.
+
+1. **SUBJECT PROPERTY BASELINE:**
+List the core facts: List Price, Living Area (Sq. Ft.), Price per Sq. Ft., Specifications (Beds/Baths/Year Built/Lot Size). Detail the Market Exposure (current Days on Market, any previous listing cycles, and last sold date/price).
+
+2. **MACRO-MARKET DYNAMICS:**
+Provide data for the property's specific zip code. Include the current median sale price, year-over-year percentage decline/growth, average price per square foot, and average days on market.
+
+3. **DIRECT COMPARABLE TRANSACTIONS:**
+Create a Markdown table comparing the subject property against 4 to 5 recently sold properties in the immediate neighborhood (sold within the last 6 to 12 months). Apply these strict selection criteria:
+* **Primary Comparable (Anchor):** A highly similar recent sale in the immediate vicinity (ideally the same street or <0.5 miles) to establish a localized baseline.
+* **First-Quartile Baseline (Floor):** A comparable property of similar size representing the lower quartile of recent neighborhood sales, establishing the foundational market value.
+* **Competitive Upper Bound (Ceiling):** A property with superior specifications (larger, newer, or better condition) that transacted at a highly competitive price point.
+*Table Columns:* Property Address | Sale Date | Sale Price | Sq. Ft. | Price / Sq. Ft. | Bed / Bath
+
+4. **COMPARABLE ANALYSIS BREAKDOWN:**
+Provide 3 bullet points analyzing the table data. Explicitly name the Anchor, Floor, and Ceiling. Explain mathematically the variance between the subject property's asking price per square foot and these established market metrics.
+
+5. **VISUAL AUDIT & PARITY DELTA ANALYSIS:**
+Analyze the embedded photos within the provided PDF. Conduct a condition-delta analysis between the subject property and the Upper Bound comparable to identify parity-attainment costs (e.g., visible wear, outdated systems, layout bottlenecks, bathroom-to-bedroom ratios). Present this in a table. *Strict Rule:* You must use the keyword 'estimate' for any pricing or construction costs where an exact contractor quote is not available.
+
+6. **CARRYING COST & TAX ASSESSMENT:**
+Research the property's tax history and HOA fees (if applicable). Analyze the trajectory of fixed property carrying costs, documenting any significant increases, such as post-reassessment tax jumps since the current seller acquired the asset. Explain objectively how these fixed costs impact the long-term affordability and carrying cost of the asset.
+
+7. **DATA-SUPPORTED BASELINE VALUATION:**
+Conclude with a strict mathematical calculation for the baseline valuation. Multiply a localized neighborhood average price-per-square-foot by the subject property's square footage, subtract the required parity estimates from Section 5, and state the final mathematically supported valuation.`,
+            noStandardOutput: true
         }
     };
 
@@ -53,7 +78,10 @@ EXPECTED DELIVERABLES:
     const getFullPrompt = (key, data) => {
         const p = PROMPT_DATA[key];
         if (!p) return '';
-        let text = `${p.role}\n\n${p.objective}\n${STANDARD_OUTPUTS}`;
+        let text = `${p.role}\n\n${p.objective}`;
+        if (!p.noStandardOutput) {
+             text += `\n${STANDARD_OUTPUTS}`;
+        }
         if (data) {
             text = text.replace('[Insert Property Address]', data.address || '[Address]')
                        .replace('[Insert Asking Price]', data.price || '[Price]');
