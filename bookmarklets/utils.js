@@ -286,15 +286,21 @@
                         const computed = window.getComputedStyle(s);
                         if (computed) {
                             const styles = [];
+                            const targetStyle = t.style;
                             for (let i = 0, len = safeProperties.length; i < len; i++) {
                                 const prop = safeProperties[i];
                                 const val = computed.getPropertyValue(prop);
                                 if (val && val !== 'none' && val !== 'normal') {
+                                    /* Optimization: Skip if target already has this style */
+                                    // We strictly check redundancy to avoid overwriting existing inline styles.
+                                    // Note: We cannot safely skip '0px' defaults because UA styles might be non-zero (e.g. <p> margin).
+                                    if (targetStyle.getPropertyValue(prop) === val) continue;
+
                                     styles.push(prop + ':' + val);
                                 }
                             }
                             if (styles.length > 0) {
-                                t.style.cssText += styles.join('; ') + '; ';
+                                targetStyle.cssText += styles.join('; ') + '; ';
                             }
                         }
 
