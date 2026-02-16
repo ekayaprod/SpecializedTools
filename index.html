@@ -4,15 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Browser Toolkit</title>
-    <!-- Preload bookmarklet scripts to improve perceived load time -->
-    <link rel="preload" href="dist/web-clipper.js" as="fetch" crossorigin>
-    <link rel="preload" href="dist/property-clipper.js" as="fetch" crossorigin>
-    <link rel="preload" href="dist/passphrase-generator.js" as="fetch" crossorigin>
-    <link rel="preload" href="dist/pa-county-finder.js" as="fetch" crossorigin>
-    <link rel="preload" href="dist/quick-clicker.js" as="fetch" crossorigin>
-    <link rel="preload" href="dist/macro-builder.js" as="fetch" crossorigin>
-    <link rel="preload" href="dist/interaction-recorder.js" as="fetch" crossorigin>
-    <link rel="preload" href="dist/delayed-clicker.js" as="fetch" crossorigin>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -299,6 +290,29 @@
             btn.dataset.timeoutId = timeoutId;
         }
 
+        /* CLIENT-SIDE BUILD LOGIC */
+        function compile(code) {
+            // 1. Remove Block Comments (Strictly avoid // comments in source files)
+            code = code.replace(/\/\*[\s\S]*?\*\//g, '');
+
+            // 2. Trim lines but PRESERVE NEWLINES.
+            // This is critical for template literals (like LLM Prompts) to maintain formatting.
+            code = code.split('\n').map(line => line.trim()).filter(l => l.length > 0).join('\n');
+
+            return code;
+        }
+
+        function extractDependencies(code) {
+            const deps = [];
+            // Extract @require directives from block comments
+            const regex = /\/\*+\s*@require\s+(\S+)\s*\*\//g;
+            let match;
+            while ((match = regex.exec(code)) !== null) {
+                deps.push(match[1]);
+            }
+            return deps;
+        }
+
         async function load(id, file, name) {
             const el = document.getElementById(id);
             const copyBtnId = 'copy-' + id;
@@ -306,8 +320,53 @@
 
             try {
                 const res = await fetch(file);
-                if (!res.ok) throw new Error('Failed');
-                const code = await res.text();
+                if (!res.ok) throw new Error('Failed to load file: ' + file);
+                let code = await res.text();
+
+                // 1. Handle Dependencies
+                // Assume dependencies are relative to the file being loaded
+                const pathPrefix = file.substring(0, file.lastIndexOf('/') + 1);
+                const deps = extractDependencies(code);
+
+                // Prepend dependencies in reverse order if needed, but here simple prepend works
+                // We use a simple loop. If order matters, we'd need more complex logic.
+                // Assuming deps are listed in order they should be included.
+                // But we prepend to the TOP. So if A requires B, and we prepend B...
+                // Wait, if code has `requires utils.js`, we want utils.js BEFORE code.
+                // If code has `requires a.js` and `requires b.js`.
+                // deps = ['a.js', 'b.js'].
+                // Loop:
+                // 1. fetch a.js. code = a.js + code.
+                // 2. fetch b.js. code = b.js + code.
+                // Result: b.js, a.js, code.
+                // This reverses the order of dependencies if we just prepend.
+                // We should probably gather all dep content and prepend it once, or reverse the loop.
+                // Let's reverse the loop to maintain order:
+                // deps = ['a.js', 'b.js'] (Assuming author meant a then b)
+                // Reverse -> ['b.js', 'a.js']
+                // 1. fetch b.js. code = b.js + code.
+                // 2. fetch a.js. code = a.js + code.
+                // Result: a.js, b.js, code. Correct.
+
+                const reversedDeps = [...deps].reverse();
+
+                for (const dep of reversedDeps) {
+                    const depUrl = pathPrefix + dep;
+                    try {
+                        const depRes = await fetch(depUrl);
+                        if (!depRes.ok) throw new Error('Failed dependency: ' + depUrl);
+                        const depCode = await depRes.text();
+                        code = depCode + '\n' + code;
+                        console.log(`[${name}] Injected dependency: ${dep}`);
+                    } catch (depErr) {
+                        console.error(depErr);
+                        // Continue? Or fail? Fail seems safer.
+                        throw depErr;
+                    }
+                }
+
+                // 2. Compile
+                code = compile(code);
 
                 // 3. Encode URI (Handles the newlines via %0A)
                 const href = `javascript:${encodeURIComponent(code)}`;
@@ -349,14 +408,15 @@
         }
 
         // Execute immediately since script is at end of body
-        load('btn-web-clipper', 'dist/web-clipper.js', 'Web Clipper'); // Renamed
-        load('btn-prop-clipper', 'dist/property-clipper.js', 'Property Clipper');
-        load('btn-passphrase', 'dist/passphrase-generator.js', 'Passphrase Gen');
-        load('btn-pa-county', 'dist/pa-county-finder.js', 'PA County');
-        load('btn-quick-clicker', 'dist/quick-clicker.js', 'Quick Clicker V27');
-        load('btn-macro-builder', 'dist/macro-builder.js', 'Macro Builder V22');
-        load('btn-interaction-recorder', 'dist/interaction-recorder.js', 'Interaction Recorder');
-        load('btn-delayed-clicker', 'dist/delayed-clicker.js', 'Delayed Clicker V5');
+        // Pointing to SOURCE files in bookmarklets/ instead of dist/
+        load('btn-web-clipper', 'bookmarklets/web-clipper.js', 'Web Clipper');
+        load('btn-prop-clipper', 'bookmarklets/property-clipper.js', 'Property Clipper');
+        load('btn-passphrase', 'bookmarklets/passphrase-generator.js', 'Passphrase Gen');
+        load('btn-pa-county', 'bookmarklets/pa-county-finder.js', 'PA County');
+        load('btn-quick-clicker', 'bookmarklets/quick-clicker.js', 'Quick Clicker V27');
+        load('btn-macro-builder', 'bookmarklets/macro-builder.js', 'Macro Builder V22');
+        load('btn-interaction-recorder', 'bookmarklets/interaction-recorder.js', 'Interaction Recorder');
+        load('btn-delayed-clicker', 'bookmarklets/delayed-clicker.js', 'Delayed Clicker V5');
     </script>
 </body>
 </html>
