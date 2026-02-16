@@ -98,10 +98,13 @@
             if (props) {
                 for (let key in props) {
                     if (props.hasOwnProperty(key)) {
-                        if (key.startsWith('on') && typeof props[key] === 'function') {
-                            el[key] = props[key];
+                        const val = props[key];
+                        if (val === null || val === undefined) continue;
+
+                        if (key.startsWith('on') && typeof val === 'function') {
+                            el[key] = val;
                         } else {
-                            el.setAttribute(key, props[key]);
+                            el.setAttribute(key, val);
                         }
                     }
                 }

@@ -45,6 +45,22 @@ console.log("Running Toast & BuildElement tests...");
             console.log("✅ buildElement passed");
         }
 
+        // Test 1b: buildElement (Fragility Fix: Null Props)
+        {
+            console.log("Test 1b: buildElement (Fragility Fix: Null Props)");
+            const el = window.BookmarkletUtils.buildElement('div', {}, '', null, {
+                bad: null,
+                missing: undefined,
+                good: 'ok'
+            });
+
+            assert.ok(!el.hasAttribute('bad'), 'Should not have "bad" attribute');
+            assert.ok(!el.hasAttribute('missing'), 'Should not have "missing" attribute');
+            assert.strictEqual(el.getAttribute('good'), 'ok', 'Should have "good" attribute');
+
+            console.log("✅ buildElement null/undefined props passed");
+        }
+
         // Test 2: showToast
         {
             console.log("Test 2: showToast");
