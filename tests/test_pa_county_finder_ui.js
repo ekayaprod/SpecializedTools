@@ -70,6 +70,11 @@ async function runUITest() {
         console.log("\n--- Test 2: Search Interaction ---");
 
         const input = card.querySelector('.pa-input');
+        if (input.getAttribute('aria-label') !== 'Enter ZIP code or City name') {
+            throw new Error(`Input missing correct aria-label. Got: ${input.getAttribute('aria-label')}`);
+        }
+        console.log("✅ Input has correct aria-label");
+
         const searchBtn = card.querySelector('.pa-btn-primary');
 
         input.value = "17301";

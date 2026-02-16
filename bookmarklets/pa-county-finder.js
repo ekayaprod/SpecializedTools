@@ -197,6 +197,7 @@
         const inp = document.createElement('input');
         inp.className = 'pa-input';
         inp.placeholder = "Enter ZIP or City";
+        inp.setAttribute('aria-label', 'Enter ZIP code or City name');
 
         const btn = document.createElement('button');
         btn.textContent = 'Search';

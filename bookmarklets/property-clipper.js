@@ -260,7 +260,7 @@ Calculate the final data-supported baseline value. Multiply the **Mid Comp's** p
                 const hero = selectedPhotos[0];
                 heroHtml = `
                 <div class="hero-section" style="margin-bottom: 30px; border-radius: 8px; overflow: hidden; border: 1px solid #e5e7eb;">
-                    <img src="${hero.url}" alt="Hero Image" style="width: 100%; height: auto; max-height: 500px; object-fit: cover; display: block;">
+                    <img src="${hero.url}" alt="Primary view of the property" style="width: 100%; height: auto; max-height: 500px; object-fit: cover; display: block;">
                 </div>`;
             }
 
