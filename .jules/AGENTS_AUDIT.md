@@ -1,29 +1,33 @@
-# 👁️ Overseer Report (2026-02-16)
+# 👁️ Overseer Report (2025-02-16)
 
 ## 🏗️ Structural Hotspots
-- [ ] bookmarklets/passphrase-generator.js (Large file size: 56KB, Embedded Dictionary)
-- [ ] verification/verify_pa_county_finder.py (Most active file recently)
+- [ ] bookmarklets/property-clipper.js (High Complexity: 739 lines, Critical Business Logic)
+- [ ] bookmarklets/web-clipper.js (High Complexity: 548 lines, DOM Manipulation Heavy)
+- [ ] bookmarklets/passphrase-generator.js (Large Dictionary: 471 lines, Potential Bundle Size Impact)
 
 ## ⚡ Performance Bottlenecks
-- [ ] Bundle Size: passphrase-generator.js (56KB) - Large embedded JSON dictionary increases parse time
-- [ ] verification/verify_pa_county_finder.py (Python script execution overhead in CI/CD pipeline if run frequently)
+- [ ] bookmarklets/passphrase-generator.js (Embedded Dictionary `WORD_BANK` increases payload)
+- [ ] bookmarklets/property-clipper.js (Client-side PDF generation can block UI thread)
 
 ## 🧹 Debris Field
-- [ ] None detected (Codebase appears fresh and clean)
+- [ ] tests/test_property_clipper_errors.js (Broken Test: `ReferenceError: alert is not defined`)
+- [ ] bookmarklets/property-clipper.js (10+ `alert()` calls found - poor UX practice)
+- [ ] bookmarklets/web-clipper.js (5+ `alert()` calls found - poor UX practice)
+- [ ] Environment Setup (Missing `jsdom` dependency in initial install)
 
 ## 🛡️ Security Radar
-- [ ] 0 Vulnerabilities found (npm audit)
-- [ ] 0 Production Dependencies found
-- [ ] 2 Direct Dev Dependencies (jsdom, typescript)
+- [ ] npm audit: Clean (0 Vulnerabilities)
+- [ ] bookmarklets/utils.js (Good sanitization logic present: `sanitizeAttributes`, `safeProperties`)
 
 ## 🕵️ Coverage Gaps
-- [ ] verification/verify_pa_county_finder.py (Python script outside standard JS test suite)
-- [ ] verification/ scripts lack corresponding unit tests (Integration tests only)
+- [ ] tests/test_property_clipper_errors.js (Failing Test Suite)
+- [ ] bookmarklets/utils.js (Type Error: `Property 'buildElement' is missing in type 'BookmarkletUtilsInterface'`)
+- [ ] bookmarklets/bookmarklet-builder.js (Indirectly tested via `tests/test_bookmarklet_generation.js`, but explicit unit tests for builder logic could be improved)
 
 ## 🆙 Modernization Targets
-- [ ] 41 function keywords found (potential for arrow function conversion)
-- [ ] Usage of alert()/confirm()/prompt() found in multiple bookmarklets (Legacy UX)
+- [ ] Replace `alert()` with non-blocking UI (Toast/Modal) across all bookmarklets
+- [ ] Fix TypeScript Linting Errors (`npm run lint` fails on `utils.js`)
 
 ## 🎨 UX/A11y Friction
-- [ ] 13 usages of alert() detected (Interrupts user flow)
-- [ ] Good usage of aria-label detected in key interactive elements
+- [ ] `alert()` usage disrupts screen readers and blocks user flow
+- [ ] bookmarklets/quick-clicker.js (Good A11y coverage in `tests/test_quick_clicker_ux.js`)
