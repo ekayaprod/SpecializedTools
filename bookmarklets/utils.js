@@ -402,7 +402,7 @@
                         parts.push('![' + alt + '](' + src + ')');
                         return; /* Skip children of img */
                     case 'table': parts.push('\n\n'); break;
-                case 'tr': break;
+                    case 'tr': break;
                     case 'td':
                     case 'th': parts.push('| '); break;
                 }
@@ -427,7 +427,7 @@
                     case 'h2':
                     case 'h3':
                     case 'h4':
-                case 'p':
+                    case 'p':
                         parts.push('\n'); break;
                     case 'tr': parts.push('|\n'); break;
                 }
