@@ -448,11 +448,10 @@ EXPECTED DELIVERABLES:
 
     /* 5. WIZARD UI */
     const Wizard = {
-        state: { data: null, promptText: '', step: 0, selectedPhotos: [], format: 'pdf' },
+        state: { data: null, step: 0, selectedPhotos: [], format: 'pdf' },
         
-        init: (data, promptText, format) => {
+        init: (data, format) => {
             Wizard.state.data = data;
-            Wizard.state.promptText = promptText;
             Wizard.state.format = format;
             Wizard.state.selectedPhotos = [];
             Wizard.state.step = 0;
@@ -566,7 +565,7 @@ EXPECTED DELIVERABLES:
 
         // Handlers
         const launchWizard = (fmt) => {
-            Wizard.init(data, txtArea.value, fmt);
+            Wizard.init(data, fmt);
         };
 
         cancelBtn.onclick = closeModal;
