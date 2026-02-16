@@ -25,40 +25,38 @@ EXPECTED DELIVERABLES:
         househack: { label: "House Hacking", role: "Act as a House Hacking Specialist.", objective: 'Analyze layout for unit-splitting/ADU potential and zoning compliance.' },
         appraisal: {
             label: "Valuation Analyst",
-            role: "Act as an Expert Real Estate Valuation Analyst.",
-            objective: `**Context:** I am providing a single PDF document that contains the listing details, specifications, and embedded photos of a target property.
+            role: "Act as a Real Estate Valuation Analyst.",
+            objective: `**Context:** Review the attached property PDF (which includes listing details and embedded photos).
 
-**Task:** Conduct comprehensive web research to gather hard data on the subject property, the local macro-market, and specific recent comparable sales. Generate a "Technical Comparable Analysis & Valuation Exhibit."
-
-**Objective:** The objective is to establish a mathematically sound, data-driven baseline valuation. This document will be shared directly with listing agents and sellers to provide a logical, market-based assessment. Therefore, the tone must be strictly objective, highly professional, and devoid of internal investment strategy verdicts.
+**Task:** Research recent local comps and macro-market data to generate an objective, data-driven Valuation Report. The tone must be clinical, direct, and completely free of investment strategy or buyer bias. Use simple language and short bullet points.
 
 **Output Structure:**
-Generate a concise, technical document organized exactly with the following sections. Stick strictly to the facts, math, and data.
 
 1. **SUBJECT PROPERTY BASELINE:**
-List the core facts: List Price, Living Area (Sq. Ft.), Price per Sq. Ft., Specifications (Beds/Baths/Year Built/Lot Size). Detail the Market Exposure (current Days on Market, any previous listing cycles, and last sold date/price).
+List the core facts: List Price, Sq. Ft., Price/Sq. Ft., Beds/Baths/Year Built, and Lot Size. Note the current Days on Market, previous sold price/date, and any active listing history context.
 
-2. **MACRO-MARKET DYNAMICS:**
-Provide data for the property's specific zip code. Include the current median sale price, year-over-year percentage decline/growth, average price per square foot, and average days on market.
+2. **MACRO-MARKET TRENDS:**
+For the property's specific zip code, list the current median sale price, year-over-year trend (percentage growth/decline), and average days on market.
 
-3. **DIRECT COMPARABLE TRANSACTIONS:**
-Create a Markdown table comparing the subject property against 4 to 5 recently sold properties in the immediate neighborhood (sold within the last 6 to 12 months). Apply these strict selection criteria:
-* **Primary Comparable (Anchor):** A highly similar recent sale in the immediate vicinity (ideally the same street or <0.5 miles) to establish a localized baseline.
-* **First-Quartile Baseline (Floor):** A comparable property of similar size representing the lower quartile of recent neighborhood sales, establishing the foundational market value.
-* **Competitive Upper Bound (Ceiling):** A property with superior specifications (larger, newer, or better condition) that transacted at a highly competitive price point.
-*Table Columns:* Property Address | Sale Date | Sale Price | Sq. Ft. | Price / Sq. Ft. | Bed / Bath
+3. **MARKET COMPS:**
+Create a Markdown table with 4-5 recent neighborhood sales (sold within the past 6-12 months). Apply these selection criteria:
+* **High Comp:** A superior, highly competitive recent sale in excellent condition.
+* **Mid Comp:** A highly similar recent sale in average condition to establish a localized baseline.
+* **Low Comp:** A comparable property representing the lower-quartile of recent sales.
+*Columns:* Address | Sale Date | Sale Price | Sq. Ft. | Price / Sq. Ft. | Bed / Bath
 
-4. **COMPARABLE ANALYSIS BREAKDOWN:**
-Provide 3 bullet points analyzing the table data. Explicitly name the Anchor, Floor, and Ceiling. Explain mathematically the variance between the subject property's asking price per square foot and these established market metrics.
+4. **COMP ANALYSIS:**
+Provide 3 short bullet points comparing the subject property's asking price to the High, Mid, and Low comps. Focus purely on mathematical variance.
 
-5. **VISUAL AUDIT & PARITY DELTA ANALYSIS:**
-Analyze the embedded photos within the provided PDF. Conduct a condition-delta analysis between the subject property and the Upper Bound comparable to identify parity-attainment costs (e.g., visible wear, outdated systems, layout bottlenecks, bathroom-to-bedroom ratios). Present this in a table. *Strict Rule:* You must use the keyword 'estimate' for any pricing or construction costs where an exact contractor quote is not available.
+5. **CONDITION & REPAIR ESTIMATES:**
+Analyze the listing photos. Create a table identifying visible deferred maintenance or necessary basic repairs (e.g., worn flooring, dated systems, exterior wear) required to bring the property up to the functional standard of the **Mid Comp**.
+*Strict Rule:* You must use the keyword 'estimate' for costs. Do not include premium, aesthetic, or luxury upgrades.
 
-6. **CARRYING COST & TAX ASSESSMENT:**
-Research the property's tax history and HOA fees (if applicable). Analyze the trajectory of fixed property carrying costs, documenting any significant increases, such as post-reassessment tax jumps since the current seller acquired the asset. Explain objectively how these fixed costs impact the long-term affordability and carrying cost of the asset.
+6. **CARRYING COSTS:**
+List the current property taxes and HOA fees (if applicable). Note any recent tax assessment spikes or increases since the current seller's acquisition.
 
-7. **DATA-SUPPORTED BASELINE VALUATION:**
-Conclude with a strict mathematical calculation for the baseline valuation. Multiply a localized neighborhood average price-per-square-foot by the subject property's square footage, subtract the required parity estimates from Section 5, and state the final mathematically supported valuation.`,
+7. **AS-IS VALUATION:**
+Calculate the final data-supported baseline value. Multiply the **Mid Comp's** price-per-square-foot by the subject property's square footage. From that total, subtract the basic repair estimates calculated in Section 5. State the final mathematically supported valuation clearly.`,
             noStandardOutput: true
         }
     };
