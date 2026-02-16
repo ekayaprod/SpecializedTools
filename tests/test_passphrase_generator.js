@@ -8,11 +8,6 @@ global.document = dom.window.document;
 global.navigator = dom.window.navigator;
 global.HTMLElement = dom.window.HTMLElement;
 
-// Mock BookmarkletUtils
-global.window.BookmarkletUtils = {
-    getRand: (max) => Math.floor(Math.random() * max)
-};
-
 // Mock clipboard
 global.navigator.clipboard = {
     writeText: (text) => Promise.resolve()

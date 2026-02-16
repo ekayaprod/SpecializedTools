@@ -164,19 +164,25 @@ async function runTest() {
     assert.ok(modal, "Modal 'pc-pdf-modal' should exist");
     console.log("✅ Modal found.");
 
-    // 2. Find Persona Button (Short-Term Rental)
+    // 2. Find Persona Dropdown
+    const select = modal.querySelector('select');
+    assert.ok(select, "Persona Select Dropdown should exist");
+    console.log("✅ Persona Dropdown found.");
+
+    // 3. Select 'Appraisal' and Trigger Change
+    select.value = 'appraisal';
+    select.onchange(); // Trigger updateText directly since JSDOM might not fire it automatically on assignment
+    console.log("✅ Selected 'Appraisal' persona.");
+
+    // 4. Click 'Generate PDF' Button -> Opens Wizard
     const buttons = Array.from(modal.querySelectorAll('button'));
-    const strButton = buttons.find(b => b.textContent.includes('Short-Term Rental'));
-    assert.ok(strButton, "STR Button should exist");
-    console.log("✅ STR Button found.");
+    console.log("Buttons found in modal:", buttons.map(b => b.textContent));
+    const pdfButton = buttons.find(b => b.textContent.includes('Generate PDF'));
+    assert.ok(pdfButton, "Generate PDF Button should exist");
+    console.log("✅ Generate PDF Button found.");
 
-    const appraisalButton = buttons.find(b => b.textContent.includes('Property Appraisal'));
-    assert.ok(appraisalButton, "Appraisal Button should exist");
-    console.log("✅ Appraisal Button found.");
-
-    // 3. Click Appraisal Button -> Opens Wizard (Testing the new prompt)
-    console.log("Clicking Appraisal button...");
-    appraisalButton.click();
+    console.log("Clicking Generate PDF button...");
+    pdfButton.click();
 
     // Wait for Wizard to render
     await new Promise(r => setTimeout(r, 100));
@@ -185,10 +191,10 @@ async function runTest() {
     assert.ok(wizardTitle && wizardTitle.textContent.includes('Select Photo Strategy'), "Wizard start screen should appear");
     console.log("✅ Wizard start screen verified.");
 
-    // 4. Find 'Include All Photos' option
-    // It's a div with text, but clicking it triggers action
-    const options = Array.from(modal.querySelectorAll('div[style*="cursor: pointer"]'));
-    const allPhotosOption = options.find(o => o.textContent.includes('Include All Photos'));
+    // 5. Find 'Include All Photos' option
+    // It is a button now
+    const wizardButtons = Array.from(modal.querySelectorAll('button'));
+    const allPhotosOption = wizardButtons.find(o => o.textContent.includes('Include All Photos'));
     assert.ok(allPhotosOption, "'Include All Photos' option should exist");
     console.log("✅ 'Include All Photos' option found.");
 
@@ -204,8 +210,10 @@ async function runTest() {
         console.log("✅ PDF Generation successful (save() called).");
         // Verify prompt content
         const flatContent = pdfContent.flat(Infinity).join(' ');
-        if (flatContent.includes('Technical Comparable Analysis')) {
-             console.log("✅ Found Appraisal Prompt in PDF.");
+        // Check for Description (Prompt is no longer included in PDF, replaced by Hero Image)
+        if (flatContent.includes('Great house with many features')) {
+             console.log("✅ Found Description in PDF.");
+             // Check address and price
              if (flatContent.includes('123 Main St') && flatContent.includes('$1,000,000')) {
                  console.log("✅ Placeholders interpolated correctly.");
              } else {
@@ -213,7 +221,7 @@ async function runTest() {
                  process.exit(1);
              }
         } else {
-            console.error("❌ Appraisal Prompt NOT found in PDF content.");
+            console.error("❌ Description NOT found in PDF content. Content was: " + flatContent.substring(0, 100) + "...");
             process.exit(1);
         }
     } else {

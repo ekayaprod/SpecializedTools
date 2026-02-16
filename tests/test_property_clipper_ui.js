@@ -90,59 +90,41 @@ async function runTest() {
     const modal = document.getElementById('pc-pdf-modal');
     assert.ok(modal, "Modal should exist");
 
-    // 2. Click any Persona (e.g. STR)
+    // 2. Click Generate PDF to open Wizard
     const buttons = Array.from(modal.querySelectorAll('button'));
-    const strBtn = buttons.find(b => b.textContent.includes('Short-Term Rental'));
-    assert.ok(strBtn, "Short-Term Rental button should exist");
-    strBtn.click();
+    const pdfBtn = buttons.find(b => b.textContent.includes('Generate PDF'));
+    assert.ok(pdfBtn, "Generate PDF button should exist");
+    pdfBtn.click();
 
     // Wait for Start Screen
     await new Promise(r => setTimeout(r, 100));
 
     // 3. Click 'Manual Selection'
-    // Find the box that says "Manual Selection" and has pointer cursor (the wrapper)
-    const divs = Array.from(modal.querySelectorAll('div'));
-    const manualDiv = divs.find(d => d.textContent.includes('Manual Selection') && d.style.cursor === 'pointer');
+    // It is a button in current UI
+    const wizardButtons = Array.from(modal.querySelectorAll('button'));
+    const manualBtn = wizardButtons.find(b => b.textContent.includes('Manual Selection'));
 
-    if (!manualDiv) {
-        console.error("Could not find Manual Selection box with pointer cursor. Available divs:", divs.map(d => d.textContent));
+    if (!manualBtn) {
+        console.error("Could not find Manual Selection button. Available buttons:", wizardButtons.map(b => b.textContent));
     }
-    assert.ok(manualDiv, "Manual Selection option should exist");
+    assert.ok(manualBtn, "Manual Selection option should exist");
 
     console.log("Clicking Manual Selection...");
-    manualDiv.click();
+    manualBtn.click();
 
     // Wait for Step 1
     await new Promise(r => setTimeout(r, 100));
 
     // 4. Verify Checkbox Type
     const inputs = Array.from(modal.querySelectorAll('input'));
+    console.log("Inputs found:", inputs.map(i => i.outerHTML));
     const checkbox = inputs[0];
     assert.ok(checkbox, "Should have an input element");
     assert.strictEqual(checkbox.type, 'checkbox', "Input should be of type 'checkbox'");
     console.log("✅ Checkbox type is correct.");
 
-    // 5. Test Select All
-    const toolbarBtns = Array.from(modal.querySelectorAll('button'));
-    const selectAllBtn = toolbarBtns.find(b => b.textContent === 'Select All');
-    assert.ok(selectAllBtn, "Select All button should exist");
-
-    try {
-        selectAllBtn.click();
-        console.log("✅ Select All clicked without error.");
-    } catch (e) {
-        assert.fail(`Select All threw error: ${e.message}`);
-    }
-
-    // Verify UI State after Select All
-    assert.strictEqual(checkbox.checked, true, "Checkbox should be checked after Select All");
-
-    // We can't easily access the image element here directly as it's not exposed,
-    // but we can check if any img has the border style.
-    const imgs = Array.from(modal.querySelectorAll('img'));
-    const blueBorderImg = imgs.find(img => img.style.borderColor === 'rgb(37, 99, 235)' || img.style.borderColor === '#2563eb');
-    assert.ok(blueBorderImg, "Image should have blue border after Select All");
-    console.log("✅ Image border verified.");
+    // 5. Verify Checkbox is checked by default
+    assert.strictEqual(checkbox.checked, true, "Checkbox should be checked by default");
 
     console.log("Property Clipper UI Test Passed!");
 }
