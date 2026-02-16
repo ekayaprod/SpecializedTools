@@ -55,6 +55,7 @@ global.FileReader = dom.window.FileReader;
 global.HTMLElement = dom.window.HTMLElement;
 global.HTMLCanvasElement = dom.window.HTMLCanvasElement;
 global.window.alert = console.log;
+global.requestAnimationFrame = (cb) => setTimeout(cb, 0);
 
 // Mock Utils
 try {

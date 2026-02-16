@@ -14,6 +14,14 @@ declare global {
         buildElement(tag: string, styles?: Record<string, string>, text?: string, parent?: HTMLElement | null, props?: Record<string, any>): HTMLElement;
 
         /**
+         * Shows a toast notification.
+         * @param {string} message - The message to display.
+         * @param {'info'|'success'|'error'} [type='info'] - The type of notification.
+         * @param {number} [duration=3000] - Duration in ms before auto-dismissing.
+         */
+        showToast(message: string, type?: 'info' | 'success' | 'error', duration?: number): void;
+
+        /**
          * Cleans a string to be safe for use as a filename.
          * Truncates to 50 chars and replaces special chars with underscores.
          *

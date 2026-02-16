@@ -76,6 +76,7 @@ global.HTMLElement = dom.window.HTMLElement;
 global.HTMLCanvasElement = dom.window.HTMLCanvasElement;
 global.window.alert = console.log;
 global.Uint32Array = Uint32Array;
+global.requestAnimationFrame = (cb) => setTimeout(cb, 0);
 
 // Mock crypto
 global.window.crypto = {

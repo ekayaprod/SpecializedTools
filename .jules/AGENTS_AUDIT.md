@@ -11,9 +11,9 @@
 
 ## 🧹 Debris Field
 - [ ] tests/test_property_clipper_errors.js (Broken Test: `ReferenceError: alert is not defined`)
-- [ ] bookmarklets/property-clipper.js (10+ `alert()` calls found - poor UX practice)
-- [ ] bookmarklets/web-clipper.js (5+ `alert()` calls found - poor UX practice)
-- [ ] Environment Setup (Missing `jsdom` dependency in initial install)
+- [x] bookmarklets/property-clipper.js (Replaced alert() calls with Toast UI)
+- [x] bookmarklets/web-clipper.js (Replaced alert() calls with Toast UI)
+- [x] Environment Setup (Missing `jsdom` dependency in initial install)
 
 ## 🛡️ Security Radar
 - [ ] npm audit: Clean (0 Vulnerabilities)
@@ -21,13 +21,13 @@
 
 ## 🕵️ Coverage Gaps
 - [ ] tests/test_property_clipper_errors.js (Failing Test Suite)
-- [ ] bookmarklets/utils.js (Type Error: `Property 'buildElement' is missing in type 'BookmarkletUtilsInterface'`)
+- [x] bookmarklets/utils.js (Added missing 'buildElement' and 'showToast' to interface)
 - [ ] bookmarklets/bookmarklet-builder.js (Indirectly tested via `tests/test_bookmarklet_generation.js`, but explicit unit tests for builder logic could be improved)
 
 ## 🆙 Modernization Targets
-- [ ] Replace `alert()` with non-blocking UI (Toast/Modal) across all bookmarklets
-- [ ] Fix TypeScript Linting Errors (`npm run lint` fails on `utils.js`)
+- [x] Replace `alert()` with non-blocking UI (Toast/Modal) across all bookmarklets
+- [x] Fix TypeScript Linting Errors (`npm run lint` fails on `utils.js`)
 
 ## 🎨 UX/A11y Friction
-- [ ] `alert()` usage disrupts screen readers and blocks user flow
+- [x] `alert()` usage disrupts screen readers and blocks user flow
 - [ ] bookmarklets/quick-clicker.js (Good A11y coverage in `tests/test_quick_clicker_ux.js`)

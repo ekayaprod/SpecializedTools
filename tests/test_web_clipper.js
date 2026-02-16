@@ -50,7 +50,8 @@ global.window.BookmarkletUtils = {
     sanitizeFilename: (s) => (s || 'export').replace(/[^a-z0-9]/gi, '_'),
     loadLibrary: async (name) => { console.log('Mock: loadLibrary', name); },
     downloadFile: (name, content) => { console.log('Mock: downloadFile', name); },
-    htmlToMarkdown: (html) => html
+    htmlToMarkdown: (html) => html,
+    showToast: (msg) => console.log('Mock Toast:', msg)
 };
 // Make BookmarkletUtils available in global scope for the script execution if needed
 // The script runs inside the JSDOM window context usually, but since we eval in Node context
