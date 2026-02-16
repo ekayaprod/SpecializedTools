@@ -108,9 +108,27 @@ Conclude with a strict mathematical calculation for the baseline valuation. Mult
             if (pd.mortgage?.estimate) {
                 data.financials['Est. Payment'] = formatCurrency(pd.mortgage.estimate.monthly_payment);
                 const tax = pd.mortgage.estimate.monthly_payment_details?.find(d => d.type === 'property_tax');
-                if (tax) data.financials['Tax'] = formatCurrency(tax.amount);
+                if (tax) data.financials['Taxes'] = formatCurrency(tax.amount);
                 const hoa = pd.mortgage.estimate.monthly_payment_details?.find(d => d.type === 'hoa_fees');
-                if (hoa) data.financials['HOA'] = formatCurrency(hoa.amount);
+                if (hoa) data.financials['HOA Fees'] = formatCurrency(hoa.amount);
+            }
+
+            // Market Context Extraction (Try multiple paths)
+            if (pd.days_on_market) data.market['Days on Market'] = pd.days_on_market;
+
+            // Try to find market data in neighborhood or similar structures
+            const marketData = pd.neighborhood || pd.market || {};
+            if (marketData.median_listing_price) data.market['Listing Price Median'] = formatCurrency(marketData.median_listing_price);
+            if (marketData.median_sold_price) data.market['Sold Price Median'] = formatCurrency(marketData.median_sold_price);
+            if (marketData.median_price_per_sqft) data.market['Price/SqFt Median'] = formatCurrency(marketData.median_price_per_sqft);
+
+            // Property History Extraction
+            if (pd.property_history && Array.isArray(pd.property_history)) {
+                data.history = pd.property_history.map(h => ({
+                    date: h.date,
+                    event: h.event_name,
+                    price: h.price ? formatCurrency(h.price) : '-'
+                }));
             }
 
             if (pd.details && Array.isArray(pd.details)) data.features = pd.details;
@@ -134,7 +152,7 @@ Conclude with a strict mathematical calculation for the baseline valuation. Mult
         getData: function () {
             let data = {
                 address: 'Unknown Address', price: 'Unknown Price', specs: {},
-                financials: {}, history: {}, agents: [], description: '', features: [],
+                financials: {}, market: {}, history: [], agents: [], description: '', features: [],
                 photoGroups: [], raw: null
             };
 
@@ -355,62 +373,118 @@ Conclude with a strict mathematical calculation for the baseline valuation. Mult
             // Page Break Check (If hero was huge)
             if (y > 220) { doc.addPage(); y = 20; }
 
-            // --- SPECS GRID ---
+            // --- DATA GRIDS (Page 1) ---
+            
+            // Helper to render a grid section
+            const renderGrid = (title, items, boxWidth = 43) => {
+                if (!items || Object.keys(items).length === 0) return;
+                
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0);
+                doc.text(title, margin, y);
+                y += 6;
+
+                const boxH = 14;
+                const gap = 3;
+                let col = 0;
+
+                const keys = Object.keys(items);
+                
+                keys.forEach((key) => {
+                    // Check width overflow
+                    if (margin + (col * (boxWidth + gap)) + boxWidth > pageWidth - margin) {
+                        col = 0;
+                        y += boxH + gap;
+                    }
+
+                    // Check page overflow
+                    if (y > 270) { doc.addPage(); y = 20; col = 0; }
+
+                    const x = margin + (col * (boxWidth + gap));
+
+                    doc.setFillColor(250, 250, 250);
+                    doc.setDrawColor(220, 220, 220);
+                    doc.roundedRect(x, y, boxWidth, boxH, 2, 2, 'FD');
+
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(7);
+                    doc.setTextColor(100, 100, 100);
+                    const labelSafe = key.substring(0, 25);
+                    doc.text(labelSafe.toUpperCase(), x + 2, y + 4);
+
+                    doc.setFont('helvetica', 'normal');
+                    doc.setTextColor(0, 0, 0);
+                    doc.setFontSize(9);
+                    const valSafe = String(items[key]).substring(0, 22);
+                    doc.text(valSafe, x + 2, y + 10);
+
+                    col++;
+                });
+                y += boxH + 10; // Space after grid
+            };
+
+            // 1. Primary Property Specs
+            // "Primary Property Specs": (Price, Beds, Baths, Sq. Ft., Lot Size, Year Built, HOA, Taxes).
+            const primarySpecs = {};
+            primarySpecs['Price'] = data.price;
+            const targetSpecs = ['Beds', 'Baths', 'Sq. Ft.', 'Lot Size', 'Year Built'];
+            targetSpecs.forEach(k => { if (data.specs[k]) primarySpecs[k] = data.specs[k]; });
+            if (data.financials['HOA Fees']) primarySpecs['HOA Fees'] = data.financials['HOA Fees'];
+            if (data.financials['Taxes']) primarySpecs['Taxes'] = data.financials['Taxes'];
+
+            renderGrid("Primary Property Specs", primarySpecs, 43);
+
+            // 2. Market Context & Medians
+            // "Market Context & Medians": (Days on Market, Listing Price Median, Sold Price Median, Price/SqFt Median).
+            renderGrid("Market Context & Medians", data.market, 43);
+
+            // --- SELLER/LISTING AGENT DESCRIPTION ---
+            if (y > 240) { doc.addPage(); y = 20; }
+
             doc.setFont('helvetica', 'bold');
-            doc.setFontSize(12);
-            doc.text("Property Overview & Specs", margin, y);
-            y += 6;
+            doc.setFontSize(14); // Explicitly requested header size/style
+            doc.setTextColor(0, 0, 0);
+            doc.text("Seller/Listing Agent Description", margin, y);
+            y += 8;
 
-            const allSpecs = { ...data.specs, ...data.financials };
-            const specKeys = Object.keys(allSpecs);
-            
-            const boxW = 43; 
-            const boxH = 14; 
-            const gap = 3;
-            let col = 0;
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10); // Readable size
+            doc.setTextColor(50, 50, 50);
 
-            doc.setFontSize(7);
-            
-            specKeys.forEach((key) => {
-                if (margin + (col * (boxW + gap)) + boxW > pageWidth - margin) {
-                    col = 0;
-                    y += boxH + gap;
-                }
-                
-                if (y > 270) { doc.addPage(); y = 20; col = 0; }
+            // "Ensure the line height and paragraph width are comfortable"
+            // We use slightly narrower width for better readability if space permits,
+            // but here we use contentWidth to maximize space on the page.
+            // Using 1.5 line spacing (default is often 1.15 in jsPDF).
+            const descLines = doc.splitTextToSize(data.description, contentWidth);
+            doc.text(descLines, margin, y, { lineHeightFactor: 1.5 });
 
-                const x = margin + (col * (boxW + gap));
-                
-                doc.setFillColor(250, 250, 250);
-                doc.setDrawColor(220, 220, 220);
-                doc.roundedRect(x, y, boxW, boxH, 2, 2, 'FD');
+            // Calculate height used by description
+            const descHeight = descLines.length * 10 * 1.5 * 0.3527777778; // pt to mm approx
+            y += descHeight + 15;
+
+            // --- PROPERTY HISTORY ---
+            if (data.history && data.history.length > 0) {
+                if (y > 220) { doc.addPage(); y = 20; }
 
                 doc.setFont('helvetica', 'bold');
-                doc.setTextColor(100, 100, 100);
-                const labelSafe = key.substring(0, 25);
-                doc.text(labelSafe.toUpperCase(), x + 2, y + 4);
+                doc.setFontSize(14);
+                doc.setTextColor(0, 0, 0);
+                doc.text("Property History", margin, y);
+                y += 8;
 
                 doc.setFont('helvetica', 'normal');
-                doc.setTextColor(0, 0, 0);
-                doc.setFontSize(9);
-                const valSafe = String(allSpecs[key]).substring(0, 22);
-                doc.text(valSafe, x + 2, y + 10);
-                doc.setFontSize(7);
+                doc.setFontSize(10);
 
-                col++;
-            });
-            y += boxH + 15;
-
-            // Description
-            if (y > 240) { doc.addPage(); y = 20; }
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(12);
-            doc.text("Description", margin, y);
-            y += 6;
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(9);
-            const descLines = doc.splitTextToSize(data.description, contentWidth);
-            doc.text(descLines, margin, y);
+                data.history.forEach(h => {
+                    if (y > 270) { doc.addPage(); y = 20; }
+                    // Format: [YYYY-MM-DD] - [Event] - [Price]
+                    const line = `${h.date || 'N/A'} - ${h.event || 'Event'} - ${h.price || '-'}`;
+                    doc.text(line, margin, y);
+                    y += 6;
+                });
+                y += 10;
+            }
             
             // --- PHOTO APPENDIX ---
             if (selectedPhotos.length > 0) {
@@ -421,34 +495,75 @@ Conclude with a strict mathematical calculation for the baseline valuation. Mult
                 doc.text("Photo Appendix", margin, y);
                 y += 10;
 
-                let pCol = 0;
-                let pRow = 0;
-                const pColWidth = 85; 
-                const pRowHeight = 65; 
-
                 for (let i = 0; i < selectedPhotos.length; i++) {
-                    statusCb(`Processing photo ${i+1}/${selectedPhotos.length}`);
+                    if (statusCb) statusCb(`Processing photo ${i+1}/${selectedPhotos.length}`);
                     const photo = selectedPhotos[i];
                     const processed = await ImageProcessor.process(photo.url);
                     if (!processed) continue;
 
-                    if (pRow > 2) { doc.addPage(); pRow = 0; pCol = 0; y = 20; }
+                    // Calculate dimensions
+                    // Max width is contentWidth (180mm)
+                    // Try to fit 2 per page vertically
+                    const imgW = contentWidth;
+                    let imgH = contentWidth / processed.ratio;
 
-                    const px = margin + (pCol * (pColWidth + 10));
-                    const py = y + (pRow * (pRowHeight + 10));
+                    // Cap height to ensure at least 2 fit per page (approx 110mm max)
+                    // But if ratio is extreme (panorama), let it flow.
+                    // If height is huge (portrait), we might need to constrain it.
+                    if (imgH > 120) {
+                        imgH = 120; // Constrain height
+                        // We don't change width, just let it distort? No, maintain aspect ratio?
+                        // "Render the photo appendix with images large enough..."
+                        // Usually fit into box.
+                        // If we constrain height, width must shrink to maintain aspect ratio.
+                        // But we want "large enough".
+                        // Better to constrain height and center it?
+                        // Or just let it take up full page if needed?
+                        // "recommend 1 to 2 images maximum per page".
+                        // So if it's a tall image, it takes a whole page.
 
-                    doc.setFontSize(8);
+                        // Re-calculation:
+                        // If imgH > 120, we shrink both dimensions.
+                        const scale = 120 / imgH;
+                        imgH = 120;
+                        // effective width will be smaller, centered?
+                        // But `addImage` takes x, y, w, h.
+                        // We want max width.
+                    }
+
+                    // Check if we need a new page
+                    // Need space for Caption (10mm) + Image (imgH) + Gap (10mm)
+                    if (y + imgH + 20 > 280) {
+                        doc.addPage();
+                        y = 20;
+                    }
+
+                    // Draw Caption
+                    doc.setFontSize(10);
                     doc.setFont('helvetica', 'bold');
-                    doc.text((photo.label || 'Photo').substring(0, 40), px, py);
+                    doc.setTextColor(50, 50, 50);
+                    const label = (photo.label || 'Property Photo').toUpperCase();
+                    doc.text(label, margin, y);
+                    y += 5;
 
-                    let finalW = pColWidth;
-                    let finalH = pColWidth / processed.ratio;
-                    if (finalH > 55) { finalH = 55; finalW = 55 * processed.ratio; }
+                    // Draw Image
+                    // doc.addImage(imgData, format, x, y, w, h)
+                    // If we constrained height, we should use the corresponding width to maintain aspect ratio
+                    // Actually, let's just let it fill width unless it exceeds height constraint.
+                    let finalW = imgW;
+                    let finalH = imgH;
 
-                    doc.addImage(processed.dataUrl, 'JPEG', px, py + 3, finalW, finalH);
+                    if (contentWidth / processed.ratio > 130) {
+                        // Too tall for half-page, so constrain height to 130mm
+                        finalH = 130;
+                        finalW = 130 * processed.ratio;
+                    } else {
+                        finalH = contentWidth / processed.ratio;
+                        finalW = contentWidth;
+                    }
 
-                    pCol++;
-                    if (pCol > 1) { pCol = 0; pRow++; }
+                    doc.addImage(processed.dataUrl, 'JPEG', margin, y, finalW, finalH);
+                    y += finalH + 15;
                 }
             }
 
@@ -458,7 +573,9 @@ Conclude with a strict mathematical calculation for the baseline valuation. Mult
                 doc.setFont('courier', 'normal');
                 doc.setFontSize(8);
                 doc.text("RAW PROPERTY DATA (For AI Context)", margin, 15);
-                const jsonStr = JSON.stringify(data.raw, null, 2);
+
+                // Minified JSON
+                const jsonStr = JSON.stringify(data.raw);
                 const lines = doc.splitTextToSize(jsonStr, contentWidth);
                 let lineIdx = 0;
                 let pageY = 20;
