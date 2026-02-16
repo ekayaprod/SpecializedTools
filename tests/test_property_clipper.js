@@ -42,6 +42,16 @@ const dom = new JSDOM(`<!DOCTYPE html>
                                     {"href": "http://example.com/kitchen2.jpg"}
                                 ]
                             }
+                        ],
+                        "days_on_market": 15,
+                        "neighborhood": {
+                            "median_listing_price": 950000,
+                            "median_sold_price": 920000,
+                            "median_price_per_sqft": 450
+                        },
+                        "property_history": [
+                            { "date": "2023-01-01", "event_name": "Sold", "price": 900000 },
+                            { "date": "2022-06-01", "event_name": "Listed", "price": 850000 }
                         ]
                     }
                 }
@@ -108,6 +118,7 @@ global.Image = MockImage;
 
 // Mock jsPDF
 let pdfSaved = false;
+let pdfSavedFilename = '';
 let pdfContent = [];
 const MockJsPDF = class {
     constructor(opts) {
@@ -118,6 +129,10 @@ const MockJsPDF = class {
     setFontSize() {}
     setTextColor() {}
     setFillColor() {}
+    roundedRect() {} // Added for new grid layout
+    setDrawColor() {}
+    setLineWidth() {}
+    line() {}
     rect() {}
     text(txt) { pdfContent.push(txt); }
     splitTextToSize(txt) { return [txt]; }
@@ -127,6 +142,7 @@ const MockJsPDF = class {
     save(filename) {
         console.log("PDF saved:", filename);
         pdfSaved = true;
+        pdfSavedFilename = filename;
     }
 };
 
@@ -176,7 +192,6 @@ async function runTest() {
 
     // 4. Click 'Generate PDF' Button -> Opens Wizard
     const buttons = Array.from(modal.querySelectorAll('button'));
-    console.log("Buttons found in modal:", buttons.map(b => b.textContent));
     const pdfButton = buttons.find(b => b.textContent.includes('Generate PDF'));
     assert.ok(pdfButton, "Generate PDF Button should exist");
     console.log("✅ Generate PDF Button found.");
@@ -208,7 +223,23 @@ async function runTest() {
 
     if (pdfSaved) {
         console.log("✅ PDF Generation successful (save() called).");
-        // Verify prompt content
+        // Verify Filename (regex: FirstLine_YYYYMMDD-HHmm.pdf)
+        // Mock date logic might make it hard to predict exact time, but we can regex structure.
+        // Address: "123 Main St, Anytown, CA 90210" -> "123_Main_St"
+        // Pattern: /^123_Main_St_\d{8}-\d{4}\.pdf$/
+        // But since we can't easily access the saved filename from `runTest` scope unless we hook the MockJsPDF.save,
+        // let's rely on the console log from the Mock.
+        // Or update MockJsPDF to store the last saved filename.
+
+        // Verify filename structure
+        const filenameRegex = /^123_Main_St_\d{8}-\d{4}\.pdf$/;
+        if (filenameRegex.test(pdfSavedFilename)) {
+            console.log(`✅ Filename format correct: ${pdfSavedFilename}`);
+        } else {
+            console.error(`❌ Filename format INCORRECT: ${pdfSavedFilename}`);
+            process.exit(1);
+        }
+
         const flatContent = pdfContent.flat(Infinity).join(' ');
         // Check for Description (Prompt is no longer included in PDF, replaced by Hero Image)
         if (flatContent.includes('Great house with many features')) {
@@ -224,22 +255,54 @@ async function runTest() {
             console.error("❌ Description NOT found in PDF content. Content was: " + flatContent.substring(0, 100) + "...");
             process.exit(1);
         }
+
+        if (flatContent.includes('Primary Property Specs')) {
+            console.log("✅ Found 'Primary Property Specs' section.");
+        } else {
+             console.error("❌ 'Primary Property Specs' section MISSING.");
+        }
+
+        if (flatContent.includes('Market Context & Medians')) {
+            console.log("✅ Found 'Market Context & Medians' section.");
+        } else {
+             console.error("❌ 'Market Context & Medians' section MISSING.");
+        }
+
+        if (flatContent.includes('Seller/Listing Agent Description')) {
+            console.log("✅ Found 'Seller/Listing Agent Description' section.");
+        } else {
+             console.error("❌ 'Seller/Listing Agent Description' section MISSING.");
+        }
+
+        if (flatContent.includes('Property History')) {
+            console.log("✅ Found 'Property History' section.");
+            // Verify content
+            if (flatContent.includes('2023-01-01 - Sold - $900,000')) {
+                 console.log("✅ Property History content verified.");
+            } else {
+                 console.error("❌ Property History content incorrect.");
+            }
+        } else {
+             console.error("❌ 'Property History' section MISSING.");
+        }
+
+        if (flatContent.includes('RAW PROPERTY DATA (For AI Context)')) {
+            console.log("✅ Found 'RAW PROPERTY DATA' section.");
+            // Verify minification (rough check)
+            // The mock PDF puts text in array. We joined with space.
+            // Minified JSON shouldn't have newlines in the string itself except for splitTextToSize chunks.
+            // But we can check if the content contains the raw JSON string.
+            // We can check if "median_listing_price" is present.
+            if (flatContent.includes('median_listing_price')) {
+                 console.log("✅ Raw JSON content verified.");
+            }
+        } else {
+             console.error("❌ 'RAW PROPERTY DATA' section MISSING.");
+        }
+
     } else {
         console.error("❌ PDF Generation failed (save() NOT called).");
         process.exit(1);
-    }
-
-    // Check if modal closed or shows status?
-    // The code says: .then(() => { closeModal(); })
-    // So if successful, modal should be gone.
-    const modalAfter = dom.window.document.getElementById('pc-pdf-modal');
-    if (!modalAfter) {
-        console.log("✅ Modal closed after generation.");
-    } else {
-        console.warn("⚠️ Modal still exists. It might not have closed properly or status is still showing.");
-        // Check status text
-        const status = modalAfter.querySelector('#pdf-status');
-        if (status) console.log("Status text:", status.textContent);
     }
 }
 
