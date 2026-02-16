@@ -436,6 +436,13 @@
          * @param {HTMLElement} target - The cloned element.
          * @param {function(number): void} [onProgress] - Callback reporting processed count.
          * @returns {Promise<void>}
+         *
+         * @example
+         * const source = document.getElementById('source');
+         * const target = document.createElement('div');
+         * BookmarkletUtils.inlineStylesAsync(source, target).then(() => {
+         *   console.log('Styles inlined!');
+         * });
          */
         inlineStylesAsync(source, target, onProgress) {
             return new Promise(function(resolve) {
