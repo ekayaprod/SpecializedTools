@@ -21,8 +21,8 @@ def run(playwright):
     overlay.wait_for(state='visible')
 
     # Take a screenshot of the initial state
-    page.screenshot(path='verification/pa_county_finder_initial.png')
-    print("📸 Initial state screenshot saved to verification/pa_county_finder_initial.png")
+    page.screenshot(path='verification/pa_county_finder_initial.webp')
+    print("📸 Initial state screenshot saved to verification/pa_county_finder_initial.webp")
 
     # Type a ZIP code
     page.fill('.pa-input', '17301')
@@ -35,8 +35,8 @@ def run(playwright):
     result.wait_for(state='visible')
 
     # Take a screenshot of the result
-    page.screenshot(path='verification/pa_county_finder_result.png')
-    print("📸 Result state screenshot saved to verification/pa_county_finder_result.png")
+    page.screenshot(path='verification/pa_county_finder_result.webp')
+    print("📸 Result state screenshot saved to verification/pa_county_finder_result.webp")
 
     browser.close()
 

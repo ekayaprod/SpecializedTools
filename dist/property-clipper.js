@@ -160,7 +160,7 @@ img.src = url;
 }
 };
 const HTMLGenerator = {
-create: (data, selectedPhotos, promptText) => {
+create: (data, selectedPhotos) => {
 const escapeHTML = (str) => String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const specsHtml = Object.entries({ ...data.specs, ...data.financials }).map(([k, v]) => `
 <div class="metric-box">
@@ -248,7 +248,7 @@ script.onload = resolve;
 document.head.appendChild(script);
 });
 },
-create: async (data, selectedPhotos, promptText, statusCb) => {
+create: async (data, selectedPhotos, statusCb) => {
 await PDFGenerator.loadLib();
 const { jsPDF } = window.jspdf;
 const doc = new jsPDF({ unit: 'mm', format: 'a4' });
@@ -277,11 +277,6 @@ let heroHeight = contentWidth / heroProcessed.ratio;
 // Cap max height for Page 1 hero (e.g., 90mm)
 if (heroHeight > 90) {
 heroHeight = 90;
-// re-calc width to keep aspect ratio? No, usually we constrain by width.
-// If we constrain by height, width shrinks.
-// Let's just fit within box.
-const scale = 90 / (contentWidth / heroProcessed.ratio);
-// Actually, ImageProcessor handles resize, but let's just draw it.
 }
 doc.addImage(heroProcessed.dataUrl, 'JPEG', margin, y, heroWidth, heroHeight);
 y += heroHeight + 10;
@@ -436,10 +431,10 @@ generate: () => {
 const container = document.getElementById(CONFIG.modalId);
 container.innerHTML = '<div style="text-align:center;padding:20px"><h3>Generating...</h3><div id="pdf-status">Processing...</div></div>';
 if (Wizard.state.format === 'pdf') {
-PDFGenerator.create(Wizard.state.data, Wizard.state.selectedPhotos, Wizard.state.promptText, (msg) => document.getElementById('pdf-status').innerText = msg)
+PDFGenerator.create(Wizard.state.data, Wizard.state.selectedPhotos, (msg) => document.getElementById('pdf-status').innerText = msg)
 .then(closeModal).catch(e => alert(e.message));
 } else {
-HTMLGenerator.create(Wizard.state.data, Wizard.state.selectedPhotos, Wizard.state.promptText);
+HTMLGenerator.create(Wizard.state.data, Wizard.state.selectedPhotos);
 closeModal();
 }
 }

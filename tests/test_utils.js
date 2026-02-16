@@ -155,6 +155,34 @@ console.log("Running BookmarkletUtils tests...");
             console.log("✅ buildElement passed");
         }
 
+        // Test 6: normalizeImages - Alt Tag Normalization
+        {
+            console.log("Test 6: normalizeImages Alt Tag");
+            const container = document.createElement('div');
+            container.innerHTML = `
+                <img id="img-no-alt" src="test.jpg">
+                <img id="img-with-alt" src="test2.jpg" alt="Existing Alt">
+                <picture>
+                    <source srcset="pic.jpg">
+                    <img id="pic-no-alt" src="spacer.gif">
+                </picture>
+            `;
+            document.body.appendChild(container);
+
+            await window.BookmarkletUtils.normalizeImages(container);
+
+            const imgNoAlt = document.getElementById('img-no-alt');
+            const imgWithAlt = document.getElementById('img-with-alt');
+            const picNoAlt = document.getElementById('pic-no-alt');
+
+            assert.strictEqual(imgNoAlt.getAttribute('alt'), '', 'Should add empty alt to img without one');
+            assert.strictEqual(imgWithAlt.getAttribute('alt'), 'Existing Alt', 'Should preserve existing alt');
+            assert.strictEqual(picNoAlt.getAttribute('alt'), '', 'Should add empty alt to picture img without one');
+
+            document.body.removeChild(container);
+            console.log("✅ normalizeImages Alt Tag passed");
+        }
+
         console.log("All tests passed!");
     } catch (err) {
         console.error("Test failed:", err);

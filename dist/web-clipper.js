@@ -123,6 +123,9 @@ img.removeAttribute('height');
 img.style.maxWidth = '100%';
 img.style.height = 'auto';
 img.style.display = 'block';
+if (!img.hasAttribute('alt')) {
+img.setAttribute('alt', '');
+}
 }
 count++;
 if (count % CHUNK_SIZE === 0 || (performance.now() - startTime) > 12) {

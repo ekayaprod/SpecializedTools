@@ -204,6 +204,11 @@
                             img.style.maxWidth = '100%';
                             img.style.height = 'auto';
                             img.style.display = 'block';
+
+                            /* 4. Accessibility: Ensure alt attribute exists */
+                            if (!img.hasAttribute('alt')) {
+                                img.setAttribute('alt', '');
+                            }
                         }
 
                         count++;
