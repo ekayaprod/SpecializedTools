@@ -65,6 +65,48 @@
         return !(checkVal.includes('javascript:') || checkVal.includes('vbscript:') || checkVal.includes('expression('));
     }
 
+    function traverse(node, parts) {
+        if (node.nodeType === 3) { parts.push(node.nodeValue); return; }
+        if (node.nodeType !== 1) return;
+
+        const tag = node.tagName.toLowerCase();
+        if (tag === 'script' || tag === 'style' || tag === 'noscript') return;
+
+        switch(tag) {
+            case 'h1': parts.push('\n# '); break;
+            case 'h2': parts.push('\n## '); break;
+            case 'h3': parts.push('\n### '); break;
+            case 'h4': parts.push('\n#### '); break;
+            case 'strong': case 'b': parts.push('**'); break;
+            case 'em': case 'i': parts.push('*'); break;
+            case 'p': parts.push('\n\n'); break;
+            case 'br': parts.push('\n'); break;
+            case 'li':
+                parts.push((node.parentElement && node.parentElement.tagName.toLowerCase() === 'ol') ?
+                    '\n' + (Array.prototype.indexOf.call(node.parentElement.children, node) + 1) + '. ' :
+                    '\n- ');
+                break;
+            case 'a': parts.push('['); break;
+            case 'img':
+                parts.push('![' + (node.getAttribute('alt')||'') + '](' + node.getAttribute('src') + ')');
+                return;
+            case 'table': parts.push('\n\n'); break;
+            case 'td': case 'th': parts.push('| '); break;
+        }
+
+        for (let i = 0; i < node.childNodes.length; i++) traverse(node.childNodes[i], parts);
+
+        switch(tag) {
+            case 'strong': case 'b': parts.push('**'); break;
+            case 'em': case 'i': parts.push('*'); break;
+            case 'a':
+                parts.push('](' + (node.getAttribute('href')||'') + ')');
+                break;
+            case 'h1': case 'h2': case 'h3': case 'h4': case 'p': parts.push('\n'); break;
+            case 'tr': parts.push('|\n'); break;
+        }
+    }
+
     w.BookmarkletUtils = {
         /**
          * Creates a DOM element with specified properties.
@@ -483,78 +525,7 @@
             const doc = parser.parseFromString(html, 'text/html');
 
             const parts = [];
-
-            function traverse(node) {
-                if (node.nodeType === 3) {
-                    /* Text node */
-                    parts.push(node.nodeValue);
-                    return;
-                }
-
-                if (node.nodeType !== 1) return;
-
-                const tag = node.tagName.toLowerCase();
-
-                if (tag === 'script' || tag === 'style' || tag === 'noscript') return;
-
-                switch(tag) {
-                    case 'h1': parts.push('\n# '); break;
-                    case 'h2': parts.push('\n## '); break;
-                    case 'h3': parts.push('\n### '); break;
-                    case 'h4': parts.push('\n#### '); break;
-                    case 'strong':
-                    case 'b': parts.push('**'); break;
-                    case 'em':
-                    case 'i': parts.push('*'); break;
-                    case 'p': parts.push('\n\n'); break;
-                    case 'br': parts.push('\n'); break;
-                    case 'li':
-                        if (node.parentElement && node.parentElement.tagName.toLowerCase() === 'ol') {
-                            const index = Array.prototype.indexOf.call(node.parentElement.children, node) + 1;
-                            parts.push('\n' + index + '. ');
-                        } else {
-                            parts.push('\n- ');
-                        }
-                        break;
-                    case 'a': parts.push('['); break;
-                    case 'img':
-                        const src = node.getAttribute('src');
-                        const alt = node.getAttribute('alt') || '';
-                        parts.push('![' + alt + '](' + src + ')');
-                        return; /* Skip children of img */
-                    case 'table': parts.push('\n\n'); break;
-                    case 'tr': break;
-                    case 'td':
-                    case 'th': parts.push('| '); break;
-                }
-
-                /* Traverse children */
-                for (let i = 0; i < node.childNodes.length; i++) {
-                    traverse(node.childNodes[i]);
-                }
-
-                /* Closing tags */
-                switch(tag) {
-                    case 'strong':
-                    case 'b': parts.push('**'); break;
-                    case 'em':
-                    case 'i': parts.push('*'); break;
-                    case 'a':
-                        const href = node.getAttribute('href');
-                        if (href) parts.push('](' + href + ')');
-                        else parts.push(']');
-                        break;
-                    case 'h1':
-                    case 'h2':
-                    case 'h3':
-                    case 'h4':
-                    case 'p':
-                        parts.push('\n'); break;
-                    case 'tr': parts.push('|\n'); break;
-                }
-            }
-
-            traverse(doc.body);
+            traverse(doc.body, parts);
 
             /* Cleanup excessive newlines */
             return parts.join('').replace(/\n\s+\n/g, '\n\n').trim();

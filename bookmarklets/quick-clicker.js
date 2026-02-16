@@ -6,7 +6,6 @@
      * @typedef {Object} QuickClickerState
      * @property {HTMLElement|null} t1 - The target element to click.
      * @property {string|null} t1Val - The value to type into the target input (if applicable).
-     * @property {boolean} loop - Whether to loop the action (currently unused/false).
      * @property {boolean} pressEnter - Whether to press Enter after typing.
      * @property {WakeLockSentinel|null} wakeLock - The Screen Wake Lock sentinel to prevent sleep.
      * @property {'delay'|'clock'} timeMode - The timing mode: 'delay' (countdown) or 'clock' (specific time).
@@ -21,7 +20,7 @@
         constructor(){
             this.id = 'dc27-'+Math.random().toString(36).slice(2);
             /** @type {QuickClickerState} */
-            this.state = { t1: null, t1Val: null, loop: false, pressEnter: false, wakeLock: null, timeMode: 'delay' };
+            this.state = { t1: null, t1Val: null, pressEnter: false, wakeLock: null, timeMode: 'delay' };
             this.cleanupFns = [];
             this.init();
         }
