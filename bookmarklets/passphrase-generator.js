@@ -1,5 +1,4 @@
 (function () {
-    /** @require utils.js */
 
     /* -------------------------------------------------------------------------- */
     /*                                CONFIGURATION                               */
@@ -107,7 +106,7 @@
     };
 
     /* HELPERS */
-    const getRand = (window.BookmarkletUtils && window.BookmarkletUtils.getRand) ? window.BookmarkletUtils.getRand : (max) => Math.floor(Math.random() * max);
+    const getRand = (max) => Math.floor(Math.random() * max);
     function R(a) { return a[getRand(a.length)]; }
     function Cap(s) { return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase(); }
 

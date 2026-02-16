@@ -41,7 +41,7 @@ EXPECTED DELIVERABLES:
     /* UTILITIES */
     const buildElement = (tag, styles = {}, text = '', parent = null, props = {}) => {
         const el = document.createElement(tag);
-        if (text) el.innerText = text;
+        if (text) el.textContent = text;
         Object.assign(el.style, styles);
         Object.assign(el, props);
         if (parent) parent.appendChild(el);
@@ -492,7 +492,7 @@ EXPECTED DELIVERABLES:
             grp.photos.forEach(p => {
                 const d = buildElement('div', { position: 'relative' }, '', grid);
                 const img = buildElement('img', { width: '100%', height: '80px', objectFit: 'cover' }, '', d, { src: p.url });
-                const chk = buildElement('input', { type: 'checkbox', position: 'absolute', top: '2px', left: '2px', checked: true }, '', d);
+                const chk = buildElement('input', { position: 'absolute', top: '2px', left: '2px' }, '', d, { type: 'checkbox', checked: true });
                 checks.push({ chk, p });
             });
 
