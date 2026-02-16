@@ -18,41 +18,7 @@ const safeProperties = [
 'position', 'top', 'bottom', 'left', 'right',
 'transform', 'transform-origin', 'transform-style'
 ];
-function isEventAttribute(name) {
-return name.toLowerCase().startsWith('on');
-}
-function isUnsafeAttribute(name) {
-const lower = name.toLowerCase();
-return ['href', 'src', 'action', 'data', 'formaction', 'poster', 'xlink:href', 'srcset'].includes(lower);
-}
-function containsMaliciousProtocol(value, isSrcset) {
-const checkVal = value.replace(/\s+/g, '').toLowerCase();
-if (isSrcset) {
-return checkVal.includes('javascript:') || checkVal.includes('vbscript:');
-}
-return checkVal.startsWith('javascript:') || checkVal.startsWith('vbscript:');
-}
-function isValidDataUri(tagName, value) {
-const checkVal = value.replace(/\s+/g, '').toLowerCase();
-if (!checkVal.startsWith('data:')) return true;
-const isImageTag = ['img', 'source', 'picture'].includes(tagName.toLowerCase());
-const isImageMime = checkVal.startsWith('data:image/');
-const isSvg = checkVal.includes('svg+xml');
-return isImageTag && isImageMime && !isSvg;
-}
-function isSafeStyle(value) {
-const checkVal = value.replace(/\s+/g, '').toLowerCase();
-return !(checkVal.includes('javascript:') || checkVal.includes('vbscript:') || checkVal.includes('expression('));
-}
 w.BookmarkletUtils = {
-buildElement(tag, styles = {}, text = '', parent = null, props = {}) {
-const el = document.createElement(tag);
-if (text) el.textContent = text;
-Object.assign(el.style, styles);
-Object.assign(el, props);
-if (parent) parent.appendChild(el);
-return  (el);
-},
 sanitizeFilename(s) {
 return String(s || 'export').replace(/[^a-z0-9]/gi, '_').substring(0, 50);
 },
@@ -138,6 +104,32 @@ processChunk();
 });
 },
 sanitizeAttributes(root) {
+function isEventAttribute(name) {
+return name.toLowerCase().startsWith('on');
+}
+function isUnsafeAttribute(name) {
+const lower = name.toLowerCase();
+return ['href', 'src', 'action', 'data', 'formaction', 'poster', 'xlink:href', 'srcset'].includes(lower);
+}
+function containsMaliciousProtocol(value, isSrcset) {
+const checkVal = value.replace(/\s+/g, '').toLowerCase();
+if (isSrcset) {
+return checkVal.includes('javascript:') || checkVal.includes('vbscript:');
+}
+return checkVal.startsWith('javascript:') || checkVal.startsWith('vbscript:');
+}
+function isValidDataUri(tagName, value) {
+const checkVal = value.replace(/\s+/g, '').toLowerCase();
+if (!checkVal.startsWith('data:')) return true;
+const isImageTag = ['img', 'source', 'picture'].includes(tagName.toLowerCase());
+const isImageMime = checkVal.startsWith('data:image/');
+const isSvg = checkVal.includes('svg+xml');
+return isImageTag && isImageMime && !isSvg;
+}
+function isSafeStyle(value) {
+const checkVal = value.replace(/\s+/g, '').toLowerCase();
+return !(checkVal.includes('javascript:') || checkVal.includes('vbscript:') || checkVal.includes('expression('));
+}
 const process = function(el) {
 if (!el.attributes) return;
 const attrs = [];
