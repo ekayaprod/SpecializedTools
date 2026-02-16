@@ -11,7 +11,7 @@ declare global {
          * @param {Object} [props={}] - Additional properties to assign to the element.
          * @returns {HTMLElement} The created element.
          */
-        buildElement(tag: string, styles?: Record<string, string>, text?: string, parent?: HTMLElement | null, props?: Record<string, any>): HTMLElement;
+        buildElement(tag: string, styles?: Record<string, string>, text?: string, parent?: HTMLElement | null, props?: Record<string, string | number | boolean | Function | null | undefined>): HTMLElement;
 
         /**
          * Shows a toast notification.
