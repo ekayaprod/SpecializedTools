@@ -1,33 +1,27 @@
-# 👁️ Overseer Report (2025-02-16)
+# 👁️ Overseer Report (2026-02-16)
 
 ## 🏗️ Structural Hotspots
-- [ ] bookmarklets/property-clipper.js (High Complexity: 739 lines, Critical Business Logic)
-- [ ] bookmarklets/web-clipper.js (High Complexity: 548 lines, DOM Manipulation Heavy)
-- [ ] bookmarklets/passphrase-generator.js (Large Dictionary: 471 lines, Potential Bundle Size Impact)
+- [ ] bookmarklets/passphrase-generator.js (56KB, Low Churn) - High Complexity (Data Heavy).
+- [ ] bookmarklets/property-clipper.js (37KB, Low Churn) - High Complexity.
+- [ ] package-lock.json AND pnpm-lock.yaml coexist (Potential Conflict).
 
 ## ⚡ Performance Bottlenecks
-- [ ] bookmarklets/passphrase-generator.js (Embedded Dictionary `WORD_BANK` increases payload)
-- [ ] bookmarklets/property-clipper.js (Client-side PDF generation can block UI thread)
+- [ ] Bundle Size: 56KB (passphrase-generator.js) - Large for bookmarklet.
+- [ ] Client-side compilation used (No build script detected).
 
 ## 🧹 Debris Field
-- [ ] tests/test_property_clipper_errors.js (Broken Test: `ReferenceError: alert is not defined`)
-- [ ] bookmarklets/property-clipper.js (10+ `alert()` calls found - poor UX practice)
-- [ ] bookmarklets/web-clipper.js (5+ `alert()` calls found - poor UX practice)
-- [ ] Environment Setup (Missing `jsdom` dependency in initial install)
+- [ ] None detected.
 
 ## 🛡️ Security Radar
-- [ ] npm audit: Clean (0 Vulnerabilities)
-- [ ] bookmarklets/utils.js (Good sanitization logic present: `sanitizeAttributes`, `safeProperties`)
+- [ ] 0 Vulnerabilities found (npm audit).
+- [ ] No hardcoded secrets detected.
 
 ## 🕵️ Coverage Gaps
-- [ ] tests/test_property_clipper_errors.js (Failing Test Suite)
-- [ ] bookmarklets/utils.js (Type Error: `Property 'buildElement' is missing in type 'BookmarkletUtilsInterface'`)
-- [ ] bookmarklets/bookmarklet-builder.js (Indirectly tested via `tests/test_bookmarklet_generation.js`, but explicit unit tests for builder logic could be improved)
+- [ ] None detected (100% file coverage).
 
 ## 🆙 Modernization Targets
-- [ ] Replace `alert()` with non-blocking UI (Toast/Modal) across all bookmarklets
-- [ ] Fix TypeScript Linting Errors (`npm run lint` fails on `utils.js`)
+- [ ] No build script found (Relies on client-side compilation in index.html).
+- [ ] Consider adding a build process for minification/bundling.
 
 ## 🎨 UX/A11y Friction
-- [ ] `alert()` usage disrupts screen readers and blocks user flow
-- [ ] bookmarklets/quick-clicker.js (Good A11y coverage in `tests/test_quick_clicker_ux.js`)
+- [ ] None detected (ARIA labels present in source).
