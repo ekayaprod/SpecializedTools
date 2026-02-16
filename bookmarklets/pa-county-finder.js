@@ -175,13 +175,21 @@
     };
 
     /**
+     * Escapes HTML characters in a string.
+     * @param {string} str - The string to escape.
+     * @returns {string} The escaped string.
+     */
+    const escapeHtml = (str) => str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+
+    /**
      * Updates the result display area.
      * @param {string|null} r - The result string to display.
      * @param {string} q - The original query string for error message.
      */
     const updateResult = (r, q) => {
-        const safeQ = q.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-        resultDiv.innerHTML = r ? `<div class="pa-result-success"><strong>Found:</strong><br>${r}</div>`
+        const safeQ = escapeHtml(q);
+        const safeR = r ? escapeHtml(r) : '';
+        resultDiv.innerHTML = r ? `<div class="pa-result-success"><strong>Found:</strong><br>${safeR}</div>`
                                 : `<div class="pa-result-error">No match for "<strong>${safeQ}</strong>"</div>`;
     };
 
