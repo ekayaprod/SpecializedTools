@@ -241,6 +241,7 @@
     <!-- Toast Container -->
     <div id="toast-container" class="fixed bottom-5 right-5 flex flex-col gap-3 z-50" aria-live="polite" aria-atomic="true"></div>
 
+    <script src="bookmarklets/bookmarklet-builder.js"></script>
     <script>
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
@@ -291,28 +292,6 @@
         }
 
         /* CLIENT-SIDE BUILD LOGIC */
-        function compile(code) {
-            // 1. Remove Block Comments (Strictly avoid // comments in source files)
-            code = code.replace(/\/\*[\s\S]*?\*\//g, '');
-
-            // 2. Trim lines but PRESERVE NEWLINES.
-            // This is critical for template literals (like LLM Prompts) to maintain formatting.
-            code = code.split('\n').map(line => line.trim()).filter(l => l.length > 0).join('\n');
-
-            return code;
-        }
-
-        function extractDependencies(code) {
-            const deps = [];
-            // Extract @require directives from block comments
-            const regex = /\/\*+\s*@require\s+(\S+)\s*\*\//g;
-            let match;
-            while ((match = regex.exec(code)) !== null) {
-                deps.push(match[1]);
-            }
-            return deps;
-        }
-
         async function load(id, file, name) {
             const el = document.getElementById(id);
             const copyBtnId = 'copy-' + id;
@@ -326,7 +305,7 @@
                 // 1. Handle Dependencies
                 // Assume dependencies are relative to the file being loaded
                 const pathPrefix = file.substring(0, file.lastIndexOf('/') + 1);
-                const deps = extractDependencies(code);
+                const deps = BookmarkletBuilder.extractDependencies(code);
 
                 // Prepend dependencies in reverse order if needed, but here simple prepend works
                 // We use a simple loop. If order matters, we'd need more complex logic.
@@ -366,7 +345,7 @@
                 }
 
                 // 2. Compile
-                code = compile(code);
+                code = BookmarkletBuilder.compile(code);
 
                 // 3. Encode URI (Handles the newlines via %0A)
                 const href = `javascript:${encodeURIComponent(code)}`;

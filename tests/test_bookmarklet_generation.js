@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { compile, extractDependencies } = require('../compile_bookmarklet');
+const { compile, extractDependencies } = require('../bookmarklets/bookmarklet-builder.js');
 
 console.log('Running tests for bookmarklet generation logic...');
 
