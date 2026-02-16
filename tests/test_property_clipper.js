@@ -121,6 +121,7 @@ const MockJsPDF = class {
     rect() {}
     text(txt) { pdfContent.push(txt); }
     splitTextToSize(txt) { return [txt]; }
+    getTextDimensions(txt) { return { w: 100, h: 10 }; }
     addImage(dataUrl) { console.log("Image added to PDF:", dataUrl.substring(0, 30) + "..."); }
     addPage() { console.log("New page added to PDF"); }
     save(filename) {
@@ -169,9 +170,13 @@ async function runTest() {
     assert.ok(strButton, "STR Button should exist");
     console.log("✅ STR Button found.");
 
-    // 3. Click STR Button -> Opens Wizard
-    console.log("Clicking STR button...");
-    strButton.click();
+    const appraisalButton = buttons.find(b => b.textContent.includes('Property Appraisal'));
+    assert.ok(appraisalButton, "Appraisal Button should exist");
+    console.log("✅ Appraisal Button found.");
+
+    // 3. Click Appraisal Button -> Opens Wizard (Testing the new prompt)
+    console.log("Clicking Appraisal button...");
+    appraisalButton.click();
 
     // Wait for Wizard to render
     await new Promise(r => setTimeout(r, 100));
@@ -197,6 +202,20 @@ async function runTest() {
 
     if (pdfSaved) {
         console.log("✅ PDF Generation successful (save() called).");
+        // Verify prompt content
+        const flatContent = pdfContent.flat(Infinity).join(' ');
+        if (flatContent.includes('Technical Comparable Analysis')) {
+             console.log("✅ Found Appraisal Prompt in PDF.");
+             if (flatContent.includes('123 Main St') && flatContent.includes('$1,000,000')) {
+                 console.log("✅ Placeholders interpolated correctly.");
+             } else {
+                 console.error("❌ Placeholders NOT interpolated correctly.");
+                 process.exit(1);
+             }
+        } else {
+            console.error("❌ Appraisal Prompt NOT found in PDF content.");
+            process.exit(1);
+        }
     } else {
         console.error("❌ PDF Generation failed (save() NOT called).");
         process.exit(1);

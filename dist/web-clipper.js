@@ -18,6 +18,32 @@ const safeProperties = [
 'position', 'top', 'bottom', 'left', 'right',
 'transform', 'transform-origin', 'transform-style'
 ];
+function isEventAttribute(name) {
+return name.toLowerCase().startsWith('on');
+}
+function isUnsafeAttribute(name) {
+const lower = name.toLowerCase();
+return ['href', 'src', 'action', 'data', 'formaction', 'poster', 'xlink:href', 'srcset'].includes(lower);
+}
+function containsMaliciousProtocol(value, isSrcset) {
+const checkVal = value.replace(/\s+/g, '').toLowerCase();
+if (isSrcset) {
+return checkVal.includes('javascript:') || checkVal.includes('vbscript:');
+}
+return checkVal.startsWith('javascript:') || checkVal.startsWith('vbscript:');
+}
+function isValidDataUri(tagName, value) {
+const checkVal = value.replace(/\s+/g, '').toLowerCase();
+if (!checkVal.startsWith('data:')) return true;
+const isImageTag = ['img', 'source', 'picture'].includes(tagName.toLowerCase());
+const isImageMime = checkVal.startsWith('data:image/');
+const isSvg = checkVal.includes('svg+xml');
+return isImageTag && isImageMime && !isSvg;
+}
+function isSafeStyle(value) {
+const checkVal = value.replace(/\s+/g, '').toLowerCase();
+return !(checkVal.includes('javascript:') || checkVal.includes('vbscript:') || checkVal.includes('expression('));
+}
 w.BookmarkletUtils = {
 buildElement(tag, styles = {}, text = '', parent = null, props = {}) {
 const el = document.createElement(tag);
@@ -120,30 +146,23 @@ for (let i = 0; i < attrs.length; i++) {
 const name = attrs[i];
 const lowerName = name.toLowerCase();
 const val = (el.getAttribute(name) || '').toLowerCase().trim();
-if (lowerName.startsWith('on')) {
+if (isEventAttribute(lowerName)) {
 el.removeAttribute(name);
 }
 else if (lowerName === 'srcdoc') {
 el.removeAttribute(name);
 }
-else if (['href', 'src', 'action', 'data', 'formaction', 'poster', 'xlink:href', 'srcset'].includes(lowerName)) {
-const checkVal = val.replace(/\s+/g, '').toLowerCase();
+else if (isUnsafeAttribute(lowerName)) {
 const isSrcset = lowerName === 'srcset';
-if (checkVal.startsWith('javascript:') || checkVal.startsWith('vbscript:') || (isSrcset && (checkVal.includes('javascript:') || checkVal.includes('vbscript:')))) {
+if (containsMaliciousProtocol(val, isSrcset)) {
 el.removeAttribute(name);
 }
-else if (checkVal.startsWith('data:')) {
-const isImageTag = ['img', 'source', 'picture'].includes(el.tagName.toLowerCase());
-const isImageMime = checkVal.startsWith('data:image/');
-const isSvg = checkVal.includes('svg+xml');
-if (!isImageTag || !isImageMime || isSvg) {
+else if (!isValidDataUri(el.tagName, val)) {
 el.removeAttribute(name);
-}
 }
 }
 else if (lowerName === 'style') {
-const checkVal = val.replace(/\s+/g, '');
-if (checkVal.includes('javascript:') || checkVal.includes('vbscript:') || checkVal.includes('expression(')) {
+if (!isSafeStyle(val)) {
 el.removeAttribute(name);
 }
 }
@@ -163,7 +182,7 @@ const CHUNK_SIZE = 50;
 function processChunk() {
 const startTime = performance.now();
 while (queue.length > 0) {
-const item = queue.shift();
+const item = queue.pop();
 const s = item.s;
 const t = item.t;
 const computed = window.getComputedStyle(s);
@@ -183,7 +202,7 @@ t.style.cssText += styles.join('; ') + '; ';
 count++;
 const sourceChildren = s.children;
 const targetChildren = t.children;
-for (let i = 0; i < sourceChildren.length; i++) {
+for (let i = sourceChildren.length - 1; i >= 0; i--) {
 if (targetChildren[i]) {
 queue.push({s:  (sourceChildren[i]), t:  (targetChildren[i])});
 }
@@ -270,7 +289,12 @@ return parts.join('').replace(/\n\s+\n/g, '\n\n').trim();
 };
 })(window);
 (function () {
-const CONFIG = {
+if (window.__wc_instance) {
+window.__wc_instance.destroy();
+}
+class WebClipper {
+constructor() {
+this.config = {
 highlightColor: 'rgba(0, 0, 255, 0.1)',
 outlineStyle: '2px solid blue',
 parentHighlightColor: 'rgba(255, 215, 0, 0.15)',
@@ -281,8 +305,16 @@ highlightId: 'wc-bookmarklet-highlight',
 parentHighlightId: 'wc-bookmarklet-highlight-parent',
 ignoreTags: ['HTML', 'BODY', 'SCRIPT', 'STYLE', 'NOSCRIPT', 'IFRAME']
 };
-let activeElement = null;
-function getOrCreateHighlightEl(id, outline, color, zIndex) {
+this.activeElement = null;
+// Bind methods to this instance
+this.handleMouseOver = this.handleMouseOver.bind(this);
+this.handleMouseOut = this.handleMouseOut.bind(this);
+this.handleClick = this.handleClick.bind(this);
+this.handleEscape = this.handleEscape.bind(this);
+this.closeEditor = this.closeEditor.bind(this);
+this.startFinder();
+}
+getOrCreateHighlightEl(id, outline, color, zIndex) {
 let el = document.getElementById(id);
 if (!el) {
 el = document.createElement('div');
@@ -301,39 +333,42 @@ el.style.backgroundColor = color;
 el.style.zIndex = zIndex;
 return el;
 }
-function startFinder() {
+startFinder() {
 document.body.style.cursor = 'crosshair';
-document.addEventListener('mouseover', handleMouseOver);
-document.addEventListener('mouseout', handleMouseOut);
-document.addEventListener('click', handleClick, { capture: true });
-document.addEventListener('keydown', handleEscape);
+document.addEventListener('mouseover', this.handleMouseOver);
+document.addEventListener('mouseout', this.handleMouseOut);
+document.addEventListener('click', this.handleClick, { capture: true });
+document.addEventListener('keydown', this.handleEscape);
 }
-function stopFinder() {
+stopFinder() {
 document.body.style.cursor = 'default';
-document.removeEventListener('mouseover', handleMouseOver);
-document.removeEventListener('mouseout', handleMouseOut);
-document.removeEventListener('click', handleClick, { capture: true });
-document.removeEventListener('keydown', handleEscape);
-clearHighlights();
-const h1 = document.getElementById(CONFIG.highlightId);
+document.removeEventListener('mouseover', this.handleMouseOver);
+document.removeEventListener('mouseout', this.handleMouseOut);
+document.removeEventListener('click', this.handleClick, { capture: true });
+document.removeEventListener('keydown', this.handleEscape);
+this.clearHighlights();
+const h1 = document.getElementById(this.config.highlightId);
 if (h1) h1.remove();
-const h2 = document.getElementById(CONFIG.parentHighlightId);
+const h2 = document.getElementById(this.config.parentHighlightId);
 if (h2) h2.remove();
 }
-function handleMouseOver(e) {
-if (CONFIG.ignoreTags.includes((e.target).tagName) || (e.target).closest('#' + CONFIG.overlayId) || (e.target).closest('#' + CONFIG.highlightId)) return;
-activeElement =  (e.target);
-const rect = activeElement.getBoundingClientRect();
-const highlight = getOrCreateHighlightEl(CONFIG.highlightId, CONFIG.outlineStyle, CONFIG.highlightColor, '1000000');
+handleMouseOver(e) {
+const target =  (e.target);
+if (this.config.ignoreTags.includes(target.tagName) ||
+target.closest('#' + this.config.overlayId) ||
+target.closest('#' + this.config.highlightId)) return;
+this.activeElement = target;
+const rect = this.activeElement.getBoundingClientRect();
+const highlight = this.getOrCreateHighlightEl(this.config.highlightId, this.config.outlineStyle, this.config.highlightColor, '1000000');
 highlight.style.top = rect.top + 'px';
 highlight.style.left = rect.left + 'px';
 highlight.style.width = rect.width + 'px';
 highlight.style.height = rect.height + 'px';
 highlight.style.display = 'block';
-const parent = activeElement.parentElement;
-if (parent && !CONFIG.ignoreTags.includes(parent.tagName)) {
+const parent = this.activeElement.parentElement;
+if (parent && !this.config.ignoreTags.includes(parent.tagName)) {
 const parentRect = parent.getBoundingClientRect();
-const parentHighlight = getOrCreateHighlightEl(CONFIG.parentHighlightId, CONFIG.parentOutlineStyle, CONFIG.parentHighlightColor, '999999');
+const parentHighlight = this.getOrCreateHighlightEl(this.config.parentHighlightId, this.config.parentOutlineStyle, this.config.parentHighlightColor, '999999');
 let pTop = parentRect.top;
 let pLeft = parentRect.left;
 let pWidth = parentRect.width;
@@ -349,31 +384,31 @@ parentHighlight.style.width = pWidth + 'px';
 parentHighlight.style.height = pHeight + 'px';
 parentHighlight.style.display = 'block';
 } else {
-const ph = document.getElementById(CONFIG.parentHighlightId);
+const ph = document.getElementById(this.config.parentHighlightId);
 if (ph) ph.style.display = 'none';
 }
 }
-function handleMouseOut(e) {
-if (e.target === activeElement) {
-clearHighlights();
-activeElement = null;
+handleMouseOut(e) {
+if (e.target === this.activeElement) {
+this.clearHighlights();
+this.activeElement = null;
 }
 }
-function clearHighlights() {
-const h1 = document.getElementById(CONFIG.highlightId);
+clearHighlights() {
+const h1 = document.getElementById(this.config.highlightId);
 if (h1) h1.style.display = 'none';
-const h2 = document.getElementById(CONFIG.parentHighlightId);
+const h2 = document.getElementById(this.config.parentHighlightId);
 if (h2) h2.style.display = 'none';
 }
-function handleClick(e) {
-if (!activeElement) return;
+handleClick(e) {
+if (!this.activeElement) return;
 e.preventDefault();
 e.stopPropagation();
-const target = activeElement;
-stopFinder();
-showLoadingOverlay();
-setTimeout(function() {
-openEditor(target).catch(function(err) {
+const target = this.activeElement;
+this.stopFinder();
+this.showLoadingOverlay();
+setTimeout(() => {
+this.openEditor(target).catch((err) => {
 console.error('Web Clipper editor open failed', {
 target: {
 tagName: target.tagName,
@@ -382,17 +417,17 @@ className: target.className
 },
 error: err
 });
-hideLoadingOverlay();
+this.hideLoadingOverlay();
 alert('Error opening editor: ' + err.message);
 });
 }, 50);
 }
-function handleEscape(e) {
+handleEscape(e) {
 if (e.key === 'Escape') {
-stopFinder();
+this.stopFinder();
 }
 }
-function showLoadingOverlay(message) {
+showLoadingOverlay(message) {
 const msg = message || 'Capturing styles & layout...';
 let div = document.getElementById('wc-loading');
 if (!div) {
@@ -414,21 +449,21 @@ document.body.appendChild(div);
 }
 div.innerHTML = '<span>' + msg + '</span>';
 }
-function hideLoadingOverlay() {
+hideLoadingOverlay() {
 const div = document.getElementById('wc-loading');
 if (div) div.remove();
 }
-async function openEditor(element) {
+async openEditor(element) {
 await BookmarkletUtils.normalizeImages(element);
 const clone =  (element.cloneNode(true));
-await BookmarkletUtils.inlineStylesAsync(element, clone, function(count) {
-showLoadingOverlay('Capturing styles & layout... (' + count + ' elements)');
+await BookmarkletUtils.inlineStylesAsync(element, clone, (count) => {
+this.showLoadingOverlay('Capturing styles & layout... (' + count + ' elements)');
 });
-cleanupDOM(clone);
+this.cleanupDOM(clone);
 const overlay = document.createElement('div');
-overlay.id = CONFIG.overlayId;
+overlay.id = this.config.overlayId;
 const modal = document.createElement('div');
-modal.id = CONFIG.modalId;
+modal.id = this.config.modalId;
 const header = document.createElement('div');
 header.className = 'wc-header';
 header.innerHTML = `
@@ -452,12 +487,12 @@ const footer = document.createElement('div');
 footer.className = 'wc-footer';
 const btnCancel = document.createElement('button');
 btnCancel.textContent = 'Cancel';
-btnCancel.onclick = closeEditor;
+btnCancel.onclick = this.closeEditor;
 const btnRetry = document.createElement('button');
 btnRetry.textContent = 'Select New';
-btnRetry.onclick = function() {
-closeEditor();
-startFinder();
+btnRetry.onclick = () => {
+this.closeEditor();
+this.startFinder();
 };
 const formatSelect = document.createElement('select');
 formatSelect.style.marginRight = '10px';
@@ -470,7 +505,7 @@ const formats = [
 { val: 'txt', txt: 'Plain Text (.txt)' },
 { val: 'png', txt: 'Image (.png)' }
 ];
-formats.forEach(function(f) {
+formats.forEach((f) => {
 const opt = document.createElement('option');
 opt.value = f.val;
 opt.text = f.txt;
@@ -478,11 +513,11 @@ formatSelect.appendChild(opt);
 });
 const btnDownload = document.createElement('button');
 btnDownload.textContent = 'Download';
-btnDownload.onclick = function() { handleDownload(contentArea, formatSelect.value, btnDownload); };
+btnDownload.onclick = () => { this.handleDownload(contentArea, formatSelect.value, btnDownload); };
 const btnCopy = document.createElement('button');
 btnCopy.textContent = 'Copy to Clipboard';
 btnCopy.className = 'primary';
-btnCopy.onclick = function() { handleCopy(contentArea); };
+btnCopy.onclick = () => { this.handleCopy(contentArea); };
 footer.appendChild(btnCancel);
 footer.appendChild(btnRetry);
 footer.appendChild(formatSelect);
@@ -492,65 +527,69 @@ modal.appendChild(header);
 modal.appendChild(contentArea);
 modal.appendChild(footer);
 overlay.appendChild(modal);
-setTimeout(function() {
+setTimeout(() => {
 const closeIcon = document.getElementById('wc-close-icon');
-if(closeIcon) {
-closeIcon.onclick = closeEditor;
-closeIcon.onkeydown = function(e) {
+if (closeIcon) {
+closeIcon.onclick = this.closeEditor;
+closeIcon.onkeydown = (e) => {
 if (e.key === 'Enter' || e.key === ' ') {
 e.preventDefault();
-closeEditor();
+this.closeEditor();
 }
 };
 }
 }, 0);
 const style = document.createElement('style');
-style.textContent = '#' + CONFIG.overlayId + '{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:999999;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif;}' +
-'#' + CONFIG.modalId + '{background:white;width:80%;max-width:900px;max-height:90vh;display:flex;flex-direction:column;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,0.5);overflow:hidden;}' +
+style.textContent = '#' + this.config.overlayId + '{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:999999;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif;}' +
+'#' + this.config.modalId + '{background:white;width:80%;max-width:900px;max-height:90vh;display:flex;flex-direction:column;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,0.5);overflow:hidden;}' +
+'@keyframes wc-fade-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }' +
+'.wc-animate-in { animation: wc-fade-in 0.2s ease-out forwards; }' +
+'@media (prefers-reduced-motion: reduce) { .wc-animate-in { animation: none; } }' +
 '.wc-header{padding:16px 24px;border-bottom:1px solid #eee;background:#fff;color:#333;}' +
 '.wc-content{padding:24px;overflow-y:auto;flex-grow:1;min-height:200px;outline:none;color:#000;line-height:1.6;background:#fff;}' +
 '.wc-content h1,.wc-content h2,.wc-content h3{margin-top:0;}' +
 '.wc-content p{margin-bottom:1em;}' +
 '.wc-footer{padding:16px 24px;border-top:1px solid #eee;background:#fff;display:flex;justify-content:flex-end;align-items:center;gap:10px;}' +
-'#' + CONFIG.modalId + ' button{padding:8px 16px;border:1px solid #d1d5db;background:white;border-radius:6px;cursor:pointer;font-size:14px;color:#374151;transition:all 0.2s;}' +
-'#' + CONFIG.modalId + ' button:hover{background:#f3f4f6;}' +
-'#' + CONFIG.modalId + ' button.primary{background:#2563eb;color:white;border:none;}' +
-'#' + CONFIG.modalId + ' button.primary:hover{background:#1d4ed8;}';
+'#' + this.config.modalId + ' button{padding:8px 16px;border:1px solid #d1d5db;background:white;border-radius:6px;cursor:pointer;font-size:14px;color:#374151;transition:all 0.2s;}' +
+'#' + this.config.modalId + ' button:hover{background:#f3f4f6;}' +
+'#' + this.config.modalId + ' button.primary{background:#2563eb;color:white;border:none;}' +
+'#' + this.config.modalId + ' button.primary:hover{background:#1d4ed8;}';
+modal.classList.add('wc-animate-in');
 overlay.appendChild(style);
 document.body.appendChild(overlay);
-hideLoadingOverlay();
+this.hideLoadingOverlay();
 contentArea.focus();
 }
-function closeEditor() {
-const overlay = document.getElementById(CONFIG.overlayId);
+closeEditor() {
+const overlay = document.getElementById(this.config.overlayId);
 if (overlay) overlay.remove();
 }
-function cleanupDOM(node) {
+cleanupDOM(node) {
 const dangerous = node.querySelectorAll('script, iframe, object, embed, noscript, form, input, button, select, textarea');
-dangerous.forEach(function(n) { n.remove(); });
+dangerous.forEach((n) => { n.remove(); });
 BookmarkletUtils.sanitizeAttributes(node);
 }
-async function handleCopy(contentArea) {
+async handleCopy(contentArea) {
 const html = contentArea.innerHTML;
 const text = contentArea.innerText;
-const btn =  (document.querySelector('#' + CONFIG.modalId + ' button.primary'));
+const btn =  (document.querySelector('#' + this.config.modalId + ' button.primary'));
 try {
 const data = [new ClipboardItem({ 'text/html': new Blob([html], { type: 'text/html' }), 'text/plain': new Blob([text], { type: 'text/plain' }) })];
 await navigator.clipboard.write(data);
 btn.textContent = "Copied!";
 btn.style.background = "#28a745";
-setTimeout(function() { closeEditor(); }, 1000);
+setTimeout(() => { this.closeEditor(); }, 1000);
 } catch (err) {
 console.error('Clipboard access failed:', err);
 btn.textContent = "Error";
 btn.style.background = "#dc3545";
-setTimeout(function() {
+setTimeout(() => {
 btn.textContent = "Copy to Clipboard";
 btn.style.background = "#007bff";
 }, 1000);
 }
 }
-function handleDownload(contentArea, format, btn) {
+handleDownload(contentArea, format, btn) {
 const cleanTitle = BookmarkletUtils.sanitizeFilename(document.title || 'Web_Clip');
 if (format === 'md') {
 const content = BookmarkletUtils.htmlToMarkdown(contentArea.innerHTML);
@@ -565,7 +604,7 @@ btn.textContent = 'Generating...';
 btn.disabled = true;
 }
 BookmarkletUtils.loadLibrary('html2canvas', 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', 'sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H')
-.then(() => capturePng(contentArea, cleanTitle, btn, originalText))
+.then(() => this.capturePng(contentArea, cleanTitle, btn, originalText))
 .catch(() => {
 alert('Failed to load html2canvas for PNG export.');
 if (btn) {
@@ -585,10 +624,10 @@ const content = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + cle
 BookmarkletUtils.downloadFile(cleanTitle + '_' + Date.now() + '.html', content, 'text/html');
 }
 }
-function capturePng(element, title, btn, originalText) {
+capturePng(element, title, btn, originalText) {
 const originalBg = element.style.backgroundColor;
 element.style.backgroundColor = '#ffffff';
-html2canvas(element, { useCORS: true, logging: false }).then(canvas => {
+html2canvas(element, { useCORS: true, logging: false }).then((canvas) => {
 element.style.backgroundColor = originalBg;
 const link = document.createElement('a');
 link.download = title + '_' + Date.now() + '.png';
@@ -598,7 +637,7 @@ if (btn) {
 btn.textContent = originalText;
 btn.disabled = false;
 }
-}).catch(err => {
+}).catch((err) => {
 console.error('PNG Capture failed:', err);
 element.style.backgroundColor = originalBg;
 if (btn) {
@@ -616,5 +655,12 @@ alert('PNG export failed. Check console for details.');
 }
 });
 }
-startFinder();
+destroy() {
+this.stopFinder();
+this.closeEditor();
+this.hideLoadingOverlay();
+delete window.__wc_instance;
+}
+}
+window.__wc_instance = new WebClipper();
 })();
