@@ -23,6 +23,7 @@ This document tracks the status of features and tools within the Browser Toolkit
 - [x] **Macro Builder**: Record and replay complex click sequences with shadow DOM support.
 - [x] **Interaction Recorder**: Debug automation issues by logging click paths and element attributes.
 - [x] **Bookmarklet Compilation**: Automated build process to minify and encode scripts.
+- [x] **Performance Optimizations**: Async chunking for large DOM trees in Web Clipper.
 
 ## In Progress
 
@@ -30,7 +31,6 @@ This document tracks the status of features and tools within the Browser Toolkit
 
 ## Future Ideas
 
-- [ ] Performance optimizations for large DOM trees in Web Clipper.
 - [ ] **Job Post Clipper** (Recruiter Mode): Extract job descriptions for resume tailoring.
 - [ ] **Recipe Clipper** (Chef Mode): Extract schema.org recipes for distraction-free cooking.
 - [ ] **Video Clipper** (Study Mode): Extract transcripts and metadata for LLM study guides.

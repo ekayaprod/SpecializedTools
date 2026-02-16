@@ -61,6 +61,14 @@
             /* Replace non-alphanumeric characters with underscores and truncate */
             return String(s || 'export').replace(/[^a-z0-9]/gi, '_').substring(0, 50);
         },
+        /**
+         * Triggers a download of a file with the given content.
+         *
+         * @param {string} filename - The name of the file to download.
+         * @param {string} content - The content of the file.
+         * @param {string} [type='text/html'] - The MIME type of the file.
+         * @returns {void}
+         */
         downloadFile(filename, content, type) {
             /* Create blob and download link */
             const blob = new Blob([content], { type: type || 'text/html' });
@@ -186,6 +194,7 @@
          * from a root element and all its descendants to prevent XSS.
          *
          * @param {HTMLElement} root - The root element to sanitize.
+         * @returns {void}
          */
         sanitizeAttributes(root) {
             /* Recursively remove dangerous attributes from root and its descendants */
