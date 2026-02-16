@@ -448,7 +448,7 @@ EXPECTED DELIVERABLES:
 
     /* 5. WIZARD UI */
     const Wizard = {
-        state: { data: null, promptText: '', mode: null, step: 0, selectedPhotos: [], format: 'pdf' },
+        state: { data: null, promptText: '', step: 0, selectedPhotos: [], format: 'pdf' },
         
         init: (data, promptText, format) => {
             Wizard.state.data = data;
@@ -471,7 +471,7 @@ EXPECTED DELIVERABLES:
             };
 
             const btnManual = buildElement('button', { width: '100%', padding: '15px', cursor: 'pointer', background: '#f9f9f9', border: '1px solid #ddd', borderRadius: '6px', textAlign: 'left' }, `Manual Selection`, container);
-            btnManual.onclick = () => { Wizard.state.mode = 'manual'; Wizard.renderStep(); };
+            btnManual.onclick = () => { Wizard.renderStep(); };
         },
 
         renderStep: () => {
