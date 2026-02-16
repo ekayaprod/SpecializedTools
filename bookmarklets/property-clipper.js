@@ -64,14 +64,7 @@ Calculate the final data-supported baseline value. Multiply the **Mid Comp's** p
     };
 
     /* UTILITIES */
-    const buildElement = (tag, styles = {}, text = '', parent = null, props = {}) => {
-        const el = document.createElement(tag);
-        if (text) el.textContent = text;
-        Object.assign(el.style, styles);
-        Object.assign(el, props);
-        if (parent) parent.appendChild(el);
-        return el;
-    };
+    const buildElement = BookmarkletUtils.buildElement;
 
     const formatCurrency = (val) => (val != null) ? '$' + Number(val).toLocaleString() : 'N/A';
 
@@ -332,18 +325,8 @@ Calculate the final data-supported baseline value. Multiply the **Mid Comp's** p
 
     /* 4. PDF GENERATOR */
     const PDFGenerator = {
-        loadLib: async () => {
-            if (window.jspdf) return;
-            return new Promise(resolve => {
-                const script = document.createElement('script');
-                script.src = CONFIG.jspdfUrl;
-                script.onload = resolve;
-                document.head.appendChild(script);
-            });
-        },
-
         create: async (data, selectedPhotos, statusCb) => {
-            await PDFGenerator.loadLib();
+            await BookmarkletUtils.loadLibrary('jspdf', CONFIG.jspdfUrl);
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ unit: 'mm', format: 'a4' });
             
