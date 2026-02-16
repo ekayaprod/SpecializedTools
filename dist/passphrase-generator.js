@@ -18,6 +18,32 @@ const safeProperties = [
 'position', 'top', 'bottom', 'left', 'right',
 'transform', 'transform-origin', 'transform-style'
 ];
+function isEventAttribute(name) {
+return name.toLowerCase().startsWith('on');
+}
+function isUnsafeAttribute(name) {
+const lower = name.toLowerCase();
+return ['href', 'src', 'action', 'data', 'formaction', 'poster', 'xlink:href', 'srcset'].includes(lower);
+}
+function containsMaliciousProtocol(value, isSrcset) {
+const checkVal = value.replace(/\s+/g, '').toLowerCase();
+if (isSrcset) {
+return checkVal.includes('javascript:') || checkVal.includes('vbscript:');
+}
+return checkVal.startsWith('javascript:') || checkVal.startsWith('vbscript:');
+}
+function isValidDataUri(tagName, value) {
+const checkVal = value.replace(/\s+/g, '').toLowerCase();
+if (!checkVal.startsWith('data:')) return true;
+const isImageTag = ['img', 'source', 'picture'].includes(tagName.toLowerCase());
+const isImageMime = checkVal.startsWith('data:image/');
+const isSvg = checkVal.includes('svg+xml');
+return isImageTag && isImageMime && !isSvg;
+}
+function isSafeStyle(value) {
+const checkVal = value.replace(/\s+/g, '').toLowerCase();
+return !(checkVal.includes('javascript:') || checkVal.includes('vbscript:') || checkVal.includes('expression('));
+}
 w.BookmarkletUtils = {
 buildElement(tag, styles = {}, text = '', parent = null, props = {}) {
 const el = document.createElement(tag);
@@ -120,30 +146,23 @@ for (let i = 0; i < attrs.length; i++) {
 const name = attrs[i];
 const lowerName = name.toLowerCase();
 const val = (el.getAttribute(name) || '').toLowerCase().trim();
-if (lowerName.startsWith('on')) {
+if (isEventAttribute(lowerName)) {
 el.removeAttribute(name);
 }
 else if (lowerName === 'srcdoc') {
 el.removeAttribute(name);
 }
-else if (['href', 'src', 'action', 'data', 'formaction', 'poster', 'xlink:href', 'srcset'].includes(lowerName)) {
-const checkVal = val.replace(/\s+/g, '').toLowerCase();
+else if (isUnsafeAttribute(lowerName)) {
 const isSrcset = lowerName === 'srcset';
-if (checkVal.startsWith('javascript:') || checkVal.startsWith('vbscript:') || (isSrcset && (checkVal.includes('javascript:') || checkVal.includes('vbscript:')))) {
+if (containsMaliciousProtocol(val, isSrcset)) {
 el.removeAttribute(name);
 }
-else if (checkVal.startsWith('data:')) {
-const isImageTag = ['img', 'source', 'picture'].includes(el.tagName.toLowerCase());
-const isImageMime = checkVal.startsWith('data:image/');
-const isSvg = checkVal.includes('svg+xml');
-if (!isImageTag || !isImageMime || isSvg) {
+else if (!isValidDataUri(el.tagName, val)) {
 el.removeAttribute(name);
-}
 }
 }
 else if (lowerName === 'style') {
-const checkVal = val.replace(/\s+/g, '');
-if (checkVal.includes('javascript:') || checkVal.includes('vbscript:') || checkVal.includes('expression(')) {
+if (!isSafeStyle(val)) {
 el.removeAttribute(name);
 }
 }
@@ -163,7 +182,7 @@ const CHUNK_SIZE = 50;
 function processChunk() {
 const startTime = performance.now();
 while (queue.length > 0) {
-const item = queue.shift();
+const item = queue.pop();
 const s = item.s;
 const t = item.t;
 const computed = window.getComputedStyle(s);
@@ -183,7 +202,7 @@ t.style.cssText += styles.join('; ') + '; ';
 count++;
 const sourceChildren = s.children;
 const targetChildren = t.children;
-for (let i = 0; i < sourceChildren.length; i++) {
+for (let i = sourceChildren.length - 1; i >= 0; i--) {
 if (targetChildren[i]) {
 queue.push({s:  (sourceChildren[i]), t:  (targetChildren[i])});
 }

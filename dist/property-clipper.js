@@ -18,6 +18,32 @@ const safeProperties = [
 'position', 'top', 'bottom', 'left', 'right',
 'transform', 'transform-origin', 'transform-style'
 ];
+function isEventAttribute(name) {
+return name.toLowerCase().startsWith('on');
+}
+function isUnsafeAttribute(name) {
+const lower = name.toLowerCase();
+return ['href', 'src', 'action', 'data', 'formaction', 'poster', 'xlink:href', 'srcset'].includes(lower);
+}
+function containsMaliciousProtocol(value, isSrcset) {
+const checkVal = value.replace(/\s+/g, '').toLowerCase();
+if (isSrcset) {
+return checkVal.includes('javascript:') || checkVal.includes('vbscript:');
+}
+return checkVal.startsWith('javascript:') || checkVal.startsWith('vbscript:');
+}
+function isValidDataUri(tagName, value) {
+const checkVal = value.replace(/\s+/g, '').toLowerCase();
+if (!checkVal.startsWith('data:')) return true;
+const isImageTag = ['img', 'source', 'picture'].includes(tagName.toLowerCase());
+const isImageMime = checkVal.startsWith('data:image/');
+const isSvg = checkVal.includes('svg+xml');
+return isImageTag && isImageMime && !isSvg;
+}
+function isSafeStyle(value) {
+const checkVal = value.replace(/\s+/g, '').toLowerCase();
+return !(checkVal.includes('javascript:') || checkVal.includes('vbscript:') || checkVal.includes('expression('));
+}
 w.BookmarkletUtils = {
 buildElement(tag, styles = {}, text = '', parent = null, props = {}) {
 const el = document.createElement(tag);
@@ -120,30 +146,23 @@ for (let i = 0; i < attrs.length; i++) {
 const name = attrs[i];
 const lowerName = name.toLowerCase();
 const val = (el.getAttribute(name) || '').toLowerCase().trim();
-if (lowerName.startsWith('on')) {
+if (isEventAttribute(lowerName)) {
 el.removeAttribute(name);
 }
 else if (lowerName === 'srcdoc') {
 el.removeAttribute(name);
 }
-else if (['href', 'src', 'action', 'data', 'formaction', 'poster', 'xlink:href', 'srcset'].includes(lowerName)) {
-const checkVal = val.replace(/\s+/g, '').toLowerCase();
+else if (isUnsafeAttribute(lowerName)) {
 const isSrcset = lowerName === 'srcset';
-if (checkVal.startsWith('javascript:') || checkVal.startsWith('vbscript:') || (isSrcset && (checkVal.includes('javascript:') || checkVal.includes('vbscript:')))) {
+if (containsMaliciousProtocol(val, isSrcset)) {
 el.removeAttribute(name);
 }
-else if (checkVal.startsWith('data:')) {
-const isImageTag = ['img', 'source', 'picture'].includes(el.tagName.toLowerCase());
-const isImageMime = checkVal.startsWith('data:image/');
-const isSvg = checkVal.includes('svg+xml');
-if (!isImageTag || !isImageMime || isSvg) {
+else if (!isValidDataUri(el.tagName, val)) {
 el.removeAttribute(name);
-}
 }
 }
 else if (lowerName === 'style') {
-const checkVal = val.replace(/\s+/g, '');
-if (checkVal.includes('javascript:') || checkVal.includes('vbscript:') || checkVal.includes('expression(')) {
+if (!isSafeStyle(val)) {
 el.removeAttribute(name);
 }
 }
@@ -163,7 +182,7 @@ const CHUNK_SIZE = 50;
 function processChunk() {
 const startTime = performance.now();
 while (queue.length > 0) {
-const item = queue.shift();
+const item = queue.pop();
 const s = item.s;
 const t = item.t;
 const computed = window.getComputedStyle(s);
@@ -183,7 +202,7 @@ t.style.cssText += styles.join('; ') + '; ';
 count++;
 const sourceChildren = s.children;
 const targetChildren = t.children;
-for (let i = 0; i < sourceChildren.length; i++) {
+for (let i = sourceChildren.length - 1; i >= 0; i--) {
 if (targetChildren[i]) {
 queue.push({s:  (sourceChildren[i]), t:  (targetChildren[i])});
 }
@@ -292,7 +311,36 @@ const PROMPT_DATA = {
 str: { label: "Short-Term Rental (STR)", role: "Act as a Senior STR Analyst.", objective: 'Analyze macro/micro location, saturation, regulations, and revenue potential.' },
 ltr: { label: "Long-Term Rental (LTR)", role: "Act as a Senior Buy-and-Hold Analyst.", objective: 'Analyze population growth, tenant demographics, and cash flow stability.' },
 flip: { label: "Fix & Flip", role: "Act as a Fix-and-Flip Project Manager.", objective: 'Estimate ARV, rehab CapEx based on visual condition, and identify structural risks.' },
-househack: { label: "House Hacking", role: "Act as a House Hacking Specialist.", objective: 'Analyze layout for unit-splitting/ADU potential and zoning compliance.' }
+househack: { label: "House Hacking", role: "Act as a House Hacking Specialist.", objective: 'Analyze layout for unit-splitting/ADU potential and zoning compliance.' },
+appraisal: {
+label: "Property Appraisal",
+role: "Act as an expert real estate investment analyst.",
+objective: `I am preparing to initiate an acquisition and require a "Technical Comparable Analysis & Valuation Exhibit." The objective is to conduct a conservative, risk-adjusted valuation to establish a mathematically sound entry price, filtering out market anomalies and premium outliers.
+Target Property: [Insert Property Address]
+Current Asking Price: [Insert Asking Price]
+My Target Offer Price: [Insert Offer Price]
+Community/HOA (if applicable): [Insert Community Name or "None"]
+Please conduct comprehensive web research to gather hard data on the subject property, the local macro-market (zip code level), and specific recent comparable sales (sold within the last 12 to 24 months).
+Generate a concise, highly professional, technical document organized exactly with the following sections. Stick strictly to the facts, math, and data.
+1. SUBJECT PROPERTY BASELINE
+List the core facts: List Price, Living Area (Sq. Ft.), Price per Sq. Ft., Specifications (Beds/Baths/Year Built/Lot Size), and Market Exposure (current Days on Market, previous failed listing cycles, and last sold date/price).
+2. MACRO-MARKET DYNAMICS
+Provide data for the property's specific zip code. Include the current median sale price, year-over-year percentage decline/growth, average price per square foot, and average days on market.
+3. DIRECT COMPARABLE TRANSACTIONS
+Create a Markdown table comparing the subject property against 4 to 5 recently sold properties in the immediate neighborhood. To ensure a conservative risk profile, apply the following strict selection criteria for your comparables:
+Primary Comparable (Anchor): A highly similar recent sale in the immediate vicinity to establish a localized baseline.
+Conservative Lower Bound (Floor): A comparable property of similar size representing the lower quartile of recent neighborhood sales, establishing the foundational market value.
+Competitive Upper Bound (Ceiling): A property with superior specifications (larger, newer, or better condition) that transacted at a highly competitive price point, defining the maximum market threshold without relying on premium outliers.
+Table Columns: Property Address | Sale Date | Sale Price | Sq. Ft. | Price / Sq. Ft. | Bed / Bath | Lot Size | Year Built.
+4. COMPARABLE ANALYSIS BREAKDOWN
+Provide 3 bullet points analyzing the table data. Explicitly name the Primary Comparable, the Lower Bound, and the Upper Bound. Explain mathematically the variance between the subject property's asking price per square foot and these established conservative market metrics.
+5. CAPITAL EXPENDITURE (CAPEX) PARITY REQUIREMENTS
+Identify immediate physical or functional deficiencies in the subject property (e.g., lack of bathrooms, older roof, aging systems, unfinished spaces) that would require capital allocation to achieve parity with the Upper Bound comparable. Present this in a table. Strict Rule: You must use the keyword 'estimate' for any pricing or construction costs where you cannot find an exact contractor quote.
+6. HOLDING COST EROSION
+Research the property's tax history and HOA fees. Document the exact dollar amount that property taxes have increased since the current seller acquired the asset. Explain the impact of these fixed holding costs on the asset's projected Net Operating Income (NOI) and the resulting requirement for a risk-adjusted entry price.
+7. VALUATION CONCLUSION & TARGET ACQUISITION PRICE
+Conclude with a strict mathematical justification for the Target Offer Price. Multiply a conservative neighborhood average price-per-square-foot by the subject property's square footage, subtract the required CapEx estimates from Section 5, and state how the Target Offer Price aligns with this risk-adjusted valuation model.`
+}
 };
 const formatCurrency = (val) => (val != null) ? '$' + Number(val).toLocaleString() : 'N/A';
 const PropertyExtractor = {
@@ -433,13 +481,22 @@ doc.text(data.price, margin, y);
 doc.setTextColor(0); // Reset black
 y += 15;
 // Prompt Box
-doc.setFillColor(240, 240, 240);
-doc.rect(margin, y, contentWidth, 35, 'F');
 doc.setFontSize(10);
 doc.setFont('courier', 'normal');
-const splitPrompt = doc.splitTextToSize(`ANALYSIS OBJECTIVE: ${promptData.label}\n\n${promptData.objective}`, contentWidth - 10);
+let promptText = `ANALYSIS OBJECTIVE: ${promptData.label}\n\n`;
+if (promptData.role) promptText += `${promptData.role}\n\n`;
+let objective = promptData.objective;
+// Interpolate placeholders
+objective = objective.replace('[Insert Property Address]', data.address || '[Address]');
+objective = objective.replace('[Insert Asking Price]', data.price || '[Price]');
+promptText += objective;
+const splitPrompt = doc.splitTextToSize(promptText, contentWidth - 10);
+const dim = doc.getTextDimensions(splitPrompt);
+const boxHeight = dim.h + 14;
+doc.setFillColor(240, 240, 240);
+doc.rect(margin, y, contentWidth, boxHeight, 'F');
 doc.text(splitPrompt, margin + 5, y + 7);
-y += 45;
+y += boxHeight + 10;
 // Specs Grid (Simple text layout)
 doc.setFont('helvetica', 'bold');
 doc.setFontSize(12);
@@ -702,7 +759,6 @@ Wizard.generate();
 generate: () => {
 WizardUI.renderLoading('Initializing...');
 // Capture raw output
-console.log('Generating PDF with', Wizard.state.selectedPhotos.length, 'photos');
 PDFGenerator.create(Wizard.state.data, Wizard.state.selectedPhotos, Wizard.state.prompt, WizardUI.updateStatus)
 .then(() => {
 closeModal();
