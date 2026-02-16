@@ -156,6 +156,13 @@ Calculate the final data-supported baseline value. Multiply the **Mid Comp's** p
             }
         },
 
+        /**
+         * Scrapes property data from the current page using available JSON or DOM sources.
+         * Attempts to parse Next.js hydration data first, falling back to raw pre tags,
+         * and finally scraping specific DOM elements for fallback values.
+         *
+         * @returns {Object} The normalized property data object containing address, price, specs, etc.
+         */
         getData: function () {
             let data = {
                 address: 'Unknown Address', price: 'Unknown Price', specs: {},
@@ -181,7 +188,14 @@ Calculate the final data-supported baseline value. Multiply the **Mid Comp's** p
                     const pd = JSON.parse(rawPreNode.textContent);
                     if (pd) PropertyExtractor.parseDetails(pd, data);
                 }
-            } catch (e) { console.warn('JSON Extraction Warning:', e); }
+            } catch (e) {
+                console.warn('JSON Extraction Failed', {
+                    error: e instanceof Error ? e.message : String(e),
+                    hasNextData: !!document.getElementById('__NEXT_DATA__'),
+                    hasRawPre: !!document.querySelector('.raw-data pre'),
+                    url: window.location.href
+                });
+            }
 
             // 2. DOM Extraction
             try {
