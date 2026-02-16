@@ -34,8 +34,8 @@ Installation
 
 Architecture
 
-index.html: The landing page that fetches and compiles the bookmarklets.
+index.html: The landing page that fetches and compiles the bookmarklets directly from the source.
 
-bookmarklets/: Source code for each tool.
+bookmarklets/: Source code for each tool. Edit these files to update the tools.
 
-dist/: Compiled build artifacts used by index.html. DO NOT EDIT.
+dist/: Optional build artifacts for manual distribution. Not used by `index.html`.
