@@ -466,9 +466,8 @@ Conclude with a strict mathematical justification for the Target Offer Price. Mu
                 }, '', wrapper, { src: photo.url, alt: photo.label || 'Property Photo' });
 
                 const check = BookmarkletUtils.buildElement('input', {
-                    type: 'checkbox', 
                     position: 'absolute', top: '5px', left: '5px', transform: 'scale(1.2)'
-                }, '', wrapper);
+                }, '', wrapper, { type: 'checkbox' });
                 
                 // Toggle logic
                 const toggle = (force) => {
@@ -482,12 +481,20 @@ Conclude with a strict mathematical justification for the Target Offer Price. Mu
                 wrapper.onclick = (e) => { if (e.target !== check) toggle(); };
                 check.onclick = (e) => e.stopPropagation(); // prevent double toggle
                 
-                checks.push({ check, photo });
+                checks.push({ check, photo, img });
             });
 
             // Toolbar Actions
-            btnSelectAll.onclick = () => checks.forEach(c => { c.check.checked = true; c.check.nextSibling.style.borderColor = '#2563eb'; });
-            btnSelectNone.onclick = () => checks.forEach(c => { c.check.checked = false; c.check.nextSibling.style.borderColor = 'transparent'; });
+            btnSelectAll.onclick = () => checks.forEach(c => {
+                c.check.checked = true;
+                c.img.style.borderColor = '#2563eb';
+                c.img.style.opacity = '1';
+            });
+            btnSelectNone.onclick = () => checks.forEach(c => {
+                c.check.checked = false;
+                c.img.style.borderColor = 'transparent';
+                c.img.style.opacity = '0.7';
+            });
 
             // Footer Nav
             const getSelection = () => checks.filter(c => c.check.checked).map(c => c.photo);
