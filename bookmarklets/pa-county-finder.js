@@ -80,13 +80,82 @@
         return;
     }
 
+    /* Inject CSS for Animation & Styling */
+    const styleId = 'pa-css';
+    if (!document.getElementById(styleId)) {
+        const style = document.createElement('style');
+        style.id = styleId;
+        style.textContent = `
+            @keyframes pa-fade-in { from { opacity: 0; } to { opacity: 1; } }
+            @keyframes pa-slide-up { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+            .pa-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 99999; animation: pa-fade-in 0.2s ease-out; backdrop-filter: blur(2px); }
+            .pa-card { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); width: 320px; font-family: system-ui, -apple-system, sans-serif; animation: pa-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-width: 90vw; }
+            .pa-btn { width: 100%; padding: 10px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; transition: transform 0.1s; }
+            .pa-btn:active { transform: scale(0.98); }
+            .pa-btn-primary { background: #2563eb; color: white; margin-bottom: 12px; }
+            .pa-btn-primary:hover { background: #1d4ed8; }
+            .pa-btn-sec { background: #f1f5f9; color: #475569; }
+            .pa-btn-sec:hover { background: #e2e8f0; }
+            .pa-input { width: 100%; padding: 12px; margin-bottom: 12px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; transition: border-color 0.2s; font-size: 14px; }
+            .pa-input:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.2); }
+            .pa-result-success { color: #166534; background: #dcfce7; padding: 12px; border-radius: 6px; margin-bottom: 12px; font-size: 14px; line-height: 1.4; border: 1px solid #bbf7d0; }
+            .pa-result-error { color: #991b1b; background: #fee2e2; padding: 12px; border-radius: 6px; margin-bottom: 12px; font-size: 14px; border: 1px solid #fecaca; }
+            .pa-title { margin: 0 0 16px; font-size: 18px; font-weight: 700; color: #1e293b; }
+        `;
+        document.head.appendChild(style);
+    }
+
+    /* Accessibility & Focus Management */
+    const lastFocus = /** @type {HTMLElement} */ (document.activeElement);
+
+    const close = () => {
+        overlay.remove();
+        if (lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
+    };
+
     const overlay = document.createElement('div');
-    Object.assign(overlay.style, {position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:99999});
+    overlay.className = 'pa-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'pa-title');
+
     const card = document.createElement('div');
-    Object.assign(card.style, {background:'white',padding:'20px',borderRadius:'8px',boxShadow:'0 10px 25px rgba(0,0,0,0.2)',width:'300px',fontFamily:'system-ui'});
-    card.innerHTML = `<h3 style="margin:0 0 15px">PA County Finder</h3><div id="pa-content"></div>`;
+    card.className = 'pa-card';
+    card.innerHTML = `<h3 id="pa-title" class="pa-title">PA County Finder</h3><div id="pa-content"></div>`;
     overlay.appendChild(card);
-    overlay.onclick = e => e.target === overlay && overlay.remove();
+
+    // Close on overlay click
+    overlay.onclick = e => e.target === overlay && close();
+
+    // Close on Escape
+    const onKeydown = (/** @type {KeyboardEvent} */ e) => {
+        if (!document.body.contains(overlay)) {
+            document.removeEventListener('keydown', onKeydown);
+            return;
+        }
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            close();
+        }
+        // Focus Trap
+        if (e.key === 'Tab') {
+            const focusable = card.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (e.shiftKey) {
+                if (document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                }
+            } else {
+                if (document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
+            }
+        }
+    };
+    document.addEventListener('keydown', onKeydown);
 
     const content = /** @type {HTMLElement} */ (card.querySelector('#pa-content'));
     const resultDiv = document.createElement('div');
@@ -94,15 +163,15 @@
 
     /**
      * Creates a close button element.
-     * @param {string} [marginTop='0'] - The top margin style.
      * @returns {HTMLButtonElement} The button element.
      */
-    const createCloseBtn = (marginTop = '0') => {
-        const close = document.createElement('button');
-        close.textContent = 'Close';
-        Object.assign(close.style, {width:'100%',padding:'8px',background:'#f3f4f6',border:'none',borderRadius:'4px',cursor:'pointer',marginTop});
-        close.onclick = () => overlay.remove();
-        return close;
+    const createCloseBtn = () => {
+        const btn = document.createElement('button');
+        btn.textContent = 'Close';
+        btn.className = 'pa-btn pa-btn-sec';
+        btn.setAttribute('aria-label', 'Close');
+        btn.onclick = close;
+        return btn;
     };
 
     /**
@@ -112,23 +181,26 @@
      */
     const updateResult = (r, q) => {
         const safeQ = q.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-        resultDiv.innerHTML = r ? `<div style="color:#15803d;background:#dcfce7;padding:12px;border-radius:6px;margin-bottom:10px"><strong>Found:</strong><br>${r}</div>`
-                                : `<div style="color:#b91c1c;background:#fee2e2;padding:12px;border-radius:6px;margin-bottom:10px">No match for "<strong>${safeQ}</strong>"</div>`;
+        resultDiv.innerHTML = r ? `<div class="pa-result-success"><strong>Found:</strong><br>${r}</div>`
+                                : `<div class="pa-result-error">No match for "<strong>${safeQ}</strong>"</div>`;
     };
 
     let s = window.getSelection().toString().trim();
     if (s) {
         updateResult(find(s), s);
         content.appendChild(resultDiv);
-        content.appendChild(createCloseBtn());
+        const cBtn = createCloseBtn();
+        content.appendChild(cBtn);
+        // Focus close button if immediate result
+        setTimeout(() => cBtn.focus(), 50);
     } else {
         const inp = document.createElement('input');
-        Object.assign(inp.style, {width:'100%',padding:'10px',marginBottom:'10px',boxSizing:'border-box',border:'1px solid #ccc',borderRadius:'4px'});
+        inp.className = 'pa-input';
         inp.placeholder = "Enter ZIP or City";
 
         const btn = document.createElement('button');
         btn.textContent = 'Search';
-        Object.assign(btn.style, {width:'100%',padding:'10px',background:'#2563eb',color:'white',border:'none',borderRadius:'4px',cursor:'pointer',fontWeight:'bold',marginBottom:'10px'});
+        btn.className = 'pa-btn pa-btn-primary';
 
         btn.onclick = () => {
             const val = inp.value.trim();
@@ -136,7 +208,7 @@
         };
         inp.onkeydown = (/** @type {KeyboardEvent} */ e) => e.key === 'Enter' && btn.click();
 
-        content.append(inp, btn, resultDiv, createCloseBtn('10px'));
+        content.append(inp, btn, resultDiv, createCloseBtn());
         setTimeout(() => inp.focus(), 50);
     }
     document.body.appendChild(overlay);
