@@ -224,12 +224,18 @@
                         let val = null;
                         let enter = false;
                         const tag = targetEl.tagName;
+                        let ask = false;
                         if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'){
-                            val = prompt('Enter text to type (leave empty to just click):');
+                            const isPwd = targetEl.type === 'password';
+                            val = prompt(isPwd ? 'Enter value (SENSITIVE: will NOT be stored in bookmarklet):' : 'Enter text to type (leave empty to just click):');
+                            ask = isPwd;
+                            if(val && !isPwd) {
+                                ask = confirm('Is this sensitive data? (If yes, it will not be stored and you will be prompted when running)');
+                            }
                             if(val) enter = confirm('Press Enter after typing?');
                         }
 
-                        this.currentSequence.push({ sel: sel, txt: txt, val: val, enter: enter });
+                        this.currentSequence.push({ sel: sel, txt: txt, val: ask ? null : val, enter: enter, ask: ask });
 
                         setTimeout(() => {
                             if(!confirm('Element added! Pick another for this sequence? Click Cancel to finish this group.')) {
@@ -418,14 +424,18 @@
 
                                 if(!el) { alert('Step '+(i+1)+' Sub-action '+(j+1)+' Failed: Not found ('+action.sel+')'); return; }
 
-                                if(action.val !== null){
-                                    el.focus(); el.value = action.val;
-                                    el.dispatchEvent(new Event('input',{bubbles:true}));
-                                    el.dispatchEvent(new Event('change',{bubbles:true}));
-                                    if(action.enter){
-                                        const k={key:'Enter',code:'Enter',keyCode:13,which:13,bubbles:true};
-                                        el.dispatchEvent(new KeyboardEvent('keydown',k));
-                                        el.dispatchEvent(new KeyboardEvent('keyup',k));
+                                if(action.val !== null || action.ask){
+                                    let v = action.val;
+                                    if(action.ask) v = prompt('Enter value for: ' + (action.txt || action.sel));
+                                    if(v !== null) {
+                                        el.focus(); el.value = v;
+                                        el.dispatchEvent(new Event('input',{bubbles:true}));
+                                        el.dispatchEvent(new Event('change',{bubbles:true}));
+                                        if(action.enter){
+                                            const k={key:'Enter',code:'Enter',keyCode:13,which:13,bubbles:true};
+                                            el.dispatchEvent(new KeyboardEvent('keydown',k));
+                                            el.dispatchEvent(new KeyboardEvent('keyup',k));
+                                        }
                                     }
                                 }
                                 ['mousedown','mouseup','click'].forEach(evt => {
