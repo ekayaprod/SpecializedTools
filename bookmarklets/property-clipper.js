@@ -586,39 +586,28 @@ Execute the following calculation exactly as formatted below.
                     const processed = processedResults[i];
                     if (!processed) continue;
 
-                    // Calculate dimensions
-                    // Max width is contentWidth (180mm)
-                    // Try to fit 2 per page vertically
-                    const imgW = contentWidth;
-                    let imgH = contentWidth / processed.ratio;
+                    // Calculate dimensions to fit 2 landscape photos per page
+                    // Available height per page ~260mm.
+                    // Target height per photo block (including caption/gap) ~130mm.
+                    // Block overhead: Caption (5mm) + Gap (15mm) = 20mm.
+                    // Max Image Height = 130 - 20 = 110mm.
+                    // To fit 2 on the first page (with header), we need slightly less:
+                    // 280 (limit) - 30 (start y with header) = 250. 250 / 2 = 125 per block.
+                    // 125 - 20 overhead = 105mm.
 
-                    // Cap height to ensure at least 2 fit per page (approx 110mm max)
-                    // But if ratio is extreme (panorama), let it flow.
-                    // If height is huge (portrait), we might need to constrain it.
-                    if (imgH > 120) {
-                        imgH = 120; // Constrain height
-                        // We don't change width, just let it distort? No, maintain aspect ratio?
-                        // "Render the photo appendix with images large enough..."
-                        // Usually fit into box.
-                        // If we constrain height, width must shrink to maintain aspect ratio.
-                        // But we want "large enough".
-                        // Better to constrain height and center it?
-                        // Or just let it take up full page if needed?
-                        // "recommend 1 to 2 images maximum per page".
-                        // So if it's a tall image, it takes a whole page.
+                    const MAX_IMG_HEIGHT = 105;
 
-                        // Re-calculation:
-                        // If imgH > 120, we shrink both dimensions.
-                        const scale = 120 / imgH;
-                        imgH = 120;
-                        // effective width will be smaller, centered?
-                        // But `addImage` takes x, y, w, h.
-                        // We want max width.
+                    let finalH = contentWidth / processed.ratio;
+                    let finalW = contentWidth;
+
+                    if (finalH > MAX_IMG_HEIGHT) {
+                        finalH = MAX_IMG_HEIGHT;
+                        finalW = finalH * processed.ratio;
                     }
 
                     // Check if we need a new page
-                    // Need space for Caption (10mm) + Image (imgH) + Gap (10mm)
-                    if (y + imgH + 20 > 280) {
+                    // Need space for Caption (5mm) + Image (finalH) + Gap (15mm)
+                    if (y + finalH + 20 > 280) {
                         doc.addPage();
                         y = 20;
                     }
@@ -631,23 +620,9 @@ Execute the following calculation exactly as formatted below.
                     doc.text(label, margin, y);
                     y += 5;
 
-                    // Draw Image
-                    // doc.addImage(imgData, format, x, y, w, h)
-                    // If we constrained height, we should use the corresponding width to maintain aspect ratio
-                    // Actually, let's just let it fill width unless it exceeds height constraint.
-                    let finalW = imgW;
-                    let finalH = imgH;
-
-                    if (contentWidth / processed.ratio > 130) {
-                        // Too tall for half-page, so constrain height to 130mm
-                        finalH = 130;
-                        finalW = 130 * processed.ratio;
-                    } else {
-                        finalH = contentWidth / processed.ratio;
-                        finalW = contentWidth;
-                    }
-
-                    doc.addImage(processed.dataUrl, 'JPEG', margin, y, finalW, finalH);
+                    // Center the image if it was scaled down
+                    const x = margin + (contentWidth - finalW) / 2;
+                    doc.addImage(processed.dataUrl, 'JPEG', x, y, finalW, finalH);
                     y += finalH + 15;
                 }
             }
