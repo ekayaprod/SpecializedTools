@@ -325,69 +325,73 @@
          * });
          */
         normalizeImages(root, onProgress) {
-            return new Promise(function(resolve) {
+            return new Promise(function(resolve, reject) {
                 /* Collect all items to process */
                 const queue = Array.prototype.slice.call(root.querySelectorAll('picture, img'));
                 let count = 0;
                 const CHUNK_SIZE = 50;
 
                 function processChunk() {
-                    const startTime = performance.now();
+                    try {
+                        const startTime = performance.now();
 
-                    while (queue.length > 0) {
-                        const el = queue.shift();
+                        while (queue.length > 0) {
+                            const el = queue.shift();
 
-                        if (el.tagName.toLowerCase() === 'picture') {
-                            const pic = el;
-                            const img = pic.querySelector('img');
-                            const source = pic.querySelector('source');
-                            if (source && source.srcset && img) {
-                                /* Check if image is missing or placeholder */
+                            if (el.tagName.toLowerCase() === 'picture') {
+                                const pic = el;
+                                const img = pic.querySelector('img');
+                                const source = pic.querySelector('source');
+                                if (source && source.srcset && img) {
+                                    /* Check if image is missing or placeholder */
+                                    const isPlaceholder = !img.src || img.src.startsWith('data:') || img.src.includes('spacer');
+                                    if (isPlaceholder) {
+                                         img.src = source.srcset.split(',')[0].trim().split(' ')[0];
+                                    }
+                                }
+                            } else {
+                                const img = el;
+                                /* 1. Resolve Lazy Loading */
+                                if (img.dataset.src) img.src = img.dataset.src;
+                                if (img.dataset.lazySrc) img.src = img.dataset.lazySrc;
+
+                                /* Check for placeholder or missing src */
                                 const isPlaceholder = !img.src || img.src.startsWith('data:') || img.src.includes('spacer');
-                                if (isPlaceholder) {
-                                     img.src = source.srcset.split(',')[0].trim().split(' ')[0];
+                                if (isPlaceholder && img.srcset) {
+                                    const parts = img.srcset.split(',');
+                                    if(parts.length > 0) {
+                                         /* Pick the last candidate (usually highest res) */
+                                         const bestCandidate = parts[parts.length - 1].trim().split(' ')[0];
+                                         if(bestCandidate) img.src = bestCandidate;
+                                    }
                                 }
-                            }
-                        } else {
-                            const img = el;
-                            /* 1. Resolve Lazy Loading */
-                            if (img.dataset.src) img.src = img.dataset.src;
-                            if (img.dataset.lazySrc) img.src = img.dataset.lazySrc;
 
-                            /* Check for placeholder or missing src */
-                            const isPlaceholder = !img.src || img.src.startsWith('data:') || img.src.includes('spacer');
-                            if (isPlaceholder && img.srcset) {
-                                const parts = img.srcset.split(',');
-                                if(parts.length > 0) {
-                                     /* Pick the last candidate (usually highest res) */
-                                     const bestCandidate = parts[parts.length - 1].trim().split(' ')[0];
-                                     if(bestCandidate) img.src = bestCandidate;
-                                }
+                                /* 2. Remove lazy loading attributes to force render */
+                                img.removeAttribute('loading');
+
+                                /* 3. Stabilize Dimensions: remove specific width/height attrs to let CSS max-width work */
+                                img.removeAttribute('width');
+                                img.removeAttribute('height');
+                                img.style.maxWidth = '100%';
+                                img.style.height = 'auto';
+                                img.style.display = 'block';
                             }
 
-                            /* 2. Remove lazy loading attributes to force render */
-                            img.removeAttribute('loading');
+                            count++;
 
-                            /* 3. Stabilize Dimensions: remove specific width/height attrs to let CSS max-width work */
-                            img.removeAttribute('width');
-                            img.removeAttribute('height');
-                            img.style.maxWidth = '100%';
-                            img.style.height = 'auto';
-                            img.style.display = 'block';
+                            /* Yield if chunk size reached or time exceeded */
+                            if (count % CHUNK_SIZE === 0 || (performance.now() - startTime) > 12) {
+                                 if (onProgress) onProgress(count);
+                                 setTimeout(processChunk, 0);
+                                 return;
+                            }
                         }
 
-                        count++;
-
-                        /* Yield if chunk size reached or time exceeded */
-                        if (count % CHUNK_SIZE === 0 || (performance.now() - startTime) > 12) {
-                             if (onProgress) onProgress(count);
-                             setTimeout(processChunk, 0);
-                             return;
-                        }
+                        if (onProgress) onProgress(count);
+                        resolve();
+                    } catch (e) {
+                        reject(e);
                     }
-
-                    if (onProgress) onProgress(count);
-                    resolve();
                 }
 
                 processChunk();
@@ -463,65 +467,69 @@
          * });
          */
         inlineStylesAsync(source, target, onProgress) {
-            return new Promise(function(resolve) {
+            return new Promise(function(resolve, reject) {
                 const queue = [{s: source, t: target}];
                 let count = 0;
                 const CHUNK_SIZE = 50;
 
                 function processChunk() {
-                    const startTime = performance.now();
+                    try {
+                        const startTime = performance.now();
 
-                    while (queue.length > 0) {
-                        /* OPTIMIZATION: Use pop() (DFS) instead of shift() (BFS) to avoid O(N) array re-indexing */
-                        const item = queue.pop();
-                        const s = item.s;
-                        const t = item.t;
+                        while (queue.length > 0) {
+                            /* OPTIMIZATION: Use pop() (DFS) instead of shift() (BFS) to avoid O(N) array re-indexing */
+                            const item = queue.pop();
+                            const s = item.s;
+                            const t = item.t;
 
-                        /* Apply styles to current element */
-                        const computed = window.getComputedStyle(s);
-                        if (computed) {
-                            const styles = [];
-                            const targetStyle = t.style;
-                            for (let i = 0, len = safeProperties.length; i < len; i++) {
-                                const prop = safeProperties[i];
-                                const val = computed.getPropertyValue(prop);
-                                if (val && val !== 'none' && val !== 'normal') {
-                                    /* Optimization: Skip if target already has this style */
-                                    // We strictly check redundancy to avoid overwriting existing inline styles.
-                                    // Note: We cannot safely skip '0px' defaults because UA styles might be non-zero (e.g. <p> margin).
-                                    if (targetStyle.getPropertyValue(prop) === val) continue;
+                            /* Apply styles to current element */
+                            const computed = window.getComputedStyle(s);
+                            if (computed) {
+                                const styles = [];
+                                const targetStyle = t.style;
+                                for (let i = 0, len = safeProperties.length; i < len; i++) {
+                                    const prop = safeProperties[i];
+                                    const val = computed.getPropertyValue(prop);
+                                    if (val && val !== 'none' && val !== 'normal') {
+                                        /* Optimization: Skip if target already has this style */
+                                        // We strictly check redundancy to avoid overwriting existing inline styles.
+                                        // Note: We cannot safely skip '0px' defaults because UA styles might be non-zero (e.g. <p> margin).
+                                        if (targetStyle.getPropertyValue(prop) === val) continue;
 
-                                    styles.push(prop + ':' + val);
+                                        styles.push(prop + ':' + val);
+                                    }
+                                }
+                                if (styles.length > 0) {
+                                    targetStyle.cssText += styles.join('; ') + '; ';
                                 }
                             }
-                            if (styles.length > 0) {
-                                targetStyle.cssText += styles.join('; ') + '; ';
+
+                            count++;
+
+                            /* Add children to queue */
+                            const sourceChildren = s.children;
+                            const targetChildren = t.children;
+                            /* Use reverse loop for DFS to maintain visual order in stack */
+                            for (let i = sourceChildren.length - 1; i >= 0; i--) {
+                                if (targetChildren[i]) {
+                                    queue.push({s: /** @type {HTMLElement} */ (sourceChildren[i]), t: /** @type {HTMLElement} */ (targetChildren[i])});
+                                }
+                            }
+
+                            /* Yield if chunk size reached or time exceeded */
+                            if (count % CHUNK_SIZE === 0 || (performance.now() - startTime) > 12) {
+                                 if (onProgress) onProgress(count);
+                                 setTimeout(processChunk, 0);
+                                 return;
                             }
                         }
 
-                        count++;
-
-                        /* Add children to queue */
-                        const sourceChildren = s.children;
-                        const targetChildren = t.children;
-                        /* Use reverse loop for DFS to maintain visual order in stack */
-                        for (let i = sourceChildren.length - 1; i >= 0; i--) {
-                            if (targetChildren[i]) {
-                                queue.push({s: /** @type {HTMLElement} */ (sourceChildren[i]), t: /** @type {HTMLElement} */ (targetChildren[i])});
-                            }
-                        }
-
-                        /* Yield if chunk size reached or time exceeded */
-                        if (count % CHUNK_SIZE === 0 || (performance.now() - startTime) > 12) {
-                             if (onProgress) onProgress(count);
-                             setTimeout(processChunk, 0);
-                             return;
-                        }
+                        /* Done */
+                        if (onProgress) onProgress(count);
+                        resolve();
+                    } catch (e) {
+                        reject(e);
                     }
-
-                    /* Done */
-                    if (onProgress) onProgress(count);
-                    resolve();
                 }
 
                 processChunk();

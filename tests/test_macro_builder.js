@@ -33,9 +33,11 @@ async function runTest() {
     // 1. "Starting new sequence" -> True
     // 2. "Press Enter after typing?" -> True
     // 3. "Element added! Pick another...?" -> False (to finish sequence)
+    // 4. "Is this sensitive data?" -> False (to allow testing value)
     global.confirm = (msg) => {
         // console.log("Confirm:", msg);
         if (msg.includes('Pick another')) return false;
+        if (msg.includes('sensitive data')) return false;
         return true;
     };
 

@@ -152,6 +152,44 @@ console.log("Running BookmarkletUtils tests...");
             console.log("✅ normalizeImages <picture> passed");
         }
 
+        // Test 5: inlineStylesAsync Fragility (Async Crash Handling)
+        {
+            console.log("Test 5: inlineStylesAsync Fragility (Async Crash Handling)");
+            // Create a deep structure to force yielding
+            const deepContainer = document.createElement('div');
+            const deepTarget = document.createElement('div');
+            for(let i=0; i<60; i++) {
+                deepContainer.appendChild(document.createElement('span'));
+                deepTarget.appendChild(document.createElement('span'));
+            }
+
+            let callCount = 0;
+            const originalGetComputedStyle = window.getComputedStyle;
+
+            // Mock getComputedStyle to crash asynchronously (after yielding)
+            window.getComputedStyle = (el) => {
+                callCount++;
+                if (callCount === 55) {
+                     throw new Error("Simulated Async Crash");
+                }
+                return originalGetComputedStyle(el);
+            };
+
+            try {
+                // If fix works, this should reject
+                await window.BookmarkletUtils.inlineStylesAsync(deepContainer, deepTarget);
+                throw new Error("Should have rejected but resolved");
+            } catch (e) {
+                if (e.message === "Simulated Async Crash") {
+                    console.log("✅ Correctly caught async crash");
+                } else {
+                    throw e;
+                }
+            } finally {
+                window.getComputedStyle = originalGetComputedStyle;
+            }
+        }
+
         console.log("All tests passed!");
     } catch (err) {
         console.error("Test failed:", err);
