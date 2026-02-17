@@ -46,9 +46,11 @@ declare global {
          * @param {string} globalVar - The global variable name to check (e.g., 'jspdf').
          * @param {string} url - The URL of the script.
          * @param {string} [integrity] - Optional SRI hash.
+         * @param {number} [retries=3] - Number of retry attempts.
+         * @param {number} [initialDelay=1000] - Initial delay in ms before first retry.
          * @returns {Promise<void>} Resolves when loaded or already present.
          */
-        loadLibrary(globalVar: string, url: string, integrity?: string): Promise<void>;
+        loadLibrary(globalVar: string, url: string, integrity?: string, retries?: number, initialDelay?: number): Promise<void>;
 
         /**
          * Stabilizes images for export by resolving lazy loading attributes (data-src)

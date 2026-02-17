@@ -261,28 +261,51 @@
         },
         /**
          * Loads an external script (library) dynamically if not already present.
+         * Includes exponential backoff retry logic.
          *
          * @param {string} globalVar - The global variable name to check (e.g., 'jspdf').
          * @param {string} url - The URL of the script.
          * @param {string} [integrity] - Optional SRI hash.
+         * @param {number} [retries=3] - Number of retry attempts.
+         * @param {number} [initialDelay=1000] - Initial delay in ms before first retry.
          * @returns {Promise<void>} Resolves when loaded or already present.
          */
-        loadLibrary(globalVar, url, integrity) {
-            return new Promise((resolve, reject) => {
-                if (window[globalVar]) {
-                    resolve();
-                    return;
-                }
-                const script = document.createElement('script');
-                script.src = url;
-                if (integrity) {
-                    script.integrity = integrity;
-                    script.crossOrigin = 'anonymous';
-                }
-                script.onload = () => resolve();
-                script.onerror = () => reject(new Error('Failed to load ' + globalVar));
-                document.head.appendChild(script);
-            });
+        loadLibrary(globalVar, url, integrity, retries, initialDelay) {
+            retries = typeof retries === 'number' ? retries : 3;
+            initialDelay = typeof initialDelay === 'number' ? initialDelay : 1000;
+
+            const loadAttempt = (attempt) => {
+                return new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = url;
+                    if (integrity) {
+                        script.integrity = integrity;
+                        script.crossOrigin = 'anonymous';
+                    }
+                    script.onload = () => resolve();
+                    script.onerror = () => {
+                        script.remove();
+                        reject(new Error('Failed to load ' + globalVar));
+                    };
+                    document.head.appendChild(script);
+                });
+            };
+
+            const retry = (attempt) => {
+                return loadAttempt(attempt).catch((err) => {
+                    if (attempt >= retries) {
+                        throw err;
+                    }
+                    const delay = initialDelay * Math.pow(2, attempt);
+                    return new Promise(r => setTimeout(r, delay)).then(() => retry(attempt + 1));
+                });
+            };
+
+            if (window[globalVar]) {
+                return Promise.resolve();
+            }
+
+            return retry(0);
         },
         /**
          * Stabilizes images for export by resolving lazy loading attributes (data-src)
