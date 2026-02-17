@@ -13,6 +13,8 @@ global.window = dom.window;
 global.document = dom.window.document;
 global.navigator = dom.window.navigator;
 global.HTMLElement = dom.window.HTMLElement;
+global.requestAnimationFrame = (cb) => setTimeout(cb, 0);
+global.cancelAnimationFrame = (id) => clearTimeout(id);
 global.alert = () => {}; // Mock alert
 
 // Load script
@@ -83,7 +85,7 @@ async function runUXTest() {
     await new Promise(r => setTimeout(r, 50));
 
     const toast = shadowRoot.querySelector('#toast');
-    if (toast.style.opacity === '1' && toast.innerText.includes('Invalid Time') && toast.classList.contains('error')) {
+    if (toast.classList.contains('visible') && toast.innerText.includes('Invalid Time') && toast.classList.contains('error')) {
         console.log("✅ verified: Error Toast appeared correctly");
     } else {
         console.log(`❌ FAILURE: Toast state incorrect. Opacity: ${toast.style.opacity}, Text: ${toast.innerText}, Classes: ${toast.className}`);

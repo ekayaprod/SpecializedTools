@@ -36,18 +36,24 @@
 
             this.s.innerHTML = '<style>' +
                 ':host{all:initial;font-family:system-ui,sans-serif}' +
-                '.box{background:#0f172a;color:#e2e8f0;width:260px;padding:16px;border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,0.6);border:1px solid #334155;font-size:13px;box-sizing:border-box}' +
+                '.box{background:#0f172a;color:#e2e8f0;width:260px;padding:16px;border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,0.6);border:1px solid #334155;font-size:13px;box-sizing:border-box;transition:height 0.3s ease}' +
                 '.row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;cursor:move;user-select:none;padding-bottom:5px;border-bottom:1px solid #334155}' +
                 'h3,b{margin:0;color:#f8fafc;font-size:14px;font-weight:700}' +
-                'button{width:100%;background:#2563eb;color:#fff;border:none;padding:10px;border-radius:6px;cursor:pointer;font-weight:600;margin-top:8px;transition:0.2s}' +
-                'button:hover{background:#1d4ed8}' +
-                'button:disabled{background:#334155;color:#64748b;cursor:not-allowed}' +
-                'input{width:100%;background:#1e293b;color:#fff;border:1px solid #334155;padding:8px;border-radius:6px;box-sizing:border-box;margin-top:5px;outline:none}' +
+                'button{width:100%;background:#2563eb;color:#fff;border:none;padding:10px;border-radius:6px;cursor:pointer;font-weight:600;margin-top:8px;transition:all 0.2s}' +
+                'button:hover{background:#1d4ed8;transform:scale(1.02)}' +
+                'button:active{transform:scale(0.98)}' +
+                'button:focus-visible{outline:2px solid #fff;outline-offset:2px}' +
+                'button:disabled{background:#334155;color:#64748b;cursor:not-allowed;transform:none}' +
+                'input{width:100%;background:#1e293b;color:#fff;border:1px solid #334155;padding:8px;border-radius:6px;box-sizing:border-box;margin-top:5px;outline:none;transition:border-color 0.2s}' +
                 'input:focus{border-color:#3b82f6}' +
                 '.hidden{display:none!important}' +
+                '.view{opacity:1;transition:opacity 0.2s ease-in-out}' +
+                '.view.fade-out{opacity:0}' +
                 '.timer{font-size:32px;text-align:center;color:#60a5fa;margin:15px 0;font-family:monospace}' +
                 '.warn{background:#713f12;color:#fef08a;padding:8px;border-radius:4px;margin-top:10px;font-size:11px;border:1px solid #ca8a04}' +
-                '.toast{position:absolute;bottom:70px;left:50%;transform:translateX(-50%);background:#334155;color:white;padding:6px 12px;border-radius:6px;font-size:12px;white-space:nowrap;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:100}' +
+                '.toast{position:absolute;bottom:70px;left:50%;transform:translateX(-50%);background:#334155;color:white;padding:6px 12px;border-radius:6px;font-size:12px;white-space:nowrap;opacity:0;transition:opacity 0.3s,transform 0.3s;pointer-events:none;z-index:100}' +
+                '.toast.visible{opacity:1;transform:translateX(-50%) translateY(0)}' +
+                '.toast.hidden{opacity:0;transform:translateX(-50%) translateY(10px)}' +
                 '.toast.error{background:#ef4444}' +
                 '.toast.success{background:#10b981}' +
                 '.toast.info{background:#3b82f6}' +
@@ -58,7 +64,7 @@
             '</style>' +
             '<div class="box">' +
                 '<div class="row" id="drag"><b>QUICK CLICKER V27</b><button id="x" aria-label="Close" style="background:transparent;border:none;color:#e2e8f0;font-size:14px;cursor:pointer;padding:0;">✕</button></div>' +
-                '<div id="v1">' +
+                '<div id="v1" class="view">' +
                     '<button id="pk">🎯 Pick Target</button>' +
                     '<div id="warn" class="hidden warn"></div>' +
                     '<div id="inp" class="hidden">' +
@@ -81,10 +87,10 @@
 
                     '<button id="go" disabled>Start</button>' +
                 '</div>' +
-                '<div id="v2" class="hidden">' +
+                '<div id="v2" class="view hidden">' +
                     '<div class="timer" id="tm">00:00</div>' +
                     '<button id="cn" style="background:#ef4444">Stop</button>' +
-                    '<div id="toast" class="toast" role="alert" aria-live="assertive">Wake Lock Active 🔒</div>' +
+                    '<div id="toast" class="toast hidden" role="alert" aria-live="assertive">Wake Lock Active 🔒</div>' +
                 '</div>' +
             '</div>';
 
@@ -103,10 +109,12 @@
         showToast(msg, type='info') {
             const t = this.q('#toast');
             t.innerText = msg;
-            t.className = 'toast ' + type;
-            t.style.opacity = '1';
+            t.className = 'toast visible ' + type;
+
             if (this.toastTimer) clearTimeout(this.toastTimer);
-            this.toastTimer = setTimeout(() => t.style.opacity = '0', 3000);
+            this.toastTimer = setTimeout(() => {
+                t.className = 'toast hidden ' + type;
+            }, 3000);
         }
 
         /**
@@ -240,6 +248,8 @@
             s.id='dc-cur'; s.innerHTML='*{cursor:crosshair!important}';
             document.head.appendChild(s);
 
+            this.showToast('Click an element to target it...', 'info');
+
             const mv=e=>{
                 if(e.shiftKey){ hl.style.display='none'; return; }
                 const t = this.getTarget(e);
@@ -298,6 +308,35 @@
         clearListeners() { this.cleanupFns.forEach(fn=>fn()); this.cleanupFns = []; }
 
         /**
+         * Switches the active view.
+         * @param {string} fromId - The ID of the view to hide.
+         * @param {string} toId - The ID of the view to show.
+         * @param {string} focusId - The ID of the element to focus after switch.
+         */
+        switchView(fromId, toId, focusId) {
+             const fromEl = this.q('#' + fromId);
+             const toEl = this.q('#' + toId);
+
+             fromEl.classList.add('fade-out');
+
+             setTimeout(() => {
+                 fromEl.classList.add('hidden');
+                 fromEl.classList.remove('fade-out');
+
+                 toEl.classList.add('fade-out');
+                 toEl.classList.remove('hidden');
+
+                 requestAnimationFrame(() => {
+                     toEl.classList.remove('fade-out');
+                     if(focusId) {
+                         const el = this.q('#' + focusId);
+                         if(el) el.focus();
+                     }
+                 });
+             }, 200);
+        }
+
+        /**
          * Starts the countdown or waits for the scheduled time.
          */
         async start(){
@@ -323,16 +362,13 @@
             try {
                 if('wakeLock' in navigator) {
                     this.state.wakeLock = await navigator.wakeLock.request('screen');
-                    const t = this.q('#toast');
-                    t.style.opacity = '1';
-                    setTimeout(()=>t.style.opacity='0', 3000);
+                    this.showToast('Wake Lock Active 🔒', 'success');
                 }
             } catch(e){
                 console.warn('Wake Lock failed:', e);
             }
 
-            this.q('#v1').classList.add('hidden');
-            this.q('#v2').classList.remove('hidden');
+            this.switchView('v1', 'v2', 'cn');
 
             const elTm = this.q('#tm');
 
@@ -383,8 +419,12 @@
             if(this.state.wakeLock) this.state.wakeLock.release();
             this.clearListeners();
             document.title = 'Stopped';
-            this.q('#v1').classList.remove('hidden');
-            this.q('#v2').classList.add('hidden');
+
+            // Focus Start button if valid, otherwise Pick button
+            const goBtn = this.q('#go');
+            const focusTarget = (goBtn && !goBtn.disabled) ? 'go' : 'pk';
+
+            this.switchView('v2', 'v1', focusTarget);
         }
 
         /**
