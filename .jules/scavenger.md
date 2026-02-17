@@ -40,3 +40,7 @@ BOUNDARIES
 - **Deleted:** `BookmarkletUtils.buildElement` (unused utility function)
 - **Deleted:** `tests/test_utils.js` test case (Test 5)
 - **Reason:** Function was exported but never used by any bookmarklet. `property-clipper.js` defined its own local version.
+
+## [2026-02-17]
+- **Deleted:** `tests/test_property_clipper_errors.js` (broken test file)
+- **Reason:** File was unmaintained, not included in test scripts, and relied on deprecated `alert()` behavior.
