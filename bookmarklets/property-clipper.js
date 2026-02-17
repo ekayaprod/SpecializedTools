@@ -651,7 +651,7 @@ Calculate the final data-supported baseline value. Multiply the **Mid Comp's** p
             
             grp.photos.forEach(p => {
                 const d = buildElement('div', { position: 'relative' }, '', grid);
-                const img = buildElement('img', { width: '100%', height: '80px', objectFit: 'cover' }, '', d, { src: p.url });
+                const img = buildElement('img', { width: '100%', height: '80px', objectFit: 'cover' }, '', d, { src: p.url, alt: p.label || 'Property Photo' });
                 const chk = buildElement('input', { position: 'absolute', top: '2px', left: '2px' }, '', d, { type: 'checkbox', checked: true });
                 checks.push({ chk, p });
             });
@@ -693,7 +693,7 @@ Calculate the final data-supported baseline value. Multiply the **Mid Comp's** p
         // 1. Dropdown
         const row1 = buildElement('div', { display: 'flex', flexDirection: 'column', gap: '5px' }, '', mo);
         buildElement('label', { fontSize: '12px', fontWeight: 'bold', color: '#555' }, 'Select Persona / Analysis Type:', row1);
-        const select = buildElement('select', { padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }, '', row1);
+        const select = buildElement('select', { padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }, '', row1, { 'aria-label': 'Select Persona / Analysis Type' });
         
         Object.entries(PROMPT_DATA).forEach(([k, v]) => {
             const opt = buildElement('option', {}, v.label, select);
