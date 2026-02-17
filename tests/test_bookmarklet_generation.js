@@ -16,14 +16,20 @@ return true;
 }`
     },
     {
-        name: 'Remove empty lines',
+        name: 'Preserve empty lines (general)',
         input: `
             line 1
 
             line 2
         `,
         expected: `line 1
+
 line 2`
+    },
+    {
+        name: 'Template literals with empty lines',
+        input: 'const p = `line 1\n\nline 2`;',
+        expected: 'const p = `line 1\n\nline 2`;'
     },
     {
         name: 'Preserve newlines',

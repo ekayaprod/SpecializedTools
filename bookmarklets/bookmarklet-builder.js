@@ -5,9 +5,9 @@
 
         // 2. Trim lines but PRESERVE NEWLINES.
         // This is critical for template literals (like LLM Prompts) to maintain formatting.
-        code = code.split('\n').map(line => line.trim()).filter(l => l.length > 0).join('\n');
+        code = code.split('\n').map(line => line.trim()).join('\n');
 
-        return code;
+        return code.trim();
     }
 
     function extractDependencies(code) {
