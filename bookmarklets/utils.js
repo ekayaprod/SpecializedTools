@@ -32,38 +32,36 @@
     ];
 
     /* Sanitization Helpers */
-    function isEventAttribute(name) {
-        return name.toLowerCase().startsWith('on');
-    }
+    const Sanitizer = {
+        isEventAttribute(name) {
+            return name.toLowerCase().startsWith('on');
+        },
+        isUnsafeAttribute(name) {
+            const lower = name.toLowerCase();
+            return ['href', 'src', 'action', 'data', 'formaction', 'poster', 'xlink:href', 'srcset'].includes(lower);
+        },
+        containsMaliciousProtocol(value, isSrcset) {
+            const checkVal = value.replace(/\s+/g, '').toLowerCase();
+            if (isSrcset) {
+                return checkVal.includes('javascript:') || checkVal.includes('vbscript:');
+            }
+            return checkVal.startsWith('javascript:') || checkVal.startsWith('vbscript:');
+        },
+        isValidDataUri(tagName, value) {
+            const checkVal = value.replace(/\s+/g, '').toLowerCase();
+            if (!checkVal.startsWith('data:')) return true;
 
-    function isUnsafeAttribute(name) {
-        const lower = name.toLowerCase();
-        return ['href', 'src', 'action', 'data', 'formaction', 'poster', 'xlink:href', 'srcset'].includes(lower);
-    }
+            const isImageTag = ['img', 'source', 'picture'].includes(tagName.toLowerCase());
+            const isImageMime = checkVal.startsWith('data:image/');
+            const isSvg = checkVal.includes('svg+xml');
 
-    function containsMaliciousProtocol(value, isSrcset) {
-        const checkVal = value.replace(/\s+/g, '').toLowerCase();
-        if (isSrcset) {
-            return checkVal.includes('javascript:') || checkVal.includes('vbscript:');
+            return isImageTag && isImageMime && !isSvg;
+        },
+        isSafeStyle(value) {
+            const checkVal = value.replace(/\s+/g, '').toLowerCase();
+            return !(checkVal.includes('javascript:') || checkVal.includes('vbscript:') || checkVal.includes('expression('));
         }
-        return checkVal.startsWith('javascript:') || checkVal.startsWith('vbscript:');
-    }
-
-    function isValidDataUri(tagName, value) {
-        const checkVal = value.replace(/\s+/g, '').toLowerCase();
-        if (!checkVal.startsWith('data:')) return true;
-
-        const isImageTag = ['img', 'source', 'picture'].includes(tagName.toLowerCase());
-        const isImageMime = checkVal.startsWith('data:image/');
-        const isSvg = checkVal.includes('svg+xml');
-
-        return isImageTag && isImageMime && !isSvg;
-    }
-
-    function isSafeStyle(value) {
-        const checkVal = value.replace(/\s+/g, '').toLowerCase();
-        return !(checkVal.includes('javascript:') || checkVal.includes('vbscript:') || checkVal.includes('expression('));
-    }
+    };
 
     function traverse(node, parts) {
         if (node.nodeType === 3) { parts.push(node.nodeValue); return; }
@@ -392,7 +390,7 @@
                     const val = (el.getAttribute(name) || '').toLowerCase().trim();
 
                     /* 1. Event Handlers (on*) */
-                    if (isEventAttribute(lowerName)) {
+                    if (Sanitizer.isEventAttribute(lowerName)) {
                         el.removeAttribute(name);
                     }
                     /* 2. SRCDOC (Always remove to prevent iframe injection) */
@@ -400,18 +398,18 @@
                         el.removeAttribute(name);
                     }
                     /* 3. Malicious URIs (javascript:, vbscript:, data: strict check) */
-                    else if (isUnsafeAttribute(lowerName)) {
+                    else if (Sanitizer.isUnsafeAttribute(lowerName)) {
                         const isSrcset = lowerName === 'srcset';
-                        if (containsMaliciousProtocol(val, isSrcset)) {
+                        if (Sanitizer.containsMaliciousProtocol(val, isSrcset)) {
                             el.removeAttribute(name);
                         }
-                        else if (!isValidDataUri(el.tagName, val)) {
+                        else if (!Sanitizer.isValidDataUri(el.tagName, val)) {
                             el.removeAttribute(name);
                         }
                     }
                     /* 4. Style Attribute (check for javascript: or expression) */
                     else if (lowerName === 'style') {
-                        if (!isSafeStyle(val)) {
+                        if (!Sanitizer.isSafeStyle(val)) {
                             el.removeAttribute(name);
                         }
                     }
