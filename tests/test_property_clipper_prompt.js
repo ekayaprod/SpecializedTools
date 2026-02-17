@@ -110,7 +110,7 @@ function runTest() {
     assert.ok(promptText.includes(expectedHeader), `Should contain header with address: ${expectedHeader}`);
 
     // 5. Check Section 6 Calculation
-    assert.ok(promptText.includes("**Gross Baseline Value:** Multiply the Bracketed Average Rate"), "Section 6 should be present");
+    assert.ok(promptText.includes("**Gross Baseline Value:** [Standard Baseline Rate] x [Subject Sq. Ft.] = [Total]"), "Section 6 should be present");
 
     console.log("✅ All Prompt Content Tests Passed");
 }

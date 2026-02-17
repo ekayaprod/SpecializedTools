@@ -74,10 +74,10 @@ console.log("Prompt Text (first 200 chars):", promptText.substring(0, 200) + "..
 let failed = false;
 
 // 1. Role Check
-if (promptText.includes("**Role:** Senior STR Investment Analyst.")) {
+if (promptText.includes("**Role:** Senior STR Investment Analyst drafting a fast-paced investment brief for a high-volume acquisition team.")) {
     console.log("✅ Role found.");
 } else {
-    console.error("❌ Role NOT found. Expected '**Role:** Senior STR Investment Analyst.'");
+    console.error("❌ Role NOT found. Expected '**Role:** Senior STR Investment Analyst drafting a fast-paced investment brief for a high-volume acquisition team.'");
     failed = true;
 }
 
@@ -90,7 +90,7 @@ if (promptText.includes("**Task:** Perform a comparative investment analysis")) 
 }
 
 // 3. Leaderboard Check
-if (promptText.includes("THE LEADERBOARD (EXECUTIVE VERDICT)")) {
+if (promptText.includes("THE LEADERBOARD (EXECUTIVE VERDICT):")) {
     console.log("✅ THE LEADERBOARD found.");
 } else {
     console.error("❌ THE LEADERBOARD NOT found.");
@@ -98,46 +98,54 @@ if (promptText.includes("THE LEADERBOARD (EXECUTIVE VERDICT)")) {
 }
 
 // 4. Comparative Revenue Projection Check
-if (promptText.includes("COMPARATIVE REVENUE PROJECTION")) {
+if (promptText.includes("COMPARATIVE REVENUE PROJECTION:")) {
     console.log("✅ COMPARATIVE REVENUE PROJECTION found.");
 } else {
     console.error("❌ COMPARATIVE REVENUE PROJECTION NOT found.");
     failed = true;
 }
 
-// 5. Guest Experience Audit Check
-if (promptText.includes('THE "GUEST EXPERIENCE" AUDIT')) {
-    console.log("✅ GUEST EXPERIENCE AUDIT found.");
+// 5. Amenity Proximity Matrix Check (NEW)
+if (promptText.includes("AMENITY PROXIMITY MATRIX:")) {
+    console.log("✅ AMENITY PROXIMITY MATRIX found.");
 } else {
-    console.error("❌ GUEST EXPERIENCE AUDIT NOT found.");
+    console.error("❌ AMENITY PROXIMITY MATRIX NOT found.");
     failed = true;
 }
 
-// 6. Regulatory & Silent Cost Check
-if (promptText.includes('REGULATORY & SILENT COST "TRIPWIRES"')) {
+// 6. STR Conversion & Condition Audit Check (NEW/RENAMED)
+if (promptText.includes("STR CONVERSION & CONDITION AUDIT:")) {
+    console.log("✅ STR CONVERSION & CONDITION AUDIT found.");
+} else {
+    console.error("❌ STR CONVERSION & CONDITION AUDIT NOT found.");
+    failed = true;
+}
+
+// 7. Regulatory & Silent Cost Check
+if (promptText.includes('REGULATORY & SILENT COST "TRIPWIRES":')) {
     console.log("✅ REGULATORY & SILENT COST TRIPWIRES found.");
 } else {
     console.error("❌ REGULATORY & SILENT COST TRIPWIRES NOT found.");
     failed = true;
 }
 
-// 7. Financial Reality Check
-if (promptText.includes('FINANCIAL REALITY CHECK (THE MATH)')) {
+// 8. Financial Reality Check (RENAMED)
+if (promptText.includes('FINANCIAL REALITY CHECK (TOP-RANKED ASSET ONLY):')) {
     console.log("✅ FINANCIAL REALITY CHECK found.");
 } else {
     console.error("❌ FINANCIAL REALITY CHECK NOT found.");
     failed = true;
 }
 
-// 8. Deal Breaker Analysis
-if (promptText.includes('THE "DEAL BREAKER" ANALYSIS')) {
+// 9. Deal Breaker Analysis
+if (promptText.includes('THE "DEAL BREAKER" ANALYSIS:')) {
     console.log("✅ DEAL BREAKER ANALYSIS found.");
 } else {
     console.error("❌ DEAL BREAKER ANALYSIS NOT found.");
     failed = true;
 }
 
-// 9. Standard Outputs Suppressed Check
+// 10. Standard Outputs Suppressed Check
 if (!promptText.includes("EXPECTED DELIVERABLES:")) {
     console.log("✅ Standard output suppressed (as expected).");
 } else {
