@@ -8,6 +8,8 @@ const scriptPath = path.join(__dirname, '../bookmarklets/property-clipper.js');
 const scriptCode = fs.readFileSync(scriptPath, 'utf8');
 const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
 const utilsCode = fs.readFileSync(utilsPath, 'utf8');
+const promptsPath = path.join(__dirname, '../bookmarklets/property-clipper-prompts.js');
+const promptsCode = fs.readFileSync(promptsPath, 'utf8');
 
 // Create JSDOM
 const dom = new JSDOM(`<!DOCTYPE html>
@@ -189,6 +191,9 @@ try {
 
     // Propagate to global for the next script
     global.BookmarkletUtils = window.BookmarkletUtils;
+
+    console.log("Executing property-clipper-prompts.js...");
+    eval(promptsCode);
 
     console.log("Executing property-clipper.js...");
     eval(scriptCode);
