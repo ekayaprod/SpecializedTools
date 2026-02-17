@@ -230,12 +230,13 @@
          * Cleans a string to be safe for use as a filename.
          * Truncates to 50 chars and replaces special chars with underscores.
          *
-         * @param {string} s - The input string (e.g., page title).
+         * @param {string|number} s - The input string (e.g., page title).
          * @returns {string} Safe filename string.
          */
         sanitizeFilename(s) {
             /* Replace non-alphanumeric characters with underscores and truncate */
-            return String(s || 'export').replace(/[^a-z0-9]/gi, '_').substring(0, 50);
+            const input = (s || s === 0) ? s : 'export';
+            return String(input).replace(/[^a-z0-9]/gi, '_').substring(0, 50);
         },
         /**
          * Triggers a download of a file with the given content.

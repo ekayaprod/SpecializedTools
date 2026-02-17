@@ -25,10 +25,10 @@ declare global {
          * Cleans a string to be safe for use as a filename.
          * Truncates to 50 chars and replaces special chars with underscores.
          *
-         * @param {string} s - The input string (e.g., page title).
+         * @param {string|number} s - The input string (e.g., page title).
          * @returns {string} Safe filename string.
          */
-        sanitizeFilename(s: string): string;
+        sanitizeFilename(s: string | number): string;
 
         /**
          * Triggers a download of a file with the given content.

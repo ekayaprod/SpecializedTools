@@ -97,6 +97,10 @@ console.log("Running BookmarkletUtils tests...");
                 throw e; // Rethrow to fail the test suite
             }
 
+            // 5. Zero handling (Fragility Fix)
+            const zeroResult = window.BookmarkletUtils.sanitizeFilename(0);
+            assert.strictEqual(zeroResult, '0', 'Zero should be preserved as string "0"');
+
             console.log("✅ sanitizeFilename passed");
         }
 
