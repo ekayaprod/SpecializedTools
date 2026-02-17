@@ -1,6 +1,6 @@
 (function() {
     if(window.__dc_v27){window.__dc_v27.destroy();return}
-    if(!document.body) return alert('Page has no body.');
+    if(!document.body) return console.error('Page has no body.');
 
     /**
      * @typedef {Object} QuickClickerState
@@ -47,7 +47,12 @@
                 '.hidden{display:none!important}' +
                 '.timer{font-size:32px;text-align:center;color:#60a5fa;margin:15px 0;font-family:monospace}' +
                 '.warn{background:#713f12;color:#fef08a;padding:8px;border-radius:4px;margin-top:10px;font-size:11px;border:1px solid #ca8a04}' +
-                '.toast{position:absolute;bottom:70px;left:50%;transform:translateX(-50%);background:#059669;color:white;padding:5px 10px;border-radius:4px;font-size:11px;white-space:nowrap;opacity:0;transition:opacity 0.5s}' +
+                '.toast{position:absolute;bottom:70px;left:50%;transform:translateX(-50%);background:#334155;color:white;padding:6px 12px;border-radius:6px;font-size:12px;white-space:nowrap;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:100}' +
+                '.toast.error{background:#ef4444}' +
+                '.toast.success{background:#10b981}' +
+                '.toast.info{background:#3b82f6}' +
+                '@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7); } 70% { box-shadow: 0 0 0 6px rgba(37, 99, 235, 0); } 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); } }' +
+                '.pulse { animation: pulse 2s infinite; }' +
                 '.mode-switch{display:flex;gap:10px;margin-top:10px;font-size:11px;color:#94a3b8}' +
                 '.mode-opt{cursor:pointer;display:flex;align-items:center;gap:4px}' +
             '</style>' +
@@ -79,7 +84,7 @@
                 '<div id="v2" class="hidden">' +
                     '<div class="timer" id="tm">00:00</div>' +
                     '<button id="cn" style="background:#ef4444">Stop</button>' +
-                    '<div id="toast" class="toast">Wake Lock Active 🔒</div>' +
+                    '<div id="toast" class="toast" role="alert" aria-live="assertive">Wake Lock Active 🔒</div>' +
                 '</div>' +
             '</div>';
 
@@ -88,6 +93,20 @@
             this.bind();
             document.body.appendChild(this.h);
             setTimeout(() => this.q('#pk').focus(), 50);
+        }
+
+        /**
+         * Shows a toast notification.
+         * @param {string} msg - Message to display.
+         * @param {'info'|'success'|'error'} [type='info'] - Type of toast.
+         */
+        showToast(msg, type='info') {
+            const t = this.q('#toast');
+            t.innerText = msg;
+            t.className = 'toast ' + type;
+            t.style.opacity = '1';
+            if (this.toastTimer) clearTimeout(this.toastTimer);
+            this.toastTimer = setTimeout(() => t.style.opacity = '0', 3000);
         }
 
         /**
@@ -242,7 +261,7 @@
             const cl=e=>{
                 if(e.shiftKey) return;
                 stopEvent(e);
-                if(e.target.tagName==='IFRAME') alert('Cannot click inside IFrame');
+                if(e.target.tagName==='IFRAME') return this.showToast('Cannot click inside IFrame', 'error');
 
                 let targetEl = this.getTarget(e);
                 if(!targetEl) return;
@@ -252,10 +271,15 @@
 
                 const t=targetEl.tagName;
                 const inp = this.q('#inp');
-                if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT') inp.classList.remove('hidden');
-                else inp.classList.add('hidden');
+                if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT') {
+                    inp.classList.remove('hidden');
+                    setTimeout(() => this.q('#val').focus(), 100);
+                } else inp.classList.add('hidden');
 
-                /** @type {HTMLButtonElement} */ (this.q('#go')).disabled=false;
+                const goBtn = /** @type {HTMLButtonElement} */ (this.q('#go'));
+                goBtn.disabled = false;
+                goBtn.classList.add('pulse');
+
                 this.q('#pk').style.background='#059669';
                 this.q('#pk').innerText = 'Target: '+t;
 
@@ -281,11 +305,11 @@
 
             if(this.state.timeMode === 'delay') {
                 const m = parseFloat(/** @type {HTMLInputElement} */ (this.q('#mn')).value)||0;
-                if(m<=0) return alert('Invalid Time');
+                if(m<=0) return this.showToast('Invalid Time', 'error');
                 targetTime = Date.now() + (m*60000);
             } else {
                 const timeStr = /** @type {HTMLInputElement} */ (this.q('#clk')).value;
-                if(!timeStr) return alert('Please set a clock time');
+                if(!timeStr) return this.showToast('Please set a clock time', 'error');
                 const [h, m] = timeStr.split(':');
                 const now = new Date();
                 const d = new Date();
@@ -331,7 +355,7 @@
             const display = elTm || this.q('#tm');
 
             if(!el || !el.isConnected) {
-                alert('FAILED: Target detached (Page refreshed?).');
+                this.showToast('FAILED: Target detached', 'error');
                 display.innerText='FAIL'; return;
             }
 
@@ -348,6 +372,7 @@
             }
             ['mousedown','mouseup','click'].forEach(e=>el.dispatchEvent(new MouseEvent(e,{bubbles:true, cancelable:true})));
             display.innerText='DONE';
+            this.showToast('Automation Complete!', 'success');
         }
 
         /**

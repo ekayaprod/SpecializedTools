@@ -67,6 +67,29 @@ async function runUXTest() {
         process.exit(1);
     }
 
+    // 2.5 Verify Toast Error on Invalid Input
+    console.log("ℹ️ Testing Toast Error...");
+    const minInput = shadowRoot.querySelector('#mn');
+    minInput.value = "-5"; // Invalid time
+
+    // We need to enable the Start button first (usually requires picking a target)
+    // Hack: Manually enable it for test
+    const startBtn = shadowRoot.querySelector('#go');
+    startBtn.disabled = false;
+
+    startBtn.click();
+
+    // Wait for UI update (microtask)
+    await new Promise(r => setTimeout(r, 50));
+
+    const toast = shadowRoot.querySelector('#toast');
+    if (toast.style.opacity === '1' && toast.innerText.includes('Invalid Time') && toast.classList.contains('error')) {
+        console.log("✅ verified: Error Toast appeared correctly");
+    } else {
+        console.log(`❌ FAILURE: Toast state incorrect. Opacity: ${toast.style.opacity}, Text: ${toast.innerText}, Classes: ${toast.className}`);
+        process.exit(1);
+    }
+
     // 3. Verify Escape Key (Simulate)
     console.log("ℹ️ Simulating Escape key...");
     const escapeEvent = new global.window.KeyboardEvent('keydown', {
