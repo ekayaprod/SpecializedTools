@@ -63,6 +63,20 @@ function runTest() {
     } else {
         console.error("❌ Toggle button not found.");
     }
+
+    // Test Aria-Label on Regenerate Button
+    const regenBtn = Array.from(document.querySelectorAll('button')).find(b => b.textContent === 'Regenerate');
+    if (regenBtn) {
+        if (regenBtn.getAttribute('aria-label') === 'Generate new passphrases') {
+            console.log("✅ Regenerate button has correct aria-label.");
+        } else {
+            console.error(`❌ Regenerate button has incorrect aria-label: ${regenBtn.getAttribute('aria-label')}`);
+            process.exit(1);
+        }
+    } else {
+        console.error("❌ Regenerate button not found.");
+        process.exit(1);
+    }
 }
 
 runTest();

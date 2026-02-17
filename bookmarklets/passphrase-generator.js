@@ -455,6 +455,7 @@
 
     const regenBtn = document.createElement('button');
     regenBtn.textContent = 'Regenerate';
+    regenBtn.setAttribute('aria-label', 'Generate new passphrases');
     Object.assign(regenBtn.style, { padding: '8px 16px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' });
     regenBtn.onclick = () => render();
 
