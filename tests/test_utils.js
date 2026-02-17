@@ -51,6 +51,23 @@ console.log("Running BookmarkletUtils tests...");
 
 (async function() {
     try {
+        // Test 1: escapeHtml
+        {
+            console.log("Test 1: escapeHtml");
+            const input = '<div class="foo">&\'bar\'</div>';
+            const expected = '&lt;div class=&quot;foo&quot;&gt;&amp;&#039;bar&#039;&lt;/div&gt;';
+            const result = window.BookmarkletUtils.escapeHtml(input);
+            assert.strictEqual(result, expected, 'HTML escaping failed');
+
+            // Edge cases
+            assert.strictEqual(window.BookmarkletUtils.escapeHtml(''), '', 'Empty string failed');
+            assert.strictEqual(window.BookmarkletUtils.escapeHtml(null), '', 'Null input failed');
+            assert.strictEqual(window.BookmarkletUtils.escapeHtml(undefined), '', 'Undefined input failed');
+            assert.strictEqual(window.BookmarkletUtils.escapeHtml(0), '0', 'Number 0 failed');
+
+            console.log("✅ escapeHtml passed");
+        }
+
         // Test 2: normalizeImages
         {
             console.log("Test 2: normalizeImages");

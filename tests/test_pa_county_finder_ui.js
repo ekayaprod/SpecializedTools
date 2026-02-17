@@ -26,6 +26,9 @@ global.MouseEvent = dom.window.MouseEvent;
 const scriptPath = path.join(__dirname, '../bookmarklets/pa-county-finder.js');
 let scriptContent = fs.readFileSync(scriptPath, 'utf8');
 
+const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
+const utilsCode = fs.readFileSync(utilsPath, 'utf8');
+
 // Strip module.exports check to force UI execution
 scriptContent = scriptContent.replace(
     /if\s*\(\s*typeof\s*module\s*!==\s*'undefined'\s*&&\s*module\.exports\s*\)\s*\{[\s\S]*?return;\s*\}/,
@@ -50,6 +53,10 @@ async function runUITest() {
         // Mock focus on trigger to verify return
         let triggerFocused = false;
         trigger.focus = () => { triggerFocused = true; };
+
+        // Load utils first
+        eval(utilsCode);
+        global.BookmarkletUtils = window.BookmarkletUtils;
 
         // Run the script
         eval(scriptContent);
