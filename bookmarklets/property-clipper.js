@@ -27,38 +27,40 @@ EXPECTED DELIVERABLES:
         househack: { label: "House Hacking", role: "Act as a House Hacking Specialist.", objective: 'Analyze layout for unit-splitting/ADU potential and zoning compliance.' },
         appraisal: {
             label: "Valuation Analyst",
-            role: "Act as a Real Estate Valuation Analyst.",
-            objective: `**Context:** Review the attached property PDF (which includes listing details and embedded photos).
+            role: "**Role:** Real Estate Valuation Analyst.",
+            objective: `**Context:** Review the attached property PDF (listing details and photos).
 
-**Task:** Research recent local comps and macro-market data to generate an objective, data-driven Valuation Report. The tone must be clinical, direct, and completely free of investment strategy or buyer bias. Use simple language and short bullet points.
+**Task:** Research recent localized comparables and macro-market conditions to generate a technical, data-driven Valuation Exhibit. You must generate the output as a distinct file named \`Valuation_Exhibit_[Insert Property Address].md\`.
+
+**Tone & Style:** Write in the objective, authoritative tone of a professional real estate appraisal. Avoid dense academic legalese, but maintain a highly professional standard. Use clear, connective language to link analytical ideas fluidly. Bullet points should be used to organize data sets, but the analysis itself should flow logically as a cohesive summary.
 
 **Output Structure:**
 
+# Technical Valuation Exhibit: [Insert Property Address]
+
 1. **SUBJECT PROPERTY BASELINE:**
-List the core facts: List Price, Sq. Ft., Price/Sq. Ft., Beds/Baths/Year Built, and Lot Size. Note the current Days on Market, previous sold price/date, and any active listing history context.
+List: List Price, Gross Living Area (Sq. Ft.), Price/Sq. Ft., Beds/Baths, Year Built, and Lot Size. Note the current Days on Market, previous transaction history, and listing status.
 
-2. **MACRO-MARKET TRENDS:**
-For the property's specific zip code, list the current median sale price, year-over-year trend (percentage growth/decline), and average days on market.
+2. **BRACKETED MARKET COMPARABLES:**
+Search for 4 to 6 recent sales (past 6 to 24 months) that closely match the subject property's exact Bedroom/Bathroom count and Square Footage.
+*Search Directive:* To establish a statistically sound, risk-adjusted baseline, prioritize comparables in the lower and middle pricing tiers for these specific specifications. Explicitly exclude premium luxury outliers or heavily upgraded flips.
+*Format as a Markdown Table:* Address | Sale Date | Sale Price | Sq. Ft. | Price / Sq. Ft. | Bed / Bath
 
-3. **MARKET COMPS:**
-Create a Markdown table with 4-5 recent neighborhood sales (sold within the past 6-12 months). Apply these selection criteria:
-* **High Comp:** A superior, highly competitive recent sale in excellent condition.
-* **Mid Comp:** A highly similar recent sale in average condition to establish a localized baseline.
-* **Low Comp:** A comparable property representing the lower-quartile of recent sales.
-*Columns:* Address | Sale Date | Sale Price | Sq. Ft. | Price / Sq. Ft. | Bed / Bath
+3. **COMPARABLE ANALYSIS:**
+Provide a concise, fluid analytical summary (3-4 sentences) detailing the mathematical difference between the subject property's asking price and the averages established in the bracketed comparables table. Connect the data points logically to highlight pricing discrepancies.
 
-4. **COMP ANALYSIS:**
-Provide 3 short bullet points comparing the subject property's asking price to the High, Mid, and Low comps. Focus purely on mathematical variance.
+4. **ADJUSTMENTS FOR MAJOR DEFICITS & OBSOLESCENCE (If Applicable):**
+Identify major structural differences where the subject property lacks a standard feature present in the average comparable (e.g., lacking a secondary bathroom, absent garage). You may also deduct for severe aesthetic obsolescence (e.g., original untouched 1970s decor requiring full modernization), but do not deduct for standard, minor cosmetic wear. If a major deficit or severe obsolescence exists, provide a standard estimated cost to correct it. If none exist, state "No major deficits or severe obsolescence identified."
 
-5. **CONDITION & REPAIR ESTIMATES:**
-Analyze the listing photos. Create a table identifying visible deferred maintenance or necessary basic repairs (e.g., worn flooring, dated systems, exterior wear) required to bring the property up to the functional standard of the **Mid Comp**.
-*Strict Rule:* You must use the keyword 'estimate' for costs. Do not include premium, aesthetic, or luxury upgrades.
+5. **LOCAL MARKET HEADWINDS (Conditional):**
+Investigate the immediate neighborhood and macro-market for drastic negative shifts occurring within the last 24 months. This can include severe tax reassessment spikes, declining local business/economic anchors, restrictive zoning changes, or escalating HOA friction costs. *Condition:* Only include this section if a documented, severe headwind exists that materially impacts long-term asset value. If the local market factors are stable, omit this section entirely.
 
-6. **CARRYING COSTS:**
-List the current property taxes and HOA fees (if applicable). Note any recent tax assessment spikes or increases since the current seller's acquisition.
-
-7. **AS-IS VALUATION:**
-Calculate the final data-supported baseline value. Multiply the **Mid Comp's** price-per-square-foot by the subject property's square footage. From that total, subtract the basic repair estimates calculated in Section 5. State the final mathematically supported valuation clearly.`,
+6. **DATA-SUPPORTED BASELINE VALUATION:**
+Execute and display the following calculation:
+* **Bracketed Average Rate:** Calculate the average Price/Sq. Ft. of the properties in the comparable table.
+* **Gross Baseline Value:** Multiply the Bracketed Average Rate by the subject property's Sq. Ft.
+* **Deficit Deductions:** Subtract the estimated cost for any items identified in Section 4 (if zero, subtract $0).
+* **Final Data-Supported Valuation:** State the final mathematically derived valuation.`,
             noStandardOutput: true
         }
     };
@@ -90,8 +92,8 @@ Calculate the final data-supported baseline value. Multiply the **Mid Comp's** p
              text += `\n${STANDARD_OUTPUTS}`;
         }
         if (data) {
-            text = text.replace('[Insert Property Address]', data.address || '[Address]')
-                       .replace('[Insert Asking Price]', data.price || '[Price]');
+            text = text.replace(/\[Insert Property Address\]/g, data.address || '[Address]')
+                       .replace(/\[Insert Asking Price\]/g, data.price || '[Price]');
         }
         return text;
     };
