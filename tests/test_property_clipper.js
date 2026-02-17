@@ -8,6 +8,8 @@ const scriptPath = path.join(__dirname, '../bookmarklets/property-clipper.js');
 const scriptCode = fs.readFileSync(scriptPath, 'utf8');
 const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
 const utilsCode = fs.readFileSync(utilsPath, 'utf8');
+const promptsPath = path.join(__dirname, '../bookmarklets/property-clipper-prompts.js');
+const promptsCode = fs.readFileSync(promptsPath, 'utf8');
 
 // Create JSDOM
 const dom = new JSDOM(`<!DOCTYPE html>
@@ -189,6 +191,26 @@ try {
 
     // Propagate to global for the next script
     global.BookmarkletUtils = window.BookmarkletUtils;
+
+    console.log("Executing property-clipper-prompts.js...");
+    // Manually resolve @include_text directives for testing
+    let resolvedPromptsCode = promptsCode;
+    const includeRegex = /\/\*\s*@include_text\s+['"]?([^'"]+)['"]?\s*\*\//g;
+    let match;
+    const replacements = [];
+    while ((match = includeRegex.exec(resolvedPromptsCode)) !== null) {
+        replacements.push({ fullMatch: match[0], path: match[1].trim() });
+    }
+    for (const rep of replacements) {
+        const incPath = path.join(__dirname, '../bookmarklets/' + rep.path);
+        if (fs.existsSync(incPath)) {
+            let incText = fs.readFileSync(incPath, 'utf8');
+            // Escape backslashes first, then backticks, then template vars
+            incText = incText.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$\{/g, '\\${');
+            resolvedPromptsCode = resolvedPromptsCode.replace(rep.fullMatch, incText);
+        }
+    }
+    eval(resolvedPromptsCode);
 
     console.log("Executing property-clipper.js...");
     eval(scriptCode);

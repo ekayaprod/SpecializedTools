@@ -30,4 +30,4 @@
 
 ## 🎨 UX/A11y Friction
 - [x] `alert()` usage disrupts screen readers and blocks user flow
-- [ ] bookmarklets/quick-clicker.js (Good A11y coverage in `tests/test_quick_clicker_ux.js`)
+- [x] bookmarklets/quick-clicker.js (Good A11y coverage in `tests/test_quick_clicker_ux.js`)
