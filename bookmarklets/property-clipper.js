@@ -21,7 +21,48 @@ EXPECTED DELIVERABLES:
 `;
 
     const PROMPT_DATA = {
-        str: { label: "Short-Term Rental (STR)", role: "Act as a Senior STR Analyst.", objective: 'Analyze macro/micro location, saturation, regulations, and revenue potential.' },
+        str: {
+            label: "Short-Term Rental (STR)",
+            role: "**Role:** Senior STR Investment Analyst.",
+            objective: `**Task:** Perform a comparative investment analysis on the attached properties to determine the highest-yield Short-Term Rental (Airbnb/VRBO) acquisition.
+
+**Tone:** Internal, high-stakes, and financially aggressive. Focus on "The Bottom Line."
+
+**Instructions:**
+Analyze the attached property PDFs (including photos and listing data) and generate a **Comparative Acquisition Report** structured as follows:
+
+**1. THE LEADERBOARD (EXECUTIVE VERDICT):**
+Rank the properties from #1 to #X based on their "Investment Grade" (Strong Buy / Qualified Buy / Hard Pass). For each, provide a one-sentence "Investment Thesis" (e.g., "Highest cash-on-cash return but requires immediate septic CapEx").
+
+**2. COMPARATIVE REVENUE PROJECTION:**
+Create a Markdown table comparing:
+* **Property Name/Address**
+* **Acquisition Basis (Asking Price)**
+* **Projected ADR (Average Daily Rate):** Based on local 3-bed/2-bath averages.
+* **Target Occupancy:** Adjust based on amenities (pool, lake access, hot tub potential).
+* **Gross Annual Revenue Projection.**
+
+**3. THE "GUEST EXPERIENCE" AUDIT (VISUAL ANALYSIS):**
+Analyze the photos for "STR Viability." Do not focus on maintenance; focus on **marketability**:
+* **Layout Flow:** Is there a clear communal "hangout" space?
+* **Bedroom/Bathroom Ratio:** Identify bottlenecks for large groups (e.g., "3 bedrooms but only 1.5 baths is a review risk").
+* **Aesthetic Modernization:** Does it need a "cosmetic refresh" to compete in the top 10% of local listings?
+
+**4. REGULATORY & SILENT COST "TRIPWIRES":**
+Investigate the "Hidden Insights" for each property:
+* **STR Regulations:** Check for township permits, occupancy caps, or 2-year ownership wait periods.
+* **Tax/HOA Friction:** Identify recent assessment spikes or high transfer fees that erode Net Operating Income (NOI).
+
+**5. FINANCIAL REALITY CHECK (THE MATH):**
+For the **#1 Ranked Property**, provide a detailed "True Cash Flow" breakdown:
+* **Calculated Entry Price:** (Asking Price - Major CapEx identified).
+* **Silent Costs:** (HOA, High-Occupancy Utilities, Commercial Insurance).
+* **CapEx Requirements:** Immediate funds needed to make it "Airbnb Ready" (Hot tub, Furniture, Professional Photos).
+
+**6. THE "DEAL BREAKER" ANALYSIS:**
+Explicitly identify why any property received a "Hard Pass" (e.g., "Unregulated septic on a high-occupancy listing" or "HOA restrictions eliminate STR viability").`,
+            noStandardOutput: true
+        },
         ltr: { label: "Long-Term Rental (LTR)", role: "Act as a Senior Buy-and-Hold Analyst.", objective: 'Analyze population growth, tenant demographics, and cash flow stability.' },
         flip: { label: "Fix & Flip", role: "Act as a Fix-and-Flip Project Manager.", objective: 'Estimate ARV, rehab CapEx based on visual condition, and identify structural risks.' },
         househack: { label: "House Hacking", role: "Act as a House Hacking Specialist.", objective: 'Analyze layout for unit-splitting/ADU potential and zoning compliance.' },
