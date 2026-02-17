@@ -31,7 +31,7 @@ This document tracks the status of features and tools within the Browser Toolkit
 
 ## Future Ideas
 
-- [ ] **Job Post Clipper** (Recruiter Mode): Extract job descriptions for resume tailoring.
+- [ ] **Job Post Clipper** (Recruiter Mode): Extract job descriptions for resume tailoring. (See [IDEAS.md](IDEAS.md))
 - [ ] **Recipe Clipper** (Chef Mode): Extract schema.org recipes for distraction-free cooking.
 - [ ] **Video Clipper** (Study Mode): Extract transcripts and metadata for LLM study guides.
 - [ ] **Shopping Clipper** (Deal Hunter Mode): Extract product details and prices for comparison.

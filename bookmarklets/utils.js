@@ -433,7 +433,7 @@
          *
          * @example
          * const source = document.getElementById('source');
-         * const target = document.createElement('div');
+         * const target = source.cloneNode(true);
          * BookmarkletUtils.inlineStylesAsync(source, target).then(() => {
          *   console.log('Styles inlined!');
          * });
