@@ -86,6 +86,7 @@ Execute the following calculation exactly as formatted below.
 
     /* UTILITIES */
     const buildElement = BookmarkletUtils.buildElement;
+    const Logger = BookmarkletUtils.Logger;
 
     const formatCurrency = (val) => (val != null) ? '$' + Number(val).toLocaleString() : 'N/A';
 
@@ -183,6 +184,7 @@ Execute the following calculation exactly as formatted below.
          * @returns {Object} The normalized property data object containing address, price, specs, etc.
          */
         getData: function () {
+            Logger.info('PropertyExtractor', 'Starting data extraction...');
             let data = {
                 address: 'Unknown Address', price: 'Unknown Price', specs: {},
                 financials: {}, market: {}, history: [], description: '',
@@ -192,23 +194,28 @@ Execute the following calculation exactly as formatted below.
             /* Extract Hero Image (OG:IMAGE is usually most reliable) */
             try {
                 const ogImage = document.querySelector('meta[property="og:image"]');
-                if (ogImage && ogImage.content) data.heroUrl = ogImage.content;
-            } catch (e) { console.warn('Hero Image Extraction Warning:', e); }
+                if (ogImage && ogImage.content) {
+                    data.heroUrl = ogImage.content;
+                    Logger.info('PropertyExtractor', 'Hero image found via OG tag.', { url: data.heroUrl });
+                }
+            } catch (e) { Logger.warn('PropertyExtractor', 'Hero Image Extraction Warning', { error: e.message }); }
 
             // 1. JSON Extraction
             try {
                 const nextDataNode = document.getElementById('__NEXT_DATA__');
                 const rawPreNode = document.querySelector('.raw-data pre');
                 if (nextDataNode) {
+                    Logger.info('PropertyExtractor', 'Found Next.js hydration data.');
                     const jsonData = JSON.parse(nextDataNode.textContent);
                     const pd = jsonData?.props?.pageProps?.initialReduxState?.propertyDetails;
                     if (pd) PropertyExtractor.parseDetails(pd, data);
                 } else if (rawPreNode) {
+                    Logger.info('PropertyExtractor', 'Found raw pre-formatted data.');
                     const pd = JSON.parse(rawPreNode.textContent);
                     if (pd) PropertyExtractor.parseDetails(pd, data);
                 }
             } catch (e) {
-                console.warn('JSON Extraction Failed', {
+                Logger.warn('PropertyExtractor', 'JSON Extraction Failed', {
                     error: e instanceof Error ? e.message : String(e),
                     hasNextData: !!document.getElementById('__NEXT_DATA__'),
                     hasRawPre: !!document.querySelector('.raw-data pre'),
@@ -219,6 +226,8 @@ Execute the following calculation exactly as formatted below.
             // 2. DOM Extraction
             try {
                 const keyFacts = document.querySelectorAll('[data-testid="key-facts"] li, .key-fact-item, ul[data-testid*="detail"] li');
+                if (keyFacts.length > 0) Logger.info('PropertyExtractor', `Found ${keyFacts.length} key fact items in DOM.`);
+
                 keyFacts.forEach(li => {
                     const text = /** @type {HTMLElement} */ (li).innerText || '';
                     let parts = text.includes(':') ? text.split(':') : text.split('\n');
@@ -236,8 +245,9 @@ Execute the following calculation exactly as formatted below.
                 if (data.address === 'Unknown Address') data.address = /** @type {HTMLElement} */ (document.querySelector('h1'))?.innerText || data.address;
                 if (data.price === 'Unknown Price') data.price = /** @type {HTMLElement} */ (document.querySelector('[data-testid="ldp-list-price"]'))?.innerText || data.price;
                 
-            } catch (e) { console.warn('DOM Extraction Warning:', e); }
+            } catch (e) { Logger.warn('PropertyExtractor', 'DOM Extraction Warning', { error: e.message }); }
 
+            Logger.info('PropertyExtractor', 'Extraction complete.', { address: data.address, price: data.price });
             return data;
         }
     };
@@ -261,14 +271,16 @@ Execute the following calculation exactly as formatted below.
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
                     try {
-                        resolve({ dataUrl: canvas.toDataURL('image/jpeg', CONFIG.imgQuality), width, height, ratio: width / height });
+                        const dataUrl = canvas.toDataURL('image/jpeg', CONFIG.imgQuality);
+                        Logger.info('ImageProcessor', 'Image processed successfully', { originalUrl: url, width, height });
+                        resolve({ dataUrl, width, height, ratio: width / height });
                     } catch (e) {
-                        console.warn('Image processing failed:', e);
+                        Logger.warn('ImageProcessor', 'Image processing failed (canvas export)', { error: e.message });
                         resolve(null);
                     }
                 };
                 img.onerror = (e) => {
-                    console.warn('Image load failed:', url, e);
+                    Logger.warn('ImageProcessor', 'Image load failed', { url, error: e });
                     resolve(null);
                 };
                 img.src = url;
@@ -365,6 +377,7 @@ Execute the following calculation exactly as formatted below.
     /* 4. PDF GENERATOR */
     const PDFGenerator = {
         create: async (data, selectedPhotos, statusCb) => {
+            Logger.info('PDFGenerator', 'Starting PDF generation...', { address: data.address });
             await BookmarkletUtils.loadLibrary('jspdf', CONFIG.jspdfUrl);
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ unit: 'mm', format: 'a4' });

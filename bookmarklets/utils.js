@@ -31,6 +31,26 @@
         'transform', 'transform-origin', 'transform-style'
     ];
 
+    /* Logger Helper */
+    const Logger = {
+        prefix: '✈️ Blackbox',
+        format(context, message) {
+            return `${this.prefix}: [${context}] ${message}`;
+        },
+        info(context, message, data) {
+            if (data) console.log(this.format(context, message), data);
+            else console.log(this.format(context, message));
+        },
+        warn(context, message, data) {
+            if (data) console.warn(this.format(context, message), data);
+            else console.warn(this.format(context, message));
+        },
+        error(context, message, data) {
+            if (data) console.error(this.format(context, message), data);
+            else console.error(this.format(context, message));
+        }
+    };
+
     /* Sanitization Helpers */
     const Sanitizer = {
         isEventAttribute(name) {
@@ -106,6 +126,11 @@
     }
 
     w.BookmarkletUtils = {
+        /**
+         * Standardized Logger for debugging and auditing.
+         */
+        Logger: Logger,
+
         /**
          * Creates a DOM element with specified properties.
          * @param {string} tag - The tag name of the element.
@@ -270,17 +295,26 @@
         loadLibrary(globalVar, url, integrity) {
             return new Promise((resolve, reject) => {
                 if (window[globalVar]) {
+                    Logger.info('LibraryLoader', `Library already present: ${globalVar}`);
                     resolve();
                     return;
                 }
+                Logger.info('LibraryLoader', `Loading library: ${globalVar}`, { url });
                 const script = document.createElement('script');
                 script.src = url;
                 if (integrity) {
                     script.integrity = integrity;
                     script.crossOrigin = 'anonymous';
                 }
-                script.onload = () => resolve();
-                script.onerror = () => reject(new Error('Failed to load ' + globalVar));
+                script.onload = () => {
+                    Logger.info('LibraryLoader', `Library loaded successfully: ${globalVar}`);
+                    resolve();
+                };
+                script.onerror = () => {
+                    const err = new Error('Failed to load ' + globalVar);
+                    Logger.error('LibraryLoader', `Library load failed: ${globalVar}`, { url, error: err.message });
+                    reject(err);
+                };
                 document.head.appendChild(script);
             });
         },
@@ -305,6 +339,9 @@
             return new Promise(function(resolve) {
                 /* Collect all items to process */
                 const queue = Array.prototype.slice.call(root.querySelectorAll('picture, img'));
+                const total = queue.length;
+                Logger.info('ImageNormalizer', `Starting normalization. Found ${total} images.`);
+
                 let count = 0;
                 const CHUNK_SIZE = 50;
 
@@ -364,6 +401,7 @@
                     }
 
                     if (onProgress) onProgress(count);
+                    Logger.info('ImageNormalizer', 'Normalization complete.', { processed: count, total });
                     resolve();
                 }
 
@@ -392,25 +430,30 @@
 
                     /* 1. Event Handlers (on*) */
                     if (Sanitizer.isEventAttribute(lowerName)) {
+                        Logger.warn('Sanitizer', 'Removed event attribute', { tag: el.tagName, attr: name });
                         el.removeAttribute(name);
                     }
                     /* 2. SRCDOC (Always remove to prevent iframe injection) */
                     else if (lowerName === 'srcdoc') {
+                        Logger.warn('Sanitizer', 'Removed srcdoc attribute', { tag: el.tagName });
                         el.removeAttribute(name);
                     }
                     /* 3. Malicious URIs (javascript:, vbscript:, data: strict check) */
                     else if (Sanitizer.isUnsafeAttribute(lowerName)) {
                         const isSrcset = lowerName === 'srcset';
                         if (Sanitizer.containsMaliciousProtocol(val, isSrcset)) {
+                            Logger.warn('Sanitizer', 'Removed malicious protocol', { tag: el.tagName, attr: name, value: val });
                             el.removeAttribute(name);
                         }
                         else if (!Sanitizer.isValidDataUri(el.tagName, val)) {
+                            Logger.warn('Sanitizer', 'Removed invalid data URI', { tag: el.tagName, attr: name });
                             el.removeAttribute(name);
                         }
                     }
                     /* 4. Style Attribute (check for javascript: or expression) */
                     else if (lowerName === 'style') {
                         if (!Sanitizer.isSafeStyle(val)) {
+                            Logger.warn('Sanitizer', 'Removed unsafe style', { tag: el.tagName, value: val });
                             el.removeAttribute(name);
                         }
                     }
@@ -441,6 +484,7 @@
          */
         inlineStylesAsync(source, target, onProgress) {
             return new Promise(function(resolve) {
+                Logger.info('StyleInliner', 'Starting async style inlining...');
                 const queue = [{s: source, t: target}];
                 let count = 0;
                 const CHUNK_SIZE = 50;
@@ -498,6 +542,7 @@
 
                     /* Done */
                     if (onProgress) onProgress(count);
+                    Logger.info('StyleInliner', 'Style inlining complete.', { nodesProcessed: count });
                     resolve();
                 }
 
