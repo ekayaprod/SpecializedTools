@@ -64,8 +64,8 @@ if (!select || !textarea) {
     process.exit(1);
 }
 
-// Select 'str' role
-select.value = 'str';
+// Select 'ltr' role
+select.value = 'ltr';
 select.dispatchEvent(new dom.window.Event('change'));
 
 const promptText = textarea.value;
@@ -74,15 +74,15 @@ console.log("Prompt Text (first 200 chars):", promptText.substring(0, 200) + "..
 let failed = false;
 
 // 1. Role Check
-if (promptText.includes("**Role:** Senior STR Investment Analyst drafting a fast-paced investment brief for a high-volume acquisition team.")) {
+if (promptText.includes("**Role:** Senior Buy-and-Hold Investment Analyst drafting a fast-paced investment brief")) {
     console.log("✅ Role found.");
 } else {
-    console.error("❌ Role NOT found. Expected '**Role:** Senior STR Investment Analyst drafting a fast-paced investment brief for a high-volume acquisition team.'");
+    console.error("❌ Role NOT found.");
     failed = true;
 }
 
 // 2. Task Check
-if (promptText.includes("**Task:** Perform a comparative investment analysis")) {
+if (promptText.includes("**Task:** Perform a comparative investment analysis on the attached properties (single-family or multi-unit)")) {
     console.log("✅ Task found.");
 } else {
     console.error("❌ Task NOT found.");
@@ -97,40 +97,40 @@ if (promptText.includes("THE LEADERBOARD (EXECUTIVE VERDICT):")) {
     failed = true;
 }
 
-// 4. Comparative Revenue Projection Check
-if (promptText.includes("COMPARATIVE REVENUE PROJECTION:")) {
-    console.log("✅ COMPARATIVE REVENUE PROJECTION found.");
+// 4. Comparative Revenue Check
+if (promptText.includes("COMPARATIVE REVENUE & YIELD PROJECTION:")) {
+    console.log("✅ COMPARATIVE REVENUE & YIELD PROJECTION found.");
 } else {
-    console.error("❌ COMPARATIVE REVENUE PROJECTION NOT found.");
+    console.error("❌ COMPARATIVE REVENUE & YIELD PROJECTION NOT found.");
     failed = true;
 }
 
-// 5. Amenity Proximity Matrix Check (NEW)
-if (promptText.includes("AMENITY PROXIMITY MATRIX:")) {
-    console.log("✅ AMENITY PROXIMITY MATRIX found.");
+// 5. Tenant Demand Matrix Check
+if (promptText.includes("TENANT DEMAND MATRIX (PROXIMITY):")) {
+    console.log("✅ TENANT DEMAND MATRIX found.");
 } else {
-    console.error("❌ AMENITY PROXIMITY MATRIX NOT found.");
+    console.error("❌ TENANT DEMAND MATRIX NOT found.");
     failed = true;
 }
 
-// 6. STR Conversion & Condition Audit Check (NEW/RENAMED)
-if (promptText.includes("STR CONVERSION & CONDITION AUDIT:")) {
-    console.log("✅ STR CONVERSION & CONDITION AUDIT found.");
+// 6. LTR Durability Check
+if (promptText.includes("LTR DURABILITY & CAPEX AUDIT:")) {
+    console.log("✅ LTR DURABILITY & CAPEX AUDIT found.");
 } else {
-    console.error("❌ STR CONVERSION & CONDITION AUDIT NOT found.");
+    console.error("❌ LTR DURABILITY & CAPEX AUDIT NOT found.");
     failed = true;
 }
 
-// 7. Regulatory & Silent Cost Check
-if (promptText.includes('REGULATORY & SILENT COST "TRIPWIRES":')) {
-    console.log("✅ REGULATORY & SILENT COST TRIPWIRES found.");
+// 7. Landlord Tripwires Check
+if (promptText.includes('LANDLORD & HOLDING COST "TRIPWIRES":')) {
+    console.log("✅ LANDLORD & HOLDING COST TRIPWIRES found.");
 } else {
-    console.error("❌ REGULATORY & SILENT COST TRIPWIRES NOT found.");
+    console.error("❌ LANDLORD & HOLDING COST TRIPWIRES NOT found.");
     failed = true;
 }
 
-// 8. Financial Reality Check (RENAMED)
-if (promptText.includes('FINANCIAL REALITY CHECK (TOP-RANKED ASSET ONLY):')) {
+// 8. Financial Reality Check
+if (promptText.includes("FINANCIAL REALITY CHECK (TOP-RANKED ASSET ONLY):")) {
     console.log("✅ FINANCIAL REALITY CHECK found.");
 } else {
     console.error("❌ FINANCIAL REALITY CHECK NOT found.");
