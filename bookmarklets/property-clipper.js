@@ -32,35 +32,54 @@ EXPECTED DELIVERABLES:
 
 **Task:** Research recent localized comparables and macro-market conditions to generate a technical, data-driven Valuation Exhibit. You must generate the output as a distinct file named \`Valuation_Exhibit_[Insert Property Address].md\`.
 
-**Tone & Style:** Write in the objective, authoritative tone of a professional real estate appraisal. Avoid dense academic legalese, but maintain a highly professional standard. Use clear, connective language to link analytical ideas fluidly. Bullet points should be used to organize data sets, but the analysis itself should flow logically as a cohesive summary.
+**Tone & Style Rules (CRITICAL):** * **Extreme Brevity:** You are writing a 1-to-2 page summary exhibit. ABSOLUTELY NO MULTI-PARAGRAPH NARRATIVES.
+* **Format:** Use short, direct bullet points and structured markdown tables.
+* **Tone:** Clinical, dry, and highly objective.
+* **Banned Words:** Do not use investor-biased or aggressive terms (e.g., empirical, staggering, holding cost erosion, draconian, hyper-appreciation, mathematically detached, functionally obsolete).
 
 **Output Structure:**
 
 # Technical Valuation Exhibit: [Insert Property Address]
 
 1. **SUBJECT PROPERTY BASELINE:**
-List: List Price, Gross Living Area (Sq. Ft.), Price/Sq. Ft., Beds/Baths, Year Built, and Lot Size. Note the current Days on Market, previous transaction history, and listing status.
+*Strict Rule:* Provide ONLY a bulleted list.
+* List Price:
+* Gross Living Area (Sq. Ft.):
+* Price/Sq. Ft.:
+* Beds/Baths:
+* Year Built:
+* Lot Size:
+* Market Exposure: (Days on Market and last sold date/price)
 
-2. **BRACKETED MARKET COMPARABLES:**
-Search for 4 to 6 recent sales (past 6 to 24 months) that closely match the subject property's exact Bedroom/Bathroom count and Square Footage.
-*Search Directive:* To establish a statistically sound, risk-adjusted baseline, prioritize comparables in the lower and middle pricing tiers for these specific specifications. Explicitly exclude premium luxury outliers or heavily upgraded flips.
-*Format as a Markdown Table:* Address | Sale Date | Sale Price | Sq. Ft. | Price / Sq. Ft. | Bed / Bath
+2. **MACRO-MARKET DYNAMICS:**
+Provide a brief bulleted list of the current data for the property's specific zip code: Median Sale Price, Year-Over-Year Trend, and Average Days on Market.
 
-3. **COMPARABLE ANALYSIS:**
-Provide a concise, fluid analytical summary (3-4 sentences) detailing the mathematical difference between the subject property's asking price and the averages established in the bracketed comparables table. Connect the data points logically to highlight pricing discrepancies.
+3. **DIRECT COMPARABLE TRANSACTIONS:**
+Search for 4 to 5 recent sales (past 6 to 24 months) that closely match the subject property's exact Bedroom/Bathroom count and Square Footage.
+*Search Directive:* Prioritize comparables in the lower and middle pricing tiers to establish a baseline. You must also include one higher-tier "Ceiling" comparable to establish the maximum market threshold for updated properties.
+*Format as a Markdown Table:* The FIRST row of the table MUST be the Subject Property (labeled "SUBJECT PROPERTY").
+Table Columns: Address | Sale Date | Sale Price | Sq. Ft. | Price / Sq. Ft. | Bed / Bath
 
-4. **ADJUSTMENTS FOR MAJOR DEFICITS & OBSOLESCENCE (If Applicable):**
-Identify major structural differences where the subject property lacks a standard feature present in the average comparable (e.g., lacking a secondary bathroom, absent garage). You may also deduct for severe aesthetic obsolescence (e.g., original untouched 1970s decor requiring full modernization), but do not deduct for standard, minor cosmetic wear. If a major deficit or severe obsolescence exists, provide a standard estimated cost to correct it. If none exist, state "No major deficits or severe obsolescence identified."
+4. **COMPARABLE ANALYSIS BREAKDOWN:**
+Analyze the table data using the following specific bolded labels to categorize the comparables. Keep descriptions to 2 sentences maximum per bullet, focusing purely on price, size, and feature differences.
+* **The Immediate Anchor ([Insert Address]):** (Analyze the most highly correlated comparable in the immediate vicinity).
+* **The Foundational Floor ([Insert Address]):** (Analyze a lower-quartile comparable of similar size).
+* **The Market Ceiling ([Insert Address]):** (Analyze the highest-priced comparable, explicitly noting the superior features/condition that justify its premium over the subject property).
 
-5. **LOCAL MARKET HEADWINDS (Conditional):**
-Investigate the immediate neighborhood and macro-market for drastic negative shifts occurring within the last 24 months. This can include severe tax reassessment spikes, declining local business/economic anchors, restrictive zoning changes, or escalating HOA friction costs. *Condition:* Only include this section if a documented, severe headwind exists that materially impacts long-term asset value. If the local market factors are stable, omit this section entirely.
+5. **STRUCTURAL PARITY & STANDARDIZATION ADJUSTMENTS:**
+Identify major missing features (e.g., absent garage, missing half-bath) or severe age-dating (e.g., untouched 1970s wet rooms) the subject property lacks compared to the Market Ceiling.
+*Strict Rule:* Present this in a Markdown Table with the following columns: **Required Standardization | Objective Rationale | Estimated Cost**. (Use standard localized estimates. If none exist, state "None identified" under the table).
 
-6. **DATA-SUPPORTED BASELINE VALUATION:**
-Execute and display the following calculation:
-* **Bracketed Average Rate:** Calculate the average Price/Sq. Ft. of the properties in the comparable table.
-* **Gross Baseline Value:** Multiply the Bracketed Average Rate by the subject property's Sq. Ft.
-* **Deficit Deductions:** Subtract the estimated cost for any items identified in Section 4 (if zero, subtract $0).
-* **Final Data-Supported Valuation:** State the final mathematically derived valuation.`,
+6. **CARRYING COST TRAJECTORY:**
+State the current annual property taxes and HOA fees. In one bullet point, objectively note any severe, documented tax reassessment spikes or HOA fee escalations that have occurred within the last 2-3 years.
+
+7. **DATA-SUPPORTED BASELINE VALUATION:**
+Execute the following calculation exactly as formatted below.
+*Strict Rule:* When calculating the Bracketed Average Rate, you MUST EXCLUDE the Subject Property and the "Market Ceiling" property to establish a true standard baseline.
+* **Standard Baseline Rate:** [Insert average Price/Sq. Ft. of the Anchor and Floor comps ONLY]
+* **Gross Baseline Value:** [Standard Baseline Rate] x [Subject Sq. Ft.] = [Total]
+* **Standardization Deductions:** - [Insert total from Section 5, or $0]
+* **Final Data-Supported Valuation:** **[Insert Final mathematically derived valuation]**`,
             noStandardOutput: true
         }
     };
