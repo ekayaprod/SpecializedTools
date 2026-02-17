@@ -95,10 +95,24 @@ global.window.crypto = {
 };
 
 // Mock URL methods
-if (!global.URL.createObjectURL) {
-    global.URL.createObjectURL = () => 'blob:mock-url';
-    global.URL.revokeObjectURL = () => {};
-}
+const blobs = new Map();
+global.URL.createObjectURL = (blob) => {
+    const id = `blob:${blobs.size}`;
+    blobs.set(id, blob);
+    return id;
+};
+global.URL.revokeObjectURL = (id) => blobs.delete(id);
+
+const savedFiles = [];
+// Mock HTMLAnchorElement click for download
+global.window.HTMLAnchorElement.prototype.click = function() {
+    if (this.download && this.href) {
+        const blob = blobs.get(this.href);
+        if (blob) {
+            savedFiles.push({ filename: this.download, blob });
+        }
+    }
+};
 
 // Mock Canvas methods
 global.HTMLCanvasElement.prototype.getContext = () => ({
@@ -314,6 +328,64 @@ async function runTest() {
 
     } else {
         console.error("❌ PDF Generation failed (save() NOT called).");
+        process.exit(1);
+    }
+
+    // 6. Test HTML Generation
+    console.log("\nTesting HTML Generation...");
+
+    // Re-eval script to re-open modal (since it was closed)
+    console.log("Re-opening Property Clipper...");
+    eval(scriptCode);
+
+    const modal2 = dom.window.document.getElementById('pc-pdf-modal');
+    assert.ok(modal2, "Modal should reopen");
+
+    const htmlButton = Array.from(modal2.querySelectorAll('button')).find(b => b.textContent.includes('Generate HTML'));
+    assert.ok(htmlButton, "Generate HTML Button should exist");
+
+    console.log("Clicking Generate HTML button...");
+    htmlButton.click();
+    await new Promise(r => setTimeout(r, 100)); // Wait for Wizard
+
+    // Select All Photos
+    const allPhotosOption2 = Array.from(modal2.querySelectorAll('button')).find(o => o.textContent.includes('Include All Photos'));
+    assert.ok(allPhotosOption2, "'Include All Photos' option should exist for HTML");
+
+    allPhotosOption2.click();
+
+    await new Promise(r => setTimeout(r, 500)); // Wait for generation
+
+    // Verify saved file
+    const htmlFile = savedFiles.find(f => f.filename.endsWith('.html'));
+    if (htmlFile) {
+        console.log(`✅ HTML file generated: ${htmlFile.filename}`);
+
+        // Use FileReader to read blob (jsdom Blob doesn't support .text())
+        const content = await new Promise((resolve, reject) => {
+            const reader = new dom.window.FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsText(htmlFile.blob);
+        });
+
+        // Verify Alt Tag
+        // We expect: alt="Primary view of 123 Main St, Anytown, CA 90210"
+        if (content.includes('alt="Primary view of 123 Main St, Anytown, CA 90210"')) {
+             console.log("✅ HTML content verification passed: Dynamic Alt tag present.");
+        } else {
+             console.error("❌ HTML content verification FAILED: Alt tag missing or incorrect.");
+             // Extract substring around hero image if possible
+             const match = content.match(/<img[^>]*alt="([^"]*)"/);
+             if (match) {
+                 console.log(`Found alt tag: ${match[1]}`);
+             } else {
+                 console.log("No img tag with alt found.");
+             }
+             process.exit(1);
+        }
+    } else {
+        console.error("❌ HTML file NOT generated.");
         process.exit(1);
     }
 }
