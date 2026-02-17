@@ -209,7 +209,8 @@ async function runTest() {
     // 2. Find Persona Dropdown
     const select = modal.querySelector('select');
     assert.ok(select, "Persona Select Dropdown should exist");
-    console.log("✅ Persona Dropdown found.");
+    assert.strictEqual(select.getAttribute('aria-label'), 'Select Persona / Analysis Type', "Persona Select should have correct aria-label");
+    console.log("✅ Persona Dropdown found and has aria-label.");
 
     // 3. Select 'Appraisal' and Trigger Change
     select.value = 'appraisal';
@@ -388,6 +389,39 @@ async function runTest() {
         console.error("❌ HTML file NOT generated.");
         process.exit(1);
     }
+
+    // 7. Test Wizard UI Accessibility
+    console.log("\nTesting Wizard UI Accessibility...");
+
+    // Re-eval script to re-open modal
+    console.log("Re-opening Property Clipper for Wizard Access Test...");
+    eval(scriptCode);
+
+    const modal3 = dom.window.document.getElementById('pc-pdf-modal');
+    assert.ok(modal3, "Modal should reopen");
+
+    const pdfBtn3 = Array.from(modal3.querySelectorAll('button')).find(b => b.textContent.includes('Generate PDF'));
+    pdfBtn3.click();
+    await new Promise(r => setTimeout(r, 100)); // Wait for Wizard
+
+    // Click Manual Selection
+    const manualBtn = Array.from(modal3.querySelectorAll('button')).find(b => b.textContent.includes('Manual Selection'));
+    assert.ok(manualBtn, "Manual Selection button should exist");
+    manualBtn.click();
+
+    await new Promise(r => setTimeout(r, 100)); // Wait for renderStep
+
+    // Check images in the grid
+    const imgs = modal3.querySelectorAll('img');
+    assert.ok(imgs.length > 0, "Images should be rendered in Manual Selection");
+
+    // Check alt attribute
+    // Based on mock data: augmented_gallery[0].category = "Kitchen"
+    // So p.label should be "Kitchen".
+    const firstImg = imgs[0];
+    const altText = firstImg.getAttribute('alt');
+    assert.strictEqual(altText, 'Kitchen', `Image alt text should be 'Kitchen', got '${altText}'`);
+    console.log("✅ Wizard images have correct alt attributes.");
 }
 
 runTest().then(() => {
