@@ -1,0 +1,1 @@
+Estimate ARV, rehab CapEx based on visual condition, and identify structural risks.
