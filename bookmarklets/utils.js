@@ -505,6 +505,25 @@
             });
         },
         /**
+         * Escapes HTML characters in a string.
+         *
+         * @param {string} str - The string to escape.
+         * @returns {string} The escaped string.
+         *
+         * @example
+         * const escaped = BookmarkletUtils.escapeHtml('<img src=x onerror=alert(1)>');
+         * // Returns: "&lt;img src=x onerror=alert(1)&gt;"
+         */
+        escapeHtml(s) {
+            const input = (s || s === 0) ? s : '';
+            return String(input)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        },
+        /**
          * Converts an HTML string to Markdown format.
          * Supported tags:
          * - Headings (h1-h4)
