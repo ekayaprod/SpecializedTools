@@ -33,9 +33,9 @@ line 2`,
 line 2`
     },
     {
-        name: 'Template literals (newlines preserved, indentation trimmed)',
+        name: 'Template literals (newlines and indentation preserved)',
         input: 'const prompt = `line 1\n  line 2`;',
-        expected: 'const prompt = `line 1\nline 2`;'
+        expected: 'const prompt = `line 1\n  line 2`;'
     },
     {
         name: 'Single line code',
