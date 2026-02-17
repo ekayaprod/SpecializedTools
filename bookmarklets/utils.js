@@ -32,6 +32,8 @@
     ];
 
     /* Sanitization Helpers */
+    const REGEX_WHITESPACE = /\s+/g;
+
     const Sanitizer = {
         isEventAttribute(name) {
             return name.toLowerCase().startsWith('on');
@@ -41,14 +43,14 @@
             return ['href', 'src', 'action', 'data', 'formaction', 'poster', 'xlink:href', 'srcset'].includes(lower);
         },
         containsMaliciousProtocol(value, isSrcset) {
-            const checkVal = value.replace(/\s+/g, '').toLowerCase();
+            const checkVal = value.replace(REGEX_WHITESPACE, '').toLowerCase();
             if (isSrcset) {
                 return checkVal.includes('javascript:') || checkVal.includes('vbscript:');
             }
             return checkVal.startsWith('javascript:') || checkVal.startsWith('vbscript:');
         },
         isValidDataUri(tagName, value) {
-            const checkVal = value.replace(/\s+/g, '').toLowerCase();
+            const checkVal = value.replace(REGEX_WHITESPACE, '').toLowerCase();
             if (!checkVal.startsWith('data:')) return true;
 
             const isImageTag = ['img', 'source', 'picture'].includes(tagName.toLowerCase());
@@ -58,7 +60,7 @@
             return isImageTag && isImageMime && !isSvg;
         },
         isSafeStyle(value) {
-            const checkVal = value.replace(/\s+/g, '').toLowerCase();
+            const checkVal = value.replace(REGEX_WHITESPACE, '').toLowerCase();
             return !(checkVal.includes('javascript:') || checkVal.includes('vbscript:') || checkVal.includes('expression('));
         }
     };
@@ -304,7 +306,7 @@
         normalizeImages(root, onProgress) {
             return new Promise(function(resolve) {
                 /* Collect all items to process */
-                const queue = Array.prototype.slice.call(root.querySelectorAll('picture, img'));
+                const queue = Array.from(root.querySelectorAll('picture, img'));
                 let count = 0;
                 const CHUNK_SIZE = 50;
 
