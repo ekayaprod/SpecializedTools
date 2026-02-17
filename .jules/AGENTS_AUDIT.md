@@ -10,7 +10,7 @@
 - [ ] Client-side compilation used (No build script detected).
 
 ## 🧹 Debris Field
-- [ ] tests/test_property_clipper_errors.js (Broken Test: `ReferenceError: alert is not defined`)
+- [x] tests/test_property_clipper_errors.js (Broken Test: `ReferenceError: alert is not defined`)
 - [x] bookmarklets/property-clipper.js (Replaced alert() calls with Toast UI)
 - [x] bookmarklets/web-clipper.js (Replaced alert() calls with Toast UI)
 - [x] Environment Setup (Missing `jsdom` dependency in initial install)
@@ -20,7 +20,7 @@
 - [ ] No hardcoded secrets detected.
 
 ## 🕵️ Coverage Gaps
-- [ ] tests/test_property_clipper_errors.js (Failing Test Suite)
+- [x] tests/test_property_clipper_errors.js (Failing Test Suite)
 - [x] bookmarklets/utils.js (Added missing 'buildElement' and 'showToast' to interface)
 - [ ] bookmarklets/bookmarklet-builder.js (Indirectly tested via `tests/test_bookmarklet_generation.js`, but explicit unit tests for builder logic could be improved)
 
