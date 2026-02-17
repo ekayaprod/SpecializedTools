@@ -84,7 +84,7 @@ function runTest() {
 
     // Select Appraisal
     select.value = 'appraisal';
-    select.onchange();
+    select.dispatchEvent(new dom.window.Event('change')); // Trigger change event properly
 
     const promptText = textArea.value;
     console.log("Generated Prompt Length:", promptText.length);
@@ -97,20 +97,23 @@ function runTest() {
     assert.ok(promptText.includes("**Context:** Review the attached property PDF"), "Context should be updated");
 
     // 3. Check Task and Address Replacement (First instance)
-    // The address mock is "123 Main St, Anytown, CA 90210"
-    // The prompt template has `Valuation_Exhibit_[Insert Property Address].md`
-    // Expected: `Valuation_Exhibit_123 Main St, Anytown, CA 90210.md`
     const expectedFilename = `Valuation_Exhibit_${MOCK_ADDRESS}.md`;
     assert.ok(promptText.includes(expectedFilename), `Should contain filename with address: ${expectedFilename}`);
 
     // 4. Check Output Structure Header and Address Replacement (Second instance)
-    // The prompt template has `# Technical Valuation Exhibit: [Insert Property Address]`
-    // Expected: `# Technical Valuation Exhibit: 123 Main St, Anytown, CA 90210`
     const expectedHeader = `# Technical Valuation Exhibit: ${MOCK_ADDRESS}`;
     assert.ok(promptText.includes(expectedHeader), `Should contain header with address: ${expectedHeader}`);
 
-    // 5. Check Section 6 Calculation
-    assert.ok(promptText.includes("**Gross Baseline Value:** [Standard Baseline Rate] x [Subject Sq. Ft.] = [Total]"), "Section 6 should be present");
+    // 5. Check New Search Directive in Section 3
+    assert.ok(promptText.includes("Your goal is to establish a conservative baseline"), "New Search Directive should be present");
+    assert.ok(promptText.includes("highlight the subject property's overvaluation"), "New Search Directive details should be present");
+
+    // 6. Check New Strict Rule in Section 5
+    assert.ok(promptText.includes("ONLY apply a financial deduction for a missing feature"), "New Strict Rule in Section 5 should be present");
+
+    // 7. Check Section 7 Calculation (NEW LOGIC)
+    assert.ok(promptText.includes("**Standard Baseline Rate:** [Insert average Price/Sq. Ft. of ALL comps]"), "Section 7 calculation should reference ALL comps");
+    assert.ok(promptText.includes("**Gross Baseline Value:** [Standard Baseline Rate] x [Subject Sq. Ft.] = [Total]"), "Section 7 calculation logic should be correct");
 
     console.log("✅ All Prompt Content Tests Passed");
 }
