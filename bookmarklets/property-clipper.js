@@ -572,10 +572,18 @@ Execute the following calculation exactly as formatted below.
                 doc.text("Photo Appendix", margin, y);
                 y += 10;
 
+                if (statusCb) statusCb(`Processing ${selectedPhotos.length} photos...`);
+                let processedCount = 0;
+                const processedResults = await Promise.all(selectedPhotos.map(async (photo) => {
+                    const res = await ImageProcessor.process(photo.url);
+                    processedCount++;
+                    if (statusCb) statusCb(`Processing photos (${processedCount}/${selectedPhotos.length})...`);
+                    return res;
+                }));
+
                 for (let i = 0; i < selectedPhotos.length; i++) {
-                    if (statusCb) statusCb(`Processing photo ${i+1}/${selectedPhotos.length}`);
                     const photo = selectedPhotos[i];
-                    const processed = await ImageProcessor.process(photo.url);
+                    const processed = processedResults[i];
                     if (!processed) continue;
 
                     // Calculate dimensions
