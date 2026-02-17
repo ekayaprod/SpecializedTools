@@ -138,8 +138,6 @@ Calculate the final data-supported baseline value. Multiply the **Mid Comp's** p
                 }));
             }
 
-            if (pd.details && Array.isArray(pd.details)) data.features = pd.details;
-
             if (pd.augmented_gallery && Array.isArray(pd.augmented_gallery)) {
                 pd.augmented_gallery.forEach(group => {
                     if (group.key === 'all_photos') return;
@@ -166,7 +164,7 @@ Calculate the final data-supported baseline value. Multiply the **Mid Comp's** p
         getData: function () {
             let data = {
                 address: 'Unknown Address', price: 'Unknown Price', specs: {},
-                financials: {}, market: {}, history: [], agents: [], description: '', features: [],
+                financials: {}, market: {}, history: [], description: '',
                 photoGroups: [], raw: null, heroUrl: null
             };
 
