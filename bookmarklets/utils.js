@@ -62,6 +62,43 @@
         isSafeStyle(value) {
             const checkVal = value.replace(REGEX_WHITESPACE, '').toLowerCase();
             return !(checkVal.includes('javascript:') || checkVal.includes('vbscript:') || checkVal.includes('expression('));
+        },
+        sanitizeElement(el) {
+            if (!el.attributes) return;
+            const attrs = [];
+            /* Iterate copy of attributes to safely remove them */
+            for (let i = 0; i < el.attributes.length; i++) attrs.push(el.attributes[i].name);
+
+            for (let i = 0; i < attrs.length; i++) {
+                const name = attrs[i];
+                const lowerName = name.toLowerCase();
+                const val = (el.getAttribute(name) || '').toLowerCase().trim();
+
+                /* 1. Event Handlers (on*) */
+                if (Sanitizer.isEventAttribute(lowerName)) {
+                    el.removeAttribute(name);
+                }
+                /* 2. SRCDOC (Always remove to prevent iframe injection) */
+                else if (lowerName === 'srcdoc') {
+                    el.removeAttribute(name);
+                }
+                /* 3. Malicious URIs (javascript:, vbscript:, data: strict check) */
+                else if (Sanitizer.isUnsafeAttribute(lowerName)) {
+                    const isSrcset = lowerName === 'srcset';
+                    if (Sanitizer.containsMaliciousProtocol(val, isSrcset)) {
+                        el.removeAttribute(name);
+                    }
+                    else if (!Sanitizer.isValidDataUri(el.tagName, val)) {
+                        el.removeAttribute(name);
+                    }
+                }
+                /* 4. Style Attribute (check for javascript: or expression) */
+                else if (lowerName === 'style') {
+                    if (!Sanitizer.isSafeStyle(val)) {
+                        el.removeAttribute(name);
+                    }
+                }
+            }
         }
     };
 
@@ -408,48 +445,10 @@
          */
         sanitizeAttributes(root) {
             /* Recursively remove dangerous attributes from root and its descendants */
-            const process = function(el) {
-                if (!el.attributes) return;
-                const attrs = [];
-                /* Iterate copy of attributes to safely remove them */
-                for (let i = 0; i < el.attributes.length; i++) attrs.push(el.attributes[i].name);
-
-                for (let i = 0; i < attrs.length; i++) {
-                    const name = attrs[i];
-                    const lowerName = name.toLowerCase();
-                    const val = (el.getAttribute(name) || '').toLowerCase().trim();
-
-                    /* 1. Event Handlers (on*) */
-                    if (Sanitizer.isEventAttribute(lowerName)) {
-                        el.removeAttribute(name);
-                    }
-                    /* 2. SRCDOC (Always remove to prevent iframe injection) */
-                    else if (lowerName === 'srcdoc') {
-                        el.removeAttribute(name);
-                    }
-                    /* 3. Malicious URIs (javascript:, vbscript:, data: strict check) */
-                    else if (Sanitizer.isUnsafeAttribute(lowerName)) {
-                        const isSrcset = lowerName === 'srcset';
-                        if (Sanitizer.containsMaliciousProtocol(val, isSrcset)) {
-                            el.removeAttribute(name);
-                        }
-                        else if (!Sanitizer.isValidDataUri(el.tagName, val)) {
-                            el.removeAttribute(name);
-                        }
-                    }
-                    /* 4. Style Attribute (check for javascript: or expression) */
-                    else if (lowerName === 'style') {
-                        if (!Sanitizer.isSafeStyle(val)) {
-                            el.removeAttribute(name);
-                        }
-                    }
-                }
-            };
-
-            process(root);
+            Sanitizer.sanitizeElement(root);
             const all = root.querySelectorAll('*');
             for (let i = 0; i < all.length; i++) {
-                process(all[i]);
+                Sanitizer.sanitizeElement(all[i]);
             }
         },
         /**
