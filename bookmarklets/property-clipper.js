@@ -588,8 +588,8 @@
             
             grp.photos.forEach(p => {
                 const d = buildElement('div', { position: 'relative' }, '', grid);
-                const img = buildElement('img', { width: '100%', height: '80px', objectFit: 'cover' }, '', d, { src: p.url, alt: p.label || 'Property Photo' });
-                const chk = buildElement('input', { position: 'absolute', top: '2px', left: '2px' }, '', d, { type: 'checkbox', checked: true });
+                const img = buildElement('img', { width: '100%', height: '80px', objectFit: 'cover' }, '', d, { src: p.url, alt: p.label || 'Property Photo', loading: 'lazy' });
+                const chk = buildElement('input', { position: 'absolute', top: '2px', left: '2px' }, '', d, { type: 'checkbox', checked: true, 'aria-label': `Select photo: ${p.label || 'Property Photo'}` });
                 checks.push({ chk, p });
             });
 
