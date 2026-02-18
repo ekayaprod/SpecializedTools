@@ -2,7 +2,7 @@
 
 ## 🏗️ Structural Hotspots
 - [x] bookmarklets/passphrase-generator.js (56KB, Low Churn) - High Complexity (Data Heavy).
-- [ ] bookmarklets/property-clipper.js (37KB, Low Churn) - High Complexity.
+- [x] bookmarklets/property-clipper.js (37KB, Low Churn) - High Complexity.
 - [x] package-lock.json AND pnpm-lock.yaml coexist (Potential Conflict).
 
 ## ⚡ Performance Bottlenecks
@@ -29,6 +29,7 @@
 - [x] bookmarklets/utils.js (Added missing 'buildElement' and 'showToast' to interface)
 - [x] bookmarklets/bookmarklet-builder.js (Indirectly tested via `tests/test_bookmarklet_generation.js`, but explicit unit tests for builder logic could be improved)
 - [x] bookmarklets/pa-county-finder.js (Added robust tests for split city lookups and fixed logic gap)
+- [x] bookmarklets/property-clipper.js (Added robust fallback testing for DOM extraction and JSON/Image errors in `tests/test_property_clipper_fallback.js`)
 
 ## 🆙 Modernization Targets
 - [x] Replace `alert()` with non-blocking UI (Toast/Modal) across all bookmarklets
