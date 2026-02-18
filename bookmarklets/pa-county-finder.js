@@ -193,7 +193,7 @@
         const safeQ = BookmarkletUtils.escapeHtml(q);
         const safeR = r ? BookmarkletUtils.escapeHtml(r) : '';
         resultDiv.innerHTML = r ? `<div class="pa-result-success"><strong>Result:</strong><br>${safeR}</div>`
-                                : `<div class="pa-result-error">No match.</div>`;
+                                : `<div class="pa-result-error">No match for "${safeQ}".</div>`;
     };
 
     let s = window.getSelection().toString().trim();
