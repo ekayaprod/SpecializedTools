@@ -185,7 +185,7 @@
                 break;
             case 'a': parts.push('['); break;
             case 'img':
-                parts.push('![' + (node.getAttribute('alt')||'') + '](' + node.getAttribute('src') + ')');
+                parts.push('![' + (node.getAttribute('alt')||'') + '](' + (node.getAttribute('src')||'') + ')');
                 return;
             case 'table': parts.push('\n\n'); break;
             case 'td': case 'th': parts.push('| '); break;

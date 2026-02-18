@@ -161,4 +161,12 @@ describe('BookmarkletUtils.htmlToMarkdown', () => {
         const result = window.BookmarkletUtils.htmlToMarkdown(input);
         assert.strictEqual(result.trim(), expected);
     });
+
+    // 12. Missing Image Src
+    it('should handle images with missing src', () => {
+        const input = '<img alt="No Source">';
+        const expected = '![No Source]()';
+        const result = window.BookmarkletUtils.htmlToMarkdown(input);
+        assert.strictEqual(result.trim(), expected);
+    });
 });
