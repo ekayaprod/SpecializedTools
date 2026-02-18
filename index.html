@@ -370,7 +370,7 @@
                 // --- INCLUDE DIRECTIVES ---
                 // Support for /* @include_text relative/path/to/file.ext */
                 // This replaces the comment with the file content, JSON stringified to ensure valid JS string characters.
-                const includeRegex = /\/\*\s*@include_text\s+['"]?([^'"]+)['"]?\s*\*\//g;
+                const includeRegex = /\/\*\s*@include_text\s+['"]?([^'"]+?)['"]?\s*\*\//g;
                 let match;
                 // We need to handle async replacements. String.replace doesn't support async.
                 // So we find all matches first.
@@ -378,7 +378,7 @@
                 while ((match = includeRegex.exec(code)) !== null) {
                     replacements.push({
                         fullMatch: match[0],
-                        path: match[1],
+                        path: match[1].trim(),
                         index: match.index
                     });
                 }
