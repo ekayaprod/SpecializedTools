@@ -160,7 +160,7 @@
             try {
                 const ogImage = document.querySelector('meta[property="og:image"]');
                 if (ogImage && ogImage.content) data.heroUrl = ogImage.content;
-            } catch (e) { console.warn('Hero Image Extraction Warning:', e); }
+            } catch (e) { console.warn('Hero Image Extraction Warning:', { error: e, url: window.location.href, title: document.title }); }
 
             // 1. JSON Extraction
             try {
@@ -203,7 +203,7 @@
                 if (data.address === 'Unknown Address') data.address = /** @type {HTMLElement} */ (document.querySelector('h1'))?.innerText || data.address;
                 if (data.price === 'Unknown Price') data.price = /** @type {HTMLElement} */ (document.querySelector('[data-testid="ldp-list-price"]'))?.innerText || data.price;
                 
-            } catch (e) { console.warn('DOM Extraction Warning:', e); }
+            } catch (e) { console.warn('DOM Extraction Warning:', { error: e, partialAddress: data.address, partialPrice: data.price }); }
 
             return data;
         }
@@ -238,12 +238,12 @@
                     try {
                         resolve({ dataUrl: canvas.toDataURL('image/jpeg', CONFIG.imgQuality), width, height, ratio: width / height });
                     } catch (e) {
-                        console.warn('Image processing failed:', e);
+                        console.warn('Image processing failed:', { error: e, url, width, height });
                         resolve(null);
                     }
                 };
                 img.onerror = (e) => {
-                    console.warn('Image load failed:', url, e);
+                    console.warn('Image load failed:', { url, error: e });
                     resolve(null);
                 };
                 img.src = url;
