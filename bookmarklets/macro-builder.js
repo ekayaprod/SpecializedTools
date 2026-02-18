@@ -46,15 +46,15 @@
                 '.cfg-grp{margin-bottom:10px;padding:10px;background:#0f172a;border-radius:6px;border:1px solid #334155}' +
             '</style>' +
             '<div class="box">' +
-                '<div class="row" id="drag"><h3>MACRO BUILDER V22</h3><span id="x" style="cursor:pointer">✕</span></div>' +
+                '<div class="row" id="drag"><h3>Macro Builder</h3><span id="x" style="cursor:pointer">✕</span></div>' +
 
                 '<div id="view_steps">' +
-                    '<div id="list" class="list"><div class="empty-msg">No steps yet.<br>Click Add Sequence to begin.</div></div>' +
-                    '<button id="add">➕ Add Click Sequence</button>' +
-                    '<button id="exp" style="background:#db2777">⚡ Export Bookmarklet</button>' +
+                    '<div id="list" class="list"><div class="empty-msg">No steps. Add one to start.</div></div>' +
+                    '<button id="add">➕ Add Sequence</button>' +
+                    '<button id="exp" style="background:#db2777">⚡ Export</button>' +
                     '<div id="out" class="export-area" style="display:none">' +
-                        '<p style="text-align:center;color:#e2e8f0;margin:0 0 10px 0">Drag button to toolbar:</p>' +
-                        '<a id="lnk" href="#" class="bm-btn">🤖 My Macro</a>' +
+                        '<p style="text-align:center;color:#e2e8f0;margin:0 0 10px 0">Drag to toolbar:</p>' +
+                        '<a id="lnk" href="#" class="bm-btn">🤖 Macro</a>' +
                     '</div>' +
                 '</div>' +
 
@@ -137,7 +137,7 @@
 
         startSequence() {
             this.currentSequence = [];
-            if(!confirm('Starting new sequence. Pick elements one by one. Click "Cancel" on the prompt when done picking.')) return;
+            if(!confirm('Start picking elements? Click Cancel when done.')) return;
             this.pick('sequence');
         }
 
@@ -227,18 +227,18 @@
                         let ask = false;
                         if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'){
                             const isPwd = targetEl.type === 'password';
-                            val = prompt(isPwd ? 'Enter value (SENSITIVE: will NOT be stored in bookmarklet):' : 'Enter text to type (leave empty to just click):');
+                            val = prompt(isPwd ? 'Value (Not Stored):' : 'Type text (Empty to click):');
                             ask = isPwd;
                             if(val && !isPwd) {
-                                ask = confirm('Is this sensitive data? (If yes, it will not be stored and you will be prompted when running)');
+                                ask = confirm('Sensitive? (Prompt on run)');
                             }
-                            if(val) enter = confirm('Press Enter after typing?');
+                            if(val) enter = confirm('Press Enter?');
                         }
 
                         this.currentSequence.push({ sel: sel, txt: txt, val: ask ? null : val, enter: enter, ask: ask });
 
                         setTimeout(() => {
-                            if(!confirm('Element added! Pick another for this sequence? Click Cancel to finish this group.')) {
+                            if(!confirm('Pick another? Cancel to finish.')) {
                                 this.steps.push({ actions: this.currentSequence, delay: 1 });
                                 this.refreshList();
                             } else {
@@ -265,7 +265,7 @@
 
         refreshList(){
             const l = this.q('#list');
-            if(this.steps.length===0) { l.innerHTML = '<div class="empty-msg">No steps yet.</div>'; return; }
+            if(this.steps.length===0) { l.innerHTML = '<div class="empty-msg">No steps.</div>'; return; }
             l.innerHTML = '';
 
             this.steps.forEach((s, i) => {
@@ -332,7 +332,7 @@
                         this.h.id = this.id;
                         this.h.style.cssText = 'position:fixed;top:15px;right:15px;z-index:2147483647;font-family:system-ui,sans-serif';
                         this.s = this.h.attachShadow({mode:'open'});
-                        this.s.innerHTML = '<style>:host{all:initial;font-family:system-ui,sans-serif}.box{background:#1e1b4b;color:#e2e8f0;width:240px;padding:16px;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,0.7);border:1px solid #4338ca;font-size:13px}.row{display:flex;justify-content:space-between;align-items:center;cursor:move;user-select:none;padding-bottom:5px;border-bottom:1px solid #334155;margin-bottom:10px}.timer{font-size:32px;text-align:center;color:#a5b4fc;margin:10px 0;font-family:monospace}button{width:100%;background:#ef4444;color:#fff;border:none;padding:8px;border-radius:6px;cursor:pointer}</style><div class="box"><div class="row" id="drag"><b>RUNNING MACRO</b><span id="x" style="cursor:pointer">✕</span></div><div style="text-align:center;color:#c7d2fe;font-size:11px" id="st">Initializing...</div><div class="timer" id="tm">00:00</div><button id="cn">Stop</button></div>';
+                        this.s.innerHTML = '<style>:host{all:initial;font-family:system-ui,sans-serif}.box{background:#1e1b4b;color:#e2e8f0;width:240px;padding:16px;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,0.7);border:1px solid #4338ca;font-size:13px}.row{display:flex;justify-content:space-between;align-items:center;cursor:move;user-select:none;padding-bottom:5px;border-bottom:1px solid #334155;margin-bottom:10px}.timer{font-size:32px;text-align:center;color:#a5b4fc;margin:10px 0;font-family:monospace}button{width:100%;background:#ef4444;color:#fff;border:none;padding:8px;border-radius:6px;cursor:pointer}</style><div class="box"><div class="row" id="drag"><b>RUNNING</b><span id="x" style="cursor:pointer">✕</span></div><div style="text-align:center;color:#c7d2fe;font-size:11px" id="st">Initializing...</div><div class="timer" id="tm">00:00</div><button id="cn">Stop</button></div>';
                         this.q = s => this.s.querySelector(s);
                         this.q('#x').onclick = () => this.destroy();
                         this.q('#cn').onclick = () => this.destroy();
@@ -390,7 +390,7 @@
                              while(attempts < 3) {
                                  const backBtn = document.querySelector('[aria-label="Navigate back to primary presences"]');
                                  if(!backBtn || !backBtn.isConnected || backBtn.offsetParent === null) break;
-                                 this.q('#st').innerText = 'Resetting Menu...';
+                                 this.q('#st').innerText = 'Resetting...';
                                  backBtn.click();
                                  await wait(1000);
                                  attempts++;
@@ -399,7 +399,7 @@
 
                         for(let i=0; i<steps.length; i++){
                             const group = steps[i];
-                            this.q('#st').innerText = 'Sequence '+(i+1)+'/'+steps.length;
+                            this.q('#st').innerText = 'Step '+(i+1)+'/'+steps.length;
 
                             let rem = group.delay * 1000;
                             while(rem > 0) {
@@ -412,7 +412,7 @@
                                 rem -= 1000;
                             }
 
-                            this.q('#tm').innerText = 'Action...';
+                            this.q('#tm').innerText = 'Running...';
                             for(let j=0; j<group.actions.length; j++) {
                                 const action = group.actions[j];
 
@@ -426,7 +426,7 @@
 
                                 if(action.val !== null || action.ask){
                                     let v = action.val;
-                                    if(action.ask) v = prompt('Enter value for: ' + (action.txt || action.sel));
+                                    if(action.ask) v = prompt('Value for: ' + (action.txt || action.sel));
                                     if(v !== null) {
                                         el.focus(); el.value = v;
                                         el.dispatchEvent(new Event('input',{bubbles:true}));
@@ -444,8 +444,8 @@
                                 await wait(2500);
                             }
                         }
-                        this.q('#tm').innerText = 'DONE';
-                        this.q('#st').innerText = 'Complete';
+                        this.q('#tm').innerText = 'Done';
+                        this.q('#st').innerText = 'Finished';
                         setTimeout(()=>this.destroy(), 3000);
                     }
                     destroy(){ this.h.remove(); delete window.__mb_run; }
