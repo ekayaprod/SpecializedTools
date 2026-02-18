@@ -62,6 +62,14 @@
         /* CITY SEARCH */
         const l = c.toLowerCase();
 
+        /* O Search (Overrides) */
+        if (Object.prototype.hasOwnProperty.call(O, l)) {
+            const counties = O[l];
+            for (const county in counties) {
+                if (!results.includes(county)) results.push(county);
+            }
+        }
+
         /* D Search */
         for (let i = 0; i < D.length; i++) {
             const cities = /** @type {string[]} */ (D[i][3]);
