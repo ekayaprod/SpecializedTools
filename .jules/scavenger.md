@@ -50,3 +50,7 @@ BOUNDARIES
 - **Deleted:** `tests/test_property_clipper_prompt.js` (broken and redundant test file)
 - **Deleted:** `tests/test_str_prompt.js` (broken and unused test file)
 - **Reason:** Files were unmaintained, not included in test scripts, and relied on outdated dependencies/mocks. Functionality is better covered by `tests/test_property_clipper.js`.
+
+## [2026-02-18] (Scavenger Run 2)
+- **Deleted:** `tests/benchmark_inline_styles.js` (unused benchmark script)
+- **Reason:** File was not included in test suite and is a standalone benchmark script.
