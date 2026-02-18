@@ -81,25 +81,23 @@
      * Handles the extraction of property data from various sources on the page.
      */
     const PropertyExtractor = {
-        /**
-         * Parses the raw property details object and populates the normalized data structure.
-         * @param {Object} pd - The raw property details object (usually from JSON).
-         * @param {Object} data - The target data object to populate.
-         */
-        parseDetails: function(pd, data) {
-            data.raw = pd;
+        _parseLocation: function(pd, data) {
             const loc = pd.location?.address;
             if (loc) data.address = `${loc.line || ''}, ${loc.city || ''}, ${loc.state_code || ''} ${loc.postal_code || ''}`.replace(/^, | ,/g, '').trim();
             if (pd.list_price) data.price = formatCurrency(pd.list_price);
             data.description = pd.description?.text || '';
+        },
 
+        _parseSpecs: function(pd, data) {
             const desc = pd.description || {};
             if (desc.beds) data.specs['Beds'] = desc.beds;
             if (desc.baths_consolidated) data.specs['Baths'] = desc.baths_consolidated;
             if (desc.sqft) data.specs['Sq. Ft.'] = desc.sqft.toLocaleString();
             if (desc.lot_sqft) data.specs['Lot Size'] = (desc.lot_sqft / 43560).toFixed(2) + ' Acres';
             if (desc.year_built) data.specs['Year Built'] = desc.year_built;
+        },
 
+        _parseFinancials: function(pd, data) {
             if (pd.mortgage?.estimate) {
                 data.financials['Est. Payment'] = formatCurrency(pd.mortgage.estimate.monthly_payment);
                 const tax = pd.mortgage.estimate.monthly_payment_details?.find(d => d.type === 'property_tax');
@@ -107,17 +105,17 @@
                 const hoa = pd.mortgage.estimate.monthly_payment_details?.find(d => d.type === 'hoa_fees');
                 if (hoa) data.financials['HOA Fees'] = formatCurrency(hoa.amount);
             }
+        },
 
-            // Market Context Extraction (Try multiple paths)
+        _parseMarketData: function(pd, data) {
             if (pd.days_on_market) data.market['Days on Market'] = pd.days_on_market;
-
-            // Try to find market data in neighborhood or similar structures
             const marketData = pd.neighborhood || pd.market || {};
             if (marketData.median_listing_price) data.market['Listing Price Median'] = formatCurrency(marketData.median_listing_price);
             if (marketData.median_sold_price) data.market['Sold Price Median'] = formatCurrency(marketData.median_sold_price);
             if (marketData.median_price_per_sqft) data.market['Price/SqFt Median'] = formatCurrency(marketData.median_price_per_sqft);
+        },
 
-            // Property History Extraction
+        _parseHistory: function(pd, data) {
             if (pd.property_history && Array.isArray(pd.property_history)) {
                 data.history = pd.property_history.map(h => ({
                     date: h.date,
@@ -125,13 +123,15 @@
                     price: h.price ? formatCurrency(h.price) : '-'
                 }));
             }
+        },
 
+        _parsePhotos: function(pd, data) {
             if (pd.augmented_gallery && Array.isArray(pd.augmented_gallery)) {
                 pd.augmented_gallery.forEach(group => {
                     if (group.key === 'all_photos') return;
                     const categoryName = group.category || group.key || 'Other';
                     const validPhotos = (group.photos || []).filter(p => p.href).map(p => ({
-                        url: p.href.replace('s.jpg', 'od-w1024_h768.webp'), 
+                        url: p.href.replace('s.jpg', 'od-w1024_h768.webp'),
                         label: categoryName
                     }));
                     if (validPhotos.length > 0) data.photoGroups.push({ category: categoryName, photos: validPhotos });
@@ -140,6 +140,21 @@
             if (data.photoGroups.length === 0 && pd.photos) {
                 data.photoGroups.push({ category: 'Gallery', photos: pd.photos.map(p => ({ url: p.href, label: 'Property Photo' })) });
             }
+        },
+
+        /**
+         * Parses the raw property details object and populates the normalized data structure.
+         * @param {Object} pd - The raw property details object (usually from JSON).
+         * @param {Object} data - The target data object to populate.
+         */
+        parseDetails: function(pd, data) {
+            data.raw = pd;
+            this._parseLocation(pd, data);
+            this._parseSpecs(pd, data);
+            this._parseFinancials(pd, data);
+            this._parseMarketData(pd, data);
+            this._parseHistory(pd, data);
+            this._parsePhotos(pd, data);
         },
 
         /**
@@ -348,24 +363,7 @@
      * Generates PDF reports using jsPDF.
      */
     const PDFGenerator = {
-        /**
-         * Creates a PDF report and triggers a download.
-         * @param {Object} data - The property data.
-         * @param {Array<{url: string, label: string}>} selectedPhotos - The list of photos to include.
-         * @param {function(string): void} [statusCb] - Callback to update status message during generation.
-         * @returns {Promise<void>}
-         */
-        create: async (data, selectedPhotos, statusCb) => {
-            await BookmarkletUtils.loadLibrary('jspdf', CONFIG.jspdfUrl);
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-            
-            const margin = 15;
-            let y = 20;
-            const pageWidth = 210;
-            const contentWidth = pageWidth - (margin * 2);
-
-            // --- PAGE 1 ---
+        _renderHeader: function(doc, data, margin, y) {
             doc.setFontSize(18);
             doc.setFont('helvetica', 'bold');
             doc.text(data.address, margin, y);
@@ -376,8 +374,10 @@
             doc.text(data.price, margin, y);
             doc.setTextColor(0);
             y += 15;
+            return y;
+        },
 
-            // HERO IMAGE (Replaces Prompt Box)
+        _renderHero: async function(doc, data, selectedPhotos, margin, y, contentWidth, statusCb) {
             const heroUrl = data.heroUrl || (selectedPhotos.length > 0 ? selectedPhotos[0].url : null);
             if (heroUrl) {
                 if(statusCb) statusCb('Processing Hero Image...');
@@ -387,7 +387,6 @@
                     const heroWidth = contentWidth;
                     let heroHeight = contentWidth / heroProcessed.ratio;
                     
-                    // Cap max height for Page 1 hero (e.g., 90mm)
                     if (heroHeight > 90) {
                         heroHeight = 90;
                     }
@@ -396,102 +395,80 @@
                     y += heroHeight + 10;
                 }
             }
-
-            // Page Break Check (If hero was huge)
             if (y > 220) { doc.addPage(); y = 20; }
+            return y;
+        },
 
-            // --- DATA GRIDS (Page 1) ---
+        _renderGridSection: function(doc, title, items, margin, y, pageWidth, boxWidth) {
+            if (!items || Object.keys(items).length === 0) return y;
             
-            // Helper to render a grid section
-            const renderGrid = (title, items, boxWidth = 43) => {
-                if (!items || Object.keys(items).length === 0) return;
-                
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            doc.text(title, margin, y);
+            y += 6;
+
+            const boxH = 14;
+            const gap = 3;
+            let col = 0;
+
+            const keys = Object.keys(items);
+
+            keys.forEach((key) => {
+                if (margin + (col * (boxWidth + gap)) + boxWidth > pageWidth - margin) {
+                    col = 0;
+                    y += boxH + gap;
+                }
+
+                if (y > 270) { doc.addPage(); y = 20; col = 0; }
+
+                const x = margin + (col * (boxWidth + gap));
+
+                doc.setFillColor(250, 250, 250);
+                doc.setDrawColor(220, 220, 220);
+                doc.roundedRect(x, y, boxWidth, boxH, 2, 2, 'FD');
+
                 doc.setFont('helvetica', 'bold');
-                doc.setFontSize(12);
+                doc.setFontSize(7);
+                doc.setTextColor(100, 100, 100);
+                const labelSafe = key.substring(0, 25);
+                doc.text(labelSafe.toUpperCase(), x + 2, y + 4);
+
+                doc.setFont('helvetica', 'normal');
                 doc.setTextColor(0, 0, 0);
-                doc.text(title, margin, y);
-                y += 6;
+                doc.setFontSize(9);
+                const valSafe = String(items[key]).substring(0, 22);
+                doc.text(valSafe, x + 2, y + 10);
 
-                const boxH = 14;
-                const gap = 3;
-                let col = 0;
-                
-                const keys = Object.keys(items);
+                col++;
+            });
+            y += boxH + 10;
+            return y;
+        },
 
-                keys.forEach((key) => {
-                    // Check width overflow
-                    if (margin + (col * (boxWidth + gap)) + boxWidth > pageWidth - margin) {
-                        col = 0;
-                        y += boxH + gap;
-                    }
-
-                    // Check page overflow
-                    if (y > 270) { doc.addPage(); y = 20; col = 0; }
-
-                    const x = margin + (col * (boxWidth + gap));
-
-                    doc.setFillColor(250, 250, 250);
-                    doc.setDrawColor(220, 220, 220);
-                    doc.roundedRect(x, y, boxWidth, boxH, 2, 2, 'FD');
-
-                    doc.setFont('helvetica', 'bold');
-                    doc.setFontSize(7);
-                    doc.setTextColor(100, 100, 100);
-                    const labelSafe = key.substring(0, 25);
-                    doc.text(labelSafe.toUpperCase(), x + 2, y + 4);
-
-                    doc.setFont('helvetica', 'normal');
-                    doc.setTextColor(0, 0, 0);
-                    doc.setFontSize(9);
-                    const valSafe = String(items[key]).substring(0, 22);
-                    doc.text(valSafe, x + 2, y + 10);
-
-                    col++;
-                });
-                y += boxH + 10; // Space after grid
-            };
-
-            // 1. Primary Property Specs
-            // "Primary Property Specs": (Price, Beds, Baths, Sq. Ft., Lot Size, Year Built, HOA, Taxes).
-            const primarySpecs = {};
-            primarySpecs['Price'] = data.price;
-            const targetSpecs = ['Beds', 'Baths', 'Sq. Ft.', 'Lot Size', 'Year Built'];
-            targetSpecs.forEach(k => { if (data.specs[k]) primarySpecs[k] = data.specs[k]; });
-            if (data.financials['HOA Fees']) primarySpecs['HOA Fees'] = data.financials['HOA Fees'];
-            if (data.financials['Taxes']) primarySpecs['Taxes'] = data.financials['Taxes'];
-
-            renderGrid("Primary Property Specs", primarySpecs, 43);
-
-            // 2. Market Context & Medians
-            // "Market Context & Medians": (Days on Market, Listing Price Median, Sold Price Median, Price/SqFt Median).
-            renderGrid("Market Context & Medians", data.market, 43);
-
-            // --- SELLER/LISTING AGENT DESCRIPTION ---
+        _renderDescription: function(doc, description, margin, y, contentWidth) {
             if (y > 240) { doc.addPage(); y = 20; }
 
             doc.setFont('helvetica', 'bold');
-            doc.setFontSize(14); // Explicitly requested header size/style
+            doc.setFontSize(14);
             doc.setTextColor(0, 0, 0);
             doc.text("Seller/Listing Agent Description", margin, y);
             y += 8;
 
             doc.setFont('helvetica', 'normal');
-            doc.setFontSize(10); // Readable size
+            doc.setFontSize(10);
             doc.setTextColor(50, 50, 50);
 
-            // "Ensure the line height and paragraph width are comfortable"
-            // We use slightly narrower width for better readability if space permits,
-            // but here we use contentWidth to maximize space on the page.
-            // Using 1.5 line spacing (default is often 1.15 in jsPDF).
-            const descLines = doc.splitTextToSize(data.description, contentWidth);
+            const descLines = doc.splitTextToSize(description, contentWidth);
             doc.text(descLines, margin, y, { lineHeightFactor: 1.5 });
 
-            // Calculate height used by description
-            const descHeight = descLines.length * 10 * 1.5 * 0.3527777778; // pt to mm approx
+            const descHeight = descLines.length * 10 * 1.5 * 0.3527777778;
             y += descHeight + 15;
+            return y;
+        },
 
-            // --- PROPERTY HISTORY ---
-            if (data.history && data.history.length > 0) {
+        _renderHistory: function(doc, history, margin, y) {
+            if (history && history.length > 0) {
                 if (y > 220) { doc.addPage(); y = 20; }
 
                 doc.setFont('helvetica', 'bold');
@@ -503,17 +480,18 @@
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(10);
 
-                data.history.forEach(h => {
+                history.forEach(h => {
                     if (y > 270) { doc.addPage(); y = 20; }
-                    // Format: [YYYY-MM-DD] - [Event] - [Price]
                     const line = `${h.date || 'N/A'} - ${h.event || 'Event'} - ${h.price || '-'}`;
                     doc.text(line, margin, y);
                     y += 6;
                 });
                 y += 10;
             }
-            
-            // --- PHOTO APPENDIX ---
+            return y;
+        },
+
+        _renderPhotoAppendix: async function(doc, selectedPhotos, margin, y, contentWidth, statusCb) {
             if (selectedPhotos.length > 0) {
                 doc.addPage();
                 y = 20;
@@ -536,15 +514,6 @@
                     const processed = processedResults[i];
                     if (!processed) continue;
 
-                    // Calculate dimensions to fit 2 landscape photos per page
-                    // Available height per page ~260mm.
-                    // Target height per photo block (including caption/gap) ~130mm.
-                    // Block overhead: Caption (5mm) + Gap (15mm) = 20mm.
-                    // Max Image Height = 130 - 20 = 110mm.
-                    // To fit 2 on the first page (with header), we need slightly less:
-                    // 280 (limit) - 30 (start y with header) = 250. 250 / 2 = 125 per block.
-                    // 125 - 20 overhead = 105mm.
-
                     const MAX_IMG_HEIGHT = 105;
 
                     let finalH = contentWidth / processed.ratio;
@@ -555,14 +524,11 @@
                         finalW = finalH * processed.ratio;
                     }
 
-                    // Check if we need a new page
-                    // Need space for Caption (5mm) + Image (finalH) + Gap (15mm)
                     if (y + finalH + 20 > 280) {
                         doc.addPage();
                         y = 20;
                     }
 
-                    // Draw Caption
                     doc.setFontSize(10);
                     doc.setFont('helvetica', 'bold');
                     doc.setTextColor(50, 50, 50);
@@ -570,22 +536,22 @@
                     doc.text(label, margin, y);
                     y += 5;
 
-                    // Center the image if it was scaled down
                     const x = margin + (contentWidth - finalW) / 2;
                     doc.addImage(processed.dataUrl, 'JPEG', x, y, finalW, finalH);
                     y += finalH + 15;
                 }
             }
+            return y;
+        },
 
-            // --- RAW DATA ---
-            if (data.raw) {
+        _renderRawData: function(doc, rawData, margin, y, contentWidth) {
+            if (rawData) {
                 doc.addPage();
                 doc.setFont('courier', 'normal');
                 doc.setFontSize(8);
                 doc.text("RAW PROPERTY DATA (For AI Context)", margin, 15);
 
-                // Minified JSON
-                const jsonStr = JSON.stringify(data.raw);
+                const jsonStr = JSON.stringify(rawData);
                 const lines = doc.splitTextToSize(jsonStr, contentWidth);
                 let lineIdx = 0;
                 let pageY = 20;
@@ -596,6 +562,42 @@
                     lineIdx++;
                 }
             }
+        },
+
+        /**
+         * Creates a PDF report and triggers a download.
+         * @param {Object} data - The property data.
+         * @param {Array<{url: string, label: string}>} selectedPhotos - The list of photos to include.
+         * @param {function(string): void} [statusCb] - Callback to update status message during generation.
+         * @returns {Promise<void>}
+         */
+        create: async function(data, selectedPhotos, statusCb) {
+            await BookmarkletUtils.loadLibrary('jspdf', CONFIG.jspdfUrl);
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+
+            const margin = 15;
+            let y = 20;
+            const pageWidth = 210;
+            const contentWidth = pageWidth - (margin * 2);
+
+            y = this._renderHeader(doc, data, margin, y);
+            y = await this._renderHero(doc, data, selectedPhotos, margin, y, contentWidth, statusCb);
+
+            const primarySpecs = {};
+            primarySpecs['Price'] = data.price;
+            const targetSpecs = ['Beds', 'Baths', 'Sq. Ft.', 'Lot Size', 'Year Built'];
+            targetSpecs.forEach(k => { if (data.specs[k]) primarySpecs[k] = data.specs[k]; });
+            if (data.financials['HOA Fees']) primarySpecs['HOA Fees'] = data.financials['HOA Fees'];
+            if (data.financials['Taxes']) primarySpecs['Taxes'] = data.financials['Taxes'];
+
+            y = this._renderGridSection(doc, "Primary Property Specs", primarySpecs, margin, y, pageWidth, 43);
+            y = this._renderGridSection(doc, "Market Context & Medians", data.market, margin, y, pageWidth, 43);
+
+            y = this._renderDescription(doc, data.description, margin, y, contentWidth);
+            y = this._renderHistory(doc, data.history, margin, y);
+            y = await this._renderPhotoAppendix(doc, selectedPhotos, margin, y, contentWidth, statusCb);
+            this._renderRawData(doc, data.raw, margin, y, contentWidth);
 
             doc.save(`${generateFilename(data.address)}.pdf`);
         }
