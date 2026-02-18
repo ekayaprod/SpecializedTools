@@ -192,8 +192,8 @@
     const updateResult = (r, q) => {
         const safeQ = BookmarkletUtils.escapeHtml(q);
         const safeR = r ? BookmarkletUtils.escapeHtml(r) : '';
-        resultDiv.innerHTML = r ? `<div class="pa-result-success"><strong>Found:</strong><br>${safeR}</div>`
-                                : `<div class="pa-result-error">No match for "<strong>${safeQ}</strong>"</div>`;
+        resultDiv.innerHTML = r ? `<div class="pa-result-success"><strong>Result:</strong><br>${safeR}</div>`
+                                : `<div class="pa-result-error">No match.</div>`;
     };
 
     let s = window.getSelection().toString().trim();
@@ -207,11 +207,11 @@
     } else {
         const inp = document.createElement('input');
         inp.className = 'pa-input';
-        inp.placeholder = "Enter ZIP or City";
+        inp.placeholder = "ZIP or City";
         inp.setAttribute('aria-label', 'Enter ZIP code or City name');
 
         const btn = document.createElement('button');
-        btn.textContent = 'Search';
+        btn.textContent = 'Find';
         btn.className = 'pa-btn pa-btn-primary';
 
         btn.onclick = () => {

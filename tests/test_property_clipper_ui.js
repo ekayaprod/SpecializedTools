@@ -93,24 +93,24 @@ async function runTest() {
 
     // 2. Click Generate PDF to open Wizard
     const buttons = Array.from(modal.querySelectorAll('button'));
-    const pdfBtn = buttons.find(b => b.textContent.includes('Generate PDF'));
+    const pdfBtn = buttons.find(b => b.textContent === 'PDF');
     assert.ok(pdfBtn, "Generate PDF button should exist");
     pdfBtn.click();
 
     // Wait for Start Screen
     await new Promise(r => setTimeout(r, 100));
 
-    // 3. Click 'Manual Selection'
+    // 3. Click 'Select Photos'
     // It is a button in current UI
     const wizardButtons = Array.from(modal.querySelectorAll('button'));
-    const manualBtn = wizardButtons.find(b => b.textContent.includes('Manual Selection'));
+    const manualBtn = wizardButtons.find(b => b.textContent === 'Select Photos');
 
     if (!manualBtn) {
-        console.error("Could not find Manual Selection button. Available buttons:", wizardButtons.map(b => b.textContent));
+        console.error("Could not find Select Photos button. Available buttons:", wizardButtons.map(b => b.textContent));
     }
-    assert.ok(manualBtn, "Manual Selection option should exist");
+    assert.ok(manualBtn, "Select Photos option should exist");
 
-    console.log("Clicking Manual Selection...");
+    console.log("Clicking Select Photos...");
     manualBtn.click();
 
     // Wait for Step 1

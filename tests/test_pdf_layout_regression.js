@@ -114,12 +114,12 @@ global.window.jspdf = { jsPDF: MockJsPDF };
         const modal = document.getElementById('pc-pdf-modal');
         if (!modal) throw new Error("Modal not found");
 
-        const pdfBtn = Array.from(modal.querySelectorAll('button')).find(b => b.textContent.includes('Generate PDF'));
+        const pdfBtn = Array.from(modal.querySelectorAll('button')).find(b => b.textContent === 'PDF');
         pdfBtn.click();
 
         await new Promise(r => setTimeout(r, 100)); // Wait for Wizard init
 
-        const allPhotosBtn = Array.from(modal.querySelectorAll('button')).find(b => b.textContent.includes('Include All Photos'));
+        const allPhotosBtn = Array.from(modal.querySelectorAll('button')).find(b => b.textContent.includes('All Photos'));
         allPhotosBtn.click();
 
         await new Promise(r => setTimeout(r, 1000)); // Wait for generation

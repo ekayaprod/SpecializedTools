@@ -626,16 +626,16 @@
          */
         renderStart: () => {
             const container = document.getElementById(CONFIG.modalId);
-            container.innerHTML = `<h3 style="margin-top:0">Select Photo Strategy (${Wizard.state.format.toUpperCase()})</h3>`;
+            container.innerHTML = `<h3 style="margin-top:0">Photo Strategy</h3>`;
             const total = Wizard.state.data.photoGroups.reduce((a, g) => a + g.photos.length, 0);
             
-            const btnAll = buildElement('button', { width: '100%', padding: '15px', marginBottom: '10px', cursor: 'pointer', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px', textAlign: 'left' }, `Include All Photos (${total})`, container);
+            const btnAll = buildElement('button', { width: '100%', padding: '15px', marginBottom: '10px', cursor: 'pointer', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px', textAlign: 'left' }, `All Photos (${total})`, container);
             btnAll.onclick = () => {
                 Wizard.state.selectedPhotos = Wizard.state.data.photoGroups.flatMap(g => g.photos);
                 Wizard.generate();
             };
 
-            const btnManual = buildElement('button', { width: '100%', padding: '15px', cursor: 'pointer', background: '#f9f9f9', border: '1px solid #ddd', borderRadius: '6px', textAlign: 'left' }, `Manual Selection`, container);
+            const btnManual = buildElement('button', { width: '100%', padding: '15px', cursor: 'pointer', background: '#f9f9f9', border: '1px solid #ddd', borderRadius: '6px', textAlign: 'left' }, `Select Photos`, container);
             btnManual.onclick = () => { Wizard.renderStep(); };
         },
 
@@ -665,7 +665,7 @@
                 checks.push({ chk, p });
             });
 
-            const nextBtn = buildElement('button', { marginTop: '15px', width: '100%', padding: '10px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }, 'Next >', container);
+            const nextBtn = buildElement('button', { marginTop: '15px', width: '100%', padding: '10px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }, 'Next', container);
             nextBtn.onclick = () => {
                 Wizard.state.selectedPhotos.push(...checks.filter(c => c.chk.checked).map(c => c.p));
                 Wizard.state.step++;
@@ -678,7 +678,7 @@
          */
         generate: () => {
             const container = document.getElementById(CONFIG.modalId);
-            container.innerHTML = '<div style="text-align:center;padding:20px"><h3>Generating...</h3><div id="pdf-status">Processing...</div></div>';
+            container.innerHTML = '<div style="text-align:center;padding:20px"><h3>Generating Report...</h3><div id="pdf-status">Starting...</div></div>';
             
             if (Wizard.state.format === 'pdf') {
                 PDFGenerator.create(Wizard.state.data, Wizard.state.selectedPhotos, (msg) => document.getElementById('pdf-status').innerText = msg)
@@ -700,7 +700,7 @@
         const ov = buildElement('div', { position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', zIndex: '999998' }, '', document.body, { id: CONFIG.overlayId });
         const mo = buildElement('div', { position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: '#fff', padding: '25px', width: '500px', borderRadius: '12px', zIndex: '999999', fontFamily: 'sans-serif', display: 'flex', flexDirection: 'column', gap: '15px' }, '', document.body, { id: CONFIG.modalId });
         
-        buildElement('h2', { margin: '0', textAlign: 'center', fontSize: '20px' }, 'Property Analysis Studio', mo);
+        buildElement('h2', { margin: '0', textAlign: 'center', fontSize: '20px' }, 'Analysis Studio', mo);
 
         // Data Pre-fetch for Prompt Placeholders
         const data = PropertyExtractor.getData();
@@ -708,7 +708,7 @@
 
         // 1. Dropdown
         const row1 = buildElement('div', { display: 'flex', flexDirection: 'column', gap: '5px' }, '', mo);
-        buildElement('label', { fontSize: '12px', fontWeight: 'bold', color: '#555' }, 'Select Persona / Analysis Type:', row1);
+        buildElement('label', { fontSize: '12px', fontWeight: 'bold', color: '#555' }, 'Persona:', row1);
         const select = buildElement('select', { padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }, '', row1, { 'aria-label': 'Select Persona / Analysis Type' });
         
         Object.entries(PROMPT_DATA).forEach(([k, v]) => {
@@ -718,7 +718,7 @@
 
         // 2. Text Area
         const row2 = buildElement('div', { display: 'flex', flexDirection: 'column', gap: '5px', flex: '1' }, '', mo);
-        buildElement('label', { fontSize: '12px', fontWeight: 'bold', color: '#555' }, 'Edit Prompt (Context for AI):', row2);
+        buildElement('label', { fontSize: '12px', fontWeight: 'bold', color: '#555' }, 'AI Context:', row2);
         const txtArea = buildElement('textarea', { width: '100%', height: '150px', padding: '10px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '12px', fontFamily: 'monospace', resize: 'vertical' }, '', row2);
         
         // Update text area on change
@@ -730,14 +730,14 @@
         const row3 = buildElement('div', { display: 'flex', gap: '10px', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #eee', paddingTop: '15px' }, '', mo);
         
         const leftGroup = buildElement('div', { display: 'flex', gap: '5px' }, '', row3);
-        const copyBtn = buildElement('button', { padding: '8px 12px', background: '#f0f0f0', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }, 'Copy Prompt', leftGroup);
-        copyBtn.onclick = () => { navigator.clipboard.writeText(txtArea.value); copyBtn.innerText = 'Copied!'; setTimeout(() => copyBtn.innerText = 'Copy Prompt', 1500); };
+        const copyBtn = buildElement('button', { padding: '8px 12px', background: '#f0f0f0', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }, 'Copy', leftGroup);
+        copyBtn.onclick = () => { navigator.clipboard.writeText(txtArea.value); copyBtn.innerText = 'Copied!'; setTimeout(() => copyBtn.innerText = 'Copy', 1500); };
 
         const rightGroup = buildElement('div', { display: 'flex', gap: '10px' }, '', row3);
-        const cancelBtn = buildElement('button', { padding: '8px 12px', background: 'none', border: 'none', color: '#666', cursor: 'pointer' }, 'Cancel', rightGroup);
+        const cancelBtn = buildElement('button', { padding: '8px 12px', background: 'none', border: 'none', color: '#666', cursor: 'pointer' }, 'Close', rightGroup);
         
-        const htmlBtn = buildElement('button', { padding: '10px 15px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }, 'Generate HTML', rightGroup);
-        const pdfBtn = buildElement('button', { padding: '10px 15px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }, 'Generate PDF', rightGroup);
+        const htmlBtn = buildElement('button', { padding: '10px 15px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }, 'HTML', rightGroup);
+        const pdfBtn = buildElement('button', { padding: '10px 15px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }, 'PDF', rightGroup);
 
         // Handlers
         const launchWizard = (fmt) => {
