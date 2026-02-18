@@ -10,6 +10,10 @@ const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
 const utilsCode = fs.readFileSync(utilsPath, 'utf8');
 const promptsPath = path.join(__dirname, '../bookmarklets/property-clipper-prompts.js');
 const promptsCode = fs.readFileSync(promptsPath, 'utf8');
+const corePath = path.join(__dirname, '../bookmarklets/property-clipper-core.js');
+const coreCode = fs.readFileSync(corePath, 'utf8');
+const pdfPath = path.join(__dirname, '../bookmarklets/property-clipper-pdf.js');
+const pdfCode = fs.readFileSync(pdfPath, 'utf8');
 
 // Create JSDOM
 const dom = new JSDOM(`<!DOCTYPE html>
@@ -211,6 +215,12 @@ try {
         }
     }
     eval(resolvedPromptsCode);
+
+    console.log("Executing property-clipper-core.js...");
+    eval(coreCode);
+
+    console.log("Executing property-clipper-pdf.js...");
+    eval(pdfCode);
 
     console.log("Executing property-clipper.js...");
     eval(scriptCode);

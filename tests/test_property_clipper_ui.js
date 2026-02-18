@@ -8,6 +8,12 @@ const scriptPath = path.join(__dirname, '../bookmarklets/property-clipper.js');
 const scriptCode = fs.readFileSync(scriptPath, 'utf8');
 const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
 const utilsCode = fs.readFileSync(utilsPath, 'utf8');
+const promptsPath = path.join(__dirname, '../bookmarklets/property-clipper-prompts.js');
+const promptsCode = fs.readFileSync(promptsPath, 'utf8');
+const corePath = path.join(__dirname, '../bookmarklets/property-clipper-core.js');
+const coreCode = fs.readFileSync(corePath, 'utf8');
+const pdfPath = path.join(__dirname, '../bookmarklets/property-clipper-pdf.js');
+const pdfCode = fs.readFileSync(pdfPath, 'utf8');
 
 // Create JSDOM
 const dom = new JSDOM(`<!DOCTYPE html>
@@ -66,6 +72,25 @@ try {
     process.exit(1);
 }
 
+// Mock Prompts
+try {
+    // Manually resolve @include_text directives for testing if needed,
+    // but for UI test we might not need prompts content, just the object.
+    // However, prompts.js defines window.BookmarkletUtils.Prompts.
+    // Let's do a simple eval. If it fails due to unresolved directives in comments,
+    // we might need the complex loader.
+    // property-clipper-prompts.js content is just an object assignment usually.
+    // But it uses `/* @include_text ... */` inside backticks.
+    // If we eval it raw, it might work if JS engine ignores comments inside backticks?
+    // No, comments inside backticks are part of the string.
+    // So `const x = `/* comment */`;` is valid string content.
+    // So simple eval should work for loading the structure.
+    eval(promptsCode);
+} catch (e) {
+    console.error("Prompts eval failed", e);
+    // If simple eval fails, we might need the full loader, but let's try.
+}
+
 // Mock Image
 class MockImage {
     constructor() {
@@ -78,6 +103,8 @@ global.window.Image = MockImage;
 
 // Run Bookmarklet
 try {
+    eval(coreCode);
+    eval(pdfCode);
     eval(scriptCode);
 } catch (e) {
     console.error("Bookmarklet eval failed", e);

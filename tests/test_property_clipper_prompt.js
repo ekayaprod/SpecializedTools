@@ -8,6 +8,12 @@ const scriptPath = path.join(__dirname, '../bookmarklets/property-clipper.js');
 const scriptCode = fs.readFileSync(scriptPath, 'utf8');
 const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
 const utilsCode = fs.readFileSync(utilsPath, 'utf8');
+const promptsPath = path.join(__dirname, '../bookmarklets/property-clipper-prompts.js');
+const promptsCode = fs.readFileSync(promptsPath, 'utf8');
+const corePath = path.join(__dirname, '../bookmarklets/property-clipper-core.js');
+const coreCode = fs.readFileSync(corePath, 'utf8');
+const pdfPath = path.join(__dirname, '../bookmarklets/property-clipper-pdf.js');
+const pdfCode = fs.readFileSync(pdfPath, 'utf8');
 
 // Mock Data
 const MOCK_ADDRESS = "123 Main St, Anytown, CA 90210";
@@ -65,6 +71,28 @@ global.window.Image = class { constructor() { setTimeout(() => this.onload && th
 try {
     eval(utilsCode);
     global.BookmarkletUtils = window.BookmarkletUtils;
+
+    // Manually resolve @include_text directives for testing
+    let resolvedPromptsCode = promptsCode;
+    const includeRegex = /\/\*\s*@include_text\s+['"]?([^'"]+)['"]?\s*\*\//g;
+    let match;
+    const replacements = [];
+    while ((match = includeRegex.exec(resolvedPromptsCode)) !== null) {
+        replacements.push({ fullMatch: match[0], path: match[1].trim() });
+    }
+    for (const rep of replacements) {
+        const incPath = path.join(__dirname, '../bookmarklets/' + rep.path);
+        if (fs.existsSync(incPath)) {
+            let incText = fs.readFileSync(incPath, 'utf8');
+            // Escape backslashes first, then backticks, then template vars
+            incText = incText.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$\{/g, '\\${');
+            resolvedPromptsCode = resolvedPromptsCode.replace(rep.fullMatch, incText);
+        }
+    }
+    eval(resolvedPromptsCode);
+
+    eval(coreCode);
+    eval(pdfCode);
     eval(scriptCode);
 } catch (e) {
     console.error("Script evaluation failed", e);
@@ -104,14 +132,16 @@ function runTest() {
     const expectedHeader = `# Technical Valuation Exhibit: ${MOCK_ADDRESS}`;
     assert.ok(promptText.includes(expectedHeader), `Should contain header with address: ${expectedHeader}`);
 
-    // 5. Check New Search Directive in Section 3
-    assert.ok(promptText.includes("Your goal is to establish a conservative baseline"), "New Search Directive should be present");
-    assert.ok(promptText.includes("highlight the subject property's overvaluation"), "New Search Directive details should be present");
+    // 5. Check Search Directive in Section 3
+    assert.ok(promptText.includes("You must establish a highly accurate baseline"), "Search Directive should be present");
 
-    // 6. Check New Strict Rule in Section 5
-    assert.ok(promptText.includes("ONLY apply a financial deduction for a missing feature"), "New Strict Rule in Section 5 should be present");
+    // 6. Check Fair Value Clause
+    assert.ok(promptText.includes('The "Fair Value" Clause'), "Fair Value Clause should be present");
 
-    // 7. Check Section 7 Calculation (NEW LOGIC)
+    // 7. Check Strict Rule in Section 5
+    assert.ok(promptText.includes("ONLY apply a financial deduction for a missing feature"), "Strict Rule in Section 5 should be present");
+
+    // 8. Check Section 7 Calculation (NEW LOGIC)
     assert.ok(promptText.includes("**Standard Baseline Rate:** [Insert average Price/Sq. Ft. of ALL comps]"), "Section 7 calculation should reference ALL comps");
     assert.ok(promptText.includes("**Gross Baseline Value:** [Standard Baseline Rate] x [Subject Sq. Ft.] = [Total]"), "Section 7 calculation logic should be correct");
 
