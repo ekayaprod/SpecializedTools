@@ -42,17 +42,17 @@
      * @returns {string} The generated filename (e.g., "123_Main_St_20231027-1430").
      */
     const generateFilename = (address) => {
-        // Extract first line (e.g. "123 Main St" from "123 Main St, City, ST 12345")
+        /* Extract first line (e.g. "123 Main St" from "123 Main St, City, ST 12345") */
         let firstLine = (address || 'Property_Report').split(',')[0].trim();
-        // Sanitize: replace spaces/slashes with underscores, remove special chars
+        /* Sanitize: replace spaces/slashes with underscores, remove special chars */
         firstLine = firstLine.replace(/[\s/]/g, '_').replace(/[^a-zA-Z0-9_\-]/g, '');
 
-        // Compact Timestamp: YYYYMMDD-HHmm
+        /* Compact Timestamp: YYYYMMDD-HHmm */
         const now = new Date();
         const pad = (n) => String(n).padStart(2, '0');
-        const ts = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
+        const timestamp = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
 
-        return `${firstLine}_${ts}`;
+        return `${firstLine}_${timestamp}`;
     };
 
     /**
@@ -177,7 +177,7 @@
                 if (ogImage && ogImage.content) data.heroUrl = ogImage.content;
             } catch (e) { console.warn('Hero Image Extraction Warning:', e); }
 
-            // 1. JSON Extraction
+            /* 1. JSON Extraction */
             try {
                 const nextDataNode = document.getElementById('__NEXT_DATA__');
                 const rawPreNode = document.querySelector('.raw-data pre');
@@ -198,7 +198,7 @@
                 });
             }
 
-            // 2. DOM Extraction
+            /* 2. DOM Extraction */
             try {
                 const keyFacts = document.querySelectorAll('[data-testid="key-facts"] li, .key-fact-item, ul[data-testid*="detail"] li');
                 keyFacts.forEach(li => {
@@ -289,7 +289,7 @@
                     <div class="photo-label">${BookmarkletUtils.escapeHtml(p.label)}</div>
                 </div>`).join('');
 
-            // HERO IMAGE LOGIC
+            /* HERO IMAGE LOGIC */
             let heroHtml = '';
             const heroUrl = data.heroUrl || (selectedPhotos.length > 0 ? selectedPhotos[0].url : null);
             if (heroUrl) {
@@ -699,17 +699,17 @@
      */
     function createPersonaModal() {
         if (document.getElementById(CONFIG.modalId)) return;
-        const ov = buildElement('div', { position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', zIndex: '999998' }, '', document.body, { id: CONFIG.overlayId });
-        const mo = buildElement('div', { position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: '#fff', padding: '25px', width: '500px', borderRadius: '12px', zIndex: '999999', fontFamily: 'sans-serif', display: 'flex', flexDirection: 'column', gap: '15px' }, '', document.body, { id: CONFIG.modalId });
+        const overlay = buildElement('div', { position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', zIndex: '999998' }, '', document.body, { id: CONFIG.overlayId });
+        const modal = buildElement('div', { position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: '#fff', padding: '25px', width: '500px', borderRadius: '12px', zIndex: '999999', fontFamily: 'sans-serif', display: 'flex', flexDirection: 'column', gap: '15px' }, '', document.body, { id: CONFIG.modalId });
         
-        buildElement('h2', { margin: '0', textAlign: 'center', fontSize: '20px' }, 'Analysis Studio', mo);
+        buildElement('h2', { margin: '0', textAlign: 'center', fontSize: '20px' }, 'Analysis Studio', modal);
 
-        // Data Pre-fetch for Prompt Placeholders
+        /* Data Pre-fetch for Prompt Placeholders */
         const data = PropertyExtractor.getData();
         if (!data.raw) BookmarkletUtils.showToast('Warning: Raw data not found. Report limited.', 'error');
 
-        // 1. Dropdown
-        const row1 = buildElement('div', { display: 'flex', flexDirection: 'column', gap: '5px' }, '', mo);
+        /* 1. Dropdown */
+        const row1 = buildElement('div', { display: 'flex', flexDirection: 'column', gap: '5px' }, '', modal);
         buildElement('label', { fontSize: '12px', fontWeight: 'bold', color: '#555' }, 'Persona:', row1);
         const select = buildElement('select', { padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }, '', row1, { 'aria-label': 'Select Persona / Analysis Type' });
         
@@ -718,18 +718,18 @@
             opt.value = k;
         });
 
-        // 2. Text Area
-        const row2 = buildElement('div', { display: 'flex', flexDirection: 'column', gap: '5px', flex: '1' }, '', mo);
+        /* 2. Text Area */
+        const row2 = buildElement('div', { display: 'flex', flexDirection: 'column', gap: '5px', flex: '1' }, '', modal);
         buildElement('label', { fontSize: '12px', fontWeight: 'bold', color: '#555' }, 'AI Context:', row2);
         const txtArea = buildElement('textarea', { width: '100%', height: '150px', padding: '10px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '12px', fontFamily: 'monospace', resize: 'vertical' }, '', row2);
         
-        // Update text area on change
+        /* Update text area on change */
         const updateText = () => { txtArea.value = getFullPrompt(select.value, data); };
         select.onchange = updateText;
-        updateText(); // Init
+        updateText(); /* Init */
 
-        // 3. Actions Row
-        const row3 = buildElement('div', { display: 'flex', gap: '10px', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #eee', paddingTop: '15px' }, '', mo);
+        /* 3. Actions Row */
+        const row3 = buildElement('div', { display: 'flex', gap: '10px', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #eee', paddingTop: '15px' }, '', modal);
         
         const leftGroup = buildElement('div', { display: 'flex', gap: '5px' }, '', row3);
         const copyBtn = buildElement('button', { padding: '8px 12px', background: '#f0f0f0', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }, 'Copy', leftGroup);
@@ -741,7 +741,7 @@
         const htmlBtn = buildElement('button', { padding: '10px 15px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }, 'HTML', rightGroup);
         const pdfBtn = buildElement('button', { padding: '10px 15px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }, 'PDF', rightGroup);
 
-        // Handlers
+        /* Handlers */
         const launchWizard = (fmt) => {
             Wizard.init(data, fmt);
         };
