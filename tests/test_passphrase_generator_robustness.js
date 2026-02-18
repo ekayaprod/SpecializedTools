@@ -92,7 +92,7 @@ const tests = [
             mockDate = new OriginalDate('2023-01-15T12:00:00Z');
             runScript();
             const title = getTitle();
-            assert.strictEqual(title, 'Passphrase Generator (Winter)');
+            assert.strictEqual(title, 'Passphrases (Winter)');
         }
     },
     {
@@ -101,7 +101,7 @@ const tests = [
             mockDate = new OriginalDate('2023-04-15T12:00:00Z');
             runScript();
             const title = getTitle();
-            assert.strictEqual(title, 'Passphrase Generator (Spring)');
+            assert.strictEqual(title, 'Passphrases (Spring)');
         }
     },
     {
@@ -110,7 +110,7 @@ const tests = [
             mockDate = new OriginalDate('2023-07-15T12:00:00Z');
             runScript();
             const title = getTitle();
-            assert.strictEqual(title, 'Passphrase Generator (Summer)');
+            assert.strictEqual(title, 'Passphrases (Summer)');
         }
     },
     {
@@ -119,7 +119,7 @@ const tests = [
             mockDate = new OriginalDate('2023-10-15T12:00:00Z');
             runScript();
             const title = getTitle();
-            assert.strictEqual(title, 'Passphrase Generator (Autumn)');
+            assert.strictEqual(title, 'Passphrases (Autumn)');
         }
     },
     {
@@ -142,7 +142,7 @@ const tests = [
         run: () => {
             mockDate = new OriginalDate('2023-01-01');
             runScript();
-            setInputValue('Numbers', 'start');
+            setInputValue('Number Pos', 'start');
 
             const passwords = getGeneratedPasswords();
             passwords.forEach(p => {
@@ -155,7 +155,7 @@ const tests = [
         run: () => {
             mockDate = new OriginalDate('2023-01-01');
             runScript();
-            setInputValue('Symbols', 'suffix');
+            setInputValue('Symbol Pos', 'suffix');
 
             const passwords = getGeneratedPasswords();
             passwords.forEach(p => {
@@ -179,7 +179,7 @@ const tests = [
             minInput.value = '30';
             minInput.dispatchEvent(new dom.window.Event('change', { bubbles: true }));
 
-            setInputValue('Pad to Min', true);
+            setInputValue('Pad Length', true);
 
             const passwords = getGeneratedPasswords();
             passwords.forEach(p => {

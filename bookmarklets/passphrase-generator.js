@@ -290,7 +290,7 @@
     const header = document.createElement('div');
     Object.assign(header.style, { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' });
     const title = document.createElement('h2');
-    title.textContent = `Passphrase Generator (${Cap(CURRENT_SEASON)})`;
+    title.textContent = `Passphrases (${Cap(CURRENT_SEASON)})`;
     Object.assign(title.style, { margin: '0', fontSize: '18px', fontWeight: 'bold', color: '#1e293b' });
 
     const toggleBtn = document.createElement('button');
@@ -338,7 +338,7 @@
                 PHRASE_STRUCTURES.standard[len].forEach((s, idx) => {
                     const opt = document.createElement('option');
                     opt.value = `${len}-${idx}`;
-                    opt.textContent = `${len} Words: ${s.label}`;
+                    opt.textContent = `${len} Words - ${s.label}`;
                     if(STATE.config.structure === opt.value) opt.selected = true;
                     structSel.appendChild(opt);
                 });
@@ -360,8 +360,8 @@
             Object.assign(maxInp.style, { width: '40px', padding: '4px', borderRadius: '4px', border: '1px solid #cbd5e1' });
             maxInp.onchange = (e) => { STATE.config.maxLength = parseInt(/** @type {HTMLInputElement} */ (e.target).value); render(); };
 
-            lenDiv.appendChild(document.createTextNode('Min: ')); lenDiv.appendChild(minInp);
-            lenDiv.appendChild(document.createTextNode(' Max: ')); lenDiv.appendChild(maxInp);
+            lenDiv.appendChild(document.createTextNode('Min ')); lenDiv.appendChild(minInp);
+            lenDiv.appendChild(document.createTextNode(' Max ')); lenDiv.appendChild(maxInp);
 
             const lenCtrl = createControl("Length", lenDiv);
             controls.appendChild(lenCtrl);
@@ -371,7 +371,7 @@
             padChk.type = 'checkbox';
             padChk.checked = STATE.config.padToMin;
             padChk.onchange = (e) => { STATE.config.padToMin = /** @type {HTMLInputElement} */ (e.target).checked; render(); };
-            controls.appendChild(createControl("Pad to Min", padChk));
+            controls.appendChild(createControl("Pad Length", padChk));
 
             // Placements
             const numSel = document.createElement('select');
@@ -383,18 +383,18 @@
                 numSel.appendChild(opt);
             });
             numSel.onchange = (e) => { STATE.config.numPlacement = /** @type {HTMLSelectElement} */ (e.target).value; render(); };
-            controls.appendChild(createControl("Numbers", numSel));
+            controls.appendChild(createControl("Number Pos", numSel));
 
             const symSel = document.createElement('select');
             Object.assign(symSel.style, { padding: '4px', borderRadius: '4px', border: '1px solid #cbd5e1' });
             ['suffix', 'aroundNum', 'any'].forEach(v => {
                 const opt = document.createElement('option');
-                opt.value = v; opt.textContent = v === 'aroundNum' ? 'Around Num' : Cap(v);
+                opt.value = v; opt.textContent = v === 'aroundNum' ? 'Around Number' : Cap(v);
                 if(STATE.config.symPlacement === v) opt.selected = true;
                 symSel.appendChild(opt);
             });
             symSel.onchange = (e) => { STATE.config.symPlacement = /** @type {HTMLSelectElement} */ (e.target).value; render(); };
-            controls.appendChild(createControl("Symbols", symSel));
+            controls.appendChild(createControl("Symbol Pos", symSel));
         } else {
             // Temp Mode Controls
             const countInp = document.createElement('input');
@@ -435,8 +435,8 @@
             listContainer.appendChild(item);
         });
 
-        title.textContent = STATE.mode === 'passphrase' ? `Passphrase Generator (${Cap(CURRENT_SEASON)})` : 'Temp Password Generator';
-        toggleBtn.textContent = STATE.mode === 'passphrase' ? 'Switch to Temp' : 'Switch to Passphrase';
+        title.textContent = STATE.mode === 'passphrase' ? `Passphrases (${Cap(CURRENT_SEASON)})` : 'Temp Passwords';
+        toggleBtn.textContent = STATE.mode === 'passphrase' ? 'Temp Mode' : 'Phrase Mode';
     }
 
     toggleBtn.onclick = () => {
@@ -454,7 +454,7 @@
     Object.assign(footer.style, { display: 'flex', justifyContent: 'flex-end', marginTop: '16px', gap: '10px' });
 
     const regenBtn = document.createElement('button');
-    regenBtn.textContent = 'Regenerate';
+    regenBtn.textContent = 'Refresh';
     regenBtn.setAttribute('aria-label', 'Generate new passphrases');
     Object.assign(regenBtn.style, { padding: '8px 16px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' });
     regenBtn.onclick = () => render();

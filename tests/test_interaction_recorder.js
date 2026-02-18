@@ -91,8 +91,8 @@ async function runTest() {
         console.error("❌ Failed to start recording");
         process.exit(1);
     }
-    if (startBtn.innerText !== 'Stop & Download') {
-        console.error("❌ Button text did not update to 'Stop & Download'");
+    if (startBtn.innerText !== 'Stop & Save') {
+        console.error("❌ Button text did not update to 'Stop & Save'");
         process.exit(1);
     }
     console.log("✅ Recording started");

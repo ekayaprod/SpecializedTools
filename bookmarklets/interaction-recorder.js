@@ -29,10 +29,10 @@
                 '.count{font-size:24px;text-align:center;font-family:monospace;margin:5px 0;color:#fcd34d}' +
             '</style>' +
             '<div class="box">' +
-                '<div class="row" id="drag"><h3>RECORDER</h3><span id="x" style="cursor:pointer">✕</span></div>' +
-                '<div class="status" id="st">Ready to record</div>' +
+                '<div class="row" id="drag"><h3>Recorder</h3><span id="x" style="cursor:pointer">✕</span></div>' +
+                '<div class="status" id="st">Ready</div>' +
                 '<div class="count" id="cnt">0 Clicks</div>' +
-                '<button id="btn">Start Recording</button>' +
+                '<button id="btn">Start</button>' +
             '</div>';
 
             this.q = s => this.s.querySelector(s);
@@ -74,9 +74,9 @@
             this.startTime = Date.now();
 
             const btn = this.q('#btn');
-            btn.innerText = 'Stop & Download';
+            btn.innerText = 'Stop & Save';
             btn.classList.add('stop');
-            this.q('#st').innerText = 'Recording...';
+            this.q('#st').innerText = 'Recording';
             this.q('#cnt').innerText = '0 Clicks';
 
             const handleClick = (e) => {
@@ -129,9 +129,9 @@
             this.cleanupFns = [];
 
             const btn = this.q('#btn');
-            btn.innerText = 'Start Recording';
+            btn.innerText = 'Start';
             btn.classList.remove('stop');
-            this.q('#st').innerText = 'Saved!';
+            this.q('#st').innerText = 'Saved';
 
             this.download();
         }
