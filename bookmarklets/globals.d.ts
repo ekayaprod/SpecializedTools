@@ -90,6 +90,24 @@ declare global {
          * @returns {string} The Markdown representation.
          */
         htmlToMarkdown(html: string): string;
+
+        /**
+         * Escapes HTML characters in a string.
+         *
+         * @param {string|number} s - The input string (e.g., page title).
+         * @returns {string} The escaped string.
+         */
+        escapeHtml(s: string | number): string;
+
+        Prompts?: {
+            STANDARD_OUTPUTS: string;
+            PROMPT_DATA: Record<string, {
+                label: string;
+                role: string;
+                objective: string;
+                noStandardOutput?: boolean;
+            }>;
+        };
     }
 
     interface Window {

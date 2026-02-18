@@ -78,13 +78,56 @@
 
     /* 1. CORE EXTRACTOR */
     /**
+     * @typedef {Object} RawPropertyDetails
+     * @property {Object} [location]
+     * @property {Object} [location.address]
+     * @property {string} [location.address.line]
+     * @property {string} [location.address.city]
+     * @property {string} [location.address.state_code]
+     * @property {string} [location.address.postal_code]
+     * @property {number} [list_price]
+     * @property {Object} [description]
+     * @property {string} [description.text]
+     * @property {number} [description.beds]
+     * @property {number} [description.baths_consolidated]
+     * @property {number} [description.sqft]
+     * @property {number} [description.lot_sqft]
+     * @property {number} [description.year_built]
+     * @property {Object} [mortgage]
+     * @property {Object} [mortgage.estimate]
+     * @property {number} [mortgage.estimate.monthly_payment]
+     * @property {Array<{type: string, amount: number}>} [mortgage.estimate.monthly_payment_details]
+     * @property {number} [days_on_market]
+     * @property {Object} [neighborhood]
+     * @property {Object} [market]
+     * @property {number} [market.median_listing_price]
+     * @property {number} [market.median_sold_price]
+     * @property {number} [market.median_price_per_sqft]
+     * @property {Array<{date: string, event_name: string, price: number}>} [property_history]
+     * @property {Array<{key: string, category: string, photos: Array<{href: string}>}>} [augmented_gallery]
+     * @property {Array<{href: string}>} [photos]
+     *
+     * @typedef {Object} PropertyData
+     * @property {string} address
+     * @property {string} price
+     * @property {Record<string, string|number>} specs
+     * @property {Record<string, string|number>} financials
+     * @property {Record<string, string|number>} market
+     * @property {Array<{date: string, event: string, price: string}>} history
+     * @property {string} description
+     * @property {Array<{category: string, photos: Array<{url: string, label: string}>}>} photoGroups
+     * @property {any} raw
+     * @property {string|null} heroUrl
+     */
+
+    /**
      * Handles the extraction of property data from various sources on the page.
      */
     const PropertyExtractor = {
         /**
          * Parses the raw property details object and populates the normalized data structure.
-         * @param {Object} pd - The raw property details object (usually from JSON).
-         * @param {Object} data - The target data object to populate.
+         * @param {RawPropertyDetails} pd - The raw property details object (usually from JSON).
+         * @param {PropertyData} data - The target data object to populate.
          */
         parseDetails: function(pd, data) {
             data.raw = pd;
@@ -147,9 +190,10 @@
          * Attempts to parse Next.js hydration data first, falling back to raw pre tags,
          * and finally scraping specific DOM elements for fallback values.
          *
-         * @returns {Object} The normalized property data object containing address, price, specs, etc.
+         * @returns {PropertyData} The normalized property data object containing address, price, specs, etc.
          */
         getData: function () {
+            /** @type {PropertyData} */
             let data = {
                 address: 'Unknown Address', price: 'Unknown Price', specs: {},
                 financials: {}, market: {}, history: [], description: '',
@@ -158,27 +202,46 @@
 
             /* Extract Hero Image (OG:IMAGE is usually most reliable) */
             try {
-                const ogImage = document.querySelector('meta[property="og:image"]');
+                const ogImage = /** @type {HTMLMetaElement|null} */ (document.querySelector('meta[property="og:image"]'));
                 if (ogImage && ogImage.content) data.heroUrl = ogImage.content;
             } catch (e) { console.warn('Hero Image Extraction Warning:', e); }
 
             // 1. JSON Extraction
+            let jsonSuccess = false;
+
+            // Attempt 1: Next.js Data
             try {
                 const nextDataNode = document.getElementById('__NEXT_DATA__');
-                const rawPreNode = document.querySelector('.raw-data pre');
-                if (nextDataNode) {
+                if (nextDataNode && nextDataNode.textContent) {
                     const jsonData = JSON.parse(nextDataNode.textContent);
                     const pd = jsonData?.props?.pageProps?.initialReduxState?.propertyDetails;
-                    if (pd) PropertyExtractor.parseDetails(pd, data);
-                } else if (rawPreNode) {
-                    const pd = JSON.parse(rawPreNode.textContent);
-                    if (pd) PropertyExtractor.parseDetails(pd, data);
+                    if (pd) {
+                        PropertyExtractor.parseDetails(pd, data);
+                        jsonSuccess = true;
+                    }
                 }
             } catch (e) {
-                console.warn('JSON Extraction Failed', {
-                    error: e instanceof Error ? e.message : String(e),
-                    hasNextData: !!document.getElementById('__NEXT_DATA__'),
-                    hasRawPre: !!document.querySelector('.raw-data pre'),
+                console.warn('Next.js Data Extraction Failed:', e);
+            }
+
+            // Attempt 2: Raw Pre Data (Fallback)
+            if (!jsonSuccess) {
+                try {
+                    const rawPreNode = document.querySelector('.raw-data pre');
+                    if (rawPreNode && rawPreNode.textContent) {
+                        const pd = JSON.parse(rawPreNode.textContent);
+                        if (pd) {
+                            PropertyExtractor.parseDetails(pd, data);
+                            jsonSuccess = true;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Raw Pre Data Extraction Failed:', e);
+                }
+            }
+
+            if (!jsonSuccess) {
+                 console.warn('All JSON Extraction methods failed. Falling back to DOM scraping.', {
                     url: window.location.href
                 });
             }
@@ -712,7 +775,7 @@
         const select = buildElement('select', { padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }, '', row1, { 'aria-label': 'Select Persona / Analysis Type' });
         
         Object.entries(PROMPT_DATA).forEach(([k, v]) => {
-            const opt = buildElement('option', {}, v.label, select);
+            const opt = /** @type {HTMLOptionElement} */ (buildElement('option', {}, v.label, select));
             opt.value = k;
         });
 
@@ -722,7 +785,9 @@
         const txtArea = buildElement('textarea', { width: '100%', height: '150px', padding: '10px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '12px', fontFamily: 'monospace', resize: 'vertical' }, '', row2);
         
         // Update text area on change
-        const updateText = () => { txtArea.value = getFullPrompt(select.value, data); };
+        const updateText = () => {
+            /** @type {HTMLTextAreaElement} */ (txtArea).value = getFullPrompt(/** @type {HTMLSelectElement} */ (select).value, data);
+        };
         select.onchange = updateText;
         updateText(); // Init
 
@@ -731,7 +796,7 @@
         
         const leftGroup = buildElement('div', { display: 'flex', gap: '5px' }, '', row3);
         const copyBtn = buildElement('button', { padding: '8px 12px', background: '#f0f0f0', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }, 'Copy Prompt', leftGroup);
-        copyBtn.onclick = () => { navigator.clipboard.writeText(txtArea.value); copyBtn.innerText = 'Copied!'; setTimeout(() => copyBtn.innerText = 'Copy Prompt', 1500); };
+        copyBtn.onclick = () => { navigator.clipboard.writeText(/** @type {HTMLTextAreaElement} */ (txtArea).value); copyBtn.innerText = 'Copied!'; setTimeout(() => copyBtn.innerText = 'Copy Prompt', 1500); };
 
         const rightGroup = buildElement('div', { display: 'flex', gap: '10px' }, '', row3);
         const cancelBtn = buildElement('button', { padding: '8px 12px', background: 'none', border: 'none', color: '#666', cursor: 'pointer' }, 'Cancel', rightGroup);

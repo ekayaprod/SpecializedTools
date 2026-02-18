@@ -385,7 +385,7 @@
                             const el = queue.shift();
 
                             if (el.tagName.toLowerCase() === 'picture') {
-                                const pic = el;
+                                const pic = /** @type {HTMLPictureElement} */ (el);
                                 const img = pic.querySelector('img');
                                 const source = pic.querySelector('source');
                                 if (source && source.srcset && img) {
@@ -396,7 +396,7 @@
                                     }
                                 }
                             } else {
-                                const img = el;
+                                const img = /** @type {HTMLImageElement} */ (el);
                                 /* 1. Resolve Lazy Loading */
                                 if (img.dataset.src) img.src = img.dataset.src;
                                 if (img.dataset.lazySrc) img.src = img.dataset.lazySrc;
@@ -476,6 +476,7 @@
          */
         inlineStylesAsync(source, target, onProgress) {
             return new Promise(function(resolve, reject) {
+                /** @type {Array<{s: HTMLElement, t: HTMLElement}>} */
                 const queue = [{s: source, t: target}];
                 let count = 0;
                 const CHUNK_SIZE = 50;
@@ -546,7 +547,7 @@
         /**
          * Escapes HTML characters in a string.
          *
-         * @param {string} str - The string to escape.
+         * @param {string|number} s - The string to escape.
          * @returns {string} The escaped string.
          *
          * @example

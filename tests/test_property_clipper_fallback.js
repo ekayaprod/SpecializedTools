@@ -152,11 +152,11 @@ async function runTests() {
     console.warn = originalWarn; // Restore
 
     // Verify Warning
-    const jsonWarning = warnings.find(w => w[0] === 'JSON Extraction Failed');
+    const jsonWarning = warnings.find(w => w[0] === 'JSON Extraction Failed' || w[0] === 'Next.js Data Extraction Failed:');
     if (jsonWarning) {
         console.log("✅ correctly warned about JSON failure.");
     } else {
-        console.error("❌ Failed to warn about JSON failure.");
+        console.error("❌ Failed to warn about JSON failure. Warnings:", warnings);
         process.exit(1);
     }
 
