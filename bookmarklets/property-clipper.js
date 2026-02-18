@@ -3,6 +3,15 @@
     /** @require property-clipper-prompts.js */
 
     /* CONFIGURATION */
+    /**
+     * Configuration options for the Property Clipper.
+     * @property {string} modalId - The ID for the modal element.
+     * @property {string} overlayId - The ID for the overlay element.
+     * @property {string} filenamePrefix - The prefix for generated filenames.
+     * @property {string} jspdfUrl - The URL to load jsPDF from.
+     * @property {number} imgMaxWidth - The maximum width for processed images.
+     * @property {number} imgQuality - The JPEG quality for processed images (0.0 to 1.0).
+     */
     const CONFIG = {
         modalId: 'pc-pdf-modal',
         overlayId: 'pc-pdf-overlay',
@@ -20,8 +29,18 @@
     /* UTILITIES */
     const buildElement = BookmarkletUtils.buildElement;
 
+    /**
+     * Formats a number as a currency string (USD).
+     * @param {number|string|null} val - The value to format.
+     * @returns {string} The formatted currency string or 'N/A'.
+     */
     const formatCurrency = (val) => (val != null) ? '$' + Number(val).toLocaleString() : 'N/A';
 
+    /**
+     * Generates a safe filename based on the property address and current timestamp.
+     * @param {string} address - The property address.
+     * @returns {string} The generated filename (e.g., "123_Main_St_20231027-1430").
+     */
     const generateFilename = (address) => {
         // Extract first line (e.g. "123 Main St" from "123 Main St, City, ST 12345")
         let firstLine = (address || 'Property_Report').split(',')[0].trim();
@@ -36,6 +55,13 @@
         return `${firstLine}_${ts}`;
     };
 
+    /**
+     * Constructs the full prompt text by combining the role, objective, and standard outputs.
+     * Replaces placeholders with actual property data.
+     * @param {string} key - The key identifying the prompt persona.
+     * @param {Object} [data] - The property data to inject into placeholders.
+     * @returns {string} The complete prompt text.
+     */
     const getFullPrompt = (key, data) => {
         const p = PROMPT_DATA[key];
         if (!p) return '';
@@ -51,7 +77,15 @@
     };
 
     /* 1. CORE EXTRACTOR */
+    /**
+     * Handles the extraction of property data from various sources on the page.
+     */
     const PropertyExtractor = {
+        /**
+         * Parses the raw property details object and populates the normalized data structure.
+         * @param {Object} pd - The raw property details object (usually from JSON).
+         * @param {Object} data - The target data object to populate.
+         */
         parseDetails: function(pd, data) {
             data.raw = pd;
             const loc = pd.location?.address;
@@ -176,7 +210,15 @@
     };
 
     /* 2. IMAGE PROCESSOR */
+    /**
+     * Handles image loading and processing (resizing, format conversion).
+     */
     const ImageProcessor = {
+        /**
+         * Loads an image from a URL, resizes it if necessary, and returns data URL.
+         * @param {string} url - The URL of the image to process.
+         * @returns {Promise<Object|null>} A promise resolving to an object with dataUrl, width, height, and ratio, or null on failure.
+         */
         process: async (url) => {
             return new Promise((resolve) => {
                 const img = new Image();
@@ -210,7 +252,15 @@
     };
 
     /* 3. HTML GENERATOR */
+    /**
+     * Generates HTML reports.
+     */
     const HTMLGenerator = {
+        /**
+         * Creates an HTML report file and triggers a download.
+         * @param {Object} data - The property data.
+         * @param {Array<{url: string, label: string}>} selectedPhotos - The list of photos to include.
+         */
         create: (data, selectedPhotos) => {
             const specsHtml = Object.entries({ ...data.specs, ...data.financials }).map(([k, v]) => `
                 <div class="metric-box">
@@ -294,7 +344,17 @@
     };
 
     /* 4. PDF GENERATOR */
+    /**
+     * Generates PDF reports using jsPDF.
+     */
     const PDFGenerator = {
+        /**
+         * Creates a PDF report and triggers a download.
+         * @param {Object} data - The property data.
+         * @param {Array<{url: string, label: string}>} selectedPhotos - The list of photos to include.
+         * @param {function(string): void} [statusCb] - Callback to update status message during generation.
+         * @returns {Promise<void>}
+         */
         create: async (data, selectedPhotos, statusCb) => {
             await BookmarkletUtils.loadLibrary('jspdf', CONFIG.jspdfUrl);
             const { jsPDF } = window.jspdf;
@@ -542,9 +602,17 @@
     };
 
     /* 5. WIZARD UI */
+    /**
+     * Manages the multi-step photo selection wizard.
+     */
     const Wizard = {
         state: { data: null, step: 0, selectedPhotos: [], format: 'pdf' },
         
+        /**
+         * Initializes the wizard with property data and selected output format.
+         * @param {Object} data - The property data.
+         * @param {'html'|'pdf'} format - The desired output format.
+         */
         init: (data, format) => {
             Wizard.state.data = data;
             Wizard.state.format = format;
@@ -553,6 +621,9 @@
             Wizard.renderStart();
         },
 
+        /**
+         * Renders the initial step of the wizard (All Photos vs. Manual Selection).
+         */
         renderStart: () => {
             const container = document.getElementById(CONFIG.modalId);
             container.innerHTML = `<h3 style="margin-top:0">Select Photo Strategy (${Wizard.state.format.toUpperCase()})</h3>`;
@@ -568,6 +639,9 @@
             btnManual.onclick = () => { Wizard.renderStep(); };
         },
 
+        /**
+         * Renders the current step of the manual photo selection process.
+         */
         renderStep: () => {
             const grp = Wizard.state.data.photoGroups[Wizard.state.step];
             if (!grp) return Wizard.generate();
@@ -599,6 +673,9 @@
             };
         },
 
+        /**
+         * Triggers the report generation based on the selected photos and format.
+         */
         generate: () => {
             const container = document.getElementById(CONFIG.modalId);
             container.innerHTML = '<div style="text-align:center;padding:20px"><h3>Generating...</h3><div id="pdf-status">Processing...</div></div>';
@@ -614,6 +691,10 @@
     };
 
     /* 6. MAIN UI - PROMPT STUDIO */
+    /**
+     * Creates and displays the main Persona Selection / Prompt Studio modal.
+     * Extracts initial data to populate prompt placeholders.
+     */
     function createPersonaModal() {
         if (document.getElementById(CONFIG.modalId)) return;
         const ov = buildElement('div', { position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', zIndex: '999998' }, '', document.body, { id: CONFIG.overlayId });
@@ -668,6 +749,9 @@
         pdfBtn.onclick = () => launchWizard('pdf');
     }
 
+    /**
+     * Closes and removes the modal and overlay from the DOM.
+     */
     function closeModal() {
         document.getElementById(CONFIG.modalId)?.remove();
         document.getElementById(CONFIG.overlayId)?.remove();
