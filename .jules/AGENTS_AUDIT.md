@@ -25,6 +25,7 @@
 - [x] tests/test_property_clipper_errors.js (Deleted failing test suite)
 - [x] bookmarklets/utils.js (Added missing 'buildElement' and 'showToast' to interface)
 - [x] bookmarklets/bookmarklet-builder.js (Indirectly tested via `tests/test_bookmarklet_generation.js`, but explicit unit tests for builder logic could be improved)
+- [x] bookmarklets/pa-county-finder.js (Added robust tests for split city lookups and fixed logic gap)
 
 ## 🆙 Modernization Targets
 - [x] Replace `alert()` with non-blocking UI (Toast/Modal) across all bookmarklets
