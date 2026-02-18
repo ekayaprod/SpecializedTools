@@ -142,6 +142,65 @@
             }
         },
 
+        _extractHeroImage: function(data) {
+            try {
+                const ogImage = document.querySelector('meta[property="og:image"]');
+                if (ogImage && ogImage.content) data.heroUrl = ogImage.content;
+            } catch (e) { console.warn('Hero Image Extraction Warning:', e); }
+        },
+
+        _extractFromJSON: function(data) {
+            try {
+                const nextDataNode = document.getElementById('__NEXT_DATA__');
+                const rawPreNode = document.querySelector('.raw-data pre');
+                if (nextDataNode) {
+                    const jsonData = JSON.parse(nextDataNode.textContent);
+                    const pd = jsonData?.props?.pageProps?.initialReduxState?.propertyDetails;
+                    if (pd) {
+                        this.parseDetails(pd, data);
+                        return true;
+                    }
+                } else if (rawPreNode) {
+                    const pd = JSON.parse(rawPreNode.textContent);
+                    if (pd) {
+                        this.parseDetails(pd, data);
+                        return true;
+                    }
+                }
+            } catch (e) {
+                console.warn('JSON Extraction Failed', {
+                    error: e instanceof Error ? e.message : String(e),
+                    hasNextData: !!document.getElementById('__NEXT_DATA__'),
+                    hasRawPre: !!document.querySelector('.raw-data pre'),
+                    url: window.location.href
+                });
+            }
+            return false;
+        },
+
+        _extractFromDOM: function(data) {
+            try {
+                const keyFacts = document.querySelectorAll('[data-testid="key-facts"] li, .key-fact-item, ul[data-testid*="detail"] li');
+                keyFacts.forEach(li => {
+                    const text = /** @type {HTMLElement} */ (li).innerText || '';
+                    let parts = text.includes(':') ? text.split(':') : text.split('\n');
+                    parts = parts.map(s => s.trim()).filter(s => s);
+                    
+                    if (parts.length >= 2) {
+                        const label = parts[0];
+                        const value = parts.slice(1).join(' ');
+                        if (!data.specs[label] && !data.financials[label]) {
+                            data.specs[label] = value;
+                        }
+                    }
+                });
+                
+                if (data.address === 'Unknown Address') data.address = /** @type {HTMLElement} */ (document.querySelector('h1'))?.innerText || data.address;
+                if (data.price === 'Unknown Price') data.price = /** @type {HTMLElement} */ (document.querySelector('[data-testid="ldp-list-price"]'))?.innerText || data.price;
+                
+            } catch (e) { console.warn('DOM Extraction Warning:', e); }
+        },
+
         /**
          * Parses the raw property details object and populates the normalized data structure.
          * @param {Object} pd - The raw property details object (usually from JSON).
@@ -171,54 +230,9 @@
                 photoGroups: [], raw: null, heroUrl: null
             };
 
-            /* Extract Hero Image (OG:IMAGE is usually most reliable) */
-            try {
-                const ogImage = document.querySelector('meta[property="og:image"]');
-                if (ogImage && ogImage.content) data.heroUrl = ogImage.content;
-            } catch (e) { console.warn('Hero Image Extraction Warning:', e); }
-
-            // 1. JSON Extraction
-            try {
-                const nextDataNode = document.getElementById('__NEXT_DATA__');
-                const rawPreNode = document.querySelector('.raw-data pre');
-                if (nextDataNode) {
-                    const jsonData = JSON.parse(nextDataNode.textContent);
-                    const pd = jsonData?.props?.pageProps?.initialReduxState?.propertyDetails;
-                    if (pd) PropertyExtractor.parseDetails(pd, data);
-                } else if (rawPreNode) {
-                    const pd = JSON.parse(rawPreNode.textContent);
-                    if (pd) PropertyExtractor.parseDetails(pd, data);
-                }
-            } catch (e) {
-                console.warn('JSON Extraction Failed', {
-                    error: e instanceof Error ? e.message : String(e),
-                    hasNextData: !!document.getElementById('__NEXT_DATA__'),
-                    hasRawPre: !!document.querySelector('.raw-data pre'),
-                    url: window.location.href
-                });
-            }
-
-            // 2. DOM Extraction
-            try {
-                const keyFacts = document.querySelectorAll('[data-testid="key-facts"] li, .key-fact-item, ul[data-testid*="detail"] li');
-                keyFacts.forEach(li => {
-                    const text = /** @type {HTMLElement} */ (li).innerText || '';
-                    let parts = text.includes(':') ? text.split(':') : text.split('\n');
-                    parts = parts.map(s => s.trim()).filter(s => s);
-                    
-                    if (parts.length >= 2) {
-                        const label = parts[0];
-                        const value = parts.slice(1).join(' ');
-                        if (!data.specs[label] && !data.financials[label]) {
-                            data.specs[label] = value;
-                        }
-                    }
-                });
-                
-                if (data.address === 'Unknown Address') data.address = /** @type {HTMLElement} */ (document.querySelector('h1'))?.innerText || data.address;
-                if (data.price === 'Unknown Price') data.price = /** @type {HTMLElement} */ (document.querySelector('[data-testid="ldp-list-price"]'))?.innerText || data.price;
-                
-            } catch (e) { console.warn('DOM Extraction Warning:', e); }
+            this._extractHeroImage(data);
+            this._extractFromJSON(data);
+            this._extractFromDOM(data);
 
             return data;
         }
