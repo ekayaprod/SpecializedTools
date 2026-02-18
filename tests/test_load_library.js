@@ -67,7 +67,11 @@ async function testLoadLibrary() {
             appendedScript = el;
             // Simulate async load
             setTimeout(() => {
-                if (el.onload) el.onload();
+                // Mock the global variable appearing
+                if (el.onload) {
+                    global.window.newLib = { loaded: true };
+                    el.onload();
+                }
             }, 10);
             return el;
         };
@@ -81,6 +85,7 @@ async function testLoadLibrary() {
 
         await loadPromise;
 
+        delete global.window.newLib; // Cleanup
         global.document.head.appendChild = originalAppendChild; // Restore
         console.log("✅ Passed");
     }
