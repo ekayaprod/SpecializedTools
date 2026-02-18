@@ -14,6 +14,7 @@ This document tracks the status of features and tools within the Browser Toolkit
     - [x] Long-Term Rental (LTR)
     - [x] Fix & Flip
     - [x] House Hacking
+    - [x] Valuation Analyst
   - [x] **Deep Research Protocol**: Automated forensic auditing.
   - [x] **Renovation Estimator**: CapEx estimation from photos.
 - [x] **Passphrase Generator**: Strong password creation with seasonal themes.
