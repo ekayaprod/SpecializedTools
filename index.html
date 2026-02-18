@@ -316,6 +316,34 @@
         }
 
         // --- COMPILER ---
+
+        /**
+         * Robust fetch with exponential backoff for resilience against transient failures.
+         * Retries on network errors and server errors (5xx, 429).
+         */
+        async function fetchWithRetry(url, options = {}, retries = 3, backoff = 300) {
+            try {
+                const res = await fetch(url, options);
+                if (res.ok) return res;
+
+                // Retry on server errors (5xx) or rate limiting (429)
+                if (retries > 0 && (res.status === 429 || res.status >= 500)) {
+                    console.warn(`[Retry] Fetching ${url} failed with status ${res.status}. Retrying in ${backoff}ms...`);
+                    await new Promise(r => setTimeout(r, backoff));
+                    return fetchWithRetry(url, options, retries - 1, backoff * 2);
+                }
+                return res;
+            } catch (e) {
+                // Retry on network errors
+                if (retries > 0) {
+                    console.warn(`[Retry] Fetching ${url} failed with error: ${e.message}. Retrying in ${backoff}ms...`);
+                    await new Promise(r => setTimeout(r, backoff));
+                    return fetchWithRetry(url, options, retries - 1, backoff * 2);
+                }
+                throw e;
+            }
+        }
+
         async function load(id, file, name) {
             // Need to wait for DOM insertion if run immediately?
             // Since we call load() inside renderTools(), the elements exist.
@@ -326,7 +354,7 @@
             if (!el) return; // safety
 
             try {
-                const res = await fetch(file);
+                const res = await fetchWithRetry(file);
                 if (!res.ok) throw new Error('Failed to load file: ' + file);
                 let code = await res.text();
 
@@ -338,7 +366,7 @@
                 for (const dep of reversedDeps) {
                     const depUrl = pathPrefix + dep;
                     try {
-                        const depRes = await fetch(depUrl);
+                        const depRes = await fetchWithRetry(depUrl);
                         if (!depRes.ok) throw new Error('Failed dependency: ' + depUrl);
                         const depCode = await depRes.text();
                         code = depCode + '\n' + code;
@@ -371,7 +399,7 @@
                 for (const rep of replacements) {
                     const incUrl = pathPrefix + rep.path; // e.g. bookmarklets/prompts/str.md
                     try {
-                        const incRes = await fetch(incUrl);
+                        const incRes = await fetchWithRetry(incUrl);
                         if (!incRes.ok) throw new Error('Failed include: ' + incUrl);
                         let incText = await incRes.text();
 

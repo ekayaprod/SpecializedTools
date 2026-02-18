@@ -1,0 +1,19 @@
+127.0.0.1 - - [18/Feb/2026 10:31:02] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [18/Feb/2026 10:31:02] "GET /bookmarklets/bookmarklet-builder.js HTTP/1.1" 200 -
+127.0.0.1 - - [18/Feb/2026 10:31:04] "GET /bookmarklets/web-clipper.js HTTP/1.1" 200 -
+127.0.0.1 - - [18/Feb/2026 10:31:04] "GET /bookmarklets/quick-clicker.js HTTP/1.1" 200 -
+127.0.0.1 - - [18/Feb/2026 10:31:04] "GET /bookmarklets/macro-builder.js HTTP/1.1" 200 -
+127.0.0.1 - - [18/Feb/2026 10:31:04] "GET /bookmarklets/property-clipper.js HTTP/1.1" 200 -
+127.0.0.1 - - [18/Feb/2026 10:31:04] "GET /bookmarklets/interaction-recorder.js HTTP/1.1" 200 -
+127.0.0.1 - - [18/Feb/2026 10:31:04] "GET /bookmarklets/pa-county-finder.js HTTP/1.1" 200 -
+127.0.0.1 - - [18/Feb/2026 10:31:04] "GET /bookmarklets/delayed-clicker.js HTTP/1.1" 200 -
+127.0.0.1 - - [18/Feb/2026 10:31:04] "GET /bookmarklets/passphrase-generator.js HTTP/1.1" 200 -
+127.0.0.1 - - [18/Feb/2026 10:31:05] "GET /bookmarklets/utils.js HTTP/1.1" 200 -
+127.0.0.1 - - [18/Feb/2026 10:31:05] "GET /bookmarklets/property-clipper-prompts.js HTTP/1.1" 200 -
+127.0.0.1 - - [18/Feb/2026 10:31:05] "GET /bookmarklets/prompts/standard-outputs.md HTTP/1.1" 200 -
+127.0.0.1 - - [18/Feb/2026 10:31:05] "GET /bookmarklets/prompts/str-objective.md HTTP/1.1" 200 -
+127.0.0.1 - - [18/Feb/2026 10:31:05] "GET /bookmarklets/prompts/ltr-objective.md HTTP/1.1" 200 -
+127.0.0.1 - - [18/Feb/2026 10:31:05] "GET /bookmarklets/prompts/flip-objective.md HTTP/1.1" 200 -
+127.0.0.1 - - [18/Feb/2026 10:31:05] "GET /bookmarklets/prompts/househack-objective.md HTTP/1.1" 200 -
+127.0.0.1 - - [18/Feb/2026 10:31:05] code 404, message File not found
+127.0.0.1 - - [18/Feb/2026 10:31:05] "GET /bookmarklets/prompts/appraisal-objective.md%20*/%60,%20%20%20%20%20%20%20%20%20%20%20%20noStandardOutput:%20true%20%20%20%20%20%20%20%20%7D%20%20%20%20%7D;%20%20%20%20w.BookmarkletUtils.Prompts%20=%20%7B%20STANDARD_OUTPUTS,%20PROMPT_DATA%20%7D;%7D)(window);(function%20()%20%7B%20%20%20%20/**%20@require%20utils.js%20*/%20%20%20%20/**%20@require%20property-clipper-prompts.js%20*/%20%20%20%20/*%20CONFIGURATION%20*/%20%20%20%20/**%20%20%20%20%20*%20Configuration%20options%20for%20the%20Property%20Clipper.%20%20%20%20%20*%20@property%20%7Bstring%7D%20modalId%20-%20The%20ID%20for%20the%20modal%20element.%20%20%20%20%20*%20@property%20%7Bstring%7D%20overlayId%20-%20The%20ID%20for%20the%20overlay%20element.%20%20%20%20%20*%20@property%20%7Bstring%7D%20filenamePrefix%20-%20The%20prefix%20for%20generated%20filenames.%20%20%20%20%20*%20@property%20%7Bstring%7D%20jspdfUrl%20-%20The%20URL%20to%20load%20jsPDF%20from.%20%20%20%20%20*%20@property%20%7Bnumber%7D%20imgMaxWidth%20-%20The%20maximum%20width%20for%20processed%20images.%20%20%20%20%20*%20@property%20%7Bnumber%7D%20imgQuality%20-%20The%20JPEG%20quality%20for%20processed%20images%20(0.0%20to%201.0). HTTP/1.1" 404 -
