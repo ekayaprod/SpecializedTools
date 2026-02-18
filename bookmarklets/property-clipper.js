@@ -212,18 +212,16 @@
     /* 3. HTML GENERATOR */
     const HTMLGenerator = {
         create: (data, selectedPhotos) => {
-            const escapeHTML = (str) => String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            
             const specsHtml = Object.entries({ ...data.specs, ...data.financials }).map(([k, v]) => `
                 <div class="metric-box">
-                    <div class="metric-label">${escapeHTML(k)}</div>
-                    <div class="metric-value">${escapeHTML(v)}</div>
+                    <div class="metric-label">${BookmarkletUtils.escapeHtml(k)}</div>
+                    <div class="metric-value">${BookmarkletUtils.escapeHtml(v)}</div>
                 </div>`).join('');
 
             const photosHtml = selectedPhotos.map(p => `
                 <div class="photo-card">
-                    <img src="${p.url}" loading="lazy" alt="${escapeHTML(p.label)}">
-                    <div class="photo-label">${escapeHTML(p.label)}</div>
+                    <img src="${p.url}" loading="lazy" alt="${BookmarkletUtils.escapeHtml(p.label)}">
+                    <div class="photo-label">${BookmarkletUtils.escapeHtml(p.label)}</div>
                 </div>`).join('');
 
             // HERO IMAGE LOGIC
@@ -232,7 +230,7 @@
             if (heroUrl) {
                 heroHtml = `
                 <div class="hero-section" style="margin-bottom: 30px; border-radius: 8px; overflow: hidden; border: 1px solid #e5e7eb;">
-                    <img src="${heroUrl}" alt="Primary view of ${escapeHTML(data.address)}" style="width: 100%; height: auto; max-height: 500px; object-fit: cover; display: block;">
+                    <img src="${heroUrl}" alt="Primary view of ${BookmarkletUtils.escapeHtml(data.address)}" style="width: 100%; height: auto; max-height: 500px; object-fit: cover; display: block;">
                 </div>`;
             }
 
@@ -240,7 +238,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>${escapeHTML(data.address)} - Property Report</title>
+    <title>${BookmarkletUtils.escapeHtml(data.address)} - Property Report</title>
     <style>
         :root { --primary: #2563eb; --gray-100: #f3f4f6; --gray-800: #1f2937; }
         body { font-family: system-ui, sans-serif; line-height: 1.6; color: #333; max-width: 1200px; margin: 0 auto; padding: 20px; background: #fafafa; }
@@ -265,19 +263,19 @@
 <body>
     <div class="report-container">
         <div class="header">
-            <h1>${escapeHTML(data.address)}</h1>
-            <div class="price">${escapeHTML(data.price)}</div>
+            <h1>${BookmarkletUtils.escapeHtml(data.address)}</h1>
+            <div class="price">${BookmarkletUtils.escapeHtml(data.price)}</div>
         </div>
         ${heroHtml}
         <h2>Property Overview</h2>
         <div class="metrics-grid">${specsHtml}</div>
         <h2>Description</h2>
-        <div class="description">${escapeHTML(data.description)}</div>
+        <div class="description">${BookmarkletUtils.escapeHtml(data.description)}</div>
         <h2>Photo Gallery</h2>
         <div class="gallery-grid">${photosHtml}</div>
         <details class="raw-data">
             <summary>Raw Data (JSON)</summary>
-            <pre>${data.raw ? escapeHTML(JSON.stringify(data.raw, null, 2)) : 'No raw data.'}</pre>
+            <pre>${data.raw ? BookmarkletUtils.escapeHtml(JSON.stringify(data.raw, null, 2)) : 'No raw data.'}</pre>
         </details>
     </div>
 </body>
