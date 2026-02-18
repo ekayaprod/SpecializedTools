@@ -15,6 +15,9 @@
 - [x] bookmarklets/property-clipper.js (Replaced alert() calls with Toast UI)
 - [x] bookmarklets/web-clipper.js (Replaced alert() calls with Toast UI)
 - [x] Environment Setup (Missing `jsdom` dependency in initial install)
+- [x] tests/verify_prompt_text.js (Deleted legacy manual verification script)
+- [x] tests/test_property_clipper_prompt.js (Deleted broken and redundant test file)
+- [x] tests/test_str_prompt.js (Deleted broken and unused test file)
 
 ## 🛡️ Security Radar
 - [ ] 0 Vulnerabilities found (npm audit).
