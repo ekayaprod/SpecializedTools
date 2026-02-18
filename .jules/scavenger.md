@@ -44,3 +44,9 @@ BOUNDARIES
 ## [2026-02-17]
 - **Deleted:** `tests/test_property_clipper_errors.js` (broken test file)
 - **Reason:** File was unmaintained, not included in test scripts, and relied on deprecated `alert()` behavior.
+
+## [2026-02-18]
+- **Deleted:** `tests/verify_prompt_text.js` (legacy manual verification script)
+- **Deleted:** `tests/test_property_clipper_prompt.js` (broken and redundant test file)
+- **Deleted:** `tests/test_str_prompt.js` (broken and unused test file)
+- **Reason:** Files were unmaintained, not included in test scripts, and relied on outdated dependencies/mocks. Functionality is better covered by `tests/test_property_clipper.js`.
