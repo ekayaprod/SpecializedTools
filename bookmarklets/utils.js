@@ -70,37 +70,97 @@
             for (let i = 0; i < el.attributes.length; i++) attrs.push(el.attributes[i].name);
 
             for (let i = 0; i < attrs.length; i++) {
-                const name = attrs[i];
-                const lowerName = name.toLowerCase();
-                const val = (el.getAttribute(name) || '').toLowerCase().trim();
+                Sanitizer._sanitizeAttribute(el, attrs[i]);
+            }
+        },
+        _sanitizeAttribute(el, name) {
+            const lowerName = name.toLowerCase();
+            const val = (el.getAttribute(name) || '').toLowerCase().trim();
 
-                /* 1. Event Handlers (on*) */
-                if (Sanitizer.isEventAttribute(lowerName)) {
+            /* 1. Event Handlers (on*) */
+            if (Sanitizer.isEventAttribute(lowerName)) {
+                el.removeAttribute(name);
+            }
+            /* 2. SRCDOC (Always remove to prevent iframe injection) */
+            else if (lowerName === 'srcdoc') {
+                el.removeAttribute(name);
+            }
+            /* 3. Malicious URIs (javascript:, vbscript:, data: strict check) */
+            else if (Sanitizer.isUnsafeAttribute(lowerName)) {
+                const isSrcset = lowerName === 'srcset';
+                if (Sanitizer.containsMaliciousProtocol(val, isSrcset)) {
                     el.removeAttribute(name);
                 }
-                /* 2. SRCDOC (Always remove to prevent iframe injection) */
-                else if (lowerName === 'srcdoc') {
+                else if (!Sanitizer.isValidDataUri(el.tagName, val)) {
                     el.removeAttribute(name);
                 }
-                /* 3. Malicious URIs (javascript:, vbscript:, data: strict check) */
-                else if (Sanitizer.isUnsafeAttribute(lowerName)) {
-                    const isSrcset = lowerName === 'srcset';
-                    if (Sanitizer.containsMaliciousProtocol(val, isSrcset)) {
-                        el.removeAttribute(name);
-                    }
-                    else if (!Sanitizer.isValidDataUri(el.tagName, val)) {
-                        el.removeAttribute(name);
-                    }
-                }
-                /* 4. Style Attribute (check for javascript: or expression) */
-                else if (lowerName === 'style') {
-                    if (!Sanitizer.isSafeStyle(val)) {
-                        el.removeAttribute(name);
-                    }
+            }
+            /* 4. Style Attribute (check for javascript: or expression) */
+            else if (lowerName === 'style') {
+                if (!Sanitizer.isSafeStyle(val)) {
+                    el.removeAttribute(name);
                 }
             }
         }
     };
+
+    function processPictureElement(pic) {
+        const img = pic.querySelector('img');
+        const source = pic.querySelector('source');
+        if (source && source.srcset && img) {
+            /* Check if image is missing or placeholder */
+            const isPlaceholder = !img.src || img.src.startsWith('data:') || img.src.includes('spacer');
+            if (isPlaceholder) {
+                 img.src = source.srcset.split(',')[0].trim().split(' ')[0];
+            }
+        }
+    }
+
+    function processImageElement(img) {
+        /* 1. Resolve Lazy Loading */
+        if (img.dataset.src) img.src = img.dataset.src;
+        if (img.dataset.lazySrc) img.src = img.dataset.lazySrc;
+
+        /* Check for placeholder or missing src */
+        const isPlaceholder = !img.src || img.src.startsWith('data:') || img.src.includes('spacer');
+        if (isPlaceholder && img.srcset) {
+            const parts = img.srcset.split(',');
+            if(parts.length > 0) {
+                 /* Pick the last candidate (usually highest res) */
+                 const bestCandidate = parts[parts.length - 1].trim().split(' ')[0];
+                 if(bestCandidate) img.src = bestCandidate;
+            }
+        }
+
+        /* 2. Remove lazy loading attributes to force render */
+        img.removeAttribute('loading');
+
+        /* 3. Stabilize Dimensions: remove specific width/height attrs to let CSS max-width work */
+        img.removeAttribute('width');
+        img.removeAttribute('height');
+        img.style.maxWidth = '100%';
+        img.style.height = 'auto';
+        img.style.display = 'block';
+    }
+
+    function copySafeStyles(s, t) {
+        const computed = window.getComputedStyle(s);
+        if (computed) {
+            const targetStyle = t.style;
+            for (let i = 0, len = safeProperties.length; i < len; i++) {
+                const prop = safeProperties[i];
+                const val = computed.getPropertyValue(prop);
+                if (val && val !== 'none' && val !== 'normal') {
+                    /* Optimization: Skip if target already has this style */
+                    // We strictly check redundancy to avoid overwriting existing inline styles.
+                    // Note: We cannot safely skip '0px' defaults because UA styles might be non-zero (e.g. <p> margin).
+                    if (targetStyle.getPropertyValue(prop) === val) continue;
+
+                    targetStyle.setProperty(prop, val);
+                }
+            }
+        }
+    }
 
     function traverse(node, parts) {
         if (node.nodeType === 3) { parts.push(node.nodeValue); return; }
@@ -385,42 +445,9 @@
                             const el = queue.shift();
 
                             if (el.tagName.toLowerCase() === 'picture') {
-                                const pic = el;
-                                const img = pic.querySelector('img');
-                                const source = pic.querySelector('source');
-                                if (source && source.srcset && img) {
-                                    /* Check if image is missing or placeholder */
-                                    const isPlaceholder = !img.src || img.src.startsWith('data:') || img.src.includes('spacer');
-                                    if (isPlaceholder) {
-                                         img.src = source.srcset.split(',')[0].trim().split(' ')[0];
-                                    }
-                                }
+                                processPictureElement(el);
                             } else {
-                                const img = el;
-                                /* 1. Resolve Lazy Loading */
-                                if (img.dataset.src) img.src = img.dataset.src;
-                                if (img.dataset.lazySrc) img.src = img.dataset.lazySrc;
-
-                                /* Check for placeholder or missing src */
-                                const isPlaceholder = !img.src || img.src.startsWith('data:') || img.src.includes('spacer');
-                                if (isPlaceholder && img.srcset) {
-                                    const parts = img.srcset.split(',');
-                                    if(parts.length > 0) {
-                                         /* Pick the last candidate (usually highest res) */
-                                         const bestCandidate = parts[parts.length - 1].trim().split(' ')[0];
-                                         if(bestCandidate) img.src = bestCandidate;
-                                    }
-                                }
-
-                                /* 2. Remove lazy loading attributes to force render */
-                                img.removeAttribute('loading');
-
-                                /* 3. Stabilize Dimensions: remove specific width/height attrs to let CSS max-width work */
-                                img.removeAttribute('width');
-                                img.removeAttribute('height');
-                                img.style.maxWidth = '100%';
-                                img.style.height = 'auto';
-                                img.style.display = 'block';
+                                processImageElement(el);
                             }
 
                             count++;
@@ -491,22 +518,7 @@
                             const t = item.t;
 
                             /* Apply styles to current element */
-                            const computed = window.getComputedStyle(s);
-                            if (computed) {
-                                const targetStyle = t.style;
-                                for (let i = 0, len = safeProperties.length; i < len; i++) {
-                                    const prop = safeProperties[i];
-                                    const val = computed.getPropertyValue(prop);
-                                    if (val && val !== 'none' && val !== 'normal') {
-                                        /* Optimization: Skip if target already has this style */
-                                        // We strictly check redundancy to avoid overwriting existing inline styles.
-                                        // Note: We cannot safely skip '0px' defaults because UA styles might be non-zero (e.g. <p> margin).
-                                        if (targetStyle.getPropertyValue(prop) === val) continue;
-
-                                        targetStyle.setProperty(prop, val);
-                                    }
-                                }
-                            }
+                            copySafeStyles(s, t);
 
                             count++;
 
