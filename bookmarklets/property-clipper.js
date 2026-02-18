@@ -42,12 +42,12 @@
      * @returns {string} The generated filename (e.g., "123_Main_St_20231027-1430").
      */
     const generateFilename = (address) => {
-        // Extract first line (e.g. "123 Main St" from "123 Main St, City, ST 12345")
+        /* Extract first line (e.g. "123 Main St" from "123 Main St, City, ST 12345") */
         let firstLine = (address || 'Property_Report').split(',')[0].trim();
-        // Sanitize: replace spaces/slashes with underscores, remove special chars
+        /* Sanitize: replace spaces/slashes with underscores, remove special chars */
         firstLine = firstLine.replace(/[\s/]/g, '_').replace(/[^a-zA-Z0-9_\-]/g, '');
 
-        // Compact Timestamp: YYYYMMDD-HHmm
+        /* Compact Timestamp: YYYYMMDD-HHmm */
         const now = new Date();
         const pad = (n) => String(n).padStart(2, '0');
         const ts = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
@@ -108,16 +108,16 @@
                 if (hoa) data.financials['HOA Fees'] = formatCurrency(hoa.amount);
             }
 
-            // Market Context Extraction (Try multiple paths)
+            /* Market Context Extraction (Try multiple paths) */
             if (pd.days_on_market) data.market['Days on Market'] = pd.days_on_market;
 
-            // Try to find market data in neighborhood or similar structures
+            /* Try to find market data in neighborhood or similar structures */
             const marketData = pd.neighborhood || pd.market || {};
             if (marketData.median_listing_price) data.market['Listing Price Median'] = formatCurrency(marketData.median_listing_price);
             if (marketData.median_sold_price) data.market['Sold Price Median'] = formatCurrency(marketData.median_sold_price);
             if (marketData.median_price_per_sqft) data.market['Price/SqFt Median'] = formatCurrency(marketData.median_price_per_sqft);
 
-            // Property History Extraction
+            /* Property History Extraction */
             if (pd.property_history && Array.isArray(pd.property_history)) {
                 data.history = pd.property_history.map(h => ({
                     date: h.date,
@@ -162,7 +162,7 @@
                 if (ogImage && ogImage.content) data.heroUrl = ogImage.content;
             } catch (e) { console.warn('Hero Image Extraction Warning:', e); }
 
-            // 1. JSON Extraction
+            /* 1. JSON Extraction */
             try {
                 const nextDataNode = document.getElementById('__NEXT_DATA__');
                 const rawPreNode = document.querySelector('.raw-data pre');
@@ -183,7 +183,7 @@
                 });
             }
 
-            // 2. DOM Extraction
+            /* 2. DOM Extraction */
             try {
                 const keyFacts = document.querySelectorAll('[data-testid="key-facts"] li, .key-fact-item, ul[data-testid*="detail"] li');
                 keyFacts.forEach(li => {
@@ -274,7 +274,7 @@
                     <div class="photo-label">${BookmarkletUtils.escapeHtml(p.label)}</div>
                 </div>`).join('');
 
-            // HERO IMAGE LOGIC
+            /* HERO IMAGE LOGIC */
             let heroHtml = '';
             const heroUrl = data.heroUrl || (selectedPhotos.length > 0 ? selectedPhotos[0].url : null);
             if (heroUrl) {
@@ -365,7 +365,7 @@
             const pageWidth = 210;
             const contentWidth = pageWidth - (margin * 2);
 
-            // --- PAGE 1 ---
+            /* --- PAGE 1 --- */
             doc.setFontSize(18);
             doc.setFont('helvetica', 'bold');
             doc.text(data.address, margin, y);
@@ -377,7 +377,7 @@
             doc.setTextColor(0);
             y += 15;
 
-            // HERO IMAGE (Replaces Prompt Box)
+            /* HERO IMAGE (Replaces Prompt Box) */
             const heroUrl = data.heroUrl || (selectedPhotos.length > 0 ? selectedPhotos[0].url : null);
             if (heroUrl) {
                 if(statusCb) statusCb('Processing Hero Image...');
@@ -387,7 +387,7 @@
                     const heroWidth = contentWidth;
                     let heroHeight = contentWidth / heroProcessed.ratio;
                     
-                    // Cap max height for Page 1 hero (e.g., 90mm)
+                    /* Cap max height for Page 1 hero (e.g., 90mm) */
                     if (heroHeight > 90) {
                         heroHeight = 90;
                     }
@@ -397,12 +397,12 @@
                 }
             }
 
-            // Page Break Check (If hero was huge)
+            /* Page Break Check (If hero was huge) */
             if (y > 220) { doc.addPage(); y = 20; }
 
-            // --- DATA GRIDS (Page 1) ---
+            /* --- DATA GRIDS (Page 1) --- */
             
-            // Helper to render a grid section
+            /* Helper to render a grid section */
             const renderGrid = (title, items, boxWidth = 43) => {
                 if (!items || Object.keys(items).length === 0) return;
                 
@@ -419,13 +419,13 @@
                 const keys = Object.keys(items);
 
                 keys.forEach((key) => {
-                    // Check width overflow
+                    /* Check width overflow */
                     if (margin + (col * (boxWidth + gap)) + boxWidth > pageWidth - margin) {
                         col = 0;
                         y += boxH + gap;
                     }
 
-                    // Check page overflow
+                    /* Check page overflow */
                     if (y > 270) { doc.addPage(); y = 20; col = 0; }
 
                     const x = margin + (col * (boxWidth + gap));
@@ -448,11 +448,11 @@
 
                     col++;
                 });
-                y += boxH + 10; // Space after grid
+                y += boxH + 10; /* Space after grid */
             };
 
-            // 1. Primary Property Specs
-            // "Primary Property Specs": (Price, Beds, Baths, Sq. Ft., Lot Size, Year Built, HOA, Taxes).
+            /* 1. Primary Property Specs */
+            /* "Primary Property Specs": (Price, Beds, Baths, Sq. Ft., Lot Size, Year Built, HOA, Taxes). */
             const primarySpecs = {};
             primarySpecs['Price'] = data.price;
             const targetSpecs = ['Beds', 'Baths', 'Sq. Ft.', 'Lot Size', 'Year Built'];
@@ -462,35 +462,35 @@
 
             renderGrid("Primary Property Specs", primarySpecs, 43);
 
-            // 2. Market Context & Medians
-            // "Market Context & Medians": (Days on Market, Listing Price Median, Sold Price Median, Price/SqFt Median).
+            /* 2. Market Context & Medians */
+            /* "Market Context & Medians": (Days on Market, Listing Price Median, Sold Price Median, Price/SqFt Median). */
             renderGrid("Market Context & Medians", data.market, 43);
 
-            // --- SELLER/LISTING AGENT DESCRIPTION ---
+            /* --- SELLER/LISTING AGENT DESCRIPTION --- */
             if (y > 240) { doc.addPage(); y = 20; }
 
             doc.setFont('helvetica', 'bold');
-            doc.setFontSize(14); // Explicitly requested header size/style
+            doc.setFontSize(14); /* Explicitly requested header size/style */
             doc.setTextColor(0, 0, 0);
             doc.text("Seller/Listing Agent Description", margin, y);
             y += 8;
 
             doc.setFont('helvetica', 'normal');
-            doc.setFontSize(10); // Readable size
+            doc.setFontSize(10); /* Readable size */
             doc.setTextColor(50, 50, 50);
 
-            // "Ensure the line height and paragraph width are comfortable"
-            // We use slightly narrower width for better readability if space permits,
-            // but here we use contentWidth to maximize space on the page.
-            // Using 1.5 line spacing (default is often 1.15 in jsPDF).
+            /* "Ensure the line height and paragraph width are comfortable"
+               We use slightly narrower width for better readability if space permits,
+               but here we use contentWidth to maximize space on the page.
+               Using 1.5 line spacing (default is often 1.15 in jsPDF). */
             const descLines = doc.splitTextToSize(data.description, contentWidth);
             doc.text(descLines, margin, y, { lineHeightFactor: 1.5 });
 
-            // Calculate height used by description
-            const descHeight = descLines.length * 10 * 1.5 * 0.3527777778; // pt to mm approx
+            /* Calculate height used by description */
+            const descHeight = descLines.length * 10 * 1.5 * 0.3527777778; /* pt to mm approx */
             y += descHeight + 15;
 
-            // --- PROPERTY HISTORY ---
+            /* --- PROPERTY HISTORY --- */
             if (data.history && data.history.length > 0) {
                 if (y > 220) { doc.addPage(); y = 20; }
 
@@ -505,7 +505,7 @@
 
                 data.history.forEach(h => {
                     if (y > 270) { doc.addPage(); y = 20; }
-                    // Format: [YYYY-MM-DD] - [Event] - [Price]
+                    /* Format: [YYYY-MM-DD] - [Event] - [Price] */
                     const line = `${h.date || 'N/A'} - ${h.event || 'Event'} - ${h.price || '-'}`;
                     doc.text(line, margin, y);
                     y += 6;
@@ -513,7 +513,7 @@
                 y += 10;
             }
             
-            // --- PHOTO APPENDIX ---
+            /* --- PHOTO APPENDIX --- */
             if (selectedPhotos.length > 0) {
                 doc.addPage();
                 y = 20;
@@ -536,14 +536,14 @@
                     const processed = processedResults[i];
                     if (!processed) continue;
 
-                    // Calculate dimensions to fit 2 landscape photos per page
-                    // Available height per page ~260mm.
-                    // Target height per photo block (including caption/gap) ~130mm.
-                    // Block overhead: Caption (5mm) + Gap (15mm) = 20mm.
-                    // Max Image Height = 130 - 20 = 110mm.
-                    // To fit 2 on the first page (with header), we need slightly less:
-                    // 280 (limit) - 30 (start y with header) = 250. 250 / 2 = 125 per block.
-                    // 125 - 20 overhead = 105mm.
+                    /* Calculate dimensions to fit 2 landscape photos per page
+                       Available height per page ~260mm.
+                       Target height per photo block (including caption/gap) ~130mm.
+                       Block overhead: Caption (5mm) + Gap (15mm) = 20mm.
+                       Max Image Height = 130 - 20 = 110mm.
+                       To fit 2 on the first page (with header), we need slightly less:
+                       280 (limit) - 30 (start y with header) = 250. 250 / 2 = 125 per block.
+                       125 - 20 overhead = 105mm. */
 
                     const MAX_IMG_HEIGHT = 105;
 
@@ -555,14 +555,14 @@
                         finalW = finalH * processed.ratio;
                     }
 
-                    // Check if we need a new page
-                    // Need space for Caption (5mm) + Image (finalH) + Gap (15mm)
+                    /* Check if we need a new page
+                       Need space for Caption (5mm) + Image (finalH) + Gap (15mm) */
                     if (y + finalH + 20 > 280) {
                         doc.addPage();
                         y = 20;
                     }
 
-                    // Draw Caption
+                    /* Draw Caption */
                     doc.setFontSize(10);
                     doc.setFont('helvetica', 'bold');
                     doc.setTextColor(50, 50, 50);
@@ -570,21 +570,21 @@
                     doc.text(label, margin, y);
                     y += 5;
 
-                    // Center the image if it was scaled down
+                    /* Center the image if it was scaled down */
                     const x = margin + (contentWidth - finalW) / 2;
                     doc.addImage(processed.dataUrl, 'JPEG', x, y, finalW, finalH);
                     y += finalH + 15;
                 }
             }
 
-            // --- RAW DATA ---
+            /* --- RAW DATA --- */
             if (data.raw) {
                 doc.addPage();
                 doc.setFont('courier', 'normal');
                 doc.setFontSize(8);
                 doc.text("RAW PROPERTY DATA (For AI Context)", margin, 15);
 
-                // Minified JSON
+                /* Minified JSON */
                 const jsonStr = JSON.stringify(data.raw);
                 const lines = doc.splitTextToSize(jsonStr, contentWidth);
                 let lineIdx = 0;
@@ -702,11 +702,11 @@
         
         buildElement('h2', { margin: '0', textAlign: 'center', fontSize: '20px' }, 'Property Analysis Studio', mo);
 
-        // Data Pre-fetch for Prompt Placeholders
+        /* Data Pre-fetch for Prompt Placeholders */
         const data = PropertyExtractor.getData();
         if (!data.raw) BookmarkletUtils.showToast('Warning: Raw data not found. Report limited.', 'error');
 
-        // 1. Dropdown
+        /* 1. Dropdown */
         const row1 = buildElement('div', { display: 'flex', flexDirection: 'column', gap: '5px' }, '', mo);
         buildElement('label', { fontSize: '12px', fontWeight: 'bold', color: '#555' }, 'Select Persona / Analysis Type:', row1);
         const select = buildElement('select', { padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }, '', row1, { 'aria-label': 'Select Persona / Analysis Type' });
@@ -716,17 +716,17 @@
             opt.value = k;
         });
 
-        // 2. Text Area
+        /* 2. Text Area */
         const row2 = buildElement('div', { display: 'flex', flexDirection: 'column', gap: '5px', flex: '1' }, '', mo);
         buildElement('label', { fontSize: '12px', fontWeight: 'bold', color: '#555' }, 'Edit Prompt (Context for AI):', row2);
         const txtArea = buildElement('textarea', { width: '100%', height: '150px', padding: '10px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '12px', fontFamily: 'monospace', resize: 'vertical' }, '', row2);
         
-        // Update text area on change
+        /* Update text area on change */
         const updateText = () => { txtArea.value = getFullPrompt(select.value, data); };
         select.onchange = updateText;
-        updateText(); // Init
+        updateText(); /* Init */
 
-        // 3. Actions Row
+        /* 3. Actions Row */
         const row3 = buildElement('div', { display: 'flex', gap: '10px', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #eee', paddingTop: '15px' }, '', mo);
         
         const leftGroup = buildElement('div', { display: 'flex', gap: '5px' }, '', row3);
@@ -739,7 +739,7 @@
         const htmlBtn = buildElement('button', { padding: '10px 15px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }, 'Generate HTML', rightGroup);
         const pdfBtn = buildElement('button', { padding: '10px 15px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }, 'Generate PDF', rightGroup);
 
-        // Handlers
+        /* Handlers */
         const launchWizard = (fmt) => {
             Wizard.init(data, fmt);
         };

@@ -420,7 +420,7 @@
             this.clearListeners();
             document.title = 'Stopped';
 
-            // Focus Start button if valid, otherwise Pick button
+            /* Focus Start button if valid, otherwise Pick button */
             const goBtn = this.q('#go');
             const focusTarget = (goBtn && !goBtn.disabled) ? 'go' : 'pk';
 

@@ -86,15 +86,15 @@
 
     /* STATE */
     const STATE = {
-        mode: 'passphrase', // 'passphrase' or 'temp'
+        mode: 'passphrase', /* 'passphrase' or 'temp' */
         config: {
-            n: 5,              // Count
-            structure: '2-0',  // '2-0' means length 2, index 0 (Vivid Creature). Encoded string.
+            n: 5,              /* Count */
+            structure: '2-0',  /* '2-0' means length 2, index 0 (Vivid Creature). Encoded string. */
             minLength: 12,
             maxLength: 99,
             padToMin: false,
-            numPlacement: 'end', // 'start', 'end', 'random'
-            symPlacement: 'suffix', // 'any', 'aroundNum', 'suffix'
+            numPlacement: 'end', /* 'start', 'end', 'random' */
+            symPlacement: 'suffix', /* 'any', 'aroundNum', 'suffix' */
             separator: '',
             casing: 'caps'
         },
@@ -115,9 +115,9 @@
         const m = d.getMonth();
         const day = d.getDate();
 
-        // Check rules? For now simple range check
+        /* Check rules? For now simple range check */
         for (const [season, range] of Object.entries(SEASON_CONFIG.seasons)) {
-            // Handle winter crossing year boundary (start: Nov, end: Feb)
+            /* Handle winter crossing year boundary (start: Nov, end: Feb) */
             if (range.start.m > range.end.m) {
                 if ((m > range.start.m || (m === range.start.m && day >= range.start.d)) ||
                     (m < range.end.m || (m === range.end.m && day < range.end.d))) {
@@ -130,7 +130,7 @@
                 }
             }
         }
-        return 'standard'; // Fallback
+        return 'standard'; /* Fallback */
     }
 
     const CURRENT_SEASON = getSeason(new Date());
@@ -140,7 +140,7 @@
         const C = STATE.config;
         const [lenStr, idxStr] = C.structure.split('-');
 
-        // Safety check
+        /* Safety check */
         if (!PHRASE_STRUCTURES.standard[lenStr] || !PHRASE_STRUCTURES.standard[lenStr][parseInt(idxStr)]) {
              return ["Error: Invalid Structure"];
         }
@@ -151,7 +151,7 @@
         let passes = [];
         const MAX_RETRIES = 500;
 
-        // Base symbols
+        /* Base symbols */
         const syms = ['!', '@', '#', '$', '%', '^', '&', '*'];
 
         for (let i = 0; i < C.n; i++) {
@@ -162,81 +162,81 @@
             while (retries < MAX_RETRIES) {
                 retries++;
 
-                // 1. Select Words
+                /* 1. Select Words */
                 let words = categories.map(cat => {
-                    // Try seasonal first
+                    /* Try seasonal first */
                     let bank = WORD_BANK[CURRENT_SEASON] && WORD_BANK[CURRENT_SEASON][cat] ? WORD_BANK[CURRENT_SEASON][cat] : WORD_BANK.standard[cat];
                     if (!bank) bank = WORD_BANK.standard[cat] || ["Error"];
                     return R(bank);
                 });
 
-                // Apply casing
+                /* Apply casing */
                 if (C.casing === 'caps') words = words.map(Cap);
 
                 let wordStr = words.join(C.separator);
 
-                // 2. Prepare Numbers
+                /* 2. Prepare Numbers */
                 let numberBlock = [];
-                // Base digits - always include 2 unless minLength forces more padding,
-                // OR unless we want to allow "0 digits" but current UI doesn't expose that.
-                // Keeping 2 base digits.
+                /* Base digits - always include 2 unless minLength forces more padding,
+                   OR unless we want to allow "0 digits" but current UI doesn't expose that.
+                   Keeping 2 base digits. */
                 const BASE_DIGITS = 2;
                 for(let k=0; k<BASE_DIGITS; k++) numberBlock.push(getRand(10));
 
                 let symCount = (C.symPlacement !== 'none') ? 1 : 0;
                 let preliminaryLength = wordStr.length + numberBlock.length + symCount;
 
-                // Pad to min
+                /* Pad to min */
                 if (C.padToMin && preliminaryLength < C.minLength) {
                     const paddingNeeded = C.minLength - preliminaryLength;
                     for (let j = 0; j < paddingNeeded; j++) { numberBlock.push(getRand(10)); }
                 }
 
-                // Check max length early
-                // Re-calc length
+                /* Check max length early
+                   Re-calc length */
                 let currentTotal = wordStr.length + numberBlock.length + symCount;
                 if (currentTotal > C.maxLength) continue;
 
-                // Assemble
+                /* Assemble */
                 let numStr = numberBlock.join('');
                 let symStr = (symCount > 0) ? R(syms) : '';
 
-                // 3. Placement
-                // Merge numbers and words first
+                /* 3. Placement
+                   Merge numbers and words first */
                 let base = wordStr;
                 let merged = "";
 
-                // Number placement
+                /* Number placement */
                 if (C.numPlacement === 'start') {
                     merged = numStr + base;
                 } else if (C.numPlacement === 'end') {
                     merged = base + numStr;
-                } else { // random: start or end (simplified)
+                } else { /* random: start or end (simplified) */
                     if(getRand(2) === 0) merged = numStr + base; else merged = base + numStr;
                 }
 
-                // Symbol placement
-                // 'any', 'aroundNum', 'suffix'
+                /* Symbol placement
+                   'any', 'aroundNum', 'suffix' */
                 let result = merged;
                 if (symCount > 0) {
                      if (C.symPlacement === 'suffix') {
                          result = result + symStr;
                      } else if (C.symPlacement === 'aroundNum') {
-                         // We merged numStr. It's either at start or end of 'merged'.
-                         // If numStr is start, put sym at start or after numStr (idx = numStr.length)
-                         // If numStr is end, put sym before numStr or at end.
+                         /* We merged numStr. It's either at start or end of 'merged'.
+                            If numStr is start, put sym at start or after numStr (idx = numStr.length)
+                            If numStr is end, put sym before numStr or at end. */
                          let isNumStart = merged.startsWith(numStr);
                          if (isNumStart) {
-                             // numStr is at 0.
+                             /* numStr is at 0. */
                              if (getRand(2) === 0) result = symStr + merged;
                              else result = merged.substring(0, numStr.length) + symStr + merged.substring(numStr.length);
                          } else {
-                             // numStr is at end.
+                             /* numStr is at end. */
                              let splitIdx = merged.length - numStr.length;
                              if (getRand(2) === 0) result = merged.substring(0, splitIdx) + symStr + merged.substring(splitIdx);
                              else result = result + symStr;
                          }
-                     } else { // any - insert at random index
+                     } else { /* any - insert at random index */
                          let idx = getRand(result.length + 1);
                          result = result.substring(0, idx) + symStr + result.substring(idx);
                      }
@@ -286,7 +286,7 @@
         fontFamily: 'system-ui, -apple-system, sans-serif', maxHeight: '90vh', overflowY: 'auto'
     });
 
-    // Header
+    /* Header */
     const header = document.createElement('div');
     Object.assign(header.style, { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' });
     const title = document.createElement('h2');
@@ -303,12 +303,12 @@
     header.appendChild(toggleBtn);
     dialog.appendChild(header);
 
-    // Controls Container
+    /* Controls Container */
     const controls = document.createElement('div');
     Object.assign(controls.style, { marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '12px' });
     dialog.appendChild(controls);
 
-    // Results Container
+    /* Results Container */
     const listContainer = document.createElement('div');
     Object.assign(listContainer.style, {
         background: '#f8fafc', padding: '12px', borderRadius: '8px',
@@ -316,7 +316,7 @@
     });
     dialog.appendChild(listContainer);
 
-    // Helper for inputs
+    /* Helper for inputs */
     function createControl(label, input) {
         const div = document.createElement('div');
         Object.assign(div.style, { display: 'flex', justifyContent: 'space-between', alignItems: 'center' });
@@ -331,7 +331,7 @@
     function renderControls() {
         controls.innerHTML = '';
         if (STATE.mode === 'passphrase') {
-            // Structure
+            /* Structure */
             const structSel = document.createElement('select');
             Object.assign(structSel.style, { padding: '4px', borderRadius: '4px', border: '1px solid #cbd5e1', fontSize: '13px', width: '180px' });
             for(let len in PHRASE_STRUCTURES.standard) {
@@ -346,7 +346,7 @@
             structSel.onchange = (e) => { STATE.config.structure = /** @type {HTMLSelectElement} */ (e.target).value; render(); };
             controls.appendChild(createControl("Structure", structSel));
 
-            // Lengths
+            /* Lengths */
             const lenDiv = document.createElement('div');
             Object.assign(lenDiv.style, { display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'flex-end' });
 
@@ -366,14 +366,14 @@
             const lenCtrl = createControl("Length", lenDiv);
             controls.appendChild(lenCtrl);
 
-            // Pad to Min
+            /* Pad to Min */
             const padChk = document.createElement('input');
             padChk.type = 'checkbox';
             padChk.checked = STATE.config.padToMin;
             padChk.onchange = (e) => { STATE.config.padToMin = /** @type {HTMLInputElement} */ (e.target).checked; render(); };
             controls.appendChild(createControl("Pad to Min", padChk));
 
-            // Placements
+            /* Placements */
             const numSel = document.createElement('select');
             Object.assign(numSel.style, { padding: '4px', borderRadius: '4px', border: '1px solid #cbd5e1' });
             ['end', 'start', 'random'].forEach(v => {
@@ -396,7 +396,7 @@
             symSel.onchange = (e) => { STATE.config.symPlacement = /** @type {HTMLSelectElement} */ (e.target).value; render(); };
             controls.appendChild(createControl("Symbols", symSel));
         } else {
-            // Temp Mode Controls
+            /* Temp Mode Controls */
             const countInp = document.createElement('input');
             countInp.type = 'number'; countInp.value = String(STATE.tempConfig.count);
             Object.assign(countInp.style, { width: '50px', padding: '4px' });
@@ -445,11 +445,11 @@
         render();
     };
 
-    // Initial Render
+    /* Initial Render */
     renderControls();
     render();
 
-    // Footer
+    /* Footer */
     const footer = document.createElement('div');
     Object.assign(footer.style, { display: 'flex', justifyContent: 'flex-end', marginTop: '16px', gap: '10px' });
 

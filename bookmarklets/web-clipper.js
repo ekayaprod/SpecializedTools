@@ -36,7 +36,7 @@
             /** @type {HTMLElement|null} */
             this.activeElement = null;
 
-            // Bind methods to this instance
+            /* Bind methods to this instance */
             this.handleMouseOver = this.handleMouseOver.bind(this);
             this.handleMouseOut = this.handleMouseOut.bind(this);
             this.handleClick = this.handleClick.bind(this);

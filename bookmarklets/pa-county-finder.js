@@ -42,7 +42,7 @@
                     }
                 }
             }
-            // If found in overrides (exact match), return immediately to avoid range false positives
+            /* If found in overrides (exact match), return immediately to avoid range false positives */
             if (results.length > 0) {
                 return c + ': ' + results.join(', ');
             }
@@ -134,10 +134,10 @@
     card.innerHTML = `<h3 id="pa-title" class="pa-title">PA County Finder</h3><div id="pa-content"></div>`;
     overlay.appendChild(card);
 
-    // Close on overlay click
+    /* Close on overlay click */
     overlay.onclick = e => e.target === overlay && close();
 
-    // Close on Escape
+    /* Close on Escape */
     const onKeydown = (/** @type {KeyboardEvent} */ e) => {
         if (!document.body.contains(overlay)) {
             document.removeEventListener('keydown', onKeydown);
@@ -147,7 +147,7 @@
             e.preventDefault();
             close();
         }
-        // Focus Trap
+        /* Focus Trap */
         if (e.key === 'Tab') {
             const focusable = card.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
             const first = /** @type {HTMLElement} */ (focusable[0]);
@@ -202,7 +202,7 @@
         content.appendChild(resultDiv);
         const cBtn = createCloseBtn();
         content.appendChild(cBtn);
-        // Focus close button if immediate result
+        /* Focus close button if immediate result */
         setTimeout(() => cBtn.focus(), 50);
     } else {
         const inp = document.createElement('input');

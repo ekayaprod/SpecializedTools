@@ -217,9 +217,9 @@
             }
 
             const colors = {
-                info: '#2563eb',    // Blue
-                success: '#10b981', // Green
-                error: '#ef4444'    // Red
+                info: '#2563eb',    /* Blue */
+                success: '#10b981', /* Green */
+                error: '#ef4444'    /* Red */
             };
 
             const toast = this.buildElement('div', {
@@ -500,8 +500,8 @@
                                     const val = computed.getPropertyValue(prop);
                                     if (val && val !== 'none' && val !== 'normal') {
                                         /* Optimization: Skip if target already has this style */
-                                        // We strictly check redundancy to avoid overwriting existing inline styles.
-                                        // Note: We cannot safely skip '0px' defaults because UA styles might be non-zero (e.g. <p> margin).
+                                        /* We strictly check redundancy to avoid overwriting existing inline styles. */
+                                        /* Note: We cannot safely skip '0px' defaults because UA styles might be non-zero (e.g. <p> margin). */
                                         if (targetStyle.getPropertyValue(prop) === val) continue;
 
                                         styles.push(prop + ':' + val);
