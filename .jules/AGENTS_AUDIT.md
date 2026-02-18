@@ -18,6 +18,7 @@
 - [x] tests/verify_prompt_text.js (Deleted legacy manual verification script)
 - [x] tests/test_property_clipper_prompt.js (Deleted broken and redundant test file)
 - [x] tests/test_str_prompt.js (Deleted broken and unused test file)
+- [x] tests/benchmark_inline_styles.js (Deleted unused benchmark script)
 
 ## 🛡️ Security Radar
 - [ ] 0 Vulnerabilities found (npm audit).
