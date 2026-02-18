@@ -1,7 +1,7 @@
 # 👁️ Overseer Report (2026-02-16)
 
 ## 🏗️ Structural Hotspots
-- [ ] bookmarklets/passphrase-generator.js (56KB, Low Churn) - High Complexity (Data Heavy).
+- [x] bookmarklets/passphrase-generator.js (56KB, Low Churn) - High Complexity (Data Heavy).
 - [ ] bookmarklets/property-clipper.js (37KB, Low Churn) - High Complexity.
 - [ ] package-lock.json AND pnpm-lock.yaml coexist (Potential Conflict).
 
@@ -20,6 +20,7 @@
 - [ ] No hardcoded secrets detected.
 
 ## 🕵️ Coverage Gaps
+- [x] tests/test_passphrase_generator_robustness.js (Implemented comprehensive tests for structural logic and constraints)
 - [x] tests/test_property_clipper_errors.js (Deleted failing test suite)
 - [x] bookmarklets/utils.js (Added missing 'buildElement' and 'showToast' to interface)
 - [x] bookmarklets/bookmarklet-builder.js (Indirectly tested via `tests/test_bookmarklet_generation.js`, but explicit unit tests for builder logic could be improved)
