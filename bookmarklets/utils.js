@@ -371,7 +371,7 @@
          * });
          */
         normalizeImages(root, onProgress) {
-            return new Promise(function(resolve, reject) {
+            return new Promise((resolve, reject) => {
                 /* Collect all items to process */
                 const queue = Array.from(root.querySelectorAll('picture, img'));
                 let count = 0;
@@ -475,7 +475,7 @@
          * });
          */
         inlineStylesAsync(source, target, onProgress) {
-            return new Promise(function(resolve, reject) {
+            return new Promise((resolve, reject) => {
                 const queue = [{s: source, t: target}];
                 let count = 0;
                 const CHUNK_SIZE = 50;
@@ -493,7 +493,6 @@
                             /* Apply styles to current element */
                             const computed = window.getComputedStyle(s);
                             if (computed) {
-                                const styles = [];
                                 const targetStyle = t.style;
                                 for (let i = 0, len = safeProperties.length; i < len; i++) {
                                     const prop = safeProperties[i];
@@ -504,11 +503,8 @@
                                         // Note: We cannot safely skip '0px' defaults because UA styles might be non-zero (e.g. <p> margin).
                                         if (targetStyle.getPropertyValue(prop) === val) continue;
 
-                                        styles.push(prop + ':' + val);
+                                        targetStyle.setProperty(prop, val);
                                     }
-                                }
-                                if (styles.length > 0) {
-                                    targetStyle.cssText += styles.join('; ') + '; ';
                                 }
                             }
 
