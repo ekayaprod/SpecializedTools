@@ -241,7 +241,7 @@ async function runTest() {
 
     // 4. Click 'Generate PDF' Button -> Opens Wizard
     const buttons = Array.from(modal.querySelectorAll('button'));
-    const pdfButton = buttons.find(b => b.textContent.includes('Generate PDF'));
+    const pdfButton = buttons.find(b => b.textContent === 'PDF');
     assert.ok(pdfButton, "Generate PDF Button should exist");
     console.log("✅ Generate PDF Button found.");
 
@@ -252,13 +252,13 @@ async function runTest() {
     await new Promise(r => setTimeout(r, 100));
 
     const wizardTitle = modal.querySelector('h3');
-    assert.ok(wizardTitle && wizardTitle.textContent.includes('Select Photo Strategy'), "Wizard start screen should appear");
+    assert.ok(wizardTitle && wizardTitle.textContent.includes('Photo Strategy'), "Wizard start screen should appear");
     console.log("✅ Wizard start screen verified.");
 
     // 5. Find 'Include All Photos' option
     // It is a button now
     const wizardButtons = Array.from(modal.querySelectorAll('button'));
-    const allPhotosOption = wizardButtons.find(o => o.textContent.includes('Include All Photos'));
+    const allPhotosOption = wizardButtons.find(o => o.textContent.includes('All Photos'));
     assert.ok(allPhotosOption, "'Include All Photos' option should exist");
     console.log("✅ 'Include All Photos' option found.");
 
@@ -364,7 +364,7 @@ async function runTest() {
     const modal2 = dom.window.document.getElementById('pc-pdf-modal');
     assert.ok(modal2, "Modal should reopen");
 
-    const htmlButton = Array.from(modal2.querySelectorAll('button')).find(b => b.textContent.includes('Generate HTML'));
+    const htmlButton = Array.from(modal2.querySelectorAll('button')).find(b => b.textContent === 'HTML');
     assert.ok(htmlButton, "Generate HTML Button should exist");
 
     console.log("Clicking Generate HTML button...");
@@ -372,7 +372,7 @@ async function runTest() {
     await new Promise(r => setTimeout(r, 100)); // Wait for Wizard
 
     // Select All Photos
-    const allPhotosOption2 = Array.from(modal2.querySelectorAll('button')).find(o => o.textContent.includes('Include All Photos'));
+    const allPhotosOption2 = Array.from(modal2.querySelectorAll('button')).find(o => o.textContent.includes('All Photos'));
     assert.ok(allPhotosOption2, "'Include All Photos' option should exist for HTML");
 
     allPhotosOption2.click();
@@ -422,12 +422,12 @@ async function runTest() {
     const modal3 = dom.window.document.getElementById('pc-pdf-modal');
     assert.ok(modal3, "Modal should reopen");
 
-    const pdfBtn3 = Array.from(modal3.querySelectorAll('button')).find(b => b.textContent.includes('Generate PDF'));
+    const pdfBtn3 = Array.from(modal3.querySelectorAll('button')).find(b => b.textContent === 'PDF');
     pdfBtn3.click();
     await new Promise(r => setTimeout(r, 100)); // Wait for Wizard
 
     // Click Manual Selection
-    const manualBtn = Array.from(modal3.querySelectorAll('button')).find(b => b.textContent.includes('Manual Selection'));
+    const manualBtn = Array.from(modal3.querySelectorAll('button')).find(b => b.textContent.includes('Select Photos'));
     assert.ok(manualBtn, "Manual Selection button should exist");
     manualBtn.click();
 

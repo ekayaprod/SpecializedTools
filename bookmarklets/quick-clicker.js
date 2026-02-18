@@ -65,7 +65,7 @@
             '<div class="box">' +
                 '<div class="row" id="drag"><b>QUICK CLICKER V27</b><button id="x" aria-label="Close" style="background:transparent;border:none;color:#e2e8f0;font-size:14px;cursor:pointer;padding:0;">✕</button></div>' +
                 '<div id="v1" class="view">' +
-                    '<button id="pk">🎯 Pick Target</button>' +
+                    '<button id="pk">🎯 Select Element</button>' +
                     '<div id="warn" class="hidden warn"></div>' +
                     '<div id="inp" class="hidden">' +
                         '<div style="font-size:11px;color:#94a3b8;margin-top:8px">Input Text</div>' +
@@ -90,7 +90,7 @@
                 '<div id="v2" class="view hidden">' +
                     '<div class="timer" id="tm">00:00</div>' +
                     '<button id="cn" style="background:#ef4444">Stop</button>' +
-                    '<div id="toast" class="toast hidden" role="alert" aria-live="assertive">Wake Lock Active 🔒</div>' +
+                    '<div id="toast" class="toast hidden" role="alert" aria-live="assertive">No Sleep Active</div>' +
                 '</div>' +
             '</div>';
 
@@ -196,7 +196,7 @@
 
             const w = this.q('#warn');
             if(issues.length > 0) {
-                w.innerText = '⚠️ Warning: Target is hidden (' + issues[0] + '). Automation may fail.';
+                w.innerText = '⚠️ Target hidden. May fail.';
                 w.classList.remove('hidden');
             } else {
                 w.classList.add('hidden');
@@ -362,7 +362,7 @@
             try {
                 if('wakeLock' in navigator) {
                     this.state.wakeLock = await navigator.wakeLock.request('screen');
-                    this.showToast('Wake Lock Active 🔒', 'success');
+                    this.showToast('No Sleep Active', 'success');
                 }
             } catch(e){
                 console.warn('Wake Lock failed:', e);
@@ -392,7 +392,7 @@
 
             if(!el || !el.isConnected) {
                 this.showToast('FAILED: Target detached', 'error');
-                display.innerText='FAIL'; return;
+                display.innerText='Error'; return;
             }
 
             if(this.state.t1Val && (el.matches('input,textarea,select'))){

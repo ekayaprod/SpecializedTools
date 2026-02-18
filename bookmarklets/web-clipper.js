@@ -216,7 +216,7 @@
          * @param {string} [message]
          */
         showLoadingOverlay(message) {
-            const msg = message || 'Capturing styles & layout...';
+            const msg = message || 'Capturing...';
             let div = document.getElementById('wc-loading');
             if (!div) {
                 div = document.createElement('div');
@@ -261,7 +261,7 @@
             /* 3. Inline "Safe" Computed Styles */
             /* Changed strategy: Minimal stabilization to avoid layout breakage */
             await BookmarkletUtils.inlineStylesAsync(element, clone, (count) => {
-                this.showLoadingOverlay('Capturing styles & layout... (' + count + ' elements)');
+                this.showLoadingOverlay('Capturing... (' + count + ' elements)');
             });
 
             /* 4. Cleanup - remove scripts but KEEP classes and styles */
@@ -280,7 +280,7 @@
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
                         <span style="font-weight:700; font-size:16px;">Web Clipper</span>
-                        <span style="font-size:12px; color:#666; margin-left:8px;">(Snapshot Preview)</span>
+                        <span style="font-size:12px; color:#666; margin-left:8px;">Preview</span>
                     </div>
                     <div id="wc-close-icon" role="button" aria-label="Close" tabindex="0" style="cursor:pointer; font-size:20px; color:#999; line-height:1;">&times;</div>
                 </div>
@@ -309,7 +309,7 @@
             btnCancel.onclick = this.closeEditor;
 
             const btnRetry = document.createElement('button');
-            btnRetry.textContent = 'Select New';
+            btnRetry.textContent = 'Reselect';
             btnRetry.onclick = () => {
                 this.closeEditor();
                 this.startFinder();
@@ -341,7 +341,7 @@
             btnDownload.onclick = () => { this.handleDownload(contentArea, formatSelect.value, btnDownload); };
 
             const btnCopy = document.createElement('button');
-            btnCopy.textContent = 'Copy to Clipboard';
+            btnCopy.textContent = 'Copy';
             btnCopy.className = 'primary';
             btnCopy.onclick = () => { this.handleCopy(contentArea); };
 
@@ -436,7 +436,7 @@
                 btn.textContent = "Error";
                 btn.style.background = "#dc3545";
                 setTimeout(() => {
-                    btn.textContent = "Copy to Clipboard";
+                    btn.textContent = "Copy";
                     btn.style.background = "#007bff";
                 }, 1000);
             }
