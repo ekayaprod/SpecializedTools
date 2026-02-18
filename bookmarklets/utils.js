@@ -321,7 +321,14 @@
                         script.integrity = integrity;
                         script.crossOrigin = 'anonymous';
                     }
-                    script.onload = () => resolve();
+                    script.onload = () => {
+                        if (window[globalVar]) {
+                            resolve();
+                        } else {
+                            script.remove();
+                            reject(new Error('Library loaded but ' + globalVar + ' not found'));
+                        }
+                    };
                     script.onerror = () => {
                         script.remove();
                         reject(new Error('Failed to load ' + globalVar));
