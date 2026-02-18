@@ -55,6 +55,7 @@ async function testLoadLibraryResilience() {
                 if (attempts < 3) {
                     el.triggerError();
                 } else {
+                    global.window.retryLib = {};
                     el.triggerLoad();
                 }
             }, 10);
