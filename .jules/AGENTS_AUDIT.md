@@ -3,13 +3,14 @@
 ## 🏗️ Structural Hotspots
 - [x] bookmarklets/passphrase-generator.js (56KB, Low Churn) - High Complexity (Data Heavy).
 - [ ] bookmarklets/property-clipper.js (37KB, Low Churn) - High Complexity.
-- [ ] package-lock.json AND pnpm-lock.yaml coexist (Potential Conflict).
+- [x] package-lock.json AND pnpm-lock.yaml coexist (Potential Conflict).
 
 ## ⚡ Performance Bottlenecks
 - [ ] Bundle Size: 56KB (passphrase-generator.js) - Large for bookmarklet.
 - [ ] Client-side compilation used (No build script detected).
 
 ## 🧹 Debris Field
+- [x] package-lock.json (Deleted redundant lockfile to resolve conflict)
 - [x] tests/test_property_clipper_errors.js (Deleted broken test file)
 - [x] bookmarklets/property-clipper.js (Replaced alert() calls with Toast UI)
 - [x] bookmarklets/web-clipper.js (Replaced alert() calls with Toast UI)
