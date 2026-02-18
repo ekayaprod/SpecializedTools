@@ -116,16 +116,27 @@ async function runTest() {
     // Wait for Step 1
     await new Promise(r => setTimeout(r, 100));
 
-    // 4. Verify Checkbox Type
+    // 4. Verify Checkbox Type & Accessibility
     const inputs = Array.from(modal.querySelectorAll('input'));
     console.log("Inputs found:", inputs.map(i => i.outerHTML));
     const checkbox = inputs[0];
     assert.ok(checkbox, "Should have an input element");
     assert.strictEqual(checkbox.type, 'checkbox', "Input should be of type 'checkbox'");
-    console.log("✅ Checkbox type is correct.");
+
+    // Check UX Requirement: ARIA Label
+    const ariaLabel = checkbox.getAttribute('aria-label');
+    assert.ok(ariaLabel && ariaLabel.includes("Living Room"), "Checkbox should have descriptive aria-label");
+    console.log("✅ Checkbox type and aria-label are correct.");
 
     // 5. Verify Checkbox is checked by default
     assert.strictEqual(checkbox.checked, true, "Checkbox should be checked by default");
+
+    // 6. Verify Image Optimization
+    const images = Array.from(modal.querySelectorAll('img'));
+    const thumbImg = images.find(img => img.src.includes('lr1.jpg'));
+    assert.ok(thumbImg, "Thumbnail image should exist");
+    assert.strictEqual(thumbImg.getAttribute('loading'), 'lazy', "Image should have loading='lazy'");
+    console.log("✅ Image loading='lazy' attribute verified.");
 
     console.log("Property Clipper UI Test Passed!");
 }
