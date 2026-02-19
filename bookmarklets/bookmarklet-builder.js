@@ -19,7 +19,9 @@
     // [^"\\] -> [^"\\\\]
     // \\[\s\S] -> \\\\[\\s\\S]
 
-    const TOKEN_PATTERN = '("(?:[^"\\\\]|\\\\[\\s\\S])*"|\'(?:[^\'\\\\]|\\\\[\\s\\S])*\'|`(?:[^`\\\\]|\\\\[\\s\\S])*`|\\/\\*[\\s\\S]*?\\*\\/)';
+    // Added support for regex literals: /\/((?:[^/\\\r\n]|\\.)+)\/[gimuy]*/
+    // This prevents the parser from confusing quotes inside regex literals with string delimiters.
+    const TOKEN_PATTERN = '("(?:[^"\\\\]|\\\\[\\s\\S])*"|\'(?:[^\'\\\\]|\\\\[\\s\\S])*\'|`(?:[^`\\\\]|\\\\[\\s\\S])*`|\\/\\*[\\s\\S]*?\\*\\/|\\/(?:[^/\\\\\\r\\n]|\\\\.)+\\/[gimuy]*)';
 
     function compile(code) {
         const placeholders = [];

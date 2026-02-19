@@ -33,6 +33,7 @@
 - [x] bookmarklets/bookmarklet-builder.js (Indirectly tested via `tests/test_bookmarklet_generation.js`, but explicit unit tests for builder logic could be improved)
 - [x] bookmarklets/pa-county-finder.js (Added robust tests for split city lookups and fixed logic gap)
 - [x] bookmarklets/property-clipper.js (Added robust fallback testing for DOM extraction and JSON/Image errors in `tests/test_property_clipper_fallback.js`)
+- [x] tests/test_bookmarklet_regex.js (Implemented robust testing for regex literal parsing in bookmarklet-builder.js)
 
 ## 🆙 Modernization Targets
 - [x] Replace `alert()` with non-blocking UI (Toast/Modal) across all bookmarklets
