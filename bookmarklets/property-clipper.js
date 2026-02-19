@@ -283,7 +283,7 @@
 
             const photosHtml = selectedPhotos.map(p => `
                 <div class="photo-card">
-                    <img src="${p.url}" loading="lazy" alt="${BookmarkletUtils.escapeHtml(p.label)}">
+                    <img src="${p.url}" loading="lazy" alt="Photo: ${BookmarkletUtils.escapeHtml(p.label)}">
                     <div class="photo-label">${BookmarkletUtils.escapeHtml(p.label)}</div>
                 </div>`).join('');
 
