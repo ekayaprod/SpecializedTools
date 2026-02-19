@@ -155,26 +155,15 @@
             this._parsePhotos(pd, data);
         },
 
-        /**
-         * Scrapes property data from the current page using available JSON or DOM sources.
-         * Attempts to parse Next.js hydration data first, falling back to raw pre tags,
-         * and finally scraping specific DOM elements for fallback values.
-         *
-         * @returns {Object} The normalized property data object containing address, price, specs, etc.
-         */
-        getData() {
-            let data = {
-                address: 'Unknown Address', price: 'Unknown Price', specs: {},
-                financials: {}, market: {}, history: [], description: '',
-                photoGroups: [], raw: null, heroUrl: null
-            };
-
+        _extractHeroImage(data) {
             /* Extract Hero Image (OG:IMAGE is usually most reliable) */
             try {
                 const ogImage = document.querySelector('meta[property="og:image"]');
                 if (ogImage && ogImage.content) data.heroUrl = ogImage.content;
             } catch (e) { console.warn('Hero Image Extraction Warning:', { error: e, url: window.location.href, title: document.title }); }
+        },
 
+        _extractFromJSON(data) {
             // 1. JSON Extraction
             try {
                 const nextDataNode = document.getElementById('__NEXT_DATA__');
@@ -182,10 +171,10 @@
                 if (nextDataNode) {
                     const jsonData = JSON.parse(nextDataNode.textContent);
                     const pd = jsonData?.props?.pageProps?.initialReduxState?.propertyDetails;
-                    if (pd) PropertyExtractor.parseDetails(pd, data);
+                    if (pd) this.parseDetails(pd, data);
                 } else if (rawPreNode) {
                     const pd = JSON.parse(rawPreNode.textContent);
-                    if (pd) PropertyExtractor.parseDetails(pd, data);
+                    if (pd) this.parseDetails(pd, data);
                 }
             } catch (e) {
                 console.warn('JSON Extraction Failed', {
@@ -195,7 +184,9 @@
                     url: window.location.href
                 });
             }
+        },
 
+        _extractFromDOM(data) {
             // 2. DOM Extraction
             try {
                 const keyFacts = document.querySelectorAll('[data-testid="key-facts"] li, .key-fact-item, ul[data-testid*="detail"] li');
@@ -217,6 +208,25 @@
                 if (data.price === 'Unknown Price') data.price = /** @type {HTMLElement} */ (document.querySelector('[data-testid="ldp-list-price"]'))?.innerText || data.price;
                 
             } catch (e) { console.warn('DOM Extraction Warning:', { error: e, partialAddress: data.address, partialPrice: data.price, url: window.location.href, timestamp: new Date().toISOString() }); }
+        },
+
+        /**
+         * Scrapes property data from the current page using available JSON or DOM sources.
+         * Attempts to parse Next.js hydration data first, falling back to raw pre tags,
+         * and finally scraping specific DOM elements for fallback values.
+         *
+         * @returns {Object} The normalized property data object containing address, price, specs, etc.
+         */
+        getData() {
+            let data = {
+                address: 'Unknown Address', price: 'Unknown Price', specs: {},
+                financials: {}, market: {}, history: [], description: '',
+                photoGroups: [], raw: null, heroUrl: null
+            };
+
+            this._extractHeroImage(data);
+            this._extractFromJSON(data);
+            this._extractFromDOM(data);
 
             return data;
         }
