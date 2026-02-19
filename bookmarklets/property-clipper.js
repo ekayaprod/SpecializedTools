@@ -163,26 +163,50 @@
             } catch (e) { console.warn('Hero Image Extraction Warning:', { error: e, url: window.location.href, title: document.title }); }
         },
 
+        /**
+         * Safely parses a JSON string, logging a warning on failure.
+         * @param {string} text - The JSON string to parse.
+         * @param {string} sourceLabel - Label for the source of the JSON (for logging).
+         * @returns {Object|null} The parsed object or null if parsing failed.
+         */
+        _safeParseJSON(text, sourceLabel) {
+            const SNIPPET_LEN = 50;
+            if (!text || !text.trim()) return null;
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                console.warn(`JSON Parse Error [${sourceLabel}]:`, { error: e, textSnippet: text.substring(0, SNIPPET_LEN) });
+                return null;
+            }
+        },
+
         _extractFromJSON(data) {
             // 1. JSON Extraction
-            try {
-                const nextDataNode = document.getElementById('__NEXT_DATA__');
-                const rawPreNode = document.querySelector('.raw-data pre');
-                if (nextDataNode) {
-                    const jsonData = JSON.parse(nextDataNode.textContent);
-                    const pd = jsonData?.props?.pageProps?.initialReduxState?.propertyDetails;
-                    if (pd) this.parseDetails(pd, data);
-                } else if (rawPreNode) {
-                    const pd = JSON.parse(rawPreNode.textContent);
-                    if (pd) this.parseDetails(pd, data);
+            const nextDataNode = document.getElementById('__NEXT_DATA__');
+            const rawPreNode = document.querySelector('.raw-data pre');
+
+            if (nextDataNode) {
+                const jsonData = this._safeParseJSON(nextDataNode.textContent, 'NextData');
+                const pd = jsonData?.props?.pageProps?.initialReduxState?.propertyDetails;
+                if (pd) {
+                    try {
+                        this.parseDetails(pd, data);
+                        return; // Prioritize Next.js data
+                    } catch (e) {
+                        console.warn('Property Details Extraction Failed (NextData):', e);
+                    }
                 }
-            } catch (e) {
-                console.warn('JSON Extraction Failed', {
-                    error: e instanceof Error ? e.message : String(e),
-                    hasNextData: !!document.getElementById('__NEXT_DATA__'),
-                    hasRawPre: !!document.querySelector('.raw-data pre'),
-                    url: window.location.href
-                });
+            }
+
+            if (rawPreNode) {
+                const pd = this._safeParseJSON(rawPreNode.textContent, 'RawPre');
+                if (pd) {
+                    try {
+                        this.parseDetails(pd, data);
+                    } catch (e) {
+                        console.warn('Property Details Extraction Failed (RawPre):', e);
+                    }
+                }
             }
         },
 

@@ -152,7 +152,7 @@ async function runTests() {
     console.warn = originalWarn; // Restore
 
     // Verify Warning
-    const jsonWarning = warnings.find(w => w[0] === 'JSON Extraction Failed');
+    const jsonWarning = warnings.find(w => w[0] && w[0].includes('JSON Parse Error'));
     if (jsonWarning) {
         console.log("✅ correctly warned about JSON failure.");
     } else {
