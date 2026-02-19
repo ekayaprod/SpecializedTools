@@ -1,6 +1,6 @@
 (function () {
     /** @require utils.js */
-    /** @require property-clipper-prompts.js */
+    /** @require prompts/loader.js */
 
     /* CONFIGURATION */
     /**
@@ -79,14 +79,14 @@
      * Handles the extraction of property data from various sources on the page.
      */
     const PropertyExtractor = {
-        _parseLocation: function(pd, data) {
+        _parseLocation(pd, data) {
             const loc = pd.location?.address;
             if (loc) data.address = `${loc.line || ''}, ${loc.city || ''}, ${loc.state_code || ''} ${loc.postal_code || ''}`.replace(/^, | ,/g, '').trim();
             if (pd.list_price) data.price = formatCurrency(pd.list_price);
             data.description = pd.description?.text || '';
         },
 
-        _parseSpecs: function(pd, data) {
+        _parseSpecs(pd, data) {
             const desc = pd.description || {};
             if (desc.beds) data.specs['Beds'] = desc.beds;
             if (desc.baths_consolidated) data.specs['Baths'] = desc.baths_consolidated;
@@ -95,7 +95,7 @@
             if (desc.year_built) data.specs['Year Built'] = desc.year_built;
         },
 
-        _parseFinancials: function(pd, data) {
+        _parseFinancials(pd, data) {
             if (pd.mortgage?.estimate) {
                 data.financials['Est. Payment'] = formatCurrency(pd.mortgage.estimate.monthly_payment);
                 const tax = pd.mortgage.estimate.monthly_payment_details?.find(d => d.type === 'property_tax');
@@ -105,7 +105,7 @@
             }
         },
 
-        _parseMarketData: function(pd, data) {
+        _parseMarketData(pd, data) {
             if (pd.days_on_market) data.market['Days on Market'] = pd.days_on_market;
             const marketData = pd.neighborhood || pd.market || {};
             if (marketData.median_listing_price) data.market['Listing Price Median'] = formatCurrency(marketData.median_listing_price);
@@ -113,7 +113,7 @@
             if (marketData.median_price_per_sqft) data.market['Price/SqFt Median'] = formatCurrency(marketData.median_price_per_sqft);
         },
 
-        _parseHistory: function(pd, data) {
+        _parseHistory(pd, data) {
             if (pd.property_history && Array.isArray(pd.property_history)) {
                 data.history = pd.property_history.map(h => ({
                     date: h.date,
@@ -123,7 +123,7 @@
             }
         },
 
-        _parsePhotos: function(pd, data) {
+        _parsePhotos(pd, data) {
             if (pd.augmented_gallery && Array.isArray(pd.augmented_gallery)) {
                 pd.augmented_gallery.forEach(group => {
                     if (group.key === 'all_photos') return;
@@ -145,7 +145,7 @@
          * @param {Object} pd - The raw property details object (usually from JSON).
          * @param {Object} data - The target data object to populate.
          */
-        parseDetails: function(pd, data) {
+        parseDetails(pd, data) {
             data.raw = pd;
             this._parseLocation(pd, data);
             this._parseSpecs(pd, data);
@@ -162,7 +162,7 @@
          *
          * @returns {Object} The normalized property data object containing address, price, specs, etc.
          */
-        getData: function () {
+        getData() {
             let data = {
                 address: 'Unknown Address', price: 'Unknown Price', specs: {},
                 financials: {}, market: {}, history: [], description: '',
@@ -361,7 +361,7 @@
      * Generates PDF reports using jsPDF.
      */
     const PDFGenerator = {
-        _renderHeader: function(doc, data, margin, y) {
+        _renderHeader(doc, data, margin, y) {
             doc.setFontSize(18);
             doc.setFont('helvetica', 'bold');
             doc.text(data.address, margin, y);
@@ -375,7 +375,7 @@
             return y;
         },
 
-        _renderHero: async function(doc, data, selectedPhotos, margin, y, contentWidth, statusCb) {
+        async _renderHero(doc, data, selectedPhotos, margin, y, contentWidth, statusCb) {
             const heroUrl = data.heroUrl || (selectedPhotos.length > 0 ? selectedPhotos[0].url : null);
             if (heroUrl) {
                 if(statusCb) statusCb('Processing Hero Image...');
@@ -397,7 +397,7 @@
             return y;
         },
 
-        _renderGridSection: function(doc, title, items, margin, y, pageWidth, boxWidth) {
+        _renderGridSection(doc, title, items, margin, y, pageWidth, boxWidth) {
             if (!items || Object.keys(items).length === 0) return y;
             
             doc.setFont('helvetica', 'bold');
@@ -444,7 +444,7 @@
             return y;
         },
 
-        _renderDescription: function(doc, description, margin, y, contentWidth) {
+        _renderDescription(doc, description, margin, y, contentWidth) {
             if (y > 240) { doc.addPage(); y = 20; }
 
             doc.setFont('helvetica', 'bold');
@@ -465,7 +465,7 @@
             return y;
         },
 
-        _renderHistory: function(doc, history, margin, y) {
+        _renderHistory(doc, history, margin, y) {
             if (history && history.length > 0) {
                 if (y > 220) { doc.addPage(); y = 20; }
 
@@ -489,7 +489,7 @@
             return y;
         },
 
-        _renderPhotoAppendix: async function(doc, selectedPhotos, margin, y, contentWidth, statusCb) {
+        async _renderPhotoAppendix(doc, selectedPhotos, margin, y, contentWidth, statusCb) {
             if (selectedPhotos.length > 0) {
                 doc.addPage();
                 y = 20;
@@ -542,7 +542,7 @@
             return y;
         },
 
-        _renderRawData: function(doc, rawData, margin, y, contentWidth) {
+        _renderRawData(doc, rawData, margin, y, contentWidth) {
             if (rawData) {
                 doc.addPage();
                 doc.setFont('courier', 'normal');
@@ -569,7 +569,7 @@
          * @param {function(string): void} [statusCb] - Callback to update status message during generation.
          * @returns {Promise<void>}
          */
-        create: async function(data, selectedPhotos, statusCb) {
+        async create(data, selectedPhotos, statusCb) {
             await BookmarkletUtils.loadLibrary('jspdf', CONFIG.jspdfUrl);
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ unit: 'mm', format: 'a4' });
