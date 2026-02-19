@@ -432,37 +432,49 @@
          */
         normalizeImages(root, onProgress) {
             return new Promise((resolve, reject) => {
-                /* Collect all items to process */
-                const queue = Array.from(root.querySelectorAll('picture, img'));
-                let count = 0;
-                let queueIndex = 0;
-                const CHUNK_SIZE = 50;
+                /* Use stack-based traversal (DFS) to avoid expensive querySelectorAll on huge DOMs */
+                const queue = [root];
+                let imagesProcessed = 0;
+                const CHUNK_SIZE = 50; // Check time every 50 nodes
 
                 function processChunk() {
                     try {
                         const startTime = performance.now();
+                        let chunkNodes = 0;
 
-                        while (queueIndex < queue.length) {
-                            const el = queue[queueIndex];
-                            queueIndex++;
+                        while (queue.length > 0) {
+                            /* Use pop() for DFS */
+                            const node = queue.pop();
+                            chunkNodes++;
 
-                            if (el.tagName.toLowerCase() === 'picture') {
-                                processPictureElement(el);
-                            } else {
-                                processImageElement(el);
+                            /* Process if image or picture */
+                            if (node.tagName) {
+                                const tag = node.tagName.toLowerCase();
+                                if (tag === 'picture') {
+                                    processPictureElement(node);
+                                    imagesProcessed++;
+                                } else if (tag === 'img') {
+                                    processImageElement(node);
+                                    imagesProcessed++;
+                                }
                             }
 
-                            count++;
+                            /* Add children to queue (reverse order for DFS visual order) */
+                            if (node.children && node.children.length > 0) {
+                                for (let i = node.children.length - 1; i >= 0; i--) {
+                                    queue.push(node.children[i]);
+                                }
+                            }
 
-                            /* Yield if chunk size reached or time exceeded */
-                            if (count % CHUNK_SIZE === 0 || (performance.now() - startTime) > 12) {
-                                 if (onProgress) onProgress(count);
+                            /* Yield if chunk size reached AND time exceeded 12ms */
+                            if (chunkNodes % CHUNK_SIZE === 0 && (performance.now() - startTime) > 12) {
+                                 if (onProgress) onProgress(imagesProcessed);
                                  setTimeout(processChunk, 0);
                                  return;
                             }
                         }
 
-                        if (onProgress) onProgress(count);
+                        if (onProgress) onProgress(imagesProcessed);
                         resolve();
                     } catch (e) {
                         reject(e);
