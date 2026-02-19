@@ -554,7 +554,7 @@
         /**
          * Escapes HTML characters in a string.
          *
-         * @param {string} str - The string to escape.
+         * @param {string} s - The string to escape.
          * @returns {string} The escaped string.
          *
          * @example
