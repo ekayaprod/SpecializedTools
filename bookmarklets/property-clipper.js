@@ -460,7 +460,7 @@
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(14);
             doc.setTextColor(0, 0, 0);
-            doc.text("Seller/Listing Agent Description", margin, y);
+            doc.text("Property Description", margin, y);
             y += 8;
 
             doc.setFont('helvetica', 'normal');
@@ -505,7 +505,7 @@
                 y = 20;
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(16);
-                doc.text("Photo Appendix", margin, y);
+                doc.text("Photo Gallery", margin, y);
                 y += 10;
 
                 if (statusCb) statusCb(`Processing ${selectedPhotos.length} photos...`);
@@ -557,7 +557,7 @@
                 doc.addPage();
                 doc.setFont('courier', 'normal');
                 doc.setFontSize(8);
-                doc.text("RAW PROPERTY DATA (For AI Context)", margin, 15);
+                doc.text("Raw Property Data (JSON)", margin, 15);
 
                 const jsonStr = JSON.stringify(rawData);
                 const lines = doc.splitTextToSize(jsonStr, contentWidth);
@@ -599,8 +599,8 @@
             if (data.financials['HOA Fees']) primarySpecs['HOA Fees'] = data.financials['HOA Fees'];
             if (data.financials['Taxes']) primarySpecs['Taxes'] = data.financials['Taxes'];
 
-            y = this._renderGridSection(doc, "Primary Property Specs", primarySpecs, margin, y, pageWidth, 43);
-            y = this._renderGridSection(doc, "Market Context & Medians", data.market, margin, y, pageWidth, 43);
+            y = this._renderGridSection(doc, "Key Specifications", primarySpecs, margin, y, pageWidth, 43);
+            y = this._renderGridSection(doc, "Market Data", data.market, margin, y, pageWidth, 43);
 
             y = this._renderDescription(doc, data.description, margin, y, contentWidth);
             y = this._renderHistory(doc, data.history, margin, y);
@@ -636,16 +636,16 @@
          */
         renderStart: () => {
             const container = document.getElementById(CONFIG.modalId);
-            container.innerHTML = `<h3 style="margin-top:0">Photo Strategy</h3>`;
+            container.innerHTML = `<h3 style="margin-top:0">Select Photos</h3>`;
             const total = Wizard.state.data.photoGroups.reduce((a, g) => a + g.photos.length, 0);
             
-            const btnAll = buildElement('button', { width: '100%', padding: '15px', marginBottom: '10px', cursor: 'pointer', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px', textAlign: 'left' }, `All Photos (${total})`, container);
+            const btnAll = buildElement('button', { width: '100%', padding: '15px', marginBottom: '10px', cursor: 'pointer', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px', textAlign: 'left' }, `Include All Photos (${total})`, container);
             btnAll.onclick = () => {
                 Wizard.state.selectedPhotos = Wizard.state.data.photoGroups.flatMap(g => g.photos);
                 Wizard.generate();
             };
 
-            const btnManual = buildElement('button', { width: '100%', padding: '15px', cursor: 'pointer', background: '#f9f9f9', border: '1px solid #ddd', borderRadius: '6px', textAlign: 'left' }, `Select Photos`, container);
+            const btnManual = buildElement('button', { width: '100%', padding: '15px', cursor: 'pointer', background: '#f9f9f9', border: '1px solid #ddd', borderRadius: '6px', textAlign: 'left' }, `Manually Select Photos`, container);
             btnManual.onclick = () => { Wizard.renderStep(); };
         },
 
@@ -688,7 +688,7 @@
          */
         generate: () => {
             const container = document.getElementById(CONFIG.modalId);
-            container.innerHTML = '<div style="text-align:center;padding:20px"><h3>Generating Report...</h3><div id="pdf-status">Starting...</div></div>';
+            container.innerHTML = '<div style="text-align:center;padding:20px"><h3>Creating Report...</h3><div id="pdf-status">Initializing...</div></div>';
             
             if (Wizard.state.format === 'pdf') {
                 PDFGenerator.create(Wizard.state.data, Wizard.state.selectedPhotos, (msg) => document.getElementById('pdf-status').innerText = msg)
@@ -710,7 +710,7 @@
         const ov = buildElement('div', { position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', zIndex: '999998' }, '', document.body, { id: CONFIG.overlayId });
         const mo = buildElement('div', { position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: '#fff', padding: '25px', width: '500px', borderRadius: '12px', zIndex: '999999', fontFamily: 'sans-serif', display: 'flex', flexDirection: 'column', gap: '15px' }, '', document.body, { id: CONFIG.modalId });
         
-        buildElement('h2', { margin: '0', textAlign: 'center', fontSize: '20px' }, 'Analysis Studio', mo);
+        buildElement('h2', { margin: '0', textAlign: 'center', fontSize: '20px' }, 'Property Analysis Studio', mo);
 
         // Data Pre-fetch for Prompt Placeholders
         const data = PropertyExtractor.getData();
@@ -718,7 +718,7 @@
 
         // 1. Dropdown
         const row1 = buildElement('div', { display: 'flex', flexDirection: 'column', gap: '5px' }, '', mo);
-        buildElement('label', { fontSize: '12px', fontWeight: 'bold', color: '#555' }, 'Persona:', row1);
+        buildElement('label', { fontSize: '12px', fontWeight: 'bold', color: '#555' }, 'Analysis Persona:', row1);
         const select = buildElement('select', { padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }, '', row1, { 'aria-label': 'Select Persona / Analysis Type' });
         
         Object.entries(PROMPT_DATA).forEach(([k, v]) => {
@@ -728,7 +728,7 @@
 
         // 2. Text Area
         const row2 = buildElement('div', { display: 'flex', flexDirection: 'column', gap: '5px', flex: '1' }, '', mo);
-        buildElement('label', { fontSize: '12px', fontWeight: 'bold', color: '#555' }, 'AI Context:', row2);
+        buildElement('label', { fontSize: '12px', fontWeight: 'bold', color: '#555' }, 'AI Prompt Context:', row2);
         const txtArea = buildElement('textarea', { width: '100%', height: '150px', padding: '10px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '12px', fontFamily: 'monospace', resize: 'vertical' }, '', row2);
         
         // Update text area on change

@@ -54,7 +54,7 @@
                         <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
                     </svg>
                 </div>
-                <input type="text" id="search-input" placeholder="Search tools..." class="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-500 focus:outline-none focus:placeholder-slate-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm shadow-sm transition-shadow">
+                <input type="text" id="search-input" placeholder="Find a tool..." class="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-500 focus:outline-none focus:placeholder-slate-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm shadow-sm transition-shadow">
             </div>
         </div>
 
@@ -64,14 +64,14 @@
         </main>
 
         <div id="empty-state" class="hidden text-center py-20">
-            <p class="text-slate-500 text-lg">No tools found matching your criteria.</p>
+            <p class="text-slate-500 text-lg">No tools match your search.</p>
             <button id="clear-search" class="mt-4 text-indigo-600 hover:underline">Clear Filters</button>
         </div>
     </div>
 
     <footer class="bg-white border-t border-slate-200 mt-auto">
         <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center">
-            <p class="text-slate-400 text-sm">&copy; 2026 Browser Toolkit. Open Source.</p>
+            <p class="text-slate-400 text-sm">© 2026 Browser Toolkit. Open Source.</p>
         </div>
     </footer>
 
@@ -438,7 +438,7 @@
 
                 el.addEventListener('click', (e) => {
                     e.preventDefault(); // Prevent navigation
-                    showToast(`${name} requires being in bookmarks bar to work properly, but you can try running it here.`, 'info');
+                    showToast(`Bookmarklets work best from the bookmarks bar. Running here may fail.`, 'info');
                     // Actually running it via href click works if it's javascript:
                     // But preventDefault stops that.
                     // Let's remove preventDefault if we want them to "test" it,

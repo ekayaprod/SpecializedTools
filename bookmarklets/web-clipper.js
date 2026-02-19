@@ -218,7 +218,7 @@
          * @param {string} [message]
          */
         showLoadingOverlay(message) {
-            const msg = message || 'Capturing...';
+            const msg = message || 'Capturing content...';
             let div = document.getElementById('wc-loading');
             if (!div) {
                 div = document.createElement('div');
@@ -263,7 +263,7 @@
             /* 3. Inline "Safe" Computed Styles */
             /* Changed strategy: Minimal stabilization to avoid layout breakage */
             await BookmarkletUtils.inlineStylesAsync(element, clone, (count) => {
-                this.showLoadingOverlay('Capturing... (' + count + ' elements)');
+                this.showLoadingOverlay('Processing ' + count + ' elements...');
             });
 
             /* 4. Cleanup - remove scripts but KEEP classes and styles */
@@ -311,7 +311,7 @@
             btnCancel.onclick = this.closeEditor;
 
             const btnRetry = document.createElement('button');
-            btnRetry.textContent = 'Reselect';
+            btnRetry.textContent = 'Select Another';
             btnRetry.onclick = () => {
                 this.closeEditor();
                 this.startFinder();
@@ -325,7 +325,7 @@
             formatSelect.style.border = '1px solid #ccc';
 
             const formats = [
-                { val: 'html', txt: 'HTML Snapshot (.html)' },
+                { val: 'html', txt: 'HTML File (.html)' },
                 { val: 'md', txt: 'Markdown (.md)' },
                 { val: 'txt', txt: 'Plain Text (.txt)' },
                 { val: 'png', txt: 'Image (.png)' }
@@ -339,7 +339,7 @@
             });
 
             const btnDownload = document.createElement('button');
-            btnDownload.textContent = 'Download';
+            btnDownload.textContent = 'Save as File';
             btnDownload.onclick = () => { this.handleDownload(contentArea, formatSelect.value, btnDownload); };
 
             const btnCopy = document.createElement('button');
@@ -460,9 +460,9 @@
                 const content = contentArea.innerText;
                 BookmarkletUtils.downloadFile(cleanTitle + '_' + Date.now() + '.txt', content, 'text/plain');
             } else if (format === 'png') {
-                const originalText = btn ? btn.textContent : 'Download';
+                const originalText = btn ? btn.textContent : 'Save as File';
                 if (btn) {
-                    btn.textContent = 'Generating...';
+                    btn.textContent = 'Creating Image...';
                     btn.disabled = true;
                 }
 

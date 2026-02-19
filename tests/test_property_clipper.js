@@ -252,7 +252,7 @@ async function runTest() {
     await new Promise(r => setTimeout(r, 100));
 
     const wizardTitle = modal.querySelector('h3');
-    assert.ok(wizardTitle && wizardTitle.textContent.includes('Photo Strategy'), "Wizard start screen should appear");
+    assert.ok(wizardTitle && wizardTitle.textContent.includes('Select Photos'), "Wizard start screen should appear");
     console.log("✅ Wizard start screen verified.");
 
     // 5. Find 'Include All Photos' option
@@ -305,22 +305,22 @@ async function runTest() {
             process.exit(1);
         }
 
-        if (flatContent.includes('Primary Property Specs')) {
-            console.log("✅ Found 'Primary Property Specs' section.");
+        if (flatContent.includes('Key Specifications')) {
+            console.log("✅ Found 'Key Specifications' section.");
         } else {
-             console.error("❌ 'Primary Property Specs' section MISSING.");
+             console.error("❌ 'Key Specifications' section MISSING.");
         }
 
-        if (flatContent.includes('Market Context & Medians')) {
-            console.log("✅ Found 'Market Context & Medians' section.");
+        if (flatContent.includes('Market Data')) {
+            console.log("✅ Found 'Market Data' section.");
         } else {
-             console.error("❌ 'Market Context & Medians' section MISSING.");
+             console.error("❌ 'Market Data' section MISSING.");
         }
 
-        if (flatContent.includes('Seller/Listing Agent Description')) {
-            console.log("✅ Found 'Seller/Listing Agent Description' section.");
+        if (flatContent.includes('Property Description')) {
+            console.log("✅ Found 'Property Description' section.");
         } else {
-             console.error("❌ 'Seller/Listing Agent Description' section MISSING.");
+             console.error("❌ 'Property Description' section MISSING.");
         }
 
         if (flatContent.includes('Property History')) {
@@ -335,8 +335,8 @@ async function runTest() {
              console.error("❌ 'Property History' section MISSING.");
         }
 
-        if (flatContent.includes('RAW PROPERTY DATA (For AI Context)')) {
-            console.log("✅ Found 'RAW PROPERTY DATA' section.");
+        if (flatContent.includes('Raw Property Data (JSON)')) {
+            console.log("✅ Found 'Raw Property Data' section.");
             // Verify minification (rough check)
             // The mock PDF puts text in array. We joined with space.
             // Minified JSON shouldn't have newlines in the string itself except for splitTextToSize chunks.
@@ -427,7 +427,7 @@ async function runTest() {
     await new Promise(r => setTimeout(r, 100)); // Wait for Wizard
 
     // Click Manual Selection
-    const manualBtn = Array.from(modal3.querySelectorAll('button')).find(b => b.textContent.includes('Select Photos'));
+    const manualBtn = Array.from(modal3.querySelectorAll('button')).find(b => b.textContent.includes('Manually Select Photos'));
     assert.ok(manualBtn, "Manual Selection button should exist");
     manualBtn.click();
 

@@ -65,7 +65,7 @@ function runTest() {
     }
 
     // Test Aria-Label on Regenerate Button
-    const regenBtn = Array.from(document.querySelectorAll('button')).find(b => b.textContent === 'Refresh');
+    const regenBtn = Array.from(document.querySelectorAll('button')).find(b => b.textContent === 'Regenerate');
     if (regenBtn) {
         if (regenBtn.getAttribute('aria-label') === 'Generate new passphrases') {
             console.log("✅ Regenerate button has correct aria-label.");
