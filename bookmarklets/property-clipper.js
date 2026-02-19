@@ -7,7 +7,6 @@
      * Configuration options for the Property Clipper.
      * @property {string} modalId - The ID for the modal element.
      * @property {string} overlayId - The ID for the overlay element.
-     * @property {string} filenamePrefix - The prefix for generated filenames.
      * @property {string} jspdfUrl - The URL to load jsPDF from.
      * @property {number} imgMaxWidth - The maximum width for processed images.
      * @property {number} imgQuality - The JPEG quality for processed images (0.0 to 1.0).
@@ -15,7 +14,6 @@
     const CONFIG = {
         modalId: 'pc-pdf-modal',
         overlayId: 'pc-pdf-overlay',
-        filenamePrefix: 'Property_Report',
         jspdfUrl: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
         imgMaxWidth: 1000,
         imgQuality: 0.7
