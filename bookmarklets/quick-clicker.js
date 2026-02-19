@@ -340,23 +340,27 @@
          * Starts the countdown or waits for the scheduled time.
          */
         async start(){
-            let targetTime;
+            const MS_PER_MINUTE = 60000;
+            const MS_PER_HOUR = 3600000;
+            const MS_PER_SECOND = 1000;
+
+            let targetTimestamp;
 
             if(this.state.timeMode === 'delay') {
-                const m = parseFloat(/** @type {HTMLInputElement} */ (this.q('#mn')).value)||0;
-                if(m<=0) return this.showToast('Invalid Time', 'error');
-                targetTime = Date.now() + (m*60000);
+                const minutesInput = parseFloat(/** @type {HTMLInputElement} */ (this.q('#mn')).value)||0;
+                if(minutesInput<=0) return this.showToast('Invalid Time', 'error');
+                targetTimestamp = Date.now() + (minutesInput * MS_PER_MINUTE);
             } else {
-                const timeStr = /** @type {HTMLInputElement} */ (this.q('#clk')).value;
-                if(!timeStr) return this.showToast('Please set a clock time', 'error');
-                const [h, m] = timeStr.split(':');
+                const clockTimeStr = /** @type {HTMLInputElement} */ (this.q('#clk')).value;
+                if(!clockTimeStr) return this.showToast('Please set a clock time', 'error');
+                const [hoursStr, minutesStr] = clockTimeStr.split(':');
                 const now = new Date();
-                const d = new Date();
-                d.setHours(parseInt(h), parseInt(m), 0, 0);
-                if(d < now) {
-                    d.setDate(d.getDate() + 1);
+                const scheduledDate = new Date();
+                scheduledDate.setHours(parseInt(hoursStr), parseInt(minutesStr), 0, 0);
+                if(scheduledDate < now) {
+                    scheduledDate.setDate(scheduledDate.getDate() + 1);
                 }
-                targetTime = d.getTime();
+                targetTimestamp = scheduledDate.getTime();
             }
 
             try {
@@ -366,21 +370,26 @@
                 }
             } catch(e){
                 console.warn('Wake Lock failed:', { error: e.message, type: e.name });
+                this.showToast('Wake Lock Failed', 'error');
             }
 
             this.switchView('v1', 'v2', 'cn');
 
-            const elTm = this.q('#tm');
+            const timerElement = this.q('#tm');
 
             this.iv = setInterval(()=>{
-                const r = targetTime - Date.now();
-                if(r<=0) { clearInterval(this.iv); this.exec(elTm); return; }
-                const hours = Math.floor(r / 3600000);
-                const minutes = Math.floor((r % 3600000) / 60000);
-                const seconds = Math.floor((r % 60000) / 1000);
-                elTm.innerText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                const remainingMs = targetTimestamp - Date.now();
+                if(remainingMs <= 0) { clearInterval(this.iv); this.exec(timerElement); return; }
+
+                const hours = Math.floor(remainingMs / MS_PER_HOUR);
+                const minutes = Math.floor((remainingMs % MS_PER_HOUR) / MS_PER_MINUTE);
+                const seconds = Math.floor((remainingMs % MS_PER_MINUTE) / MS_PER_SECOND);
+
+                const format = (n) => n.toString().padStart(2, '0');
+
+                timerElement.innerText = `${format(hours)}:${format(minutes)}:${format(seconds)}`;
                 document.title = `⏳ ${hours}:${minutes}:${seconds}`;
-            },1000);
+            }, MS_PER_SECOND);
         }
 
         /**
