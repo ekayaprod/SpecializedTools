@@ -366,6 +366,7 @@
                 }
             } catch(e){
                 console.warn('Wake Lock failed:', e);
+                this.showToast('Wake Lock Failed', 'error');
             }
 
             this.switchView('v1', 'v2', 'cn');
