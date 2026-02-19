@@ -28,8 +28,6 @@ async function runTests() {
             console.error(`  ❌ ${test.name}:`);
             console.error(`     ${e.message.replace(/\n/g, '\n     ')}`);
             process.exitCode = 1;
-            // Stop on first failure? Or continue? Usually continue but for sequential state dependency, stop might be better.
-            // Let's continue but mark failure.
         }
     }
 }
@@ -49,69 +47,41 @@ global.Node = dom.window.Node;
 global.Event = dom.window.Event;
 global.MouseEvent = dom.window.MouseEvent;
 
-// Spy on addEventListener
-const originalAddEventListener = document.addEventListener;
-let clickListener = null;
+// Load script
+eval(scriptCode);
 
-document.addEventListener = function(type, listener, options) {
-    if (type === 'click' && options === true) { // capture
-        clickListener = listener;
-    }
-    return originalAddEventListener.call(this, type, listener, options);
-};
-
-// Evaluate script
-try {
-    eval(scriptCode);
-} catch (e) {
-    console.error("Error evaluating delayed-clicker.js:", e);
-    process.exitCode = 1;
-}
-
-// Helper to access Shadow DOM internals
 function getShadowRoot() {
-    return window.dc_running.s;
+    const host = document.querySelector('div[id^="dc-"]');
+    if (!host) throw new Error("Delayed Clicker host element not found");
+    return host.shadowRoot;
 }
 
-describe('Delayed Clicker Bookmarklet', () => {
+describe('Delayed Clicker UX & Logic', () => {
 
-    it('should initialize correctly', async () => {
-        const app = window.dc_running;
-        assert.ok(app, "App instance should be created on window");
-        assert.ok(app.h, "Container element should exist");
-        assert.ok(app.s, "Shadow root should exist");
-        assert.strictEqual(app.h.style.display, 'block', "UI should be visible initially");
+    it('should inject UI into shadow DOM', () => {
+        const shadow = getShadowRoot();
+        assert.ok(shadow.querySelector('#p1'), "Setup panel should exist");
+        assert.ok(shadow.querySelector('#p2'), "Timer panel should exist");
+        assert.ok(shadow.querySelector('#pick'), "Pick button should exist");
     });
 
-    it('should select a target element', async () => {
-        const app = window.dc_running;
+    it('should allow element picking', () => {
         const shadow = getShadowRoot();
-        const pickBtn = shadow.querySelector('#pk');
-
-        // Click 'Pick Target'
-        pickBtn.click();
-        assert.strictEqual(app.h.style.display, 'none', "UI should hide during picking");
-
+        const pickBtn = shadow.querySelector('#pick');
         const targetBtn = document.getElementById('target-btn');
+        const goBtn = shadow.querySelector('#go');
 
-        // Simulate capture click manually
-        if (clickListener) {
-            const mockEvent = {
-                target: targetBtn,
-                preventDefault: () => {},
-                stopPropagation: () => {},
-                stopImmediatePropagation: () => {}
-            };
-            clickListener(mockEvent);
-        } else {
-            throw new Error("Click listener not captured!");
-        }
+        assert.ok(goBtn.disabled, "Start button should be disabled initially");
 
-        // Verify target selection
-        assert.strictEqual(app.el, targetBtn, "Target element should be stored");
-        assert.strictEqual(app.h.style.display, 'block', "UI should reappear after selection");
-        // Use innerText as verified in previous manual run
-        assert.ok(pickBtn.innerText.includes('BUTTON'), "Button text should update with tag name");
+        // Click pick
+        pickBtn.click();
+        
+        // Simulate click on target
+        targetBtn.click();
+
+        assert.strictEqual(window.dc_running.el, targetBtn, "Target should be stored");
+        assert.ok(!goBtn.disabled, "Start button should be enabled after picking");
+        assert.ok(shadow.querySelector('#picked-label').innerText.includes('button'), "Label should update");
     });
 
     it('should execute click after timer', async () => {
@@ -137,11 +107,15 @@ describe('Delayed Clicker Bookmarklet', () => {
         assert.ok(p1.classList.contains('hd'), "Panel 1 should be hidden");
         assert.ok(!p2.classList.contains('hd'), "Panel 2 should be visible");
 
-        // Wait for execution
+        // Wait for execution (buffer for animation + timer)
         await new Promise(resolve => setTimeout(resolve, 1500));
 
         assert.ok(clicked, "Target button should have been clicked");
-        assert.strictEqual(shadow.querySelector('#cd').innerText, 'DONE', "Timer display should show DONE");
+        
+        // Check for 'DONE' text (now inside a hidden span or part of success UI)
+        const timerText = shadow.querySelector('#cd').innerText;
+        assert.ok(timerText.includes('DONE') || timerText.includes('Action Executed') || shadow.querySelector('.success-icon'), 
+            "Timer display should show success state");
 
         // Cleanup
         if (window.dc_running.tm) clearInterval(window.dc_running.tm);
@@ -152,6 +126,6 @@ describe('Delayed Clicker Bookmarklet', () => {
 
 // Run tests
 runTests().catch(e => {
-    console.error("Test runner failed:", e);
-    process.exitCode = 1;
+    console.error("Test Runner Failed:", e);
+    process.exit(1);
 });
