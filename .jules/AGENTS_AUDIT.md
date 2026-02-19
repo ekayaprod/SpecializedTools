@@ -1,44 +1,75 @@
-# 👁️ Overseer Report (2026-02-16)
+👁️ Overseer Report (2026-02-16)
 
-## 🏗️ Structural Hotspots
-- [x] bookmarklets/passphrase-generator.js (56KB, Low Churn) - High Complexity (Data Heavy).
-- [x] bookmarklets/property-clipper.js (37KB, Low Churn) - High Complexity.
-- [x] package-lock.json AND pnpm-lock.yaml coexist (Potential Conflict).
+🏗️ Structural Hotspots
 
-## ⚡ Performance Bottlenecks
-- [ ] Bundle Size: 56KB (passphrase-generator.js) - Large for bookmarklet.
-- [ ] Client-side compilation used (No build script detected).
+[x] bookmarklets/passphrase-generator.js (56KB, Low Churn) - High Complexity (Data Heavy).
 
-## 🧹 Debris Field
-- [x] package-lock.json (Deleted redundant lockfile to resolve conflict)
-- [x] tests/test_property_clipper_errors.js (Deleted broken test file)
-- [x] bookmarklets/property-clipper.js (Replaced alert() calls with Toast UI)
-- [x] bookmarklets/web-clipper.js (Replaced alert() calls with Toast UI)
-- [x] Environment Setup (Missing `jsdom` dependency in initial install)
-- [x] tests/verify_prompt_text.js (Deleted legacy manual verification script)
-- [x] tests/test_property_clipper_prompt.js (Deleted broken and redundant test file)
-- [x] tests/test_str_prompt.js (Deleted broken and unused test file)
-- [x] tests/benchmark_inline_styles.js (Deleted unused benchmark script)
-- [x] tests/test_ltr_prompt.js (Deleted broken and redundant test file)
-- [x] verification/ directory (Deleted orphaned manual test artifacts)
+[x] bookmarklets/property-clipper.js (37KB, Low Churn) - High Complexity.
 
-## 🛡️ Security Radar
-- [ ] 0 Vulnerabilities found (npm audit).
-- [ ] No hardcoded secrets detected.
+[x] package-lock.json AND pnpm-lock.yaml coexist (Potential Conflict).
 
-## 🕵️ Coverage Gaps
-- [x] tests/test_passphrase_generator_robustness.js (Implemented comprehensive tests for structural logic and constraints)
-- [x] tests/test_property_clipper_errors.js (Deleted failing test suite)
-- [x] bookmarklets/utils.js (Added missing 'buildElement' and 'showToast' to interface)
-- [x] bookmarklets/bookmarklet-builder.js (Indirectly tested via `tests/test_bookmarklet_generation.js`, but explicit unit tests for builder logic could be improved)
-- [x] bookmarklets/pa-county-finder.js (Added robust tests for split city lookups and fixed logic gap)
-- [x] bookmarklets/property-clipper.js (Added robust fallback testing for DOM extraction and JSON/Image errors in `tests/test_property_clipper_fallback.js`)
-- [x] tests/test_bookmarklet_regex.js (Implemented robust testing for regex literal parsing in bookmarklet-builder.js)
+⚡ Performance Bottlenecks
 
-## 🆙 Modernization Targets
-- [x] Replace `alert()` with non-blocking UI (Toast/Modal) across all bookmarklets
-- [x] Fix TypeScript Linting Errors (`npm run lint` fails on `utils.js`)
+[ ] Bundle Size: 56KB (passphrase-generator.js) - Large for bookmarklet.
 
-## 🎨 UX/A11y Friction
-- [x] `alert()` usage disrupts screen readers and blocks user flow
-- [x] bookmarklets/quick-clicker.js (Good A11y coverage in `tests/test_quick_clicker_ux.js`)
+[ ] Client-side compilation used (No build script detected).
+
+🧹 Debris Field
+
+[x] package-lock.json (Deleted redundant lockfile to resolve conflict)
+
+[x] tests/test_property_clipper_errors.js (Deleted broken test file)
+
+[x] bookmarklets/property-clipper.js (Replaced alert() calls with Toast UI)
+
+[x] bookmarklets/web-clipper.js (Replaced alert() calls with Toast UI)
+
+[x] Environment Setup (Missing jsdom dependency in initial install)
+
+[x] tests/verify_prompt_text.js (Deleted legacy manual verification script)
+
+[x] tests/test_property_clipper_prompt.js (Deleted broken and redundant test file)
+
+[x] tests/test_str_prompt.js (Deleted broken and unused test file)
+
+[x] tests/benchmark_inline_styles.js (Deleted unused benchmark script)
+
+[x] tests/test_ltr_prompt.js (Deleted broken and redundant test file)
+
+[x] verification/ directory (Deleted orphaned manual test artifacts)
+
+🛡️ Security Radar
+
+[ ] 0 Vulnerabilities found (npm audit).
+
+[ ] No hardcoded secrets detected.
+
+🕵️ Coverage Gaps
+
+[x] tests/test_passphrase_generator_robustness.js (Implemented comprehensive tests for structural logic and constraints)
+
+[x] tests/test_property_clipper_errors.js (Deleted failing test suite)
+
+[x] bookmarklets/utils.js (Added missing 'buildElement' and 'showToast' to interface)
+
+[x] bookmarklets/bookmarklet-builder.js (Indirectly tested via tests/test_bookmarklet_generation.js, but explicit unit tests for builder logic could be improved)
+
+[x] bookmarklets/pa-county-finder.js (Added robust tests for split city lookups and fixed logic gap)
+
+[x] bookmarklets/property-clipper.js (Added robust fallback testing for DOM extraction and JSON/Image errors in tests/test_property_clipper_fallback.js)
+
+[x] tests/test_bookmarklet_regex.js (Implemented robust testing for regex literal parsing in bookmarklet-builder.js)
+
+🆙 Modernization Targets
+
+[x] Replace alert() with non-blocking UI (Toast/Modal) across all bookmarklets
+
+[x] Fix TypeScript Linting Errors (npm run lint fails on utils.js)
+
+🎨 UX/A11y Friction
+
+[x] alert() usage disrupts screen readers and blocks user flow
+
+[x] bookmarklets/quick-clicker.js (Good A11y coverage in tests/test_quick_clicker_ux.js)
+
+[x] bookmarklets/delayed-clicker.js (Polished UI: Dark mode, transitions, accessible states)
