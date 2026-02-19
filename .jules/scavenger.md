@@ -59,3 +59,7 @@ BOUNDARIES
 - **Deleted:** `verification/` directory (orphaned verification script and artifacts)
 - **Reason:** Directory contained manual Python test scripts and images not used in CI/CD pipeline.
 - **Fixed:** `tests/test_macro_builder.js` and `tests/test_passphrase_generator.js` (Fixed test drift caused by UI text changes).
+
+## [2026-02-19]
+- **Deleted:** `tests/test_load_library.js` (redundant test file)
+- **Reason:** File was redundant with `tests/test_load_library_resilience.js` and depended on `jsdom` which caused environment issues. Merged missing test coverage into `tests/test_load_library_resilience.js`.
