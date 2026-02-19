@@ -14,10 +14,7 @@ async function runTest() {
     const htmlContent = fs.readFileSync(htmlPath, 'utf8');
 
     let fetchCalls = 0;
-    const targetFile = 'bookmarklets/web-clipper.js';
-
-    // We use a promise to wait for the test completion inside JSDOM context if needed,
-    // but since we are observing side effects (fetchCalls), we can just wait.
+    const targetFile = 'dist/tools.json';
 
     const dom = new JSDOM(htmlContent, {
         runScripts: "dangerously",
@@ -25,34 +22,24 @@ async function runTest() {
         virtualConsole,
         beforeParse(window) {
             // Mock setTimeout to be immediate
-            // The signature is setTimeout(callback, delay, ...args)
             window.setTimeout = (fn, delay, ...args) => {
                 if (typeof fn === 'function') {
                     fn(...args);
-                } else {
-                    // If string (eval), ignore or handle? MDN says code string.
-                    // Assuming function here.
                 }
-                return 1; // dummy timer id
-            };
-
-            // Mock BookmarkletBuilder
-            window.BookmarkletBuilder = {
-                extractDependencies: () => [],
-                compile: (code) => code
+                return 1;
             };
 
             // Mock fetch
             window.fetch = (url) => {
-                // Return a promise that resolves immediately
                 return Promise.resolve().then(() => {
-                    if (url.includes(targetFile)) { // specific file
+                    if (url.includes(targetFile)) {
                         fetchCalls++;
                         // Fail the first 3 times with 500
                         if (fetchCalls <= 3) {
                             return {
                                 ok: false,
                                 status: 500,
+                                json: () => Promise.reject(new Error('Server Error')),
                                 text: () => Promise.resolve('Server Error')
                             };
                         }
@@ -60,13 +47,23 @@ async function runTest() {
                         return {
                             ok: true,
                             status: 200,
-                            text: () => Promise.resolve('console.log("Success");')
+                            json: () => Promise.resolve([
+                                {
+                                    id: 'test-tool',
+                                    name: 'Test Tool',
+                                    desc: 'A test tool',
+                                    category: 'content',
+                                    color: 'blue',
+                                    href: 'javascript:alert(1)'
+                                }
+                            ])
                         };
                     }
-                    // Other fetches succeed immediately
+                    // Other fetches succeed immediately (shouldn't happen in new index.html logic but strictly speaking safe to keep)
                     return {
                         ok: true,
                         status: 200,
+                        json: () => Promise.resolve([]),
                         text: () => Promise.resolve('')
                     };
                 });
@@ -75,8 +72,6 @@ async function runTest() {
     });
 
     // Wait for async operations to complete
-    // Since everything is mocked to be immediate (promises resolve microtask),
-    // a small timeout should suffice.
     await new Promise(resolve => setTimeout(resolve, 500));
 
     console.log(`Fetch calls for ${targetFile}: ${fetchCalls}`);

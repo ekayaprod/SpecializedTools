@@ -12,7 +12,7 @@
 
 [x] Bundle Size: 56KB (passphrase-generator.js) - Reduced to 44KB via string split optimization.
 
-[ ] Client-side compilation used (No build script detected).
+[x] Client-side compilation used (No build script detected).
 
 🧹 Debris Field
 

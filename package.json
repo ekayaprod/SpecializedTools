@@ -13,7 +13,8 @@
   },
   "scripts": {
     "lint": "tsc --noEmit",
-    "test": "node scripts/run_tests.js"
+    "test": "node scripts/run_tests.js",
+    "build": "node scripts/build_bookmarklets.js"
   },
   "devDependencies": {
     "jsdom": "^28.1.0",

@@ -1,0 +1,66 @@
+[
+    {
+        "id": "web-clipper",
+        "name": "Web Clipper",
+        "file": "bookmarklets/web-clipper.js",
+        "desc": "Universal content capture. Snapshot articles, recipes, or invoices as clean HTML/Markdown.",
+        "category": "content",
+        "color": "blue"
+    },
+    {
+        "id": "prop-clipper",
+        "name": "Property Clipper",
+        "file": "bookmarklets/property-clipper.js",
+        "desc": "Research tool for Zillow/Redfin. Extracts hidden data and generates AI analysis prompts.",
+        "category": "content",
+        "color": "indigo"
+    },
+    {
+        "id": "pa-county",
+        "name": "PA County Finder",
+        "file": "bookmarklets/pa-county-finder.js",
+        "desc": "Instantly find PA County/Township for any ZIP or City via highlight or prompt.",
+        "category": "content",
+        "color": "sky"
+    },
+    {
+        "id": "quick-clicker",
+        "name": "Quick Clicker V27",
+        "file": "bookmarklets/quick-clicker.js",
+        "desc": "Powerful automation. Schedule clicks (Delay/Clock), fill forms, and maintain wake lock.",
+        "category": "automation",
+        "color": "emerald"
+    },
+    {
+        "id": "macro-builder",
+        "name": "Macro Builder V22",
+        "file": "bookmarklets/macro-builder.js",
+        "desc": "Record & Replay. Generate robust, comment-free bookmarklets from your actions.",
+        "category": "automation",
+        "color": "violet"
+    },
+    {
+        "id": "interaction-recorder",
+        "name": "Interaction Recorder",
+        "file": "bookmarklets/interaction-recorder.js",
+        "desc": "Troubleshoot automation. Captures clicks, Shadow DOM paths, and exports analysis.",
+        "category": "automation",
+        "color": "amber"
+    },
+    {
+        "id": "delayed-clicker",
+        "name": "Delayed Clicker V5",
+        "file": "bookmarklets/delayed-clicker.js",
+        "desc": "Simple, stable timer clicker. Set a delay and a target element.",
+        "category": "automation",
+        "color": "slate"
+    },
+    {
+        "id": "passphrase",
+        "name": "Passphrase Generator",
+        "file": "bookmarklets/passphrase-generator.js",
+        "desc": "Create unbreakable, memorable passwords. Includes temporary disposable mode.",
+        "category": "security",
+        "color": "rose"
+    }
+]
