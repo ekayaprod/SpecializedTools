@@ -38,6 +38,10 @@
 
 [x] verification/ directory (Deleted orphaned manual test artifacts)
 
+[x] verification_index.png (Deleted orphaned artifact)
+
+[x] server.log (Deleted stale log file)
+
 🛡️ Security Radar
 
 [ ] 0 Vulnerabilities found (npm audit).
