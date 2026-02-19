@@ -348,7 +348,7 @@
                         head.onmousedown = dragMouseDown;
                     }
                     async run(){
-                        try { if('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch(e){ console.warn('Wake Lock failed:', e); }
+                        try { if('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch(e){ console.warn('Wake Lock failed:', { error: e.message, type: e.name }); }
                         const wait = ms => new Promise(r => setTimeout(r, ms));
 
                         const queryDeep = (selector, root = document) => {
