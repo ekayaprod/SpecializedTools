@@ -292,7 +292,7 @@
     const header = document.createElement('div');
     Object.assign(header.style, { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' });
     const title = document.createElement('h2');
-    title.textContent = `Passphrases (${Cap(CURRENT_SEASON)})`;
+    title.textContent = `Passphrase Generator (${Cap(CURRENT_SEASON)})`;
     Object.assign(title.style, { margin: '0', fontSize: '18px', fontWeight: 'bold', color: '#1e293b' });
 
     const toggleBtn = document.createElement('button');
@@ -352,7 +352,7 @@
             lenDiv.appendChild(document.createTextNode('Min ')); lenDiv.appendChild(minInp);
             lenDiv.appendChild(document.createTextNode(' Max ')); lenDiv.appendChild(maxInp);
 
-            const lenCtrl = createControl("Length", lenDiv);
+            const lenCtrl = createControl("Phrase Length", lenDiv);
             controls.appendChild(lenCtrl);
 
             // Pad to Min
@@ -360,7 +360,7 @@
             padChk.type = 'checkbox';
             padChk.checked = STATE.config.padToMin;
             padChk.onchange = (e) => { STATE.config.padToMin = /** @type {HTMLInputElement} */ (e.target).checked; render(); };
-            controls.appendChild(createControl("Pad Length", padChk));
+            controls.appendChild(createControl("Pad to Minimum", padChk));
 
             // Placements
             const numSel = document.createElement('select');
@@ -372,7 +372,7 @@
                 numSel.appendChild(opt);
             });
             numSel.onchange = (e) => { STATE.config.numPlacement = /** @type {HTMLSelectElement} */ (e.target).value; render(); };
-            controls.appendChild(createControl("Number Pos", numSel));
+            controls.appendChild(createControl("Number Position", numSel));
 
             const symSel = document.createElement('select');
             Object.assign(symSel.style, { padding: '4px', borderRadius: '4px', border: '1px solid #cbd5e1' });
@@ -383,7 +383,7 @@
                 symSel.appendChild(opt);
             });
             symSel.onchange = (e) => { STATE.config.symPlacement = /** @type {HTMLSelectElement} */ (e.target).value; render(); };
-            controls.appendChild(createControl("Symbol Pos", symSel));
+            controls.appendChild(createControl("Symbol Position", symSel));
         } else {
             renderTempControls();
         }
@@ -402,7 +402,7 @@
             });
         }
         structSel.onchange = (e) => { STATE.config.structure = /** @type {HTMLSelectElement} */ (e.target).value; render(); };
-        controls.appendChild(createControl("Structure", structSel));
+        controls.appendChild(createControl("Word Structure", structSel));
     }
 
     function renderTempControls() {
@@ -443,8 +443,8 @@
             listContainer.appendChild(item);
         });
 
-        title.textContent = STATE.mode === 'passphrase' ? `Passphrases (${Cap(CURRENT_SEASON)})` : 'Temp Passwords';
-        toggleBtn.textContent = STATE.mode === 'passphrase' ? 'Temp Mode' : 'Phrase Mode';
+        title.textContent = STATE.mode === 'passphrase' ? `Passphrase Generator (${Cap(CURRENT_SEASON)})` : 'Temporary Passwords';
+        toggleBtn.textContent = STATE.mode === 'passphrase' ? 'Switch to Temp Mode' : 'Phrase Mode';
     }
 
     toggleBtn.onclick = () => {
@@ -462,7 +462,7 @@
     Object.assign(footer.style, { display: 'flex', justifyContent: 'flex-end', marginTop: '16px', gap: '10px' });
 
     const regenBtn = document.createElement('button');
-    regenBtn.textContent = 'Refresh';
+    regenBtn.textContent = 'Regenerate';
     regenBtn.setAttribute('aria-label', 'Generate new passphrases');
     Object.assign(regenBtn.style, { padding: '8px 16px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' });
     regenBtn.onclick = () => render();

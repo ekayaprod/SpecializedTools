@@ -103,14 +103,14 @@ async function runTest() {
     // 3. Click 'Select Photos'
     // It is a button in current UI
     const wizardButtons = Array.from(modal.querySelectorAll('button'));
-    const manualBtn = wizardButtons.find(b => b.textContent === 'Select Photos');
+    const manualBtn = wizardButtons.find(b => b.textContent === 'Manually Select Photos');
 
     if (!manualBtn) {
         console.error("Could not find Select Photos button. Available buttons:", wizardButtons.map(b => b.textContent));
     }
     assert.ok(manualBtn, "Select Photos option should exist");
 
-    console.log("Clicking Select Photos...");
+    console.log("Clicking Manually Select Photos...");
     manualBtn.click();
 
     // Wait for Step 1

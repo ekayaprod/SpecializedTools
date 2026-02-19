@@ -92,7 +92,7 @@ const tests = [
             mockDate = new OriginalDate('2023-01-15T12:00:00Z');
             runScript();
             const title = getTitle();
-            assert.strictEqual(title, 'Passphrases (Winter)');
+            assert.strictEqual(title, 'Passphrase Generator (Winter)');
         }
     },
     {
@@ -101,7 +101,7 @@ const tests = [
             mockDate = new OriginalDate('2023-04-15T12:00:00Z');
             runScript();
             const title = getTitle();
-            assert.strictEqual(title, 'Passphrases (Spring)');
+            assert.strictEqual(title, 'Passphrase Generator (Spring)');
         }
     },
     {
@@ -110,7 +110,7 @@ const tests = [
             mockDate = new OriginalDate('2023-07-15T12:00:00Z');
             runScript();
             const title = getTitle();
-            assert.strictEqual(title, 'Passphrases (Summer)');
+            assert.strictEqual(title, 'Passphrase Generator (Summer)');
         }
     },
     {
@@ -119,7 +119,7 @@ const tests = [
             mockDate = new OriginalDate('2023-10-15T12:00:00Z');
             runScript();
             const title = getTitle();
-            assert.strictEqual(title, 'Passphrases (Autumn)');
+            assert.strictEqual(title, 'Passphrase Generator (Autumn)');
         }
     },
     {
@@ -127,7 +127,7 @@ const tests = [
         run: () => {
             mockDate = new OriginalDate('2023-01-01');
             runScript();
-            setInputValue('Structure', '1-0');
+            setInputValue('Word Structure', '1-0');
 
             const passwords = getGeneratedPasswords();
             assert.ok(passwords.length > 0, 'Should generate passwords');
@@ -142,7 +142,7 @@ const tests = [
         run: () => {
             mockDate = new OriginalDate('2023-01-01');
             runScript();
-            setInputValue('Number Pos', 'start');
+            setInputValue('Number Position', 'start');
 
             const passwords = getGeneratedPasswords();
             passwords.forEach(p => {
@@ -155,7 +155,7 @@ const tests = [
         run: () => {
             mockDate = new OriginalDate('2023-01-01');
             runScript();
-            setInputValue('Symbol Pos', 'suffix');
+            setInputValue('Symbol Position', 'suffix');
 
             const passwords = getGeneratedPasswords();
             passwords.forEach(p => {
@@ -173,13 +173,13 @@ const tests = [
 
             // Set Min Length manually as helper logic for 'Length' is tricky
             const overlay = getOverlay();
-            const lenLabel = Array.from(overlay.querySelectorAll('label')).find(l => l.textContent === 'Length');
+            const lenLabel = Array.from(overlay.querySelectorAll('label')).find(l => l.textContent === 'Phrase Length');
             const lenDiv = lenLabel.nextElementSibling;
             const minInput = lenDiv.querySelector('input[type=number]');
             minInput.value = '30';
             minInput.dispatchEvent(new dom.window.Event('change', { bubbles: true }));
 
-            setInputValue('Pad Length', true);
+            setInputValue('Pad to Minimum', true);
 
             const passwords = getGeneratedPasswords();
             passwords.forEach(p => {
