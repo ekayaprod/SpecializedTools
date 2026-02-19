@@ -25,6 +25,7 @@ This document tracks the status of features and tools within the Browser Toolkit
 - [x] **Interaction Recorder**: Debug automation issues by logging click paths and element attributes.
 - [x] **Bookmarklet Compilation**: Automated build process to minify and encode scripts.
 - [x] **Performance Optimizations**: Async chunking for large DOM trees in Web Clipper.
+  - [x] Bundle size reduction for Passphrase Generator.
 
 ## In Progress
 

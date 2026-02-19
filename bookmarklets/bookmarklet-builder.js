@@ -23,6 +23,18 @@
     // This prevents the parser from confusing quotes inside regex literals with string delimiters.
     const TOKEN_PATTERN = '("(?:[^"\\\\]|\\\\[\\s\\S])*"|\'(?:[^\'\\\\]|\\\\[\\s\\S])*\'|`(?:[^`\\\\]|\\\\[\\s\\S])*`|\\/\\*[\\s\\S]*?\\*\\/|\\/(?:[^/\\\\\\r\\n]|\\\\.)+\\/[gimuy]*)';
 
+    /**
+     * Compiles source code by removing block comments and trimming lines while preserving strings and regex literals.
+     * This acts as a basic minifier to prepare code for bookmarklet encoding.
+     *
+     * @param {string} code - The raw source code to compile.
+     * @returns {string} The compiled (minified) code.
+     *
+     * @example
+     * const raw = 'function test() { /* comment *' + '/ return "hello"; }';
+     * const compiled = BookmarkletBuilder.compile(raw);
+     * console.log(compiled); // Output: function test() { return "hello"; }
+     */
     function compile(code) {
         const placeholders = [];
         // Create fresh regex instance to avoid state issues
