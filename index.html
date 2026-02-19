@@ -11,23 +11,25 @@
         .loading { opacity: 0.5; pointer-events: none; }
 
         /* Smooth transitions */
-        .card-enter { animation: fadeIn 0.4s ease-out forwards; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @media (prefers-reduced-motion: no-preference) {
+            .card-enter { animation: fadeIn 0.4s ease-out forwards; }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
 
-        /* Toast Animations */
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+            /* Toast Animations */
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes fadeOut {
+                from { opacity: 1; }
+                to { opacity: 0; }
+            }
+            .toast-enter { animation: slideIn 0.3s ease-out forwards; }
+            .toast-exit { animation: fadeOut 0.3s ease-in forwards; }
         }
-        @keyframes fadeOut {
-            from { opacity: 1; }
-            to { opacity: 0; }
-        }
-        .toast-enter { animation: slideIn 0.3s ease-out forwards; }
-        .toast-exit { animation: fadeOut 0.3s ease-in forwards; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
@@ -36,14 +38,14 @@
         <header class="mb-12 text-center border-b border-slate-200 pb-8">
             <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight">Browser Toolkit</h1>
             <p class="text-lg text-slate-600 mt-4 max-w-2xl mx-auto">
-                A curated collection of <span class="text-indigo-600 font-semibold">self-contained bookmarklets</span> designed to boost productivity, automate tasks, and simplify content management.
+                Boost productivity with <span class="text-indigo-600 font-semibold">self-contained bookmarklets</span>. No extensions required.
             </p>
         </header>
 
         <!-- FILTERS & SEARCH -->
         <div class="mb-10 flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-slate-200 sticky top-4 z-10 backdrop-blur-md bg-white/90">
             <div class="flex gap-2 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto" id="filter-container">
-                <button data-filter="all" aria-pressed="true" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-indigo-600 text-white shadow-md transition-all">All Tools</button>
+                <button data-filter="all" aria-pressed="true" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-indigo-600 text-white shadow-md transition-all">All</button>
                 <button data-filter="content" aria-pressed="false" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">Content</button>
                 <button data-filter="automation" aria-pressed="false" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">Automation</button>
                 <button data-filter="security" aria-pressed="false" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">Security</button>
@@ -54,7 +56,7 @@
                         <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
                     </svg>
                 </div>
-                <input type="text" id="search-input" placeholder="Find a tool..." class="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-500 focus:outline-none focus:placeholder-slate-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm shadow-sm transition-shadow">
+                <input type="text" id="search-input" placeholder="Search tools..." class="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-500 focus:outline-none focus:placeholder-slate-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm shadow-sm transition-shadow">
             </div>
         </div>
 
@@ -64,14 +66,14 @@
         </main>
 
         <div id="empty-state" class="hidden text-center py-20">
-            <p class="text-slate-500 text-lg">No tools match your search.</p>
-            <button id="clear-search" class="mt-4 text-indigo-600 hover:underline">Clear Filters</button>
+            <p class="text-slate-500 text-lg">No matching tools found.</p>
+            <button id="clear-search" class="mt-4 text-indigo-600 hover:underline">Reset Filters</button>
         </div>
     </div>
 
     <footer class="bg-white border-t border-slate-200 mt-auto">
         <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center">
-            <p class="text-slate-400 text-sm">© 2026 Browser Toolkit. Open Source.</p>
+            <p class="text-slate-400 text-sm">© 2026 Browser Toolkit. Open Source Project.</p>
         </div>
     </footer>
 
@@ -197,7 +199,7 @@
 
                 // Card HTML
                 const card = document.createElement('div');
-                card.className = 'bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col h-full card-enter transition-all hover:shadow-md';
+                card.className = 'bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col h-full card-enter transition-all hover:shadow-md motion-safe:hover:-translate-y-1';
                 card.style.animationDelay = `${index * 50}ms`; // Stagger animation
 
                 card.innerHTML = `
@@ -212,20 +214,20 @@
                     <div class="mt-auto">
                          <div class="flex w-full shadow-md rounded-lg overflow-hidden group">
                             <a id="btn-${tool.id}" href="#" onclick="return false;" aria-busy="true"
-                               class="bookmarklet-btn flex-1 ${btnClass} text-white font-bold py-3 px-4 text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 transition-all truncate flex items-center justify-center">
-                                <svg class="animate-spin mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                               class="bookmarklet-btn flex-1 ${btnClass} text-white font-bold py-3 px-4 text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 transition-all motion-safe:active:scale-95 truncate flex items-center justify-center">
+                                <svg class="animate-spin mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                Loading...
+                                Preparing...
                             </a>
                             <button id="copy-${tool.id}"
-                                    class="${copyClass} text-white px-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus-visible:ring-white transition-colors flex items-center justify-center opacity-50 cursor-not-allowed border-l border-white/20"
+                                    class="${copyClass} text-white px-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus-visible:ring-white transition-colors motion-safe:active:scale-95 flex items-center justify-center opacity-50 cursor-not-allowed border-l border-white/20"
                                     title="Copy Code" aria-label="Copy code for ${tool.name}">
-                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                             </button>
                         </div>
-                        <p class="text-xs text-slate-400 mt-2 text-center group-hover:text-slate-500 transition-colors">Drag button to bookmarks bar</p>
+                        <p class="text-xs text-slate-400 mt-2 text-center group-hover:text-slate-500 transition-colors">Drag to Bookmarks Bar</p>
                     </div>
                 `;
 
@@ -288,9 +290,13 @@
             const baseClasses = "px-4 py-3 rounded-lg shadow-xl text-white text-sm font-medium flex items-center gap-3 min-w-[240px] backdrop-blur-sm";
             const bgClass = type === 'success' ? 'bg-emerald-600/95' : 'bg-slate-800/95';
 
+            const iconSvg = type === 'success'
+                ? `<svg class="w-5 h-5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`
+                : `<svg class="w-5 h-5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+
             toast.className = `${baseClasses} ${bgClass} toast-enter`;
             toast.innerHTML = `
-                <span class="text-lg">${type === 'success' ? '✓' : 'ℹ'}</span>
+                ${iconSvg}
                 <span>${message}</span>
             `;
 
@@ -307,7 +313,7 @@
             if (!btn.dataset.originalHtml) {
                 btn.dataset.originalHtml = btn.innerHTML;
             }
-            const checkIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+            const checkIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
             btn.innerHTML = checkIcon;
             if (btn.dataset.timeoutId) clearTimeout(parseInt(btn.dataset.timeoutId));
             const timeoutId = setTimeout(() => {
@@ -438,7 +444,7 @@
 
                 el.addEventListener('click', (e) => {
                     e.preventDefault(); // Prevent navigation
-                    showToast(`Bookmarklets work best from the bookmarks bar. Running here may fail.`, 'info');
+                    showToast(`Run from Bookmarks Bar for best results.`, 'info');
                     // Actually running it via href click works if it's javascript:
                     // But preventDefault stops that.
                     // Let's remove preventDefault if we want them to "test" it,
@@ -454,7 +460,7 @@
                 if (copyBtn) {
                     copyBtn.onclick = () => {
                         navigator.clipboard.writeText(href);
-                        showToast('Code copied to clipboard!', 'success');
+                        showToast('Code copied.', 'success');
                         animateCopyButton(copyBtn);
                     };
                     copyBtn.classList.remove('opacity-50', 'cursor-not-allowed');
