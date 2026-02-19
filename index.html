@@ -79,75 +79,9 @@
     <div id="toast-container" class="fixed bottom-5 right-5 flex flex-col gap-3 z-50 pointer-events-none" aria-live="polite" aria-atomic="true"></div>
 
     <!-- Scripts -->
-    <script src="lib/bookmarklet-builder.js"></script>
     <script>
         // --- DATA ---
-        const tools = [
-            {
-                id: 'web-clipper',
-                name: 'Web Clipper',
-                file: 'bookmarklets/web-clipper.js',
-                desc: 'Universal content capture. Snapshot articles, recipes, or invoices as clean HTML/Markdown.',
-                category: 'content',
-                color: 'blue'
-            },
-            {
-                id: 'prop-clipper',
-                name: 'Property Clipper',
-                file: 'bookmarklets/property-clipper.js',
-                desc: 'Research tool for Zillow/Redfin. Extracts hidden data and generates AI analysis prompts.',
-                category: 'content',
-                color: 'indigo'
-            },
-            {
-                id: 'pa-county',
-                name: 'PA County Finder',
-                file: 'bookmarklets/pa-county-finder.js',
-                desc: 'Instantly find PA County/Township for any ZIP or City via highlight or prompt.',
-                category: 'content',
-                color: 'sky'
-            },
-            {
-                id: 'quick-clicker',
-                name: 'Quick Clicker V27',
-                file: 'bookmarklets/quick-clicker.js',
-                desc: 'Powerful automation. Schedule clicks (Delay/Clock), fill forms, and maintain wake lock.',
-                category: 'automation',
-                color: 'emerald'
-            },
-            {
-                id: 'macro-builder',
-                name: 'Macro Builder V22',
-                file: 'bookmarklets/macro-builder.js',
-                desc: 'Record & Replay. Generate robust, comment-free bookmarklets from your actions.',
-                category: 'automation',
-                color: 'violet'
-            },
-            {
-                id: 'interaction-recorder',
-                name: 'Interaction Recorder',
-                file: 'bookmarklets/interaction-recorder.js',
-                desc: 'Troubleshoot automation. Captures clicks, Shadow DOM paths, and exports analysis.',
-                category: 'automation',
-                color: 'amber'
-            },
-            {
-                id: 'delayed-clicker',
-                name: 'Delayed Clicker V5',
-                file: 'bookmarklets/delayed-clicker.js',
-                desc: 'Simple, stable timer clicker. Set a delay and a target element.',
-                category: 'automation',
-                color: 'slate'
-            },
-            {
-                id: 'passphrase',
-                name: 'Passphrase Generator',
-                file: 'bookmarklets/passphrase-generator.js',
-                desc: 'Create unbreakable, memorable passwords. Includes temporary disposable mode.',
-                category: 'security',
-                color: 'rose'
-            }
-        ];
+        let tools = [];
 
         // --- RENDER ---
         const grid = document.getElementById('tools-grid');
@@ -155,6 +89,18 @@
         const searchInput = document.getElementById('search-input');
         const filterBtns = document.querySelectorAll('.filter-btn');
         let currentFilter = 'all';
+
+        async function init() {
+            try {
+                const res = await fetchWithRetry('dist/tools.json');
+                if (!res.ok) throw new Error('Failed to load tools config');
+                tools = await res.json();
+                renderTools();
+            } catch (e) {
+                console.error(e);
+                grid.innerHTML = '<div class="col-span-full text-center text-red-500 font-bold p-10">Failed to load tools configuration. Please try refreshing.</div>';
+            }
+        }
 
         function renderTools(filterText = '') {
             grid.innerHTML = '';
@@ -211,16 +157,13 @@
 
                     <div class="mt-auto">
                          <div class="flex w-full shadow-md rounded-lg overflow-hidden group">
-                            <a id="btn-${tool.id}" href="#" onclick="return false;" aria-busy="true"
+                            <a id="btn-${tool.id}" href="${tool.href}"
+                               title="Drag to bookmarks or click to run ${tool.name}" aria-label="Drag ${tool.name} bookmarklet to your bookmarks bar"
                                class="bookmarklet-btn flex-1 ${btnClass} text-white font-bold py-3 px-4 text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 transition-all truncate flex items-center justify-center">
-                                <svg class="animate-spin mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                Loading...
+                                ${tool.name}
                             </a>
                             <button id="copy-${tool.id}"
-                                    class="${copyClass} text-white px-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus-visible:ring-white transition-colors flex items-center justify-center opacity-50 cursor-not-allowed border-l border-white/20"
+                                    class="${copyClass} text-white px-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus-visible:ring-white transition-colors flex items-center justify-center border-l border-white/20"
                                     title="Copy Code" aria-label="Copy code for ${tool.name}">
                                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                             </button>
@@ -229,10 +172,22 @@
                     </div>
                 `;
 
-                grid.appendChild(card);
+                // Add Click Handler for Deliberate Run
+                const link = card.querySelector(`#btn-${tool.id}`);
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showToast(`Bookmarklets work best from the bookmarks bar. Running here may fail.`, 'info');
+                });
 
-                // Trigger compilation/loading
-                load(`btn-${tool.id}`, tool.file, tool.name);
+                // Copy Handler
+                const copyBtn = card.querySelector(`#copy-${tool.id}`);
+                copyBtn.onclick = () => {
+                    navigator.clipboard.writeText(tool.href);
+                    showToast('Code copied to clipboard!', 'success');
+                    animateCopyButton(copyBtn);
+                };
+
+                grid.appendChild(card);
             });
 
             if (count === 0) {
@@ -317,7 +272,7 @@
             btn.dataset.timeoutId = timeoutId;
         }
 
-        // --- COMPILER ---
+        // --- FETCH ---
         async function fetchWithRetry(url, options = {}, retries = 3, backoff = 300) {
             try {
                 const res = await fetch(url, options);
@@ -336,143 +291,8 @@
             }
         }
 
-        async function load(id, file, name) {
-            // Need to wait for DOM insertion if run immediately?
-            // Since we call load() inside renderTools(), the elements exist.
-            const el = document.getElementById(id);
-            const copyBtnId = id.replace('btn-', 'copy-'); // e.g. copy-web-clipper
-            const copyBtn = document.getElementById(copyBtnId);
-
-            if (!el) return; // safety
-
-            try {
-                const res = await fetchWithRetry(file);
-                if (!res.ok) throw new Error('Failed to load file: ' + file);
-                let code = await res.text();
-
-                // Dependencies
-                const pathPrefix = file.substring(0, file.lastIndexOf('/') + 1);
-                const deps = BookmarkletBuilder.extractDependencies(code);
-                const reversedDeps = [...deps].reverse();
-
-                for (const dep of reversedDeps) {
-                    const depUrl = pathPrefix + dep;
-                    try {
-                        const depRes = await fetchWithRetry(depUrl);
-                        if (!depRes.ok) throw new Error('Failed dependency: ' + depUrl);
-                        const depCode = await depRes.text();
-                        code = depCode + '\n' + code;
-                        console.log(`[${name}] Injected dependency: ${dep}`);
-                    } catch (depErr) {
-                        console.error(depErr);
-                        throw depErr;
-                    }
-                }
-
-                // --- INCLUDE DIRECTIVES ---
-                // Support for /* @include_text relative/path/to/file.ext */
-                // This replaces the comment with the file content, JSON stringified to ensure valid JS string characters.
-                const includeRegex = /\/\*\s*@include_text\s+['"]?([^'"]+?)['"]?\s*\*\//g;
-                let match;
-                // We need to handle async replacements. String.replace doesn't support async.
-                // So we find all matches first.
-                const replacements = [];
-                while ((match = includeRegex.exec(code)) !== null) {
-                    replacements.push({
-                        fullMatch: match[0],
-                        path: match[1].trim(),
-                        index: match.index
-                    });
-                }
-
-                // Process replacements in reverse order to not mess up indices
-                // Or just string replace one by one if we re-run regex or use split/join.
-                // Simpler: iterate and fetch, then replace.
-                for (const rep of replacements) {
-                    const incUrl = pathPrefix + rep.path; // e.g. bookmarklets/prompts/str.md
-                    try {
-                        const incRes = await fetchWithRetry(incUrl);
-                        if (!incRes.ok) throw new Error('Failed include: ' + incUrl);
-                        let incText = await incRes.text();
-
-                        // Sanitize/Escape for JS String Literal
-                        // We use JSON.stringify(incText) which returns "content..." (with quotes)
-                        // But the directive might be inside backticks or quotes already in the source?
-                        // In property-clipper-prompts.js: `/* @include_text ... */` (inside backticks)
-                        // So we want the raw text content, but escaped for backticks?
-                        // If source is: `... ${/* @include_text ... */} ...` -> No, it is `... /* @include_text ... */ ...`
-                        // Wait, `prompts.js` has: objective: `/* @include_text ... */`
-                        // So the replacement should be the raw text content, but we must escape backticks if we are inside backticks.
-                        // However, we don't know if we are inside backticks easily.
-                        // BUT, if we use the directive as the *entire* content of a string, we might want to just inject it.
-
-                        // Let's assume the directive is used where a string content is expected.
-                        // If the user wrote: const x = `/* @include_text foo.md */`;
-                        // And foo.md contains: Hello `World`
-                        // Result: const x = `Hello `World``; -> Syntax Error.
-
-                        // Correct approach for this specific usage pattern:
-                        // The directive is inside a template literal in `prompts.js`.
-                        // We should escape backticks and ${} in the included text.
-                        incText = incText.replace(/`/g, '\\`').replace(/\$\{/g, '\\${');
-
-                        // Use global replacement for this specific match string to handle duplicates if any
-                        code = code.replace(rep.fullMatch, incText);
-                        console.log(`[${name}] Included text: ${rep.path}`);
-                    } catch (incErr) {
-                         console.error(incErr);
-                         throw incErr;
-                    }
-                }
-
-                code = BookmarkletBuilder.compile(code);
-                const href = `javascript:${encodeURIComponent(code)}`;
-
-                el.href = href;
-                el.innerHTML = name; // Remove loading spinner
-
-                el.removeAttribute('onclick');
-                el.removeAttribute('aria-busy');
-                el.setAttribute('title', `Drag to bookmarks or click to run ${name}`);
-                el.setAttribute('aria-label', `Drag ${name} bookmarklet to your bookmarks bar`);
-
-                el.addEventListener('click', (e) => {
-                    e.preventDefault(); // Prevent navigation
-                    showToast(`Bookmarklets work best from the bookmarks bar. Running here may fail.`, 'info');
-                    // Actually running it via href click works if it's javascript:
-                    // But preventDefault stops that.
-                    // Let's remove preventDefault if we want them to "test" it,
-                    // OR we just execute the href manually.
-                    // For safety/UX, usually bookmarklets fail on the index page itself due to CSP or context.
-                    // But let's allow it for "delight" if possible.
-                    // If we remove preventDefault, the browser executes the JS.
-                });
-                // Re-add click listener that DOES NOT prevent default but shows toast?
-                // The original code had onclick="return false" which we removed.
-                // So clicking it now runs the JS.
-
-                if (copyBtn) {
-                    copyBtn.onclick = () => {
-                        navigator.clipboard.writeText(href);
-                        showToast('Code copied to clipboard!', 'success');
-                        animateCopyButton(copyBtn);
-                    };
-                    copyBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                }
-
-            } catch (e) {
-                console.error(e);
-                el.innerHTML = "Error";
-                el.classList.add("bg-red-500", "hover:bg-red-600");
-                if (copyBtn) {
-                    copyBtn.innerHTML = "!";
-                    copyBtn.classList.add("bg-red-800");
-                }
-            }
-        }
-
-        // Initial Render
-        renderTools();
+        // Initial Load
+        init();
 
     </script>
 </body>
