@@ -50,7 +50,7 @@ function runTest() {
     }
 
     // Test Temp Password Mode
-    const toggleBtn = Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('Switch'));
+    const toggleBtn = Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('Mode'));
     if (toggleBtn) {
         toggleBtn.click();
         passwords = Array.from(document.querySelectorAll('div')).filter(d => d.style.fontFamily === 'monospace').map(p => p.textContent);
@@ -65,7 +65,7 @@ function runTest() {
     }
 
     // Test Aria-Label on Regenerate Button
-    const regenBtn = Array.from(document.querySelectorAll('button')).find(b => b.textContent === 'Regenerate');
+    const regenBtn = Array.from(document.querySelectorAll('button')).find(b => b.textContent === 'Refresh');
     if (regenBtn) {
         if (regenBtn.getAttribute('aria-label') === 'Generate new passphrases') {
             console.log("✅ Regenerate button has correct aria-label.");

@@ -37,7 +37,7 @@ async function runTest() {
     global.confirm = (msg) => {
         // console.log("Confirm:", msg);
         if (msg.includes('Pick another')) return false;
-        if (msg.includes('sensitive data')) return false;
+        if (msg.includes('Sensitive?')) return false;
         return true;
     };
 
