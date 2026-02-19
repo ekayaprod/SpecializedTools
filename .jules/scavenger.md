@@ -54,3 +54,8 @@ BOUNDARIES
 ## [2026-02-18] (Scavenger Run 2)
 - **Deleted:** `tests/benchmark_inline_styles.js` (unused benchmark script)
 - **Reason:** File was not included in test suite and is a standalone benchmark script.
+
+## [2026-02-18] (Scavenger Run 3)
+- **Deleted:** `verification/` directory (orphaned verification script and artifacts)
+- **Reason:** Directory contained manual Python test scripts and images not used in CI/CD pipeline.
+- **Fixed:** `tests/test_macro_builder.js` and `tests/test_passphrase_generator.js` (Fixed test drift caused by UI text changes).
