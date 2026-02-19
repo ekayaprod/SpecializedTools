@@ -193,7 +193,9 @@
                             id: target.id,
                             className: target.className
                         },
-                        error: err
+                        error: err,
+                        url: window.location.href,
+                        timestamp: new Date().toISOString()
                     });
                     this.hideLoadingOverlay();
                     BookmarkletUtils.showToast('Error opening editor: ' + err.message, 'error');
@@ -432,7 +434,7 @@
                 btn.style.background = "#28a745";
                 setTimeout(() => { this.closeEditor(); }, 1000);
             } catch (err) {
-                console.error('Clipboard access failed:', err);
+                console.error('Clipboard access failed:', { error: err, url: window.location.href, timestamp: new Date().toISOString() });
                 btn.textContent = "Error";
                 btn.style.background = "#dc3545";
                 setTimeout(() => {
@@ -513,7 +515,7 @@
                     btn.disabled = false;
                 }
             }).catch((err) => {
-                console.error('PNG Capture failed:', err);
+                console.error('PNG Capture failed:', { error: err, url: window.location.href, timestamp: new Date().toISOString() });
                 element.style.backgroundColor = originalBg;
 
                 if (btn) {

@@ -218,7 +218,7 @@
                 if (data.address === 'Unknown Address') data.address = /** @type {HTMLElement} */ (document.querySelector('h1'))?.innerText || data.address;
                 if (data.price === 'Unknown Price') data.price = /** @type {HTMLElement} */ (document.querySelector('[data-testid="ldp-list-price"]'))?.innerText || data.price;
                 
-            } catch (e) { console.warn('DOM Extraction Warning:', { error: e, partialAddress: data.address, partialPrice: data.price }); }
+            } catch (e) { console.warn('DOM Extraction Warning:', { error: e, partialAddress: data.address, partialPrice: data.price, url: window.location.href, timestamp: new Date().toISOString() }); }
 
             return data;
         }
@@ -253,7 +253,7 @@
                     try {
                         resolve({ dataUrl: canvas.toDataURL('image/jpeg', CONFIG.imgQuality), width, height, ratio: width / height });
                     } catch (e) {
-                        console.warn('Image processing failed:', { error: e, url, width, height });
+                        console.warn('Image processing failed:', { error: e, url, width, height, timestamp: new Date().toISOString() });
                         resolve(null);
                     }
                 };
