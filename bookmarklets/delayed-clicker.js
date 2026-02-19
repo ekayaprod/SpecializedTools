@@ -13,7 +13,7 @@
 
     class DC {
         constructor(){
-            this.id = 'dc-' + Math.random().toString(36).substr(2,5);
+            this.id = 'dc-' + Math.random().toString(36).slice(2, 7);
             this.el = null; // Target element
             this.val = null; // Value to set (if select)
             this.tm = null; // Timer

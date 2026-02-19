@@ -435,14 +435,16 @@
                 /* Collect all items to process */
                 const queue = Array.from(root.querySelectorAll('picture, img'));
                 let count = 0;
+                let queueIndex = 0;
                 const CHUNK_SIZE = 50;
 
                 function processChunk() {
                     try {
                         const startTime = performance.now();
 
-                        while (queue.length > 0) {
-                            const el = queue.shift();
+                        while (queueIndex < queue.length) {
+                            const el = queue[queueIndex];
+                            queueIndex++;
 
                             if (el.tagName.toLowerCase() === 'picture') {
                                 processPictureElement(el);
