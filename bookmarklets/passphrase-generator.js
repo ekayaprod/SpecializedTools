@@ -331,20 +331,7 @@
     function renderControls() {
         controls.innerHTML = '';
         if (STATE.mode === 'passphrase') {
-            // Structure
-            const structSel = document.createElement('select');
-            Object.assign(structSel.style, { padding: '4px', borderRadius: '4px', border: '1px solid #cbd5e1', fontSize: '13px', width: '180px' });
-            for(let len in PHRASE_STRUCTURES.standard) {
-                PHRASE_STRUCTURES.standard[len].forEach((s, idx) => {
-                    const opt = document.createElement('option');
-                    opt.value = `${len}-${idx}`;
-                    opt.textContent = `${len} Words - ${s.label}`;
-                    if(STATE.config.structure === opt.value) opt.selected = true;
-                    structSel.appendChild(opt);
-                });
-            }
-            structSel.onchange = (e) => { STATE.config.structure = /** @type {HTMLSelectElement} */ (e.target).value; render(); };
-            controls.appendChild(createControl("Structure", structSel));
+            renderStructureControls();
 
             // Lengths
             const lenDiv = document.createElement('div');
@@ -396,13 +383,32 @@
             symSel.onchange = (e) => { STATE.config.symPlacement = /** @type {HTMLSelectElement} */ (e.target).value; render(); };
             controls.appendChild(createControl("Symbol Pos", symSel));
         } else {
-            // Temp Mode Controls
-            const countInp = document.createElement('input');
-            countInp.type = 'number'; countInp.value = String(STATE.tempConfig.count);
-            Object.assign(countInp.style, { width: '50px', padding: '4px' });
-            countInp.onchange = (e) => { STATE.tempConfig.count = parseInt(/** @type {HTMLInputElement} */ (e.target).value); render(); };
-            controls.appendChild(createControl("Count", countInp));
+            renderTempControls();
         }
+    }
+
+    function renderStructureControls() {
+        const structSel = document.createElement('select');
+        Object.assign(structSel.style, { padding: '4px', borderRadius: '4px', border: '1px solid #cbd5e1', fontSize: '13px', width: '180px' });
+        for(let len in PHRASE_STRUCTURES.standard) {
+            PHRASE_STRUCTURES.standard[len].forEach((s, idx) => {
+                const opt = document.createElement('option');
+                opt.value = `${len}-${idx}`;
+                opt.textContent = `${len} Words - ${s.label}`;
+                if(STATE.config.structure === opt.value) opt.selected = true;
+                structSel.appendChild(opt);
+            });
+        }
+        structSel.onchange = (e) => { STATE.config.structure = /** @type {HTMLSelectElement} */ (e.target).value; render(); };
+        controls.appendChild(createControl("Structure", structSel));
+    }
+
+    function renderTempControls() {
+        const countInp = document.createElement('input');
+        countInp.type = 'number'; countInp.value = String(STATE.tempConfig.count);
+        Object.assign(countInp.style, { width: '50px', padding: '4px' });
+        countInp.onchange = (e) => { STATE.tempConfig.count = parseInt(/** @type {HTMLInputElement} */ (e.target).value); render(); };
+        controls.appendChild(createControl("Count", countInp));
     }
 
     function render() {
