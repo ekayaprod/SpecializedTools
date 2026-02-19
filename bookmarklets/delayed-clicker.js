@@ -7,7 +7,7 @@
 
     /* Check if we can run here */
     if(window.location.protocol === 'about:' || window.location.protocol === 'chrome:'){
-        console.warn('Delayed Clicker: Cannot run on internal browser pages.');
+        console.warn('Delayed Clicker: Cannot run on internal browser pages.', { url: window.location.href });
         return;
     }
 
@@ -348,7 +348,7 @@
                     });
                 }
             } catch(e){
-                console.error("Delayed Clicker Error:", e);
+                console.error("Delayed Clicker Error:", { error: e.message, stack: e.stack, target: this.el ? this.el.tagName : 'unknown' });
                 this.ui.timer.innerText = "Error!";
             }
             

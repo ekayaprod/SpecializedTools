@@ -1,6 +1,6 @@
 (function() {
     if(window.__dc_v27){window.__dc_v27.destroy();return}
-    if(!document.body) return console.error('Page has no body.');
+    if(!document.body) return console.error('Page has no body.', { url: window.location.href });
 
     /**
      * @typedef {Object} QuickClickerState
@@ -365,7 +365,7 @@
                     this.showToast('No Sleep Active', 'success');
                 }
             } catch(e){
-                console.warn('Wake Lock failed:', e);
+                console.warn('Wake Lock failed:', { error: e.message, type: e.name });
             }
 
             this.switchView('v1', 'v2', 'cn');
