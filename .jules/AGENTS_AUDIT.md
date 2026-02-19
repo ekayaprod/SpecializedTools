@@ -10,7 +10,7 @@
 
 ⚡ Performance Bottlenecks
 
-[ ] Bundle Size: 56KB (passphrase-generator.js) - Large for bookmarklet.
+[x] Bundle Size: 56KB (passphrase-generator.js) - Reduced to 44KB via string split optimization.
 
 [ ] Client-side compilation used (No build script detected).
 
