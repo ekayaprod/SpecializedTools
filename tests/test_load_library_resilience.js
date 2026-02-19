@@ -109,6 +109,30 @@ async function testLoadLibraryResilience() {
         delete global.window.existingLib;
         console.log("✅ Passed");
     }
+
+    // Test 4: Single Load with Attributes (Verification of src, integrity, crossOrigin)
+    {
+        console.log("Test 4: Single Load with Attributes");
+        let scriptEl = null;
+        global.document.head.appendChild = (el) => {
+            scriptEl = el;
+            setTimeout(() => {
+                global.window.secureLib = {};
+                if(el._onload) el._onload();
+            }, 10);
+            return el;
+        };
+
+        await utils.loadLibrary('secureLib', 'http://example.com/secure.js', 'sha-256');
+
+        assert.ok(scriptEl, "Script element should be created");
+        assert.strictEqual(scriptEl.src, 'http://example.com/secure.js', "Src mismatch");
+        assert.strictEqual(scriptEl.integrity, 'sha-256', "Integrity mismatch");
+        assert.strictEqual(scriptEl.crossOrigin, 'anonymous', "CrossOrigin mismatch");
+
+        delete global.window.secureLib;
+        console.log("✅ Passed");
+    }
 }
 
 testLoadLibraryResilience().then(() => {
