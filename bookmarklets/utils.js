@@ -65,12 +65,9 @@
         },
         sanitizeElement(el) {
             if (!el.attributes) return;
-            const attrs = [];
-            /* Iterate copy of attributes to safely remove them */
-            for (let i = 0; i < el.attributes.length; i++) attrs.push(el.attributes[i].name);
-
-            for (let i = 0; i < attrs.length; i++) {
-                Sanitizer._sanitizeAttribute(el, attrs[i]);
+            /* Iterate backwards to safely remove attributes without copying */
+            for (let i = el.attributes.length - 1; i >= 0; i--) {
+                Sanitizer._sanitizeAttribute(el, el.attributes[i].name);
             }
         },
         _sanitizeAttribute(el, name) {
@@ -180,12 +177,12 @@
             case 'br': parts.push('\n'); break;
             case 'li':
                 parts.push((node.parentElement && node.parentElement.tagName.toLowerCase() === 'ol') ?
-                    '\n' + (Array.prototype.indexOf.call(node.parentElement.children, node) + 1) + '. ' :
+                    `\n${Array.prototype.indexOf.call(node.parentElement.children, node) + 1}. ` :
                     '\n- ');
                 break;
             case 'a': parts.push('['); break;
             case 'img':
-                parts.push('![' + (node.getAttribute('alt')||'') + '](' + (node.getAttribute('src')||'') + ')');
+                parts.push(`![${node.getAttribute('alt')||''}](${node.getAttribute('src')||''})`);
                 return;
             case 'table': parts.push('\n\n'); break;
             case 'td': case 'th': parts.push('| '); break;
@@ -197,7 +194,7 @@
             case 'strong': case 'b': parts.push('**'); break;
             case 'em': case 'i': parts.push('*'); break;
             case 'a':
-                parts.push('](' + (node.getAttribute('href')||'') + ')');
+                parts.push(`](${node.getAttribute('href')||''})`);
                 break;
             case 'h1': case 'h2': case 'h3': case 'h4': case 'p': parts.push('\n'); break;
             case 'tr': parts.push('|\n'); break;
