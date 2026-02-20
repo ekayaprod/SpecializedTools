@@ -261,8 +261,8 @@
                 e.preventDefault();
                 pos3 = e.clientX;
                 pos4 = e.clientY;
-                document.onmouseup = closeDragElement;
-                document.onmousemove = elementDrag;
+                document.addEventListener('mouseup', closeDragElement);
+                document.addEventListener('mousemove', elementDrag);
             };
             const elementDrag = (e) => {
                 e = e || window.event;
@@ -275,8 +275,8 @@
                 target.style.left = (target.offsetLeft - pos1) + "px";
             };
             const closeDragElement = () => {
-                document.onmouseup = null;
-                document.onmousemove = null;
+                document.removeEventListener('mouseup', closeDragElement);
+                document.removeEventListener('mousemove', elementDrag);
             };
             handle.onmousedown = dragMouseDown;
         },
