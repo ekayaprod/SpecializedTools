@@ -47,10 +47,14 @@ async function runTest() {
     };
 
     // Load and execute script
+const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
+const utilsContent = fs.readFileSync(utilsPath, 'utf8');
     const scriptPath = path.join(__dirname, '../bookmarklets/macro-builder.js');
     const scriptContent = fs.readFileSync(scriptPath, 'utf8');
 
     try {
+        eval(utilsContent);
+        if (window.BookmarkletUtils) { global.BookmarkletUtils = window.BookmarkletUtils; }
         eval(scriptContent);
     } catch (e) {
         console.error("Script execution failed:", e);

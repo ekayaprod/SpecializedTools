@@ -253,6 +253,38 @@
         },
 
         /**
+         * Makes an element draggable using a specific handle.
+         * @param {HTMLElement} handle - The element to drag by.
+         * @param {HTMLElement} target - The element to move.
+         */
+        makeDraggable(handle, target) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            const dragMouseDown = (e) => {
+                e = e || window.event;
+                e.preventDefault();
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+            };
+            const elementDrag = (e) => {
+                e = e || window.event;
+                e.preventDefault();
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                target.style.top = (target.offsetTop - pos2) + "px";
+                target.style.left = (target.offsetLeft - pos1) + "px";
+            };
+            const closeDragElement = () => {
+                document.onmouseup = null;
+                document.onmousemove = null;
+            };
+            handle.onmousedown = dragMouseDown;
+        },
+
+        /**
          * Shows a toast notification.
          * @param {string} message - The message to display.
          * @param {'info'|'success'|'error'} [type='info'] - The type of notification.

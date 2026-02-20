@@ -2,6 +2,7 @@
   "name": "browser-toolkit",
   "version": "1.0.0",
   "description": "A collection of utility bookmarklets for web development and content management.",
+  "license": "MIT",
   "keywords": [
     "bookmarklet",
     "browser",
