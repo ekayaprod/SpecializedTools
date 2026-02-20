@@ -190,6 +190,68 @@ console.log("Running BookmarkletUtils tests...");
             }
         }
 
+        // Test 6: htmlToMarkdown Resilience
+        {
+            console.log("Test 6: htmlToMarkdown Resilience");
+
+            // 1. Invalid inputs
+            assert.strictEqual(window.BookmarkletUtils.htmlToMarkdown(null), '', 'Null input should return empty string');
+            assert.strictEqual(window.BookmarkletUtils.htmlToMarkdown(undefined), '', 'Undefined input should return empty string');
+            assert.strictEqual(window.BookmarkletUtils.htmlToMarkdown(123), '', 'Number input should return empty string');
+            assert.strictEqual(window.BookmarkletUtils.htmlToMarkdown({}), '', 'Object input should return empty string');
+
+            // 2. DOMParser failure (Mocking)
+            const originalDOMParser = window.DOMParser;
+            window.DOMParser = class MockBrokenParser {
+                parseFromString() { throw new Error('Parser crashed'); }
+            };
+
+            try {
+                const result = window.BookmarkletUtils.htmlToMarkdown('<div>test</div>');
+                assert.strictEqual(result, '', 'Should handle parser crash gracefully');
+                console.log("✅ htmlToMarkdown handled crash gracefully");
+            } finally {
+                window.DOMParser = originalDOMParser;
+            }
+        }
+
+        // Test 7: downloadFile Resilience
+        {
+            console.log("Test 7: downloadFile Resilience");
+
+            // Mock showToast
+            let toastMessage = '';
+            let toastType = '';
+            const originalShowToast = window.BookmarkletUtils.showToast;
+            window.BookmarkletUtils.showToast = (msg, type) => {
+                toastMessage = msg;
+                toastType = type;
+            };
+
+            // Mock URL.createObjectURL to fail
+            const originalCreateObjectURL = window.URL.createObjectURL;
+            window.URL.createObjectURL = () => { throw new Error('Blob denied'); };
+
+            // Spy on console.error
+            const originalConsoleError = console.error;
+            let consoleErrorCalled = false;
+            console.error = () => { consoleErrorCalled = true; };
+
+            try {
+                window.BookmarkletUtils.downloadFile('test.txt', 'content', 'text/plain');
+
+                assert.ok(toastMessage.includes('Download failed'), 'Toast should report failure');
+                assert.strictEqual(toastType, 'error', 'Toast type should be error');
+                assert.ok(consoleErrorCalled, 'Console error should be logged');
+
+                console.log("✅ downloadFile handled error gracefully");
+            } finally {
+                window.URL.createObjectURL = originalCreateObjectURL;
+                window.BookmarkletUtils.showToast = originalShowToast;
+                console.error = originalConsoleError;
+            }
+        }
+
         console.log("All tests passed!");
     } catch (err) {
         console.error("Test failed:", err);

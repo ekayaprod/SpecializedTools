@@ -375,17 +375,22 @@
          * @returns {void}
          */
         downloadFile(filename, content, type) {
-            /* Create blob and download link */
-            const blob = new Blob([content], { type: type || 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            /* Revoke URL after short delay to free memory */
-            setTimeout(function() { URL.revokeObjectURL(url); }, 100);
+            try {
+                /* Create blob and download link */
+                const blob = new Blob([content], { type: type || 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                /* Revoke URL after short delay to free memory */
+                setTimeout(function() { URL.revokeObjectURL(url); }, 100);
+            } catch (e) {
+                console.error('Download failed:', e);
+                this.showToast('Download failed: ' + (e.message || 'Unknown error'), 'error');
+            }
         },
         /**
          * Loads an external script (library) dynamically if not already present.
@@ -635,14 +640,20 @@
          * // "Check [this](https://example.com)."
          */
         htmlToMarkdown(html) {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
+            if (!html || typeof html !== 'string') return '';
+            try {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
 
-            const parts = [];
-            traverse(doc.body, parts);
+                const parts = [];
+                traverse(doc.body, parts);
 
-            /* Cleanup excessive newlines */
-            return parts.join('').replace(/\n\s+\n/g, '\n\n').trim();
+                /* Cleanup excessive newlines */
+                return parts.join('').replace(/\n\s+\n/g, '\n\n').trim();
+            } catch (e) {
+                console.warn('HTML to Markdown conversion failed:', e);
+                return '';
+            }
         }
     };
 })(window);

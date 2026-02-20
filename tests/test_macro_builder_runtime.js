@@ -55,6 +55,12 @@ async function runTest() {
         console.log("Input changed:", inputValue);
     });
 
+    // Load Utils
+    const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
+    const utilsCode = fs.readFileSync(utilsPath, 'utf8');
+    eval(utilsCode);
+    if (window.BookmarkletUtils) { global.BookmarkletUtils = window.BookmarkletUtils; }
+
     // Load Builder Script
     const scriptPath = path.join(__dirname, '../bookmarklets/macro-builder.js');
     const scriptContent = fs.readFileSync(scriptPath, 'utf8');
