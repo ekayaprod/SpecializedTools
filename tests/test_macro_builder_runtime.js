@@ -56,11 +56,15 @@ async function runTest() {
     });
 
     // Load Builder Script
+    const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
+    const utilsContent = fs.readFileSync(utilsPath, 'utf8');
     const scriptPath = path.join(__dirname, '../bookmarklets/macro-builder.js');
     const scriptContent = fs.readFileSync(scriptPath, 'utf8');
 
     // Execute Builder to get the App instance
     try {
+        eval(utilsContent);
+        if (window.BookmarkletUtils) { global.BookmarkletUtils = window.BookmarkletUtils; }
         eval(scriptContent);
     } catch (e) {
         console.error("Builder script execution failed:", e);
