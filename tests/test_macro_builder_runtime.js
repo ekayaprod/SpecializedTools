@@ -55,6 +55,18 @@ async function runTest() {
         console.log("Input changed:", inputValue);
     });
 
+    // Load Utils Script
+    const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
+    const utilsContent = fs.readFileSync(utilsPath, 'utf8');
+    try {
+        eval(utilsContent);
+    } catch (e) {
+        console.error("Utils script execution failed:", e);
+        process.exit(1);
+    }
+    // Ensure BookmarkletUtils is available globally for the builder script
+    global.BookmarkletUtils = global.window.BookmarkletUtils;
+
     // Load Builder Script
     const scriptPath = path.join(__dirname, '../bookmarklets/macro-builder.js');
     const scriptContent = fs.readFileSync(scriptPath, 'utf8');

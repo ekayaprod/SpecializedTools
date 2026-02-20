@@ -12,7 +12,12 @@
             this.init();
         }
 
+        _log(msg, data) {
+            console.log('[MacroBuilder] ' + msg, data || '');
+        }
+
         init(){
+            this._log('Initialized', { id: this.id });
             this.h = document.createElement('div');
             this.h.style.cssText = 'position:fixed;top:15px;right:15px;z-index:2147483647;font-family:system-ui,sans-serif';
             this.s = this.h.attachShadow({mode:'open'});
@@ -111,6 +116,7 @@
         }
 
         startSequence() {
+            this._log('Sequence picking started');
             this.currentSequence = [];
             if(!confirm('Start picking elements? Click Cancel when done.')) return;
             this.pick('sequence');
@@ -192,6 +198,7 @@
                 this.q('#preview').classList.remove('hidden');
 
                 this.q('#prev_yes').onclick = () => {
+                    this._log('Element picked', { tag: targetEl.tagName, sel: sel });
                     this.q('#preview').classList.add('hidden');
                     this.clearListeners();
 
@@ -277,9 +284,11 @@
                     this.refreshList();
                 };
             });
+            this._log('Step list refreshed', { steps: this.steps.length });
         }
 
         compile(){
+            this._log('Compiling macro', { steps: this.steps.length });
             if(this.steps.length===0) return alert('Add steps first');
 
             this.steps.forEach(step => {
@@ -302,7 +311,9 @@
                         this.id = 'run-'+Math.random().toString(36).slice(2);
                         this.init();
                     }
+                    _log(msg, data) { console.log('[MacroRuntime] ' + msg, data || ''); }
                     init(){
+                        this._log('Initialized', { id: this.id, stepCount: steps.length });
                         this.h = document.createElement('div');
                         this.h.id = this.id;
                         this.h.style.cssText = 'position:fixed;top:15px;right:15px;z-index:2147483647;font-family:system-ui,sans-serif';
@@ -323,6 +334,7 @@
                         head.onmousedown = dragMouseDown;
                     }
                     async run(){
+                        this._log('Execution started');
                         try { if('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch(e){ console.warn('Wake Lock failed:', { error: e.message, type: e.name }); }
                         const wait = ms => new Promise(r => setTimeout(r, ms));
 
@@ -374,6 +386,7 @@
 
                         for(let i=0; i<steps.length; i++){
                             const group = steps[i];
+                            this._log('Starting step', { index: i + 1, total: steps.length, delay: group.delay });
                             this.q('#st').innerText = 'Step '+(i+1)+'/'+steps.length;
 
                             let rem = group.delay * 1000;
@@ -390,6 +403,7 @@
                             this.q('#tm').innerText = 'Running...';
                             for(let j=0; j<group.actions.length; j++) {
                                 const action = group.actions[j];
+                                this._log('Executing action', { index: j + 1, sel: action.sel });
 
                                 if(j === 1) {
                                    await ensureTopLevel();
@@ -397,7 +411,13 @@
 
                                 const el = await find(action.sel, action.txt);
 
-                                if(!el) { alert('Step '+(i+1)+' Sub-action '+(j+1)+' Failed: Not found ('+action.sel+')'); return; }
+                                if(!el) {
+                                    const err = { step: i+1, action: j+1, sel: action.sel };
+                                    console.error('[MacroRuntime] Element not found', err);
+                                    alert('Step '+(i+1)+' Sub-action '+(j+1)+' Failed: Not found ('+action.sel+')');
+                                    return;
+                                }
+                                this._log('Element found', { sel: action.sel });
 
                                 if(action.val !== null || action.ask){
                                     let v = action.val;
@@ -421,6 +441,7 @@
                         }
                         this.q('#tm').innerText = 'Done';
                         this.q('#st').innerText = 'Finished';
+                        this._log('Execution finished');
                         setTimeout(()=>this.destroy(), 3000);
                     }
                     destroy(){ this.h.remove(); delete window.__mb_run; }
