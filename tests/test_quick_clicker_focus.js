@@ -23,6 +23,8 @@ global.console.error = (msg) => {
 };
 
 // Load script
+const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
+const utilsContent = fs.readFileSync(utilsPath, 'utf8');
 const scriptPath = path.join(__dirname, '../bookmarklets/quick-clicker.js');
 const scriptContent = fs.readFileSync(scriptPath, 'utf8');
 
@@ -30,6 +32,8 @@ async function testFocusManagement() {
     console.log("🚀 Starting Quick Clicker Focus Test...");
 
     try {
+        eval(utilsContent);
+        if (window.BookmarkletUtils) { global.BookmarkletUtils = window.BookmarkletUtils; }
         eval(scriptContent);
     } catch (e) {
         console.error("Script execution failed:", e);

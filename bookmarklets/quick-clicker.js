@@ -1,4 +1,6 @@
 (function() {
+    /** @require utils.js */
+
     if(window.__dc_v27){window.__dc_v27.destroy();return}
     if(!document.body) return console.error('Page has no body.', { url: window.location.href });
 
@@ -127,7 +129,7 @@
             this.q('#cn').onclick=()=>this.reset();
             /** @type {HTMLInputElement} */ (this.q('#val')).onchange=e=>this.state.t1Val=/** @type {HTMLInputElement} */ (e.target).value;
             /** @type {HTMLInputElement} */ (this.q('#ent')).onchange=e=>this.state.pressEnter=/** @type {HTMLInputElement} */ (e.target).checked;
-            this.makeDraggable(this.q('#drag'));
+            BookmarkletUtils.makeDraggable(this.q('#drag'), this.h);
 
             this.h.onkeydown = (e) => { if(e.key === 'Escape') this.destroy(); };
 
@@ -142,37 +144,6 @@
                     this.q('#box_clock').classList.remove('hidden');
                 }
             });
-        }
-
-        /**
-         * Makes the UI window draggable.
-         * @param {HTMLElement} head - The header element to use as a drag handle.
-         */
-        makeDraggable(head){
-            let pos1=0,pos2=0,pos3=0,pos4=0;
-            const dragMouseDown = e => {
-                e = e || window.event;
-                e.preventDefault();
-                pos3 = e.clientX;
-                pos4 = e.clientY;
-                document.onmouseup = closeDragElement;
-                document.onmousemove = elementDrag;
-            };
-            const elementDrag = e => {
-                e = e || window.event;
-                e.preventDefault();
-                pos1 = pos3 - e.clientX;
-                pos2 = pos4 - e.clientY;
-                pos3 = e.clientX;
-                pos4 = e.clientY;
-                this.h.style.top = (this.h.offsetTop - pos2) + "px";
-                this.h.style.left = (this.h.offsetLeft - pos1) + "px";
-            };
-            const closeDragElement = () => {
-                document.onmouseup = null;
-                document.onmousemove = null;
-            };
-            head.onmousedown = dragMouseDown;
         }
 
         /**

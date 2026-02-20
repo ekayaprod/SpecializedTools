@@ -27,6 +27,8 @@ console.warn = (...args) => {
 };
 
 // Load script
+const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
+const utilsContent = fs.readFileSync(utilsPath, 'utf8');
 const scriptPath = path.join(__dirname, '../bookmarklets/quick-clicker.js');
 const scriptContent = fs.readFileSync(scriptPath, 'utf8');
 
@@ -34,6 +36,9 @@ async function runTest() {
     console.log("🚀 Starting reproduction test for Quick Clicker Wake Lock error handling...");
 
     try {
+        // Load utils first
+        eval(utilsContent);
+        if (window.BookmarkletUtils) { global.BookmarkletUtils = window.BookmarkletUtils; }
         // Execute the bookmarklet code
         // It's an IIFE that assigns window.__dc_v27
         eval(scriptContent);

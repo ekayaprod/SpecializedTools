@@ -40,6 +40,8 @@ global.alert = (msg) => {
 };
 
 // Load script
+const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
+const utilsContent = fs.readFileSync(utilsPath, 'utf8');
 const scriptPath = path.join(__dirname, '../bookmarklets/interaction-recorder.js');
 const scriptContent = fs.readFileSync(scriptPath, 'utf8');
 
@@ -47,6 +49,9 @@ async function runTest() {
     console.log("🚀 Starting test for Interaction Recorder...");
 
     try {
+        // Load utils first
+        eval(utilsContent);
+        if (window.BookmarkletUtils) { global.BookmarkletUtils = window.BookmarkletUtils; }
         // Execute the bookmarklet code
         eval(scriptContent);
     } catch (e) {
