@@ -81,7 +81,7 @@
     <div id="toast-container" class="fixed bottom-5 right-5 flex flex-col gap-3 z-50 pointer-events-none" aria-live="polite" aria-atomic="true"></div>
 
     <!-- Scripts -->
-    <script src="lib/bookmarklet-builder.js"></script>
+    <script src="bookmarklets/bookmarklet-builder.js"></script>
     <script>
         // --- DATA ---
         const tools = [
@@ -247,8 +247,20 @@
         // --- EVENTS ---
 
         // Search
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        const debouncedRender = debounce((value) => {
+            renderTools(value);
+        }, 300);
+
         searchInput.addEventListener('input', (e) => {
-            renderTools(e.target.value);
+            debouncedRender(e.target.value);
         });
 
         document.getElementById('clear-search').addEventListener('click', () => {
