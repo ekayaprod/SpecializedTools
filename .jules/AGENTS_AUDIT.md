@@ -42,6 +42,8 @@
 
 [x] server.log (Deleted stale log file)
 
+[x] tests/test_inline_styles_optimization.js (Deleted redundant test file, merged checks into test_inline_styles.js)
+
 🛡️ Security Radar
 
 [ ] 0 Vulnerabilities found (npm audit).
