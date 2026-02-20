@@ -56,6 +56,8 @@ async function runTests() {
         const source = document.createElement('div');
         source.style.color = 'rgb(255, 0, 0)'; // Safe (normalized by JSDOM)
         source.style.fontSize = '20px';       // Safe
+        source.style.margin = '0px';          // Safe (default value preservation check)
+        source.style.width = 'auto';          // Safe (default value preservation check)
         source.style.cursor = 'pointer';      // Unsafe (not in safelist)
         source.style.userSelect = 'none';     // Unsafe (not in safelist)
         testRoot.appendChild(source);
@@ -68,6 +70,8 @@ async function runTests() {
         const targetStyle = target.style;
         assert.strictEqual(targetStyle.color, 'rgb(255, 0, 0)', 'Color (safe) should be copied');
         assert.strictEqual(targetStyle.fontSize, '20px', 'FontSize (safe) should be copied');
+        assert.strictEqual(targetStyle.margin, '0px', 'Margin 0px (safe) should be copied');
+        assert.strictEqual(targetStyle.width, 'auto', 'Width auto (safe) should be copied');
         assert.strictEqual(targetStyle.cursor, '', 'Cursor (unsafe) should NOT be copied');
 
         // userSelect might be vendor prefixed or not supported in JSDOM depending on version,
