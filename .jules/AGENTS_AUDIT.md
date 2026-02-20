@@ -66,6 +66,8 @@
 
 [x] tests/test_bookmarklet_regex.js (Implemented robust testing for regex literal parsing in bookmarklet-builder.js)
 
+[x] bookmarklets/macro-builder.js (Added robust runtime verification in tests/test_macro_builder_runtime.js)
+
 🆙 Modernization Targets
 
 [x] Replace alert() with non-blocking UI (Toast/Modal) across all bookmarklets
