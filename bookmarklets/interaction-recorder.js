@@ -13,7 +13,12 @@
             this.init();
         }
 
+        _log(msg, data) {
+            console.log('[InteractionRecorder] ' + msg, data || '');
+        }
+
         init(){
+            this._log('Initialized', { id: this.id });
             this.h = document.createElement('div');
             this.h.style.cssText = 'position:fixed;top:15px;right:15px;z-index:2147483647;font-family:system-ui,sans-serif';
             this.s = this.h.attachShadow({mode:'open'});
@@ -63,6 +68,7 @@
         }
 
         start(){
+            this._log('Recording started');
             this.isRecording = true;
             this.log = [];
             this.startTime = Date.now();
@@ -89,6 +95,7 @@
                 };
 
                 this.log.push(clickData);
+                this._log('Click captured', { tag: t.tagName, id: t.id, path: clickData.path });
                 this.q('#cnt').innerText = this.log.length + ' Clicks';
             };
 
@@ -118,6 +125,7 @@
         }
 
         stop(){
+            this._log('Recording stopped', { totalClicks: this.log.length });
             this.isRecording = false;
             this.cleanupFns.forEach(fn => fn());
             this.cleanupFns = [];
@@ -137,6 +145,7 @@
             const a = document.createElement('a');
             a.href = url;
             a.download = 'interaction_log_' + Date.now() + '.txt';
+            this._log('Log exported', { filename: a.download });
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
