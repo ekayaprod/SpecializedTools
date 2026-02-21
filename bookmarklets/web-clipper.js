@@ -5,6 +5,8 @@
         window.__wc_instance.destroy();
     }
 
+    const ERROR_RESET_DELAY = 2000;
+
     /**
      * @typedef {Object} WebClipperConfig
      * @property {string} highlightColor
@@ -469,7 +471,8 @@
                 /* Dynamically load html2canvas if needed */
                 BookmarkletUtils.loadLibrary('html2canvas', 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', 'sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H')
                     .then(() => this.capturePng(contentArea, cleanTitle, btn, originalText))
-                    .catch(() => {
+                    .catch((err) => {
+                        console.error('Failed to load html2canvas for PNG export:', err);
                         BookmarkletUtils.showToast('Failed to load html2canvas for PNG export.', 'error');
                         if (btn) {
                             btn.textContent = 'Error';
@@ -480,7 +483,7 @@
                                 btn.disabled = false;
                                 btn.style.background = '';
                                 btn.style.color = '';
-                            }, 2000);
+                            }, ERROR_RESET_DELAY);
                         }
                     });
             } else {
@@ -527,7 +530,7 @@
                         btn.disabled = false;
                         btn.style.background = '';
                         btn.style.color = '';
-                    }, 2000);
+                    }, ERROR_RESET_DELAY);
                 } else {
                     BookmarkletUtils.showToast('PNG export failed. Check console for details.', 'error');
                 }
