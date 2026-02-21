@@ -28,6 +28,18 @@
     const buildElement = BookmarkletUtils.buildElement;
 
     /**
+     * Standardized logging helper for Blackbox context.
+     * @param {string} msg - The message to log.
+     * @param {Object} [context={}] - The context object.
+     * @param {'info'|'warn'|'error'} [level='info'] - The log level.
+     */
+    const _log = (msg, context = {}, level = 'info') => {
+        const timestamp = new Date().toISOString();
+        const payload = { ...context, timestamp };
+        console[level](`[PropertyClipper] ${msg}`, payload);
+    };
+
+    /**
      * Formats a number as a currency string (USD).
      * @param {number|string|null} val - The value to format.
      * @returns {string} The formatted currency string or 'N/A'.
@@ -160,7 +172,7 @@
             try {
                 const ogImage = document.querySelector('meta[property="og:image"]');
                 if (ogImage && ogImage.content) data.heroUrl = ogImage.content;
-            } catch (e) { console.warn('Hero Image Extraction Warning:', { error: e, url: window.location.href, title: document.title }); }
+            } catch (e) { _log('Hero Image Extraction Warning:', { error: e, url: window.location.href, title: document.title }, 'warn'); }
         },
 
         /**
@@ -175,7 +187,7 @@
             try {
                 return JSON.parse(text);
             } catch (e) {
-                console.warn(`JSON Parse Error [${sourceLabel}]:`, { error: e, textSnippet: text.substring(0, SNIPPET_LEN) });
+                _log(`JSON Parse Error [${sourceLabel}]:`, { error: e, textSnippet: text.substring(0, SNIPPET_LEN) }, 'warn');
                 return null;
             }
         },
@@ -193,7 +205,7 @@
                         this.parseDetails(pd, data);
                         return; // Prioritize Next.js data
                     } catch (e) {
-                        console.warn('Property Details Extraction Failed (NextData):', e);
+                        _log('Property Details Extraction Failed (NextData):', { error: e }, 'warn');
                     }
                 }
             }
@@ -204,7 +216,7 @@
                     try {
                         this.parseDetails(pd, data);
                     } catch (e) {
-                        console.warn('Property Details Extraction Failed (RawPre):', e);
+                        _log('Property Details Extraction Failed (RawPre):', { error: e }, 'warn');
                     }
                 }
             }
@@ -231,7 +243,7 @@
                 if (data.address === 'Unknown Address') data.address = /** @type {HTMLElement} */ (document.querySelector('h1'))?.innerText || data.address;
                 if (data.price === 'Unknown Price') data.price = /** @type {HTMLElement} */ (document.querySelector('[data-testid="ldp-list-price"]'))?.innerText || data.price;
                 
-            } catch (e) { console.warn('DOM Extraction Warning:', { error: e, partialAddress: data.address, partialPrice: data.price, url: window.location.href, timestamp: new Date().toISOString() }); }
+            } catch (e) { _log('DOM Extraction Warning:', { error: e, partialAddress: data.address, partialPrice: data.price, url: window.location.href }, 'warn'); }
         },
 
         /**
@@ -285,12 +297,12 @@
                     try {
                         resolve({ dataUrl: canvas.toDataURL('image/jpeg', CONFIG.imgQuality), width, height, ratio: width / height });
                     } catch (e) {
-                        console.warn('Image processing failed:', { error: e, url, width, height, timestamp: new Date().toISOString() });
+                        _log('Image processing failed:', { error: e, url, width, height }, 'warn');
                         resolve(null);
                     }
                 };
                 img.onerror = (e) => {
-                    console.warn('Image load failed:', { url, error: e });
+                    _log('Image load failed:', { url, error: e }, 'warn');
                     resolve(null);
                 };
                 img.src = url;
