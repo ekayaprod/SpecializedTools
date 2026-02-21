@@ -6,3 +6,4 @@ tests/*.html
 coverage/
 .vscode/
 .idea/
+server.log

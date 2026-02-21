@@ -63,3 +63,8 @@ BOUNDARIES
 ## [2026-02-19]
 - **Deleted:** `tests/test_load_library.js` (redundant test file)
 - **Reason:** File was redundant with `tests/test_load_library_resilience.js` and depended on `jsdom` which caused environment issues. Merged missing test coverage into `tests/test_load_library_resilience.js`.
+
+## [2026-02-21]
+- **Deleted:** `server.log` (stale log file)
+- **Reason:** Accidental commit of runtime logs. Added to `.gitignore` to prevent recurrence.
+- **Fixed:** `tests/test_macro_builder_runtime.js` (Removed variable redeclaration causing SyntaxError).
