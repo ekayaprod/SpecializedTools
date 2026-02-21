@@ -63,6 +63,18 @@
         });
     }
 
+    /**
+     * Scans source code for `@require` directives within block comments to identify dependencies.
+     * This allows bookmarklets to declare their dependencies (e.g., utils.js) explicitly.
+     *
+     * @param {string} code - The source code to scan.
+     * @returns {string[]} An array of dependency filenames found in the code.
+     *
+     * @example
+     * const code = '/** @require utils.js *' + '/\nfunction init() {}';
+     * const deps = BookmarkletBuilder.extractDependencies(code);
+     * console.log(deps); // Output: ['utils.js']
+     */
     function extractDependencies(code) {
         const deps = [];
         const tokenRegex = new RegExp(TOKEN_PATTERN, 'g');

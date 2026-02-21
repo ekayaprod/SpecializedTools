@@ -16,3 +16,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 🆙 Modernizer: Replaced var with const in utils.js
 - 📚 Librarian: Updated PA County Finder JSDoc and Roadmap alignment.
 - 📚 Librarian: Updated Utils JSDoc and Roadmap alignment.
+- 🕵️ Inspector: Added comprehensive test suite for drag-and-drop functionality (`makeDraggable`).
