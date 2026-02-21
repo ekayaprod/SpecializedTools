@@ -140,16 +140,9 @@
 
         download(){
             const text = JSON.stringify(this.log, null, 2);
-            const blob = new Blob([text], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'interaction_log_' + Date.now() + '.txt';
-            this._log('Log exported', { filename: a.download });
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            const filename = 'interaction_log_' + Date.now() + '.txt';
+            BookmarkletUtils.downloadFile(filename, text, 'text/plain');
+            this._log('Log exported', { filename: filename });
         }
 
         destroy(){

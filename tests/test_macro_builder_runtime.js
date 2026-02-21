@@ -73,8 +73,12 @@ async function runTest() {
 
     // Execute Builder to get the App instance
     try {
-        eval(utilsContent);
-        if (window.BookmarkletUtils) { global.BookmarkletUtils = window.BookmarkletUtils; }
+        // Re-eval utils in window context if needed for the script execution environment
+        // Although we already did it, macro-builder might expect it to be freshly present or we need to ensure global context
+        // But let's assume the previous eval attached it to window.BookmarkletUtils
+
+        // However, macro-builder.js might rely on it being present.
+        // Let's just execute the builder script now.
         eval(scriptContent);
     } catch (e) {
         console.error("Builder script execution failed:", e);

@@ -378,15 +378,7 @@
 </body>
 </html>`;
             
-            const blob = new Blob([html], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${generateFilename(data.address)}.html`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            setTimeout(() => URL.revokeObjectURL(url), 100);
+            BookmarkletUtils.downloadFile(`${generateFilename(data.address)}.html`, html, 'text/html');
         }
     };
 
