@@ -68,15 +68,17 @@ async function runTest() {
     global.BookmarkletUtils = global.window.BookmarkletUtils;
 
     // Load Builder Script
-    const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
-    const utilsContent = fs.readFileSync(utilsPath, 'utf8');
     const scriptPath = path.join(__dirname, '../bookmarklets/macro-builder.js');
     const scriptContent = fs.readFileSync(scriptPath, 'utf8');
 
     // Execute Builder to get the App instance
     try {
-        eval(utilsContent);
-        if (window.BookmarkletUtils) { global.BookmarkletUtils = window.BookmarkletUtils; }
+        // Re-eval utils in window context if needed for the script execution environment
+        // Although we already did it, macro-builder might expect it to be freshly present or we need to ensure global context
+        // But let's assume the previous eval attached it to window.BookmarkletUtils
+
+        // However, macro-builder.js might rely on it being present.
+        // Let's just execute the builder script now.
         eval(scriptContent);
     } catch (e) {
         console.error("Builder script execution failed:", e);
