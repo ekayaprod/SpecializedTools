@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const jsdom = require("jsdom");
+const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
 const assert = require('assert');
 
@@ -10,7 +10,8 @@ const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
 const utilsCode = fs.readFileSync(utilsPath, 'utf8');
 
 // Create JSDOM
-const dom = new JSDOM(`<!DOCTYPE html>
+const dom = new JSDOM(
+    `<!DOCTYPE html>
 <body>
     <script id="__NEXT_DATA__" type="application/json">
     {
@@ -40,11 +41,13 @@ const dom = new JSDOM(`<!DOCTYPE html>
     }
     </script>
 </body>
-`, {
-    url: "https://www.realtor.com/realestateandhomes-detail/123-Test-St_TestCity_TS_12345",
-    runScripts: "dangerously",
-    resources: "usable"
-});
+`,
+    {
+        url: 'https://www.realtor.com/realestateandhomes-detail/123-Test-St_TestCity_TS_12345',
+        runScripts: 'dangerously',
+        resources: 'usable',
+    }
+);
 
 global.window = dom.window;
 global.document = dom.window.document;
@@ -62,7 +65,7 @@ try {
     eval(utilsCode);
     global.BookmarkletUtils = window.BookmarkletUtils;
 } catch (e) {
-    console.error("Utils eval failed", e);
+    console.error('Utils eval failed', e);
     process.exit(1);
 }
 
@@ -71,7 +74,9 @@ class MockImage {
     constructor() {
         this.onload = null;
         this.src = '';
-        setTimeout(() => { if (this.onload) this.onload(); }, 1);
+        setTimeout(() => {
+            if (this.onload) this.onload();
+        }, 1);
     }
 }
 global.window.Image = MockImage;
@@ -80,68 +85,74 @@ global.window.Image = MockImage;
 try {
     eval(scriptCode);
 } catch (e) {
-    console.error("Bookmarklet eval failed", e);
+    console.error('Bookmarklet eval failed', e);
     process.exit(1);
 }
 
 async function runTest() {
-    console.log("Starting Property Clipper UI Test...");
+    console.log('Starting Property Clipper UI Test...');
 
     // 1. Open Modal
     const modal = document.getElementById('pc-pdf-modal');
-    assert.ok(modal, "Modal should exist");
+    assert.ok(modal, 'Modal should exist');
 
     // 2. Click Generate PDF to open Wizard
     const buttons = Array.from(modal.querySelectorAll('button'));
-    const pdfBtn = buttons.find(b => b.textContent === 'PDF');
-    assert.ok(pdfBtn, "Generate PDF button should exist");
+    const pdfBtn = buttons.find((b) => b.textContent === 'PDF');
+    assert.ok(pdfBtn, 'Generate PDF button should exist');
     pdfBtn.click();
 
     // Wait for Start Screen
-    await new Promise(r => setTimeout(r, 100));
+    await new Promise((r) => setTimeout(r, 100));
 
     // 3. Click 'Select Photos'
     // It is a button in current UI
     const wizardButtons = Array.from(modal.querySelectorAll('button'));
-    const manualBtn = wizardButtons.find(b => b.textContent === 'Manually Select Photos');
+    const manualBtn = wizardButtons.find((b) => b.textContent === 'Manually Select Photos');
 
     if (!manualBtn) {
-        console.error("Could not find Select Photos button. Available buttons:", wizardButtons.map(b => b.textContent));
+        console.error(
+            'Could not find Select Photos button. Available buttons:',
+            wizardButtons.map((b) => b.textContent)
+        );
     }
-    assert.ok(manualBtn, "Select Photos option should exist");
+    assert.ok(manualBtn, 'Select Photos option should exist');
 
-    console.log("Clicking Manually Select Photos...");
+    console.log('Clicking Manually Select Photos...');
     manualBtn.click();
 
     // Wait for Step 1
-    await new Promise(r => setTimeout(r, 100));
+    await new Promise((r) => setTimeout(r, 100));
 
     // 4. Verify Checkbox Type & Accessibility
     const inputs = Array.from(modal.querySelectorAll('input'));
-    console.log("Inputs found:", inputs.map(i => i.outerHTML));
+    console.log(
+        'Inputs found:',
+        inputs.map((i) => i.outerHTML)
+    );
     const checkbox = inputs[0];
-    assert.ok(checkbox, "Should have an input element");
+    assert.ok(checkbox, 'Should have an input element');
     assert.strictEqual(checkbox.type, 'checkbox', "Input should be of type 'checkbox'");
 
     // Check UX Requirement: ARIA Label
     const ariaLabel = checkbox.getAttribute('aria-label');
-    assert.ok(ariaLabel && ariaLabel.includes("Living Room"), "Checkbox should have descriptive aria-label");
-    console.log("✅ Checkbox type and aria-label are correct.");
+    assert.ok(ariaLabel && ariaLabel.includes('Living Room'), 'Checkbox should have descriptive aria-label');
+    console.log('✅ Checkbox type and aria-label are correct.');
 
     // 5. Verify Checkbox is checked by default
-    assert.strictEqual(checkbox.checked, true, "Checkbox should be checked by default");
+    assert.strictEqual(checkbox.checked, true, 'Checkbox should be checked by default');
 
     // 6. Verify Image Optimization
     const images = Array.from(modal.querySelectorAll('img'));
-    const thumbImg = images.find(img => img.src.includes('lr1.jpg'));
-    assert.ok(thumbImg, "Thumbnail image should exist");
+    const thumbImg = images.find((img) => img.src.includes('lr1.jpg'));
+    assert.ok(thumbImg, 'Thumbnail image should exist');
     assert.strictEqual(thumbImg.getAttribute('loading'), 'lazy', "Image should have loading='lazy'");
     console.log("✅ Image loading='lazy' attribute verified.");
 
-    console.log("Property Clipper UI Test Passed!");
+    console.log('Property Clipper UI Test Passed!');
 }
 
-runTest().catch(e => {
-    console.error("Test Failed:", e);
+runTest().catch((e) => {
+    console.error('Test Failed:', e);
     process.exit(1);
 });

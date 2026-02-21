@@ -10,7 +10,7 @@ global.HTMLElement = dom.window.HTMLElement;
 
 // Mock clipboard
 global.navigator.clipboard = {
-    writeText: (text) => Promise.resolve()
+    writeText: (text) => Promise.resolve(),
 };
 
 const scriptPath = path.join(__dirname, '../bookmarklets/passphrase-generator.js');
@@ -21,9 +21,9 @@ function runTest() {
     // Execute the script
     try {
         eval(scriptContent);
-        console.log("✅ Script executed successfully.");
+        console.log('✅ Script executed successfully.');
     } catch (e) {
-        console.error("❌ Script execution failed:", e);
+        console.error('❌ Script execution failed:', e);
         process.exit(1);
     }
 
@@ -32,49 +32,53 @@ function runTest() {
     // In JSDOM, we need to check document.body.children
     const overlay = document.body.lastElementChild;
     if (overlay && overlay.tagName === 'DIV' && overlay.style.position === 'fixed') {
-        console.log("✅ Overlay created.");
+        console.log('✅ Overlay created.');
     } else {
-        console.error("❌ Overlay not found.");
+        console.error('❌ Overlay not found.');
         // print body content
         console.log(document.body.innerHTML);
     }
 
     // Check generated passwords
     // The new UI uses div for password text
-    let passwords = Array.from(document.querySelectorAll('div')).filter(d => d.style.fontFamily === 'monospace').map(p => p.textContent);
+    let passwords = Array.from(document.querySelectorAll('div'))
+        .filter((d) => d.style.fontFamily === 'monospace')
+        .map((p) => p.textContent);
     console.log(`Generated ${passwords.length} passwords.`);
     if (passwords.length > 0) {
-        console.log("Sample:", passwords[0]);
+        console.log('Sample:', passwords[0]);
     } else {
-        console.error("❌ No passwords generated.");
+        console.error('❌ No passwords generated.');
     }
 
     // Test Temp Password Mode
-    const toggleBtn = Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('Mode'));
+    const toggleBtn = Array.from(document.querySelectorAll('button')).find((b) => b.textContent.includes('Mode'));
     if (toggleBtn) {
         toggleBtn.click();
-        passwords = Array.from(document.querySelectorAll('div')).filter(d => d.style.fontFamily === 'monospace').map(p => p.textContent);
+        passwords = Array.from(document.querySelectorAll('div'))
+            .filter((d) => d.style.fontFamily === 'monospace')
+            .map((p) => p.textContent);
         console.log(`Generated ${passwords.length} TEMP passwords.`);
         if (passwords.length > 0) {
-            console.log("Sample Temp:", passwords[0]);
+            console.log('Sample Temp:', passwords[0]);
         } else {
-            console.error("❌ No temp passwords generated.");
+            console.error('❌ No temp passwords generated.');
         }
     } else {
-        console.error("❌ Toggle button not found.");
+        console.error('❌ Toggle button not found.');
     }
 
     // Test Aria-Label on Regenerate Button
-    const regenBtn = Array.from(document.querySelectorAll('button')).find(b => b.textContent === 'Regenerate');
+    const regenBtn = Array.from(document.querySelectorAll('button')).find((b) => b.textContent === 'Regenerate');
     if (regenBtn) {
         if (regenBtn.getAttribute('aria-label') === 'Generate new passphrases') {
-            console.log("✅ Regenerate button has correct aria-label.");
+            console.log('✅ Regenerate button has correct aria-label.');
         } else {
             console.error(`❌ Regenerate button has incorrect aria-label: ${regenBtn.getAttribute('aria-label')}`);
             process.exit(1);
         }
     } else {
-        console.error("❌ Regenerate button not found.");
+        console.error('❌ Regenerate button not found.');
         process.exit(1);
     }
 }

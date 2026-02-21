@@ -1,23 +1,30 @@
 {
-  "name": "browser-toolkit",
-  "version": "1.0.0",
-  "description": "A collection of utility bookmarklets for web development and content management.",
-  "license": "MIT",
-  "keywords": [
-    "bookmarklet",
-    "browser",
-    "automation",
-    "tools"
-  ],
-  "engines": {
-    "node": ">=18"
-  },
-  "scripts": {
-    "lint": "tsc --noEmit",
-    "test": "node scripts/run_tests.js"
-  },
-  "devDependencies": {
-    "jsdom": "^28.1.0",
-    "typescript": "^5.9.3"
-  }
+    "name": "browser-toolkit",
+    "version": "1.0.0",
+    "description": "A collection of utility bookmarklets for web development and content management.",
+    "license": "MIT",
+    "keywords": [
+        "bookmarklet",
+        "browser",
+        "automation",
+        "tools"
+    ],
+    "engines": {
+        "node": ">=18"
+    },
+    "scripts": {
+        "format": "prettier --write .",
+        "lint": "eslint . && tsc --noEmit",
+        "test": "node scripts/run_tests.js",
+        "pretest": "npm run lint"
+    },
+    "devDependencies": {
+        "@eslint/js": "^10.0.1",
+        "eslint": "^10.0.1",
+        "eslint-config-prettier": "^10.1.8",
+        "globals": "^17.3.0",
+        "jsdom": "^28.1.0",
+        "prettier": "^3.8.1",
+        "typescript": "^5.9.3"
+    }
 }

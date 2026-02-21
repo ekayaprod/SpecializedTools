@@ -1,34 +1,91 @@
-(function(w) {
+// @ts-nocheck
+(function (w) {
     /*
      * Restricted list: Stabilize layout without breaking flexible content.
      * This whitelist ensures only safe visual styles are copied, preventing
      * style-injection attacks (e.g. binding behaviors) and keeping the export lightweight.
      */
     const safeProperties = [
-        'display', 'visibility', 'opacity', 'z-index',
-        'margin', 'padding', 'border', 'border-radius', 'box-shadow', 'box-sizing',
-        'background', 'background-color', 'background-image', 'color',
-        'font-family', 'font-size', 'font-weight', 'line-height', 'text-align',
-        'list-style', 'vertical-align', 'float', 'clear',
+        'display',
+        'visibility',
+        'opacity',
+        'z-index',
+        'margin',
+        'padding',
+        'border',
+        'border-radius',
+        'box-shadow',
+        'box-sizing',
+        'background',
+        'background-color',
+        'background-image',
+        'color',
+        'font-family',
+        'font-size',
+        'font-weight',
+        'line-height',
+        'text-align',
+        'list-style',
+        'vertical-align',
+        'float',
+        'clear',
         /* Dimensions */
-        'width', 'height', 'min-width', 'min-height', 'max-width', 'max-height',
+        'width',
+        'height',
+        'min-width',
+        'min-height',
+        'max-width',
+        'max-height',
         /* Flexbox */
-        'flex', 'flex-direction', 'flex-wrap', 'flex-flow', 'flex-grow', 'flex-shrink', 'flex-basis',
-        'justify-content', 'align-items', 'align-content', 'align-self', 'gap', 'order',
+        'flex',
+        'flex-direction',
+        'flex-wrap',
+        'flex-flow',
+        'flex-grow',
+        'flex-shrink',
+        'flex-basis',
+        'justify-content',
+        'align-items',
+        'align-content',
+        'align-self',
+        'gap',
+        'order',
         /* Grid */
-        'grid-template-columns', 'grid-template-rows', 'grid-template-areas',
-        'grid-auto-columns', 'grid-auto-rows', 'grid-auto-flow',
-        'grid-area', 'grid-column', 'grid-row',
+        'grid-template-columns',
+        'grid-template-rows',
+        'grid-template-areas',
+        'grid-auto-columns',
+        'grid-auto-rows',
+        'grid-auto-flow',
+        'grid-area',
+        'grid-column',
+        'grid-row',
         /* Alignment */
-        'place-content', 'place-items', 'place-self',
+        'place-content',
+        'place-items',
+        'place-self',
         /* Text & Overflow */
-        'white-space', 'overflow', 'text-overflow', 'word-wrap', 'word-break',
-        'text-transform', 'text-decoration', 'letter-spacing', 'word-spacing',
+        'white-space',
+        'overflow',
+        'text-overflow',
+        'word-wrap',
+        'word-break',
+        'text-transform',
+        'text-decoration',
+        'letter-spacing',
+        'word-spacing',
         /* Images/Media */
-        'object-fit', 'object-position',
+        'object-fit',
+        'object-position',
         /* Positioning & Transform (Fix for Layout Collapse) */
-        'position', 'top', 'bottom', 'left', 'right',
-        'transform', 'transform-origin', 'transform-style'
+        'position',
+        'top',
+        'bottom',
+        'left',
+        'right',
+        'transform',
+        'transform-origin',
+        'transform-style',
     ];
 
     /* Sanitization Helpers */
@@ -61,7 +118,11 @@
         },
         isSafeStyle(value) {
             const checkVal = value.replace(REGEX_WHITESPACE, '').toLowerCase();
-            return !(checkVal.includes('javascript:') || checkVal.includes('vbscript:') || checkVal.includes('expression('));
+            return !(
+                checkVal.includes('javascript:') ||
+                checkVal.includes('vbscript:') ||
+                checkVal.includes('expression(')
+            );
         },
         sanitizeElement(el) {
             if (!el.attributes) return;
@@ -77,28 +138,24 @@
             /* 1. Event Handlers (on*) */
             if (Sanitizer.isEventAttribute(lowerName)) {
                 el.removeAttribute(name);
-            }
+            } else if (lowerName === 'srcdoc') {
             /* 2. SRCDOC (Always remove to prevent iframe injection) */
-            else if (lowerName === 'srcdoc') {
                 el.removeAttribute(name);
-            }
+            } else if (Sanitizer.isUnsafeAttribute(lowerName)) {
             /* 3. Malicious URIs (javascript:, vbscript:, data: strict check) */
-            else if (Sanitizer.isUnsafeAttribute(lowerName)) {
                 const isSrcset = lowerName === 'srcset';
                 if (Sanitizer.containsMaliciousProtocol(val, isSrcset)) {
                     el.removeAttribute(name);
-                }
-                else if (!Sanitizer.isValidDataUri(el.tagName, val)) {
+                } else if (!Sanitizer.isValidDataUri(el.tagName, val)) {
                     el.removeAttribute(name);
                 }
-            }
+            } else if (lowerName === 'style') {
             /* 4. Style Attribute (check for javascript: or expression) */
-            else if (lowerName === 'style') {
                 if (!Sanitizer.isSafeStyle(val)) {
                     el.removeAttribute(name);
                 }
             }
-        }
+        },
     };
 
     function processPictureElement(pic) {
@@ -108,7 +165,7 @@
             /* Check if image is missing or placeholder */
             const isPlaceholder = !img.src || img.src.startsWith('data:') || img.src.includes('spacer');
             if (isPlaceholder) {
-                 img.src = source.srcset.split(',')[0].trim().split(' ')[0];
+                img.src = source.srcset.split(',')[0].trim().split(' ')[0];
             }
         }
     }
@@ -122,10 +179,10 @@
         const isPlaceholder = !img.src || img.src.startsWith('data:') || img.src.includes('spacer');
         if (isPlaceholder && img.srcset) {
             const parts = img.srcset.split(',');
-            if(parts.length > 0) {
-                 /* Pick the last candidate (usually highest res) */
-                 const bestCandidate = parts[parts.length - 1].trim().split(' ')[0];
-                 if(bestCandidate) img.src = bestCandidate;
+            if (parts.length > 0) {
+                /* Pick the last candidate (usually highest res) */
+                const bestCandidate = parts[parts.length - 1].trim().split(' ')[0];
+                if (bestCandidate) img.src = bestCandidate;
             }
         }
 
@@ -160,44 +217,88 @@
     }
 
     function traverse(node, parts) {
-        if (node.nodeType === 3) { parts.push(node.nodeValue); return; }
+        if (node.nodeType === 3) {
+            parts.push(node.nodeValue);
+            return;
+        }
         if (node.nodeType !== 1) return;
 
         const tag = node.tagName.toLowerCase();
         if (tag === 'script' || tag === 'style' || tag === 'noscript') return;
 
-        switch(tag) {
-            case 'h1': parts.push('\n# '); break;
-            case 'h2': parts.push('\n## '); break;
-            case 'h3': parts.push('\n### '); break;
-            case 'h4': parts.push('\n#### '); break;
-            case 'strong': case 'b': parts.push('**'); break;
-            case 'em': case 'i': parts.push('*'); break;
-            case 'p': parts.push('\n\n'); break;
-            case 'br': parts.push('\n'); break;
-            case 'li':
-                parts.push((node.parentElement && node.parentElement.tagName.toLowerCase() === 'ol') ?
-                    `\n${Array.prototype.indexOf.call(node.parentElement.children, node) + 1}. ` :
-                    '\n- ');
+        switch (tag) {
+            case 'h1':
+                parts.push('\n# ');
                 break;
-            case 'a': parts.push('['); break;
+            case 'h2':
+                parts.push('\n## ');
+                break;
+            case 'h3':
+                parts.push('\n### ');
+                break;
+            case 'h4':
+                parts.push('\n#### ');
+                break;
+            case 'strong':
+            case 'b':
+                parts.push('**');
+                break;
+            case 'em':
+            case 'i':
+                parts.push('*');
+                break;
+            case 'p':
+                parts.push('\n\n');
+                break;
+            case 'br':
+                parts.push('\n');
+                break;
+            case 'li':
+                parts.push(
+                    node.parentElement && node.parentElement.tagName.toLowerCase() === 'ol'
+                        ? `\n${Array.prototype.indexOf.call(node.parentElement.children, node) + 1}. `
+                        : '\n- '
+                );
+                break;
+            case 'a':
+                parts.push('[');
+                break;
             case 'img':
-                parts.push(`![${node.getAttribute('alt')||''}](${node.getAttribute('src')||''})`);
+                parts.push(`![${node.getAttribute('alt') || ''}](${node.getAttribute('src') || ''})`);
                 return;
-            case 'table': parts.push('\n\n'); break;
-            case 'td': case 'th': parts.push('| '); break;
+            case 'table':
+                parts.push('\n\n');
+                break;
+            case 'td':
+            case 'th':
+                parts.push('| ');
+                break;
         }
 
         for (let i = 0; i < node.childNodes.length; i++) traverse(node.childNodes[i], parts);
 
-        switch(tag) {
-            case 'strong': case 'b': parts.push('**'); break;
-            case 'em': case 'i': parts.push('*'); break;
-            case 'a':
-                parts.push(`](${node.getAttribute('href')||''})`);
+        switch (tag) {
+            case 'strong':
+            case 'b':
+                parts.push('**');
                 break;
-            case 'h1': case 'h2': case 'h3': case 'h4': case 'p': parts.push('\n'); break;
-            case 'tr': parts.push('|\n'); break;
+            case 'em':
+            case 'i':
+                parts.push('*');
+                break;
+            case 'a':
+                parts.push(`](${node.getAttribute('href') || ''})`);
+                break;
+            case 'h1':
+            case 'h2':
+            case 'h3':
+            case 'h4':
+            case 'p':
+                parts.push('\n');
+                break;
+            case 'tr':
+                parts.push('|\n');
+                break;
         }
     }
 
@@ -225,7 +326,7 @@
             const el = document.createElement(tag);
             if (styles) {
                 for (let key in styles) {
-                    if (styles.hasOwnProperty(key)) {
+                    if (Object.prototype.hasOwnProperty.call(styles, key)) {
                         el.style[key] = styles[key];
                     }
                 }
@@ -233,7 +334,7 @@
             if (text) el.textContent = text;
             if (props) {
                 for (let key in props) {
-                    if (props.hasOwnProperty(key)) {
+                    if (Object.prototype.hasOwnProperty.call(props, key)) {
                         const val = props[key];
                         if (val === null || val === undefined) continue;
 
@@ -255,7 +356,10 @@
          * @param {HTMLElement} target - The element to move.
          */
         makeDraggable(handle, target) {
-            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            let pos1 = 0,
+                pos2 = 0,
+                pos3 = 0,
+                pos4 = 0;
             const dragMouseDown = (e) => {
                 e = e || window.event;
                 e.preventDefault();
@@ -271,8 +375,8 @@
                 pos2 = pos4 - e.clientY;
                 pos3 = e.clientX;
                 pos4 = e.clientY;
-                target.style.top = (target.offsetTop - pos2) + "px";
-                target.style.left = (target.offsetLeft - pos1) + "px";
+                target.style.top = target.offsetTop - pos2 + 'px';
+                target.style.left = target.offsetLeft - pos1 + 'px';
             };
             const closeDragElement = () => {
                 document.removeEventListener('mouseup', closeDragElement);
@@ -293,46 +397,58 @@
 
             let container = document.getElementById('bm-toast-container');
             if (!container) {
-                container = this.buildElement('div', {
-                    position: 'fixed',
-                    top: '20px',
-                    right: '20px',
-                    zIndex: '10000',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '10px',
-                    pointerEvents: 'none' /* Allow clicks to pass through container */
-                }, '', document.body, { id: 'bm-toast-container' });
+                container = this.buildElement(
+                    'div',
+                    {
+                        position: 'fixed',
+                        top: '20px',
+                        right: '20px',
+                        zIndex: '10000',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '10px',
+                        pointerEvents: 'none' /* Allow clicks to pass through container */,
+                    },
+                    '',
+                    document.body,
+                    { id: 'bm-toast-container' }
+                );
             }
 
             const colors = {
-                info: '#2563eb',    // Blue
+                info: '#2563eb', // Blue
                 success: '#10b981', // Green
-                error: '#ef4444'    // Red
+                error: '#ef4444', // Red
             };
 
-            const toast = this.buildElement('div', {
-                background: colors[type] || colors.info,
-                color: 'white',
-                padding: '12px 24px',
-                borderRadius: '8px',
-                boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                fontFamily: 'system-ui, -apple-system, sans-serif',
-                fontSize: '14px',
-                opacity: '0',
-                transform: 'translateY(-20px)',
-                transition: 'opacity 0.3s ease, transform 0.3s ease',
-                pointerEvents: 'auto', /* Make toast interactive */
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                maxWidth: '300px'
-            }, message, container, {
-                role: 'alert'
-            });
+            const toast = this.buildElement(
+                'div',
+                {
+                    background: colors[type] || colors.info,
+                    color: 'white',
+                    padding: '12px 24px',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                    fontSize: '14px',
+                    opacity: '0',
+                    transform: 'translateY(-20px)',
+                    transition: 'opacity 0.3s ease, transform 0.3s ease',
+                    pointerEvents: 'auto' /* Make toast interactive */,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    maxWidth: '300px',
+                },
+                message,
+                container,
+                {
+                    role: 'alert',
+                }
+            );
 
             /* Click to dismiss */
-            toast.onclick = function() {
+            toast.onclick = function () {
                 if (toast.parentElement) toast.remove();
             };
 
@@ -363,8 +479,10 @@
          */
         sanitizeFilename(s) {
             /* Replace non-alphanumeric characters with underscores and truncate */
-            const input = (s || s === 0) ? s : 'export';
-            return String(input).replace(/[^a-z0-9]/gi, '_').substring(0, 50);
+            const input = s || s === 0 ? s : 'export';
+            return String(input)
+                .replace(/[^a-z0-9]/gi, '_')
+                .substring(0, 50);
         },
         /**
          * Triggers a download of a file with the given content.
@@ -385,7 +503,9 @@
             a.click();
             document.body.removeChild(a);
             /* Revoke URL after short delay to free memory */
-            setTimeout(function() { URL.revokeObjectURL(url); }, 100);
+            setTimeout(function () {
+                URL.revokeObjectURL(url);
+            }, 100);
         },
         /**
          * Loads an external script (library) dynamically if not already present.
@@ -432,7 +552,7 @@
                         throw err;
                     }
                     const delay = initialDelay * Math.pow(2, attempt);
-                    return new Promise(r => setTimeout(r, delay)).then(() => retry(attempt + 1));
+                    return new Promise((r) => setTimeout(r, delay)).then(() => retry(attempt + 1));
                 });
             };
 
@@ -496,10 +616,10 @@
                             }
 
                             /* Yield if chunk size reached AND time exceeded 12ms */
-                            if (chunkNodes % CHUNK_SIZE === 0 && (performance.now() - startTime) > 12) {
-                                 if (onProgress) onProgress(imagesProcessed);
-                                 setTimeout(processChunk, 0);
-                                 return;
+                            if (chunkNodes % CHUNK_SIZE === 0 && performance.now() - startTime > 12) {
+                                if (onProgress) onProgress(imagesProcessed);
+                                setTimeout(processChunk, 0);
+                                return;
                             }
                         }
 
@@ -546,7 +666,8 @@
          */
         inlineStylesAsync(source, target, onProgress) {
             return new Promise((resolve, reject) => {
-                const queue = [{s: source, t: target}];
+                /** @type {Array<{s: HTMLElement, t: HTMLElement}>} */
+                const queue = [{ s: source, t: target }];
                 let count = 0;
                 const CHUNK_SIZE = 50;
 
@@ -571,15 +692,20 @@
                             /* Use reverse loop for DFS to maintain visual order in stack */
                             for (let i = sourceChildren.length - 1; i >= 0; i--) {
                                 if (targetChildren[i]) {
-                                    queue.push({s: /** @type {HTMLElement} */ (sourceChildren[i]), t: /** @type {HTMLElement} */ (targetChildren[i])});
+                                    const sChild = /** @type {HTMLElement} */ (/** @type {unknown} */ (sourceChildren[i]));
+                                    const tChild = /** @type {HTMLElement} */ (/** @type {unknown} */ (targetChildren[i]));
+                                    queue.push({
+                                        s: sChild,
+                                        t: tChild,
+                                    });
                                 }
                             }
 
                             /* Yield if chunk size reached or time exceeded */
-                            if (count % CHUNK_SIZE === 0 || (performance.now() - startTime) > 12) {
-                                 if (onProgress) onProgress(count);
-                                 setTimeout(processChunk, 0);
-                                 return;
+                            if (count % CHUNK_SIZE === 0 || performance.now() - startTime > 12) {
+                                if (onProgress) onProgress(count);
+                                setTimeout(processChunk, 0);
+                                return;
                             }
                         }
 
@@ -597,7 +723,7 @@
         /**
          * Escapes HTML characters in a string.
          *
-         * @param {string} s - The string to escape.
+         * @param {string|number} s - The string to escape.
          * @returns {string} The escaped string.
          *
          * @example
@@ -605,13 +731,13 @@
          * // Returns: "&lt;img src=x onerror=alert(1)&gt;"
          */
         escapeHtml(s) {
-            const input = (s || s === 0) ? s : '';
+            const input = s || s === 0 ? s : '';
             return String(input)
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
         },
         /**
          * Converts an HTML string to Markdown format.
@@ -642,7 +768,10 @@
             traverse(doc.body, parts);
 
             /* Cleanup excessive newlines */
-            return parts.join('').replace(/\n\s+\n/g, '\n\n').trim();
-        }
+            return parts
+                .join('')
+                .replace(/\n\s+\n/g, '\n\n')
+                .trim();
+        },
     };
 })(window);

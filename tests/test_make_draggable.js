@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const jsdom = require("jsdom");
+const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
 const assert = require('assert');
 
@@ -8,14 +8,17 @@ const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
 const utilsCode = fs.readFileSync(utilsPath, 'utf8');
 
 // Create a JSDOM instance
-const dom = new JSDOM(`<!DOCTYPE html>
+const dom = new JSDOM(
+    `<!DOCTYPE html>
 <body>
     <div id="container" style="position: absolute; top: 100px; left: 100px; width: 200px; height: 200px;">
         <div id="handle" style="width: 200px; height: 20px; background: blue;">Header</div>
         Content
     </div>
 </body>
-`, { url: "http://localhost/" });
+`,
+    { url: 'http://localhost/' }
+);
 
 global.window = dom.window;
 global.document = dom.window.document;
@@ -25,19 +28,19 @@ global.MouseEvent = dom.window.MouseEvent;
 try {
     eval(utilsCode);
 } catch (e) {
-    console.error("Error evaluating utils.js:", e);
+    console.error('Error evaluating utils.js:', e);
     process.exit(1);
 }
 
 // Verify BookmarkletUtils exists
 if (!window.BookmarkletUtils) {
-    console.error("BookmarkletUtils not found on window");
+    console.error('BookmarkletUtils not found on window');
     process.exit(1);
 }
 
-console.log("Running BookmarkletUtils.makeDraggable tests...");
+console.log('Running BookmarkletUtils.makeDraggable tests...');
 
-(async function() {
+(async function () {
     try {
         const handle = document.getElementById('handle');
         const target = document.getElementById('container');
@@ -56,7 +59,7 @@ console.log("Running BookmarkletUtils.makeDraggable tests...");
                 cancelable: true,
                 view: window,
                 clientX: clientX,
-                clientY: clientY
+                clientY: clientY,
             });
             el.dispatchEvent(event);
             return event;
@@ -64,7 +67,7 @@ console.log("Running BookmarkletUtils.makeDraggable tests...");
 
         // Test 1: Mousedown attaches listeners
         {
-            console.log("Test 1: Mousedown attaches listeners");
+            console.log('Test 1: Mousedown attaches listeners');
 
             // Spy on document.addEventListener
             let addedListeners = [];
@@ -83,12 +86,12 @@ console.log("Running BookmarkletUtils.makeDraggable tests...");
 
             // Restore spy
             document.addEventListener = originalAddEventListener;
-            console.log("✅ Mousedown listeners attached");
+            console.log('✅ Mousedown listeners attached');
         }
 
         // Test 2: Mousemove updates position
         {
-            console.log("Test 2: Mousemove updates position");
+            console.log('Test 2: Mousemove updates position');
 
             // Initial position is top: 100px, left: 100px
             // We started drag at 110, 110.
@@ -115,12 +118,12 @@ console.log("Running BookmarkletUtils.makeDraggable tests...");
             assert.strictEqual(target.style.top, '120px', 'Top position should update');
             assert.strictEqual(target.style.left, '110px', 'Left position should update');
 
-            console.log("✅ Position updated correctly");
+            console.log('✅ Position updated correctly');
         }
 
         // Test 3: Mouseup removes listeners
         {
-            console.log("Test 3: Mouseup removes listeners");
+            console.log('Test 3: Mouseup removes listeners');
 
             // Spy on document.removeEventListener
             let removedListeners = [];
@@ -136,12 +139,12 @@ console.log("Running BookmarkletUtils.makeDraggable tests...");
             assert.ok(removedListeners.includes('mouseup'), 'Should remove mouseup listener');
 
             document.removeEventListener = originalRemoveEventListener;
-            console.log("✅ Listeners removed");
+            console.log('✅ Listeners removed');
         }
 
         // Test 4: Dragging no longer works after mouseup
         {
-            console.log("Test 4: Dragging stops after mouseup");
+            console.log('Test 4: Dragging stops after mouseup');
 
             // Move mouse again to 150, 150
             triggerMouseEvent(document, 'mousemove', 150, 150);
@@ -150,13 +153,12 @@ console.log("Running BookmarkletUtils.makeDraggable tests...");
             assert.strictEqual(target.style.top, '120px', 'Top should not change after mouseup');
             assert.strictEqual(target.style.left, '110px', 'Left should not change after mouseup');
 
-            console.log("✅ Dragging stopped correctly");
+            console.log('✅ Dragging stopped correctly');
         }
 
-        console.log("All tests passed!");
-
+        console.log('All tests passed!');
     } catch (err) {
-        console.error("Test failed:", err);
+        console.error('Test failed:', err);
         process.exit(1);
     }
 })();

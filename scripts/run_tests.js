@@ -12,8 +12,9 @@ if (!fs.existsSync(testsDir)) {
 }
 
 // Find test files
-const files = fs.readdirSync(testsDir)
-    .filter(file => file.startsWith('test_') && file.endsWith('.js'))
+const files = fs
+    .readdirSync(testsDir)
+    .filter((file) => file.startsWith('test_') && file.endsWith('.js'))
     .sort(); // Sort alphabetically for consistent execution order
 
 if (files.length === 0) {
@@ -33,7 +34,7 @@ for (const file of files) {
     const startTime = Date.now();
     const result = spawnSync('node', [path.join(testsDir, file)], {
         stdio: 'inherit',
-        env: process.env // Inherit environment variables
+        env: process.env, // Inherit environment variables
     });
     const duration = Date.now() - startTime;
 

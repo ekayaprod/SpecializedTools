@@ -29,7 +29,7 @@ Interaction Recorder: A debugging tool that logs click targets and their attribu
 Installation
 
 1. Visit the GitHub Pages deployment of this repository (typically `https://<username>.github.io/<repo-name>`).
-   - *Note: If you are the owner, ensure GitHub Pages is enabled in Settings > Pages.*
+    - _Note: If you are the owner, ensure GitHub Pages is enabled in Settings > Pages._
 2. Drag the buttons to your bookmarks bar.
 
 Architecture

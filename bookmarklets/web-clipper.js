@@ -26,13 +26,13 @@
             this.config = {
                 highlightColor: 'rgba(0, 0, 255, 0.1)',
                 outlineStyle: '2px solid blue',
-                parentHighlightColor: 'rgba(255, 215, 0, 0.15)', /* Gold with low opacity */
-                parentOutlineStyle: '4px dashed #FFD700', /* Thicker Gold dashed border */
+                parentHighlightColor: 'rgba(255, 215, 0, 0.15)' /* Gold with low opacity */,
+                parentOutlineStyle: '4px dashed #FFD700' /* Thicker Gold dashed border */,
                 modalId: 'wc-bookmarklet-modal',
                 overlayId: 'wc-bookmarklet-overlay',
                 highlightId: 'wc-bookmarklet-highlight',
                 parentHighlightId: 'wc-bookmarklet-highlight-parent',
-                ignoreTags: ['HTML', 'BODY', 'SCRIPT', 'STYLE', 'NOSCRIPT', 'IFRAME']
+                ignoreTags: ['HTML', 'BODY', 'SCRIPT', 'STYLE', 'NOSCRIPT', 'IFRAME'],
             };
 
             /** @type {HTMLElement|null} */
@@ -111,15 +111,23 @@
          */
         handleMouseOver(e) {
             const target = /** @type {HTMLElement} */ (e.target);
-            if (this.config.ignoreTags.includes(target.tagName) ||
+            if (
+                this.config.ignoreTags.includes(target.tagName) ||
                 target.closest('#' + this.config.overlayId) ||
-                target.closest('#' + this.config.highlightId)) return;
+                target.closest('#' + this.config.highlightId)
+            )
+                return;
 
             this.activeElement = target;
             const rect = this.activeElement.getBoundingClientRect();
 
             /* 1. Highlight Active Element */
-            const highlight = this.getOrCreateHighlightEl(this.config.highlightId, this.config.outlineStyle, this.config.highlightColor, '1000000');
+            const highlight = this.getOrCreateHighlightEl(
+                this.config.highlightId,
+                this.config.outlineStyle,
+                this.config.highlightColor,
+                '1000000'
+            );
             highlight.style.top = rect.top + 'px';
             highlight.style.left = rect.left + 'px';
             highlight.style.width = rect.width + 'px';
@@ -130,7 +138,12 @@
             const parent = this.activeElement.parentElement;
             if (parent && !this.config.ignoreTags.includes(parent.tagName)) {
                 const parentRect = parent.getBoundingClientRect();
-                const parentHighlight = this.getOrCreateHighlightEl(this.config.parentHighlightId, this.config.parentOutlineStyle, this.config.parentHighlightColor, '999999');
+                const parentHighlight = this.getOrCreateHighlightEl(
+                    this.config.parentHighlightId,
+                    this.config.parentOutlineStyle,
+                    this.config.parentHighlightColor,
+                    '999999'
+                );
 
                 let pTop = parentRect.top;
                 let pLeft = parentRect.left;
@@ -140,8 +153,8 @@
                 const padding = 6;
                 pTop -= padding;
                 pLeft -= padding;
-                pWidth += (padding * 2);
-                pHeight += (padding * 2);
+                pWidth += padding * 2;
+                pHeight += padding * 2;
 
                 parentHighlight.style.top = pTop + 'px';
                 parentHighlight.style.left = pLeft + 'px';
@@ -193,11 +206,11 @@
                         target: {
                             tagName: target.tagName,
                             id: target.id,
-                            className: target.className
+                            className: target.className,
                         },
                         error: err,
                         url: window.location.href,
-                        timestamp: new Date().toISOString()
+                        timestamp: new Date().toISOString(),
                     });
                     this.hideLoadingOverlay();
                     BookmarkletUtils.showToast('Error opening editor: ' + err.message, 'error');
@@ -302,7 +315,11 @@
                 /* We merge it carefully to not break the editor area */
                 const originalStyle = clone.getAttribute('style');
                 /* Ensure editor area is scrollable */
-                contentArea.setAttribute('style', originalStyle + '; overflow-y: auto !important; height: auto !important; max-height: none !important;');
+                contentArea.setAttribute(
+                    'style',
+                    originalStyle +
+                        '; overflow-y: auto !important; height: auto !important; max-height: none !important;'
+                );
             }
 
             const footer = document.createElement('div');
@@ -330,7 +347,7 @@
                 { val: 'html', txt: 'HTML File (.html)' },
                 { val: 'md', txt: 'Markdown (.md)' },
                 { val: 'txt', txt: 'Plain Text (.txt)' },
-                { val: 'png', txt: 'Image (.png)' }
+                { val: 'png', txt: 'Image (.png)' },
             ];
 
             formats.forEach((f) => {
@@ -342,12 +359,16 @@
 
             const btnDownload = document.createElement('button');
             btnDownload.textContent = 'Save as File';
-            btnDownload.onclick = () => { this.handleDownload(contentArea, formatSelect.value, btnDownload); };
+            btnDownload.onclick = () => {
+                this.handleDownload(contentArea, formatSelect.value, btnDownload);
+            };
 
             const btnCopy = document.createElement('button');
             btnCopy.textContent = 'Copy';
             btnCopy.className = 'primary';
-            btnCopy.onclick = () => { this.handleCopy(contentArea); };
+            btnCopy.onclick = () => {
+                this.handleCopy(contentArea);
+            };
 
             footer.appendChild(btnCancel);
             footer.appendChild(btnRetry);
@@ -375,8 +396,13 @@
             }, 0);
 
             const style = document.createElement('style');
-            style.textContent = '#' + this.config.overlayId + '{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:999999;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif;}' +
-                '#' + this.config.modalId + '{background:white;width:80%;max-width:900px;max-height:90vh;display:flex;flex-direction:column;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,0.5);overflow:hidden;}' +
+            style.textContent =
+                '#' +
+                this.config.overlayId +
+                '{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:999999;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif;}' +
+                '#' +
+                this.config.modalId +
+                '{background:white;width:80%;max-width:900px;max-height:90vh;display:flex;flex-direction:column;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,0.5);overflow:hidden;}' +
                 '@keyframes wc-fade-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }' +
                 '.wc-animate-in { animation: wc-fade-in 0.2s ease-out forwards; }' +
                 '@media (prefers-reduced-motion: reduce) { .wc-animate-in { animation: none; } }' +
@@ -385,10 +411,18 @@
                 '.wc-content h1,.wc-content h2,.wc-content h3{margin-top:0;}' +
                 '.wc-content p{margin-bottom:1em;}' +
                 '.wc-footer{padding:16px 24px;border-top:1px solid #eee;background:#fff;display:flex;justify-content:flex-end;align-items:center;gap:10px;}' +
-                '#' + this.config.modalId + ' button{padding:8px 16px;border:1px solid #d1d5db;background:white;border-radius:6px;cursor:pointer;font-size:14px;color:#374151;transition:all 0.2s;}' +
-                '#' + this.config.modalId + ' button:hover{background:#f3f4f6;}' +
-                '#' + this.config.modalId + ' button.primary{background:#2563eb;color:white;border:none;}' +
-                '#' + this.config.modalId + ' button.primary:hover{background:#1d4ed8;}';
+                '#' +
+                this.config.modalId +
+                ' button{padding:8px 16px;border:1px solid #d1d5db;background:white;border-radius:6px;cursor:pointer;font-size:14px;color:#374151;transition:all 0.2s;}' +
+                '#' +
+                this.config.modalId +
+                ' button:hover{background:#f3f4f6;}' +
+                '#' +
+                this.config.modalId +
+                ' button.primary{background:#2563eb;color:white;border:none;}' +
+                '#' +
+                this.config.modalId +
+                ' button.primary:hover{background:#1d4ed8;}';
 
             /* Apply animation class */
             modal.classList.add('wc-animate-in');
@@ -413,8 +447,12 @@
          */
         cleanupDOM(node) {
             /* General Cleanup: Remove active scripts and dangerous elements only. */
-            const dangerous = node.querySelectorAll('script, iframe, object, embed, noscript, form, input, button, select, textarea');
-            dangerous.forEach((n) => { n.remove(); });
+            const dangerous = node.querySelectorAll(
+                'script, iframe, object, embed, noscript, form, input, button, select, textarea'
+            );
+            dangerous.forEach((n) => {
+                n.remove();
+            });
 
             /* Attribute Cleanup: Remove event handlers (on*) and dangerous URLs */
             BookmarkletUtils.sanitizeAttributes(node);
@@ -427,21 +465,34 @@
         async handleCopy(contentArea) {
             const html = contentArea.innerHTML;
             const text = contentArea.innerText;
-            const btn = /** @type {HTMLElement} */ (document.querySelector('#' + this.config.modalId + ' button.primary'));
+            const btn = /** @type {HTMLElement} */ (
+                document.querySelector('#' + this.config.modalId + ' button.primary')
+            );
             try {
                 /* Copying as 'text/html' preserves styles when pasting into Google Docs/Word */
-                const data = [new ClipboardItem({ 'text/html': new Blob([html], { type: 'text/html' }), 'text/plain': new Blob([text], { type: 'text/plain' }) })];
+                const data = [
+                    new ClipboardItem({
+                        'text/html': new Blob([html], { type: 'text/html' }),
+                        'text/plain': new Blob([text], { type: 'text/plain' }),
+                    }),
+                ];
                 await navigator.clipboard.write(data);
-                btn.textContent = "Copied!";
-                btn.style.background = "#28a745";
-                setTimeout(() => { this.closeEditor(); }, 1000);
-            } catch (err) {
-                console.error('Clipboard access failed:', { error: err, url: window.location.href, timestamp: new Date().toISOString() });
-                btn.textContent = "Error";
-                btn.style.background = "#dc3545";
+                btn.textContent = 'Copied!';
+                btn.style.background = '#28a745';
                 setTimeout(() => {
-                    btn.textContent = "Copy";
-                    btn.style.background = "#007bff";
+                    this.closeEditor();
+                }, 1000);
+            } catch (err) {
+                console.error('Clipboard access failed:', {
+                    error: err,
+                    url: window.location.href,
+                    timestamp: new Date().toISOString(),
+                });
+                btn.textContent = 'Error';
+                btn.style.background = '#dc3545';
+                setTimeout(() => {
+                    btn.textContent = 'Copy';
+                    btn.style.background = '#007bff';
                 }, 1000);
             }
         }
@@ -469,7 +520,11 @@
                 }
 
                 /* Dynamically load html2canvas if needed */
-                BookmarkletUtils.loadLibrary('html2canvas', 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', 'sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H')
+                BookmarkletUtils.loadLibrary(
+                    'html2canvas',
+                    'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+                    'sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H'
+                )
                     .then(() => this.capturePng(contentArea, cleanTitle, btn, originalText))
                     .catch((err) => {
                         console.error('Failed to load html2canvas for PNG export:', err);
@@ -488,7 +543,12 @@
                     });
             } else {
                 /* HTML Default */
-                const content = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + cleanTitle + '</title></head><body>' + contentArea.innerHTML + '</body></html>';
+                const content =
+                    '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' +
+                    cleanTitle +
+                    '</title></head><body>' +
+                    contentArea.innerHTML +
+                    '</body></html>';
                 BookmarkletUtils.downloadFile(cleanTitle + '_' + Date.now() + '.html', content, 'text/html');
             }
         }
@@ -505,36 +565,42 @@
             const originalBg = element.style.backgroundColor;
             element.style.backgroundColor = '#ffffff';
 
-            html2canvas(element, { useCORS: true, logging: false }).then((canvas) => {
-                element.style.backgroundColor = originalBg; /* Restore */
+            html2canvas(element, { useCORS: true, logging: false })
+                .then((canvas) => {
+                    element.style.backgroundColor = originalBg; /* Restore */
 
-                const link = document.createElement('a');
-                link.download = title + '_' + Date.now() + '.png';
-                link.href = canvas.toDataURL();
-                link.click();
+                    const link = document.createElement('a');
+                    link.download = title + '_' + Date.now() + '.png';
+                    link.href = canvas.toDataURL();
+                    link.click();
 
-                if (btn) {
-                    btn.textContent = originalText;
-                    btn.disabled = false;
-                }
-            }).catch((err) => {
-                console.error('PNG Capture failed:', { error: err, url: window.location.href, timestamp: new Date().toISOString() });
-                element.style.backgroundColor = originalBg;
-
-                if (btn) {
-                    btn.textContent = 'Error';
-                    btn.style.background = '#dc3545';
-                    btn.style.color = 'white';
-                    setTimeout(() => {
+                    if (btn) {
                         btn.textContent = originalText;
                         btn.disabled = false;
-                        btn.style.background = '';
-                        btn.style.color = '';
-                    }, ERROR_RESET_DELAY);
-                } else {
-                    BookmarkletUtils.showToast('PNG export failed. Check console for details.', 'error');
-                }
-            });
+                    }
+                })
+                .catch((err) => {
+                    console.error('PNG Capture failed:', {
+                        error: err,
+                        url: window.location.href,
+                        timestamp: new Date().toISOString(),
+                    });
+                    element.style.backgroundColor = originalBg;
+
+                    if (btn) {
+                        btn.textContent = 'Error';
+                        btn.style.background = '#dc3545';
+                        btn.style.color = 'white';
+                        setTimeout(() => {
+                            btn.textContent = originalText;
+                            btn.disabled = false;
+                            btn.style.background = '';
+                            btn.style.color = '';
+                        }, ERROR_RESET_DELAY);
+                    } else {
+                        BookmarkletUtils.showToast('PNG export failed. Check console for details.', 'error');
+                    }
+                });
         }
 
         /**
@@ -549,5 +615,4 @@
     }
 
     window.__wc_instance = new WebClipper();
-
 })();

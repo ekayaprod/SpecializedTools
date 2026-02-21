@@ -9,10 +9,11 @@ This document serves as a staging area for new concepts before they graduate to 
 **Solution:** A specialized browser bookmarklet that extracts job descriptions from major platforms (LinkedIn, Indeed, Glassdoor) and generates a structured "Resume Tailoring Prompt" for LLMs.
 
 **Core Features:**
+
 - **Smart Extraction:** Auto-detects Job Title, Company, Salary Range, and Responsibilities.
 - **Hidden Keyword Analysis:** Identifies "soft skills" and cultural cues in the text.
 - **LLM Prompt Generation:** Outputs a copy-paste prompt:
-  > "Act as a Senior Recruiter at [Company]. Analyze this job description for key competencies. Rewrite my resume bullet points (pasted below) to align with these requirements, prioritizing metrics and achievements that match their needs."
+    > "Act as a Senior Recruiter at [Company]. Analyze this job description for key competencies. Rewrite my resume bullet points (pasted below) to align with these requirements, prioritizing metrics and achievements that match their needs."
 - **Privacy First:** Sanitizes tracking pixels and recruiter identifiers before processing.
 
 **Alignment:** Matches the "Clipper" pattern established by Property Clipper. Leverages the project's existing DOM cleaning utilities.
@@ -24,6 +25,7 @@ This document serves as a staging area for new concepts before they graduate to 
 **Solution:** A culinary-focused bookmarklet that bypasses the visual clutter by extracting the standardized `application/ld+json` (Schema.org/Recipe) metadata hidden in the page code.
 
 **Core Features:**
+
 - **Schema Extraction:** Instantly parses the hidden JSON-LD data used by Google Rich Snippets.
 - **Distraction-Free View:** Overlays a clean, printable recipe card with just Ingredients, Steps, and Timings.
 - **Smart Scaling:** Simple multiplier (0.5x, 2x, 4x) to auto-calculate ingredient quantities.
@@ -38,10 +40,11 @@ This document serves as a staging area for new concepts before they graduate to 
 **Solution:** A bookmarklet that extracts the transcript and metadata from video platforms (primarily YouTube) to generate a structured "Study Guide" prompt for LLMs.
 
 **Core Features:**
+
 - **Transcript Extraction:** Fetches the full closed caption track (auto-generated or manual).
 - **Smart Formatting:** Options to remove timestamps for clean reading or preserve them for "Jump to" links.
 - **LLM Prompt Generation:** Outputs prompts for summarization, quizzes, and code extraction.
-  > "Summarize the key arguments from this lecture. Create a 5-question quiz to test my understanding."
+    > "Summarize the key arguments from this lecture. Create a 5-question quiz to test my understanding."
 - **Timestamped Notes:** Exports to Markdown with clickable links that resume the video at that specific time.
 
 **Alignment:** Complements the "Web Clipper" (Visual) and "Property Clipper" (Data) by addressing "Audio/Video" content.

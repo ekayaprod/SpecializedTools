@@ -4,15 +4,18 @@
 **Curator:** Jules (AI Assistant)
 
 ## Summary
+
 A comprehensive audit of the project's static assets (images, fonts, icons) and their usage in the source code was conducted. The goal was to ensure all assets are optimized and used correctly, specifically focusing on unused files and missing `alt` attributes.
 
 ## Findings
 
 ### 1. Unused Assets
+
 - **Status:** PASS
 - **Details:** No unused static assets (images, fonts, etc.) were found in the repository. The project primarily relies on dynamic content generation and external CDNs (Tailwind CSS, jsPDF, html2canvas).
 
 ### 2. Missing Alt Attributes
+
 - **Status:** PASS
 - **Details:**
     - **Production Code:**
@@ -23,5 +26,6 @@ A comprehensive audit of the project's static assets (images, fonts, icons) and 
         - `tests/test_utils.js` and `tests/test_sanitize.js` contain some bare `<img>` tags. These are intentional test vectors (e.g., for XSS sanitization or basic DOM manipulation tests) and do not require modification.
 
 ## Recommendations
+
 - **Maintain Current Standards:** Continue to ensure all new `<img>` tags in production code include descriptive `alt` attributes.
 - **Test Coverage:** Consider adding tests that specifically verify accessibility attributes for generated content in future feature development.

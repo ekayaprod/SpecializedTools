@@ -1,18 +1,18 @@
-(function(){
+(function () {
     // ID for the singleton instance
-    if(window.dc_running){
+    if (window.dc_running) {
         window.dc_running.toggle();
         return;
     }
 
     /* Check if we can run here */
-    if(window.location.protocol === 'about:' || window.location.protocol === 'chrome:'){
+    if (window.location.protocol === 'about:' || window.location.protocol === 'chrome:') {
         console.warn('Delayed Clicker: Cannot run on internal browser pages.', { url: window.location.href });
         return;
     }
 
     class DC {
-        constructor(){
+        constructor() {
             this.id = 'dc-' + Math.random().toString(36).slice(2, 7);
             this.el = null; // Target element
             this.val = null; // Value to set (if select)
@@ -20,13 +20,14 @@
             this.init();
         }
 
-        init(){
+        init() {
             this.h = document.createElement('div');
             this.h.id = this.id;
             // Initial styles for the container (reset)
-            this.h.style.cssText = 'position:fixed;top:20px;right:20px;z-index:2147483647;display:block;font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;';
-            this.s = this.h.attachShadow({mode:'open'});
-            
+            this.h.style.cssText =
+                'position:fixed;top:20px;right:20px;z-index:2147483647;display:block;font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;';
+            this.s = this.h.attachShadow({ mode: 'open' });
+
             // Modern UI Styles & Markup
             this.s.innerHTML = `
             <style>
@@ -190,16 +191,16 @@
 
             // Bind Elements
             this.ui = {
-                card: this.s.querySelector('.card'),
-                p1: this.s.querySelector('#p1'),
-                p2: this.s.querySelector('#p2'),
-                pickBtn: this.s.querySelector('#pick'),
-                goBtn: this.s.querySelector('#go'),
-                cancelBtn: this.s.querySelector('#cancel'),
-                closeBtn: this.s.querySelector('#close'),
-                input: this.s.querySelector('#mn'),
-                label: this.s.querySelector('#picked-label'),
-                timer: this.s.querySelector('#cd')
+                card: /** @type {HTMLElement} */ (this.s.querySelector('.card')),
+                p1: /** @type {HTMLElement} */ (this.s.querySelector('#p1')),
+                p2: /** @type {HTMLElement} */ (this.s.querySelector('#p2')),
+                pickBtn: /** @type {HTMLElement} */ (this.s.querySelector('#pick')),
+                goBtn: /** @type {HTMLButtonElement} */ (this.s.querySelector('#go')),
+                cancelBtn: /** @type {HTMLElement} */ (this.s.querySelector('#cancel')),
+                closeBtn: /** @type {HTMLElement} */ (this.s.querySelector('#close')),
+                input: /** @type {HTMLInputElement} */ (this.s.querySelector('#mn')),
+                label: /** @type {HTMLElement} */ (this.s.querySelector('#picked-label')),
+                timer: /** @type {HTMLElement} */ (this.s.querySelector('#cd')),
             };
 
             document.body.appendChild(this.h);
@@ -209,7 +210,7 @@
             this.ui.goBtn.onclick = () => this.start();
             this.ui.cancelBtn.onclick = () => this.reset();
             this.ui.closeBtn.onclick = () => this.destroy();
-            
+
             // Focus management
             setTimeout(() => this.ui.input.focus(), 100);
         }
@@ -225,27 +226,28 @@
             style.id = 'dc-pick-style';
             style.innerHTML = `* { cursor: crosshair !important; } .dc-hover { outline: 2px solid #3b82f6 !important; background: rgba(59, 130, 246, 0.1) !important; }`;
             document.head.appendChild(style);
-            
+
             this.ui.pickBtn.innerText = 'Click target on page...';
             this.ui.card.style.opacity = '0.5'; // Dim UI so they can see page
 
             const hdl = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                if(e.target === this.h) return; // Don't pick self
-                
+                if (e.target === this.h) return; // Don't pick self
+
                 // Cleanup picking state
                 document.removeEventListener('click', hdl, true);
                 document.removeEventListener('mouseover', hover, true);
                 document.removeEventListener('mouseout', out, true);
-                if(document.querySelector('.dc-hover')) document.querySelector('.dc-hover').classList.remove('dc-hover');
+                if (document.querySelector('.dc-hover'))
+                    document.querySelector('.dc-hover').classList.remove('dc-hover');
                 style.remove();
-                
+
                 this.sel(e.target);
             };
 
             const hover = (e) => {
-                if(e.target === this.h) return;
+                if (e.target === this.h) return;
                 e.target.classList.add('dc-hover');
             };
             const out = (e) => {
@@ -257,24 +259,24 @@
             document.addEventListener('mouseout', out, true);
         }
 
-        sel(el){
+        sel(el) {
             this.el = el;
             this.ui.card.style.opacity = '1';
-            
+
             let name = el.tagName.toLowerCase();
-            if(el.id) name += `#${el.id}`;
-            else if(el.className) name += `.${el.className.split(' ')[0]}`;
-            
+            if (el.id) name += `#${el.id}`;
+            else if (el.className) name += `.${el.className.split(' ')[0]}`;
+
             this.ui.label.innerText = `<${name}>`;
             this.ui.pickBtn.innerHTML = `
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
                 Reselect Element
             `;
-            
+
             // Enable Start
             this.ui.goBtn.disabled = false;
             this.ui.goBtn.focus();
-            
+
             // Flash target
             const origTrans = el.style.transition;
             const origOutline = el.style.outline;
@@ -286,9 +288,9 @@
             }, 600);
         }
 
-        start(){
+        start() {
             const mins = parseFloat(this.ui.input.value);
-            if(!mins || mins <= 0 || !this.el) return;
+            if (!mins || mins <= 0 || !this.el) return;
 
             let ms = mins * 60 * 1000;
             const end = Date.now() + ms;
@@ -301,35 +303,35 @@
             this.tm = setInterval(() => this.tick(end), 100);
         }
 
-        reset(){
+        reset() {
             clearInterval(this.tm);
             this.ui.p2.classList.add('hd');
             this.ui.p1.classList.remove('hd');
         }
 
-        tick(end){
+        tick(end) {
             const rem = end - Date.now();
-            if(rem <= 0){
+            if (rem <= 0) {
                 this.exec();
                 return;
             }
-            const s = Math.floor(rem/1000);
-            const m = Math.floor(s/60);
-            const h = Math.floor(m/60);
-            
-            const pad = n => n.toString().padStart(2,'0');
-            this.ui.timer.innerText = `${pad(h)}:${pad(m%60)}:${pad(s%60)}`;
+            const s = Math.floor(rem / 1000);
+            const m = Math.floor(s / 60);
+            const h = Math.floor(m / 60);
+
+            const pad = (n) => n.toString().padStart(2, '0');
+            this.ui.timer.innerText = `${pad(h)}:${pad(m % 60)}:${pad(s % 60)}`;
         }
 
-        exec(){
+        exec() {
             clearInterval(this.tm);
-            
+
             // Success Animation UI
             this.ui.timer.innerHTML = `
                 <div class="success-icon">✓</div>
                 <div style="font-size:16px; margin-top:10px; color:#4ade80">Action Executed</div>
             `;
-            
+
             // Preserve 'DONE' text for tests to find in innerText, hidden visually if needed or just part of flow
             // Actually test looks for 'DONE' string. Let's make sure it's present.
             const doneSpan = document.createElement('span');
@@ -338,28 +340,32 @@
             this.ui.timer.appendChild(doneSpan);
 
             try {
-                if(this.el.tagName === 'SELECT'){
+                if (this.el.tagName === 'SELECT') {
                     this.el.value = this.val; // Note: 'this.val' isn't set in UI currently, usually for specialized use
-                    this.el.dispatchEvent(new Event('input', {bubbles:true}));
-                    this.el.dispatchEvent(new Event('change', {bubbles:true}));
+                    this.el.dispatchEvent(new Event('input', { bubbles: true }));
+                    this.el.dispatchEvent(new Event('change', { bubbles: true }));
                 } else {
-                    ['mousedown','mouseup','click'].forEach(ev => {
-                        this.el.dispatchEvent(new MouseEvent(ev, {view:window, bubbles:true, cancelable:true}));
+                    ['mousedown', 'mouseup', 'click'].forEach((ev) => {
+                        this.el.dispatchEvent(new MouseEvent(ev, { view: window, bubbles: true, cancelable: true }));
                     });
                 }
-            } catch(e){
-                console.error("Delayed Clicker Error:", { error: e.message, stack: e.stack, target: this.el ? this.el.tagName : 'unknown' });
-                this.ui.timer.innerText = "Error!";
+            } catch (e) {
+                console.error('Delayed Clicker Error:', {
+                    error: e.message,
+                    stack: e.stack,
+                    target: this.el ? this.el.tagName : 'unknown',
+                });
+                this.ui.timer.innerText = 'Error!';
             }
-            
+
             setTimeout(() => this.destroy(), 2500);
         }
 
-        toggle(){
+        toggle() {
             const display = this.h.style.display;
-            this.h.style.display = (display === 'none') ? 'block' : 'none';
+            this.h.style.display = display === 'none' ? 'block' : 'none';
         }
     }
-    
+
     window.dc_running = new DC();
 })();

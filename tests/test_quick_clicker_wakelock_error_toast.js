@@ -4,8 +4,8 @@ const { JSDOM } = require('jsdom');
 
 // Setup JSDOM
 const dom = new JSDOM(`<!DOCTYPE html><body></body>`, {
-    url: "http://localhost/",
-    pretendToBeVisual: true
+    url: 'http://localhost/',
+    pretendToBeVisual: true,
 });
 global.window = dom.window;
 global.document = dom.window.document;
@@ -15,8 +15,8 @@ global.HTMLElement = dom.window.HTMLElement;
 // Mock Wake Lock API to fail
 global.navigator.wakeLock = {
     request: async () => {
-        throw new Error("Wake Lock Denied by System");
-    }
+        throw new Error('Wake Lock Denied by System');
+    },
 };
 
 // Mock console.warn to suppress noise (optional, but good practice)
@@ -29,24 +29,26 @@ const scriptPath = path.join(__dirname, '../bookmarklets/quick-clicker.js');
 const scriptContent = fs.readFileSync(scriptPath, 'utf8');
 
 async function runTest() {
-    console.log("🚀 Starting verification test for Quick Clicker Wake Lock Error Toast...");
+    console.log('🚀 Starting verification test for Quick Clicker Wake Lock Error Toast...');
 
     try {
         eval(utilsContent);
-        if (window.BookmarkletUtils) { global.BookmarkletUtils = window.BookmarkletUtils; }
+        if (window.BookmarkletUtils) {
+            global.BookmarkletUtils = window.BookmarkletUtils;
+        }
         // Execute the bookmarklet code
         eval(scriptContent);
     } catch (e) {
-        console.error("Script execution failed:", e);
+        console.error('Script execution failed:', e);
         process.exit(1);
     }
 
     const app = global.window.__dc_v27;
     if (!app) {
-        console.error("❌ App instance not found on window");
+        console.error('❌ App instance not found on window');
         process.exit(1);
     }
-    console.log("✅ App initialized");
+    console.log('✅ App initialized');
 
     // Start logic
     try {
@@ -62,16 +64,15 @@ async function runTest() {
 
         // Since start() is async and handles the error internally, we await it.
         // After await, the toast should have been updated.
-
     } catch (e) {
-        console.error("start() threw an unexpected error:", e);
+        console.error('start() threw an unexpected error:', e);
         process.exit(1);
     }
 
     // Verify Toast in Shadow DOM
     const toast = app.s.querySelector('#toast');
     if (!toast) {
-        console.error("❌ Toast element not found in Shadow DOM");
+        console.error('❌ Toast element not found in Shadow DOM');
         process.exit(1);
     }
 
@@ -86,17 +87,17 @@ async function runTest() {
     const hasCorrectText = text.includes('Wake Lock Failed');
 
     if (hasErrorClass && isVisible && hasCorrectText) {
-        console.log("✅ SUCCESS: Error toast displayed correctly.");
+        console.log('✅ SUCCESS: Error toast displayed correctly.');
 
         // Cleanup
         if (app.iv) clearInterval(app.iv);
         app.destroy();
         process.exit(0);
     } else {
-        console.error("❌ FAILURE: Toast state incorrect.");
+        console.error('❌ FAILURE: Toast state incorrect.');
         if (!hasErrorClass) console.error("   - Missing 'error' class");
         if (!isVisible) console.error("   - Missing 'visible' class");
-        if (!hasCorrectText) console.error("   - Incorrect text");
+        if (!hasCorrectText) console.error('   - Incorrect text');
         process.exit(1);
     }
 }

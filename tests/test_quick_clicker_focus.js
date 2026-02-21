@@ -3,9 +3,9 @@ const path = require('path');
 const { JSDOM } = require('jsdom');
 
 const dom = new JSDOM(`<!DOCTYPE html><body><div id="target-btn">Click Me</div></body>`, {
-    url: "http://localhost/",
-    runScripts: "dangerously",
-    resources: "usable"
+    url: 'http://localhost/',
+    runScripts: 'dangerously',
+    resources: 'usable',
 });
 
 global.window = dom.window;
@@ -29,14 +29,16 @@ const scriptPath = path.join(__dirname, '../bookmarklets/quick-clicker.js');
 const scriptContent = fs.readFileSync(scriptPath, 'utf8');
 
 async function testFocusManagement() {
-    console.log("🚀 Starting Quick Clicker Focus Test...");
+    console.log('🚀 Starting Quick Clicker Focus Test...');
 
     try {
         eval(utilsContent);
-        if (window.BookmarkletUtils) { global.BookmarkletUtils = window.BookmarkletUtils; }
+        if (window.BookmarkletUtils) {
+            global.BookmarkletUtils = window.BookmarkletUtils;
+        }
         eval(scriptContent);
     } catch (e) {
-        console.error("Script execution failed:", e);
+        console.error('Script execution failed:', e);
         process.exit(1);
     }
 
@@ -44,7 +46,7 @@ async function testFocusManagement() {
     const shadowRoot = app.s;
 
     // Wait for init
-    await new Promise(r => setTimeout(r, 100));
+    await new Promise((r) => setTimeout(r, 100));
 
     // Mock picking a target
     const target = document.getElementById('target-btn');
@@ -53,45 +55,49 @@ async function testFocusManagement() {
     startBtn.disabled = false;
 
     // --- TEST 1: START FOCUS ---
-    console.log("👉 [1/2] Clicking Start...");
+    console.log('👉 [1/2] Clicking Start...');
     startBtn.click();
 
     // Wait for view switch (needs > 200ms for transition)
-    await new Promise(r => setTimeout(r, 300));
+    await new Promise((r) => setTimeout(r, 300));
 
     const activeEl = shadowRoot.activeElement;
     const stopBtn = shadowRoot.querySelector('#cn');
 
     if (activeEl === stopBtn) {
-        console.log("✅ Focus moved to Stop button");
+        console.log('✅ Focus moved to Stop button');
     } else {
-        console.error(`❌ FOCUS FAIL (Start): Active element is <${activeEl ? activeEl.tagName : 'None'}> (Expected <BUTTON id="cn">)`);
+        console.error(
+            `❌ FOCUS FAIL (Start): Active element is <${activeEl ? activeEl.tagName : 'None'}> (Expected <BUTTON id="cn">)`
+        );
         console.error(`   Active Element ID: ${activeEl ? activeEl.id : 'N/A'}`);
         process.exit(1);
     }
 
     // --- TEST 2: STOP FOCUS ---
-    console.log("👉 [2/2] Clicking Stop...");
+    console.log('👉 [2/2] Clicking Stop...');
     stopBtn.click();
 
     // Wait for view switch (needs > 200ms for transition)
-    await new Promise(r => setTimeout(r, 300));
+    await new Promise((r) => setTimeout(r, 300));
 
     const newActiveEl = shadowRoot.activeElement;
     // Should focus back to Start or Pick button
     if (newActiveEl === startBtn || newActiveEl.id === 'pk') {
-        console.log("✅ Focus returned to Start/Pick button");
+        console.log('✅ Focus returned to Start/Pick button');
     } else {
-        console.error(`❌ FOCUS FAIL (Stop): Active element is <${newActiveEl ? newActiveEl.tagName : 'None'}> (Expected Start/Pick button)`);
+        console.error(
+            `❌ FOCUS FAIL (Stop): Active element is <${newActiveEl ? newActiveEl.tagName : 'None'}> (Expected Start/Pick button)`
+        );
         console.error(`   Active Element ID: ${newActiveEl ? newActiveEl.id : 'N/A'}`);
         process.exit(1);
     }
 
-    console.log("🎉 All focus tests passed!");
+    console.log('🎉 All focus tests passed!');
     process.exit(0);
 }
 
-testFocusManagement().catch(e => {
-    console.error("Test Crashed:", e);
+testFocusManagement().catch((e) => {
+    console.error('Test Crashed:', e);
     process.exit(1);
 });

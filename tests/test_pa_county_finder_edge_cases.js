@@ -6,13 +6,13 @@ console.log('Running PA County Finder Edge Cases...');
 // Define test cases for split cities that are ONLY in O (Overrides)
 const splitCitiesOnlyInOverrides = [
     { city: 'Adamstown', expected: ['Berks', 'Lancaster'] },
-    { city: 'Seven Springs', expected: ['Fayette', 'Somerset'] }
+    { city: 'Seven Springs', expected: ['Fayette', 'Somerset'] },
 ];
 
 // Define test cases for split cities that are in D (Data Array)
 const splitCitiesInD = [
     { city: 'Bethlehem', expected: ['Lehigh', 'Northampton'] },
-    { city: 'Trafford', expected: ['Allegheny', 'Westmoreland'] }
+    { city: 'Trafford', expected: ['Allegheny', 'Westmoreland'] },
 ];
 
 let passed = 0;

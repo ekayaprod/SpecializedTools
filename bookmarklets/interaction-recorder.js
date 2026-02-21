@@ -1,12 +1,15 @@
-(function() {
+(function () {
     /** @require utils.js */
 
-    if(window.__ir_v1){window.__ir_v1.destroy();return}
-    if(!document.body) return alert('Page has no body.');
+    if (window.__ir_v1) {
+        window.__ir_v1.destroy();
+        return;
+    }
+    if (!document.body) return alert('Page has no body.');
 
     class InteractionRecorder {
-        constructor(){
-            this.id = 'ir-'+Math.random().toString(36).slice(2);
+        constructor() {
+            this.id = 'ir-' + Math.random().toString(36).slice(2);
             this.log = [];
             this.isRecording = false;
             this.cleanupFns = [];
@@ -17,13 +20,15 @@
             console.log('[InteractionRecorder] ' + msg, data || '');
         }
 
-        init(){
+        init() {
             this._log('Initialized', { id: this.id });
             this.h = document.createElement('div');
-            this.h.style.cssText = 'position:fixed;top:15px;right:15px;z-index:2147483647;font-family:system-ui,sans-serif';
-            this.s = this.h.attachShadow({mode:'open'});
+            this.h.style.cssText =
+                'position:fixed;top:15px;right:15px;z-index:2147483647;font-family:system-ui,sans-serif';
+            this.s = this.h.attachShadow({ mode: 'open' });
 
-            this.s.innerHTML = '<style>' +
+            this.s.innerHTML =
+                '<style>' +
                 ':host{all:initial;font-family:system-ui,sans-serif}' +
                 '.box{background:#451a03;color:#e2e8f0;width:240px;padding:16px;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,0.7);border:1px solid #d97706;font-size:13px;box-sizing:border-box}' +
                 '.row{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;cursor:move;user-select:none}' +
@@ -34,24 +39,24 @@
                 'button.stop:hover{background:#b91c1c}' +
                 '.status{margin-bottom:10px;text-align:center;font-size:11px;color:#cbd5e1}' +
                 '.count{font-size:24px;text-align:center;font-family:monospace;margin:5px 0;color:#fcd34d}' +
-            '</style>' +
-            '<div class="box">' +
+                '</style>' +
+                '<div class="box">' +
                 '<div class="row" id="drag"><h3>Recorder</h3><span id="x" style="cursor:pointer">✕</span></div>' +
                 '<div class="status" id="st">Ready</div>' +
                 '<div class="count" id="cnt">0 Clicks</div>' +
                 '<button id="btn">Start</button>' +
-            '</div>';
+                '</div>';
 
-            this.q = s => this.s.querySelector(s);
+            this.q = (s) => this.s.querySelector(s);
             this.bind();
             document.body.appendChild(this.h);
         }
 
-        bind(){
+        bind() {
             this.q('#x').onclick = () => this.destroy();
             const btn = this.q('#btn');
             btn.onclick = () => {
-                if(this.isRecording) this.stop();
+                if (this.isRecording) this.stop();
                 else this.start();
             };
             BookmarkletUtils.makeDraggable(this.q('#drag'), this.h);
@@ -67,7 +72,7 @@
             return t;
         }
 
-        start(){
+        start() {
             this._log('Recording started');
             this.isRecording = true;
             this.log = [];
@@ -80,7 +85,7 @@
             this.q('#cnt').innerText = '0 Clicks';
 
             const handleClick = (e) => {
-                if(this.h.contains(e.target)) return;
+                if (this.h.contains(e.target)) return;
 
                 const t = this.getDeepTarget(e);
                 const clickData = {
@@ -91,7 +96,7 @@
                     innerText: t.innerText ? t.innerText.substring(0, 50).replace(/\n/g, ' ') : '',
                     ariaLabel: t.getAttribute('aria-label'),
                     role: t.getAttribute('role'),
-                    path: this.getPath(t)
+                    path: this.getPath(t),
                 };
 
                 this.log.push(clickData);
@@ -114,8 +119,11 @@
                     break;
                 } else {
                     if (curr.className && typeof curr.className === 'string') {
-                         const classes = curr.className.trim().split(/\s+/).filter(c => c);
-                         if(classes.length) selector += '.' + classes.join('.');
+                        const classes = curr.className
+                            .trim()
+                            .split(/\s+/)
+                            .filter((c) => c);
+                        if (classes.length) selector += '.' + classes.join('.');
                     }
                     path.unshift(selector);
                     curr = curr.parentElement;
@@ -124,10 +132,10 @@
             return path.join(' > ');
         }
 
-        stop(){
+        stop() {
             this._log('Recording stopped', { totalClicks: this.log.length });
             this.isRecording = false;
-            this.cleanupFns.forEach(fn => fn());
+            this.cleanupFns.forEach((fn) => fn());
             this.cleanupFns = [];
 
             const btn = this.q('#btn');
@@ -138,15 +146,15 @@
             this.download();
         }
 
-        download(){
+        download() {
             const text = JSON.stringify(this.log, null, 2);
             const filename = 'interaction_log_' + Date.now() + '.txt';
             BookmarkletUtils.downloadFile(filename, text, 'text/plain');
             this._log('Log exported', { filename: filename });
         }
 
-        destroy(){
-            if(this.isRecording) this.stop();
+        destroy() {
+            if (this.isRecording) this.stop();
             this.h.remove();
             delete window.__ir_v1;
         }

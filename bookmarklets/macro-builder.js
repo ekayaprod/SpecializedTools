@@ -1,12 +1,15 @@
-(function() {
+(function () {
     /** @require utils.js */
 
-    if(window.__mb_v22){window.__mb_v22.destroy();return}
-    if(!document.body) return alert('Page has no body.');
+    if (window.__mb_v22) {
+        window.__mb_v22.destroy();
+        return;
+    }
+    if (!document.body) return alert('Page has no body.');
 
     class MacroBuilder {
-        constructor(){
-            this.id = 'mb-'+Math.random().toString(36).slice(2);
+        constructor() {
+            this.id = 'mb-' + Math.random().toString(36).slice(2);
             this.steps = [];
             this.cleanupFns = [];
             this.init();
@@ -16,17 +19,19 @@
             console.log('[MacroBuilder] ' + msg, data || '');
         }
 
-        init(){
+        init() {
             this._log('Initialized', { id: this.id });
             this.h = document.createElement('div');
-            this.h.style.cssText = 'position:fixed;top:15px;right:15px;z-index:2147483647;font-family:system-ui,sans-serif';
-            this.s = this.h.attachShadow({mode:'open'});
+            this.h.style.cssText =
+                'position:fixed;top:15px;right:15px;z-index:2147483647;font-family:system-ui,sans-serif';
+            this.s = this.h.attachShadow({ mode: 'open' });
             this.render();
             document.body.appendChild(this.h);
         }
 
-        render(){
-            this.s.innerHTML = '<style>' +
+        render() {
+            this.s.innerHTML =
+                '<style>' +
                 ':host{all:initial;font-family:system-ui,sans-serif}' +
                 '.box{background:#1e1b4b;color:#e2e8f0;width:320px;padding:16px;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,0.7);border:1px solid #4338ca;font-size:13px;box-sizing:border-box}' +
                 '.row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;cursor:move;user-select:none;padding-bottom:5px;border-bottom:1px solid #334155}' +
@@ -51,66 +56,73 @@
                 'input.delay{width:40px;background:#0f172a;border:1px solid #334155;color:#fff;border-radius:4px;padding:2px;font-size:11px;text-align:center}' +
                 '.empty-msg{text-align:center;color:#64748b;padding:20px;font-style:italic}' +
                 '.cfg-grp{margin-bottom:10px;padding:10px;background:#0f172a;border-radius:6px;border:1px solid #334155}' +
-            '</style>' +
-            '<div class="box">' +
+                '</style>' +
+                '<div class="box">' +
                 '<div class="row" id="drag"><h3>Macro Builder</h3><span id="x" style="cursor:pointer">✕</span></div>' +
-
                 '<div id="view_steps">' +
-                    '<div id="list" class="list"><div class="empty-msg">No steps. Add one to start.</div></div>' +
-                    '<button id="add">➕ Add Sequence</button>' +
-                    '<button id="exp" style="background:#db2777">⚡ Export</button>' +
-                    '<div id="out" class="export-area" style="display:none">' +
-                        '<p style="text-align:center;color:#e2e8f0;margin:0 0 10px 0">Drag to toolbar:</p>' +
-                        '<a id="lnk" href="#" class="bm-btn">🤖 Macro</a>' +
-                    '</div>' +
+                '<div id="list" class="list"><div class="empty-msg">No steps. Add one to start.</div></div>' +
+                '<button id="add">➕ Add Sequence</button>' +
+                '<button id="exp" style="background:#db2777">⚡ Export</button>' +
+                '<div id="out" class="export-area" style="display:none">' +
+                '<p style="text-align:center;color:#e2e8f0;margin:0 0 10px 0">Drag to toolbar:</p>' +
+                '<a id="lnk" href="#" class="bm-btn">🤖 Macro</a>' +
                 '</div>' +
-
+                '</div>' +
                 '<div id="preview" class="hidden" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#1e293b;padding:20px;border-radius:12px;border:2px solid #a855f7;box-shadow:0 25px 50px rgba(0,0,0,0.8);width:80%;text-align:center;z-index:9999">' +
-                    '<div style="font-weight:bold;margin-bottom:10px">Confirm Selection</div>' +
-                    '<div id="prev_tag" style="color:#94a3b8;font-size:12px;margin-bottom:5px"></div>' +
-                    '<div id="prev_sel" style="color:#c7d2fe;font-size:11px;margin-bottom:15px;word-break:break-all"></div>' +
-                    '<button id="prev_yes" style="background:#059669;margin-right:10px;width:auto;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;color:white;">Confirm</button>' +
-                    '<button id="prev_no" style="background:#ef4444;width:auto;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;color:white;">Retry</button>' +
+                '<div style="font-weight:bold;margin-bottom:10px">Confirm Selection</div>' +
+                '<div id="prev_tag" style="color:#94a3b8;font-size:12px;margin-bottom:5px"></div>' +
+                '<div id="prev_sel" style="color:#c7d2fe;font-size:11px;margin-bottom:15px;word-break:break-all"></div>' +
+                '<button id="prev_yes" style="background:#059669;margin-right:10px;width:auto;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;color:white;">Confirm</button>' +
+                '<button id="prev_no" style="background:#ef4444;width:auto;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;color:white;">Retry</button>' +
                 '</div>' +
-            '</div>';
+                '</div>';
 
-            this.q = s => this.s.querySelector(s);
+            this.q = (s) => this.s.querySelector(s);
             this.bind();
         }
 
-        bind(){
-            this.q('#x').onclick=()=>this.destroy();
-            this.q('#add').onclick=()=>this.startSequence();
-            this.q('#exp').onclick=()=>this.compile();
+        bind() {
+            this.q('#x').onclick = () => this.destroy();
+            this.q('#add').onclick = () => this.startSequence();
+            this.q('#exp').onclick = () => this.compile();
             BookmarkletUtils.makeDraggable(this.q('#drag'), this.h);
         }
 
-        add(t, ev, fn, opt) { t.addEventListener(ev, fn, opt); this.cleanupFns.push(()=>t.removeEventListener(ev, fn, opt)); }
+        add(t, ev, fn, opt) {
+            t.addEventListener(ev, fn, opt);
+            this.cleanupFns.push(() => t.removeEventListener(ev, fn, opt));
+        }
 
-        clearListeners() { this.cleanupFns.forEach(fn=>fn()); this.cleanupFns = []; }
+        clearListeners() {
+            this.cleanupFns.forEach((fn) => fn());
+            this.cleanupFns = [];
+        }
 
-        getSel(el){
-            if(el.matches('button[class*="presence-"]')) {
+        getSel(el) {
+            if (el.matches('button[class*="presence-"]')) {
                 const match = el.className.match(/presence-(break|meal|available|busy|away)/);
-                if(match) return 'button.presence-' + match[1];
+                if (match) return 'button.presence-' + match[1];
             }
 
-            if(el.hasAttribute('aria-label')) {
+            if (el.hasAttribute('aria-label')) {
                 const label = el.getAttribute('aria-label');
                 if (!label.match(/On queue|Available|Busy|Away|Break|Meal|Offline/i)) {
-                     if(document.querySelectorAll('[aria-label="'+label+'"]').length === 1) return '[aria-label="'+label+'"]';
+                    if (document.querySelectorAll('[aria-label="' + label + '"]').length === 1)
+                        return '[aria-label="' + label + '"]';
                 }
             }
-            if(el.id && !/\d/.test(el.id)) return '#'+el.id;
+            if (el.id && !/\d/.test(el.id)) return '#' + el.id;
 
             if (el.classList.contains('menu-selector')) return '.menu-selector';
             if (el.classList.contains('entity-image-button')) return '.entity-image-button';
 
             let path = el.tagName.toLowerCase();
-            if(el.classList.length) path += '.' + [...el.classList].join('.');
-            if(document.querySelectorAll(path).length > 1 && el.parentElement){
-                 let i=1, s=el; while(s=s.previousElementSibling)i++;
-                 path += ':nth-child('+i+')';
+            if (el.classList.length) path += '.' + [...el.classList].join('.');
+            if (document.querySelectorAll(path).length > 1 && el.parentElement) {
+                let i = 1,
+                    s = el;
+                while ((s = s.previousElementSibling)) i++;
+                path += ':nth-child(' + i + ')';
             }
             return path;
         }
@@ -118,7 +130,7 @@
         startSequence() {
             this._log('Sequence picking started');
             this.currentSequence = [];
-            if(!confirm('Start picking elements? Click Cancel when done.')) return;
+            if (!confirm('Start picking elements? Click Cancel when done.')) return;
             this.pick('sequence');
         }
 
@@ -137,7 +149,8 @@
 
             let targetEl = t.closest('button, a, [role="button"], [role="radio"], label');
             if (!targetEl) targetEl = t.closest('.menu-selector, .entity-image-button');
-            if (!targetEl && ['IMG', 'SVG', 'PATH', 'SPAN', 'I', 'GUX-ICON'].includes(t.tagName)) targetEl = t.parentElement;
+            if (!targetEl && ['IMG', 'SVG', 'PATH', 'SPAN', 'I', 'GUX-ICON'].includes(t.tagName))
+                targetEl = t.parentElement;
             if (!targetEl) targetEl = t;
 
             if (targetEl.tagName === 'BODY' || targetEl.tagName === 'HTML') return null;
@@ -148,51 +161,60 @@
             return targetEl;
         }
 
-        pick(mode){
-            this.h.style.display='none';
-            const hl=document.createElement('div');
-            hl.style.cssText='position:absolute;border:2px solid #a855f7;background:rgba(168,85,247,0.2);pointer-events:none;z-index:999999';
+        pick(mode) {
+            this.h.style.display = 'none';
+            const hl = document.createElement('div');
+            hl.style.cssText =
+                'position:absolute;border:2px solid #a855f7;background:rgba(168,85,247,0.2);pointer-events:none;z-index:999999';
             document.body.appendChild(hl);
 
             const stopPicking = () => {
                 hl.remove();
-                this.h.style.display='block';
+                this.h.style.display = 'block';
                 this.clearListeners();
             };
 
-            const mv=e=>{
-                if(e.shiftKey){ hl.style.display='none'; return; }
+            const mv = (e) => {
+                if (e.shiftKey) {
+                    hl.style.display = 'none';
+                    return;
+                }
                 const t = this.getTarget(e);
-                if(!t) { hl.style.display='none'; return; }
+                if (!t) {
+                    hl.style.display = 'none';
+                    return;
+                }
 
-                hl.style.display='block';
-                const r=t.getBoundingClientRect();
-                hl.style.top=(r.top + window.scrollY)+'px';
-                hl.style.left=(r.left + window.scrollX)+'px';
-                hl.style.width=r.width+'px';
-                hl.style.height=r.height+'px';
+                hl.style.display = 'block';
+                const r = t.getBoundingClientRect();
+                hl.style.top = r.top + window.scrollY + 'px';
+                hl.style.left = r.left + window.scrollX + 'px';
+                hl.style.width = r.width + 'px';
+                hl.style.height = r.height + 'px';
             };
 
             const stopEvent = (e) => {
-                if(e.shiftKey) return;
-                if(this.h.contains(e.target)) return;
-                e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+                if (e.shiftKey) return;
+                if (this.h.contains(e.target)) return;
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
             };
 
-            const cl=e=>{
-                if(e.shiftKey) return;
+            const cl = (e) => {
+                if (e.shiftKey) return;
 
-                if(this.h.contains(e.target)) return;
+                if (this.h.contains(e.target)) return;
                 stopEvent(e);
 
                 let targetEl = this.getTarget(e);
-                if(!targetEl) return;
+                if (!targetEl) return;
 
                 const sel = this.getSel(targetEl);
                 const txt = targetEl.innerText ? targetEl.innerText.substring(0, 20).trim() : '';
 
                 hl.remove();
-                this.h.style.display='block';
+                this.h.style.display = 'block';
                 this.q('#prev_tag').innerText = targetEl.tagName;
                 this.q('#prev_sel').innerText = sel;
                 this.q('#preview').classList.remove('hidden');
@@ -202,29 +224,35 @@
                     this.q('#preview').classList.add('hidden');
                     this.clearListeners();
 
-                    if(mode === 'sequence') {
+                    if (mode === 'sequence') {
                         let val = null;
                         let enter = false;
                         const tag = targetEl.tagName;
                         let ask = false;
-                        if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'){
+                        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
                             const isPwd = targetEl.type === 'password';
                             val = prompt(isPwd ? 'Value (Not Stored):' : 'Type text (Empty to click):');
                             ask = isPwd;
-                            if(val && !isPwd) {
+                            if (val && !isPwd) {
                                 ask = confirm('Sensitive? (Prompt on run)');
                             }
-                            if(val) enter = confirm('Press Enter?');
+                            if (val) enter = confirm('Press Enter?');
                         }
 
-                        this.currentSequence.push({ sel: sel, txt: txt, val: ask ? null : val, enter: enter, ask: ask });
+                        this.currentSequence.push({
+                            sel: sel,
+                            txt: txt,
+                            val: ask ? null : val,
+                            enter: enter,
+                            ask: ask,
+                        });
 
                         setTimeout(() => {
-                            if(!confirm('Pick another? Cancel to finish.')) {
+                            if (!confirm('Pick another? Cancel to finish.')) {
                                 this.steps.push({ actions: this.currentSequence, delay: 1 });
                                 this.refreshList();
                             } else {
-                               this.pick('sequence');
+                                this.pick('sequence');
                             }
                         }, 100);
                     }
@@ -232,7 +260,7 @@
 
                 this.q('#prev_no').onclick = () => {
                     this.q('#preview').classList.add('hidden');
-                    this.h.style.display='none';
+                    this.h.style.display = 'none';
                     document.body.appendChild(hl);
                 };
 
@@ -245,9 +273,12 @@
             this.add(document, 'click', cl, true);
         }
 
-        refreshList(){
+        refreshList() {
             const l = this.q('#list');
-            if(this.steps.length===0) { l.innerHTML = '<div class="empty-msg">No steps.</div>'; return; }
+            if (this.steps.length === 0) {
+                l.innerHTML = '<div class="empty-msg">No steps.</div>';
+                return;
+            }
             l.innerHTML = '';
 
             this.steps.forEach((s, i) => {
@@ -256,15 +287,15 @@
 
                 let actionHtml = '';
                 s.actions.forEach((act, ai) => {
-                    let desc = act.val ? 'Type "'+act.val+'"' : (act.txt ? 'Click "'+act.txt+'"' : 'Click');
-                    actionHtml += '<div class="action-item">'+desc+'</div>';
+                    let desc = act.val ? 'Type "' + act.val + '"' : act.txt ? 'Click "' + act.txt + '"' : 'Click';
+                    actionHtml += '<div class="action-item">' + desc + '</div>';
                 });
 
                 d.innerHTML = `
                     <div class="step-row">
-                        <div class="step-idx">${i+1}</div>
+                        <div class="step-idx">${i + 1}</div>
                         <div class="step-info">
-                            <div style="font-weight:bold;font-size:11px">Sequence ${i+1}</div>
+                            <div style="font-weight:bold;font-size:11px">Sequence ${i + 1}</div>
                         </div>
                         <div style="font-size:10px;color:#a5b4fc">Wait(s)</div>
                         <input type="number" class="delay" value="${s.delay}" data-idx="${i}">
@@ -275,10 +306,10 @@
                 l.appendChild(d);
             });
 
-            l.querySelectorAll('.delay').forEach(ip => {
-                ip.onchange = (e) => this.steps[e.target.dataset.idx].delay = parseFloat(e.target.value);
+            l.querySelectorAll('.delay').forEach((ip) => {
+                ip.onchange = (e) => (this.steps[e.target.dataset.idx].delay = parseFloat(e.target.value));
             });
-            l.querySelectorAll('.step-del').forEach(btn => {
+            l.querySelectorAll('.step-del').forEach((btn) => {
                 btn.onclick = (e) => {
                     this.steps.splice(e.target.dataset.idx, 1);
                     this.refreshList();
@@ -287,20 +318,23 @@
             this._log('Step list refreshed', { steps: this.steps.length });
         }
 
-        compile(){
+        compile() {
             this._log('Compiling macro', { steps: this.steps.length });
-            if(this.steps.length===0) return alert('Add steps first');
+            if (this.steps.length === 0) return alert('Add steps first');
 
-            this.steps.forEach(step => {
-                step.actions.forEach(action => {
-                    if(action.sel && action.sel.includes('presence-')) {
+            this.steps.forEach((step) => {
+                step.actions.forEach((action) => {
+                    if (action.sel && action.sel.includes('presence-')) {
                         const match = action.sel.match(/presence-(break|meal|available|busy|away)/);
-                        if(match) action.sel = 'button.presence-' + match[1];
+                        if (match) action.sel = 'button.presence-' + match[1];
                     }
                 });
             });
 
-            const jsonSteps = JSON.stringify(this.steps).replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
+            const jsonSteps = JSON.stringify(this.steps)
+                .replace(/\\/g, '\\\\')
+                .replace(/`/g, '\\`')
+                .replace(/\$/g, '\\$');
 
             const runtime = `(async function(){
                 if(window.__mb_run){window.__mb_run.destroy();return}
@@ -449,14 +483,18 @@
                 window.__mb_run = new MacroRuntime();
             })();`;
 
-            const href = "javascript:" + encodeURIComponent(runtime.replace(/\s+/g,' ').trim());
+            const href = 'javascript:' + encodeURIComponent(runtime.replace(/\s+/g, ' ').trim());
             const area = this.q('#out');
             const link = this.q('#lnk');
             link.href = href;
             area.style.display = 'block';
         }
 
-        destroy(){ this.clearListeners(); this.h.remove(); delete window.__mb_v22; }
+        destroy() {
+            this.clearListeners();
+            this.h.remove();
+            delete window.__mb_v22;
+        }
     }
     window.__mb_v22 = new MacroBuilder();
 })();

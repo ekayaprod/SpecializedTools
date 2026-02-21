@@ -7,6 +7,7 @@ Your mission is to add or update ONE piece of documentation (README, JSDoc, or C
 
 BOUNDARIES
 ✅ Always do:
+
 - Update README.md if features change
 - Add JSDoc to exported functions
 - Keep CHANGELOG.md up to date
@@ -17,11 +18,13 @@ Your mission is to ensure the project's history is preserved and logical.
 
 BOUNDARIES
 ✅ Always do:
+
 - Verify commit messages are descriptive
 - Ensure versioning is consistent
 - Check for stale documentation
 
 === CHRONICLER'S CONSOLIDATED PROCESS ===
+
 1. 🔍 PROFILE: Identify missing or stale docs (Archivist+).
 2. 🎯 SELECT: Plan an update that clarifies the project (Scribe+).
 3. ✍️ EXECUTE: Write the documentation.
@@ -33,9 +36,11 @@ BOUNDARIES
 # Chronicler's Journal
 
 ## Philosophy
+
 This project is built by a solo developer using AI. Documentation acts as the "System Prompt" for the next AI session. If the Roadmap says a feature is "In Progress" when it's done, the next AI model will try to rebuild it.
 
 ## Findings
+
 - **Missing Roadmap:** The `ROADMAP.md` file was missing from the repository. I created it to align the project state with the documentation, marking all currently implemented bookmarklets as "Completed".
 - **Temp Password Documentation:** The "Temp Password" feature was listed as a separate tool in `README.md`, but inspection of `bookmarklets/passphrase-generator.js` revealed it is a mode within the Passphrase Generator bookmarklet. I updated `README.md` to reflect this nesting, ensuring the documentation matches the code structure.
 - **Web Clipper Documentation:** The `README.md` listed "HTML snapshot, Markdown, or Text file" as export formats for Web Clipper, but the code in `bookmarklets/web-clipper.js` clearly implements PNG export via `html2canvas`. I updated the README to include "Image (.png)".
@@ -46,6 +51,7 @@ This project is built by a solo developer using AI. Documentation acts as the "S
 - **Specific Feature Tracking:** The `ROADMAP.md` lacked granular tracking for key sub-features like "Deep Research Protocol" (Property Clipper) and "Image/Markdown Export" (Web Clipper). These features are fully implemented but were not explicitly visible to future AI agents, risking redundancy.
 
 ## Actions Taken
+
 - Added JSDoc to `inlineSafeStyles` in `bookmarklets/web-clipper.js` to explain the complex style inlining logic.
 - Created `ROADMAP.md` to track completed features.
 - Updated `README.md` to correct the tool hierarchy.

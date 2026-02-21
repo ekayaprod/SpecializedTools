@@ -12,7 +12,7 @@ const tests = [
         `,
         // Expected: preserved regex and string.
         // The builder trims lines, so indentation is removed.
-        expected: `const r = /'/;\nconst s = 'string';`
+        expected: `const r = /'/;\nconst s = 'string';`,
     },
     {
         name: 'Regex with double quote',
@@ -20,7 +20,7 @@ const tests = [
             const r = /"/;
             const s = "string";
         `,
-        expected: `const r = /"/;\nconst s = "string";`
+        expected: `const r = /"/;\nconst s = "string";`,
     },
     {
         name: 'Regex with escaped slash',
@@ -28,12 +28,12 @@ const tests = [
             const pathRegex = /\\/home\\/user/;
             const s = 'path';
         `,
-        expected: `const pathRegex = /\\/home\\/user/;\nconst s = 'path';`
+        expected: `const pathRegex = /\\/home\\/user/;\nconst s = 'path';`,
     },
     {
         name: 'Complex Regex with flags',
         input: `const r = /['"]/gim;`,
-        expected: `const r = /['"]/gim;`
+        expected: `const r = /['"]/gim;`,
     },
     {
         name: 'Regex followed by comment',
@@ -46,7 +46,7 @@ const tests = [
         // If parsed as regex token, it remains? No.
         // If /'/ is tokenized, then /* comment */ follows.
         // It matches as comment block and is removed.
-        expected: `const r = /'/;\nconst s = 'foo';`
+        expected: `const r = /'/;\nconst s = 'foo';`,
     },
     {
         name: 'Division (Not Regex)',
@@ -55,7 +55,7 @@ const tests = [
             const y = 5;
         `,
         // Should not be mangled.
-        expected: `const x = 10 / 2;\nconst y = 5;`
+        expected: `const x = 10 / 2;\nconst y = 5;`,
     },
     {
         name: 'Division looking like regex start',
@@ -65,24 +65,24 @@ const tests = [
         // Should be preserved.
         // If our regex pattern matches / 2 /, it preserves it.
         // Result: const x = 10 / 2 / 5;
-        expected: `const x = 10 / 2 / 5;`
+        expected: `const x = 10 / 2 / 5;`,
     },
     {
         name: 'String containing regex-like text',
         input: `const s = "/abc/";`,
-        expected: `const s = "/abc/";`
+        expected: `const s = "/abc/";`,
     },
     {
         name: 'Regression: Normal String',
         input: `const s = "hello";`,
-        expected: `const s = "hello";`
-    }
+        expected: `const s = "hello";`,
+    },
 ];
 
 let passed = 0;
 let failed = 0;
 
-tests.forEach(test => {
+tests.forEach((test) => {
     try {
         const actual = compile(test.input);
         assert.strictEqual(actual, test.expected);
