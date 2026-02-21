@@ -85,6 +85,8 @@ console.log("Running downloadFile tests...");
 
     document.body.appendChild = (el) => {
         appendedElement = el;
+        // Mock parentNode so cleanup check (a.parentNode) passes
+        Object.defineProperty(el, 'parentNode', { value: document.body, configurable: true });
         return el;
     };
 

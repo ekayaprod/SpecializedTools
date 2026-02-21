@@ -375,17 +375,35 @@
          * @returns {void}
          */
         downloadFile(filename, content, type) {
-            /* Create blob and download link */
-            const blob = new Blob([content], { type: type || 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            /* Revoke URL after short delay to free memory */
-            setTimeout(function() { URL.revokeObjectURL(url); }, 100);
+            const REVOKE_DELAY = 100;
+            let url;
+            let a;
+            try {
+                /* Create blob and download link */
+                const blob = new Blob([content], { type: type || 'text/html' });
+                url = URL.createObjectURL(blob);
+                a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+            } catch (e) {
+                console.error('Download failed:', e);
+                const msg = 'Download failed: ' + (e.message || 'Unknown error');
+                if (this.showToast) {
+                    this.showToast(msg, 'error');
+                } else if (w.BookmarkletUtils && w.BookmarkletUtils.showToast) {
+                    w.BookmarkletUtils.showToast(msg, 'error');
+                }
+            } finally {
+                if (a && a.parentNode) {
+                    document.body.removeChild(a);
+                }
+                if (url) {
+                    /* Revoke URL after short delay to free memory */
+                    setTimeout(function() { URL.revokeObjectURL(url); }, REVOKE_DELAY);
+                }
+            }
         },
         /**
          * Loads an external script (library) dynamically if not already present.
