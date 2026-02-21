@@ -110,13 +110,13 @@ async function runTest() {
     await new Promise(r => setTimeout(r, 100));
 
     // 5. Assert Error Logged
-    const errorLog = consoleErrorCalls.find(args => args[0] === 'Failed to load html2canvas for PNG export:');
+    const errorLog = consoleErrorCalls.find(args => args[0] === 'Failed to load html2canvas for image export:');
     assert.ok(errorLog, 'Error should be logged to console');
     assert.strictEqual(errorLog[1].message, 'Simulated html2canvas load failure');
     console.log("✅ Error logging verified.");
 
     // 6. Assert Toast Shown
-    const toast = showToastCalls.find(c => c.msg === 'Failed to load html2canvas for PNG export.');
+    const toast = showToastCalls.find(c => c.msg === 'Failed to load html2canvas for image export.');
     assert.ok(toast, 'Toast should be shown');
     assert.strictEqual(toast.type, 'error');
     console.log("✅ Toast verified.");

@@ -330,7 +330,8 @@
                 { val: 'html', txt: 'HTML File (.html)' },
                 { val: 'md', txt: 'Markdown (.md)' },
                 { val: 'txt', txt: 'Plain Text (.txt)' },
-                { val: 'png', txt: 'Image (.png)' }
+                { val: 'png', txt: 'Image (.png)' },
+                { val: 'webp', txt: 'Image (.webp)' }
             ];
 
             formats.forEach((f) => {
@@ -461,7 +462,7 @@
             } else if (format === 'txt') {
                 const content = contentArea.innerText;
                 BookmarkletUtils.downloadFile(cleanTitle + '_' + Date.now() + '.txt', content, 'text/plain');
-            } else if (format === 'png') {
+            } else if (format === 'png' || format === 'webp') {
                 const originalText = btn ? btn.textContent : 'Save as File';
                 if (btn) {
                     btn.textContent = 'Creating Image...';
@@ -470,10 +471,10 @@
 
                 /* Dynamically load html2canvas if needed */
                 BookmarkletUtils.loadLibrary('html2canvas', 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', 'sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H')
-                    .then(() => this.capturePng(contentArea, cleanTitle, btn, originalText))
+                    .then(() => this.captureImage(contentArea, cleanTitle, format, btn, originalText))
                     .catch((err) => {
-                        console.error('Failed to load html2canvas for PNG export:', err);
-                        BookmarkletUtils.showToast('Failed to load html2canvas for PNG export.', 'error');
+                        console.error('Failed to load html2canvas for image export:', err);
+                        BookmarkletUtils.showToast('Failed to load html2canvas for image export.', 'error');
                         if (btn) {
                             btn.textContent = 'Error';
                             btn.style.background = '#dc3545';
@@ -494,23 +495,26 @@
         }
 
         /**
-         * Captures the element as a PNG image using html2canvas.
+         * Captures the element as an image using html2canvas.
          * @param {HTMLElement} element
          * @param {string} title
+         * @param {string} format - 'png' or 'webp'
          * @param {HTMLButtonElement} [btn]
          * @param {string} [originalText]
          */
-        capturePng(element, title, btn, originalText) {
+        captureImage(element, title, format, btn, originalText) {
             /* Temporarily ensure element is visible and has white background for capture */
             const originalBg = element.style.backgroundColor;
             element.style.backgroundColor = '#ffffff';
+            const mimeType = format === 'webp' ? 'image/webp' : 'image/png';
+            const ext = format === 'webp' ? '.webp' : '.png';
 
             html2canvas(element, { useCORS: true, logging: false }).then((canvas) => {
                 element.style.backgroundColor = originalBg; /* Restore */
 
                 const link = document.createElement('a');
-                link.download = title + '_' + Date.now() + '.png';
-                link.href = canvas.toDataURL();
+                link.download = title + '_' + Date.now() + ext;
+                link.href = canvas.toDataURL(mimeType);
                 link.click();
 
                 if (btn) {
@@ -518,7 +522,7 @@
                     btn.disabled = false;
                 }
             }).catch((err) => {
-                console.error('PNG Capture failed:', { error: err, url: window.location.href, timestamp: new Date().toISOString() });
+                console.error('Image Capture failed:', { error: err, url: window.location.href, timestamp: new Date().toISOString() });
                 element.style.backgroundColor = originalBg;
 
                 if (btn) {
@@ -532,7 +536,7 @@
                         btn.style.color = '';
                     }, ERROR_RESET_DELAY);
                 } else {
-                    BookmarkletUtils.showToast('PNG export failed. Check console for details.', 'error');
+                    BookmarkletUtils.showToast('Image export failed. Check console for details.', 'error');
                 }
             });
         }
