@@ -68,6 +68,8 @@
 
 [x] bookmarklets/macro-builder.js (Added robust runtime verification in tests/test_macro_builder_runtime.js)
 
+[x] bookmarklets/utils.js (Added makeDraggable test suite in tests/test_make_draggable.js)
+
 🆙 Modernization Targets
 
 [x] Replace alert() with non-blocking UI (Toast/Modal) across all bookmarklets
