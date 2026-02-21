@@ -158,7 +158,7 @@
         _extractHeroImage(data) {
             /* Extract Hero Image (OG:IMAGE is usually most reliable) */
             try {
-                const ogImage = document.querySelector('meta[property="og:image"]');
+                const ogImage = /** @type {HTMLMetaElement} */ (document.querySelector('meta[property="og:image"]'));
                 if (ogImage && ogImage.content) data.heroUrl = ogImage.content;
             } catch (e) { console.warn('Hero Image Extraction Warning:', { error: e, url: window.location.href, title: document.title }); }
         },
@@ -735,17 +735,17 @@
         // 1. Dropdown
         const row1 = buildElement('div', { display: 'flex', flexDirection: 'column', gap: '5px' }, '', mo);
         buildElement('label', { fontSize: '12px', fontWeight: 'bold', color: '#555' }, 'Analysis Persona:', row1);
-        const select = buildElement('select', { padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }, '', row1, { 'aria-label': 'Select Persona / Analysis Type' });
+        const select = /** @type {HTMLSelectElement} */ (buildElement('select', { padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }, '', row1, { 'aria-label': 'Select Persona / Analysis Type' }));
         
         Object.entries(PROMPT_DATA).forEach(([k, v]) => {
-            const opt = buildElement('option', {}, v.label, select);
+            const opt = /** @type {HTMLOptionElement} */ (buildElement('option', {}, v.label, select));
             opt.value = k;
         });
 
         // 2. Text Area
         const row2 = buildElement('div', { display: 'flex', flexDirection: 'column', gap: '5px', flex: '1' }, '', mo);
         buildElement('label', { fontSize: '12px', fontWeight: 'bold', color: '#555' }, 'AI Prompt Context:', row2);
-        const txtArea = buildElement('textarea', { width: '100%', height: '150px', padding: '10px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '12px', fontFamily: 'monospace', resize: 'vertical' }, '', row2);
+        const txtArea = /** @type {HTMLTextAreaElement} */ (buildElement('textarea', { width: '100%', height: '150px', padding: '10px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '12px', fontFamily: 'monospace', resize: 'vertical' }, '', row2));
         
         // Update text area on change
         const updateText = () => { txtArea.value = getFullPrompt(select.value, data); };

@@ -98,12 +98,54 @@ declare global {
          * @returns {string} The escaped string.
          */
         escapeHtml(str: string | number | null | undefined): string;
+
+        /**
+         * Makes an element draggable using a specific handle.
+         * @param {HTMLElement} handle - The element to drag by.
+         * @param {HTMLElement} target - The element to move.
+         */
+        makeDraggable(handle: HTMLElement, target: HTMLElement): void;
+
+        /**
+         * Prompt library loaded from property-clipper-prompts.js
+         */
+        Prompts?: {
+            STANDARD_OUTPUTS: string;
+            PROMPT_DATA: Record<string, {
+                label: string;
+                role: string;
+                objective: string;
+                noStandardOutput?: boolean;
+            }>;
+        };
     }
+
+    // Type Definitions for Libraries
+    interface JsPDFDoc {
+        internal: { pageSize: { getWidth: () => number; getHeight: () => number; } };
+        setFont(font: string, style?: string): void;
+        setFontSize(size: number): void;
+        setTextColor(r: number, g?: number, b?: number): void;
+        setFillColor(r: number, g?: number, b?: number): void;
+        setDrawColor(r: number, g?: number, b?: number): void;
+        roundedRect(x: number, y: number, w: number, h: number, rx: number, ry: number, style: string): void;
+        text(text: string | string[], x: number, y: number, options?: any): void;
+        splitTextToSize(text: string, maxLineWidth: number): string[];
+        addImage(imageData: string, format: string, x: number, y: number, w: number, h: number): void;
+        addPage(): void;
+        save(filename: string): void;
+    }
+
+    interface JsPDFLib {
+        jsPDF: new (options?: any) => JsPDFDoc;
+    }
+
+    type Html2CanvasLib = (element: HTMLElement, options?: any) => Promise<HTMLCanvasElement>;
 
     interface Window {
         JSZip: any;
         BookmarkletUtils: BookmarkletUtilsInterface;
-        jspdf: any;
+        jspdf: JsPDFLib;
         __dc_v27: any;
         dc_running: any;
         __ir_v1: any;
@@ -114,5 +156,5 @@ declare global {
 
     const JSZip: any;
     const BookmarkletUtils: BookmarkletUtilsInterface;
-    const html2canvas: any;
+    const html2canvas: Html2CanvasLib;
 }

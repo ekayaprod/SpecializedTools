@@ -401,7 +401,7 @@
             document.title = 'Stopped';
 
             // Focus Start button if valid, otherwise Pick button
-            const goBtn = this.q('#go');
+            const goBtn = /** @type {HTMLButtonElement} */ (this.q('#go'));
             const focusTarget = (goBtn && !goBtn.disabled) ? 'go' : 'pk';
 
             this.switchView('v2', 'v1', focusTarget);

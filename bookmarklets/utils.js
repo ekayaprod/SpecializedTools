@@ -491,7 +491,7 @@
                             /* Add children to queue (reverse order for DFS visual order) */
                             if (node.children && node.children.length > 0) {
                                 for (let i = node.children.length - 1; i >= 0; i--) {
-                                    queue.push(node.children[i]);
+                                    queue.push(/** @type {HTMLElement} */ (node.children[i]));
                                 }
                             }
 
@@ -597,7 +597,7 @@
         /**
          * Escapes HTML characters in a string.
          *
-         * @param {string} s - The string to escape.
+         * @param {string|number} s - The string to escape.
          * @returns {string} The escaped string.
          *
          * @example

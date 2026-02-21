@@ -190,16 +190,16 @@
 
             // Bind Elements
             this.ui = {
-                card: this.s.querySelector('.card'),
-                p1: this.s.querySelector('#p1'),
-                p2: this.s.querySelector('#p2'),
-                pickBtn: this.s.querySelector('#pick'),
-                goBtn: this.s.querySelector('#go'),
-                cancelBtn: this.s.querySelector('#cancel'),
-                closeBtn: this.s.querySelector('#close'),
-                input: this.s.querySelector('#mn'),
-                label: this.s.querySelector('#picked-label'),
-                timer: this.s.querySelector('#cd')
+                card: /** @type {HTMLElement} */ (this.s.querySelector('.card')),
+                p1: /** @type {HTMLElement} */ (this.s.querySelector('#p1')),
+                p2: /** @type {HTMLElement} */ (this.s.querySelector('#p2')),
+                pickBtn: /** @type {HTMLElement} */ (this.s.querySelector('#pick')),
+                goBtn: /** @type {HTMLButtonElement} */ (this.s.querySelector('#go')),
+                cancelBtn: /** @type {HTMLElement} */ (this.s.querySelector('#cancel')),
+                closeBtn: /** @type {HTMLElement} */ (this.s.querySelector('#close')),
+                input: /** @type {HTMLInputElement} */ (this.s.querySelector('#mn')),
+                label: /** @type {HTMLElement} */ (this.s.querySelector('#picked-label')),
+                timer: /** @type {HTMLElement} */ (this.s.querySelector('#cd'))
             };
 
             document.body.appendChild(this.h);

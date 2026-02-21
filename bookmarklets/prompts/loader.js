@@ -1,5 +1,5 @@
 (function(w) {
-    if (!w.BookmarkletUtils) w.BookmarkletUtils = {};
+    if (!w.BookmarkletUtils) w.BookmarkletUtils = /** @type {any} */ ({});
 
     /* PROMPT LIBRARY */
     const STANDARD_OUTPUTS = `/* @include_text prompts/standard-outputs.md */`;
