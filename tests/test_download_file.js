@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const jsdom = require("jsdom");
+const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
 const assert = require('assert');
 
@@ -8,7 +8,7 @@ const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
 const utilsCode = fs.readFileSync(utilsPath, 'utf8');
 
 // Create a JSDOM instance
-const dom = new JSDOM(`<!DOCTYPE html><body></body>`, { url: "http://localhost/" });
+const dom = new JSDOM(`<!DOCTYPE html><body></body>`, { url: 'http://localhost/' });
 
 global.window = dom.window;
 global.document = dom.window.document;
@@ -29,7 +29,7 @@ global.URL = {
     },
     revokeObjectURL: (url) => {
         revokedUrl = url;
-    }
+    },
 };
 
 global.Uint32Array = Uint32Array;
@@ -41,24 +41,24 @@ global.window.crypto = {
             arr[i] = Math.floor(Math.random() * 256);
         }
         return arr;
-    }
+    },
 };
 
 // Execute utils.js
 try {
     eval(utilsCode);
 } catch (e) {
-    console.error("Error evaluating utils.js:", e);
+    console.error('Error evaluating utils.js:', e);
     process.exit(1);
 }
 
 // Verify BookmarkletUtils exists
 if (!window.BookmarkletUtils) {
-    console.error("BookmarkletUtils not found on window");
+    console.error('BookmarkletUtils not found on window');
     process.exit(1);
 }
 
-console.log("Running downloadFile tests...");
+console.log('Running downloadFile tests...');
 
 // Test downloadFile
 {
@@ -76,8 +76,10 @@ console.log("Running downloadFile tests...");
             return {
                 href: '',
                 download: '',
-                click: () => { clicked = true; },
-                tagName: 'A'
+                click: () => {
+                    clicked = true;
+                },
+                tagName: 'A',
             };
         }
         return originalCreateElement.call(document, tagName);
@@ -119,7 +121,7 @@ console.log("Running downloadFile tests...");
     // Verify URL revocation (wait for timeout)
     setTimeout(() => {
         assert.strictEqual(revokedUrl, 'blob:mock-url', 'URL should be revoked');
-        console.log("✅ downloadFile passed");
+        console.log('✅ downloadFile passed');
 
         // Restore mocks
         document.createElement = originalCreateElement;

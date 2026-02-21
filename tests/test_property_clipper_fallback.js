@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const jsdom = require("jsdom");
+const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
 const assert = require('assert');
 
@@ -33,7 +33,8 @@ if (lastIndex !== -1) {
 }
 
 // Setup JSDOM
-const dom = new JSDOM(`<!DOCTYPE html>
+const dom = new JSDOM(
+    `<!DOCTYPE html>
 <body>
     <h1 id="address-header">123 Fallback St, Test City, TS 99999</h1>
     <div data-testid="ldp-list-price">$500,000</div>
@@ -45,11 +46,13 @@ const dom = new JSDOM(`<!DOCTYPE html>
     <!-- Corrupt JSON Script -->
     <script id="__NEXT_DATA__" type="application/json">{ "invalid": "json", broken }</script>
 </body>
-`, {
-    url: "https://www.realtor.com/realestateandhomes-detail/123-Fallback-St_Test-City_TS_99999",
-    runScripts: "dangerously",
-    resources: "usable"
-});
+`,
+    {
+        url: 'https://www.realtor.com/realestateandhomes-detail/123-Fallback-St_Test-City_TS_99999',
+        runScripts: 'dangerously',
+        resources: 'usable',
+    }
+);
 
 global.window = dom.window;
 global.document = dom.window.document;
@@ -69,7 +72,7 @@ Object.defineProperty(global.HTMLElement.prototype, 'innerText', {
     },
     set(value) {
         this.textContent = value;
-    }
+    },
 });
 
 // Mock Image
@@ -101,11 +104,11 @@ global.HTMLCanvasElement.prototype.toDataURL = () => 'data:image/jpeg;base64,moc
 
 // Execute Dependencies
 try {
-    console.log("Executing utils.js...");
+    console.log('Executing utils.js...');
     eval(utilsCode);
     global.BookmarkletUtils = window.BookmarkletUtils;
 
-    console.log("Executing prompts/loader.js...");
+    console.log('Executing prompts/loader.js...');
     let resolvedPromptsCode = promptsCode;
     const includeRegex = /\/\*\s*@include_text\s+['"]?([^'"]+)['"]?\s*\*\//g;
     let match;
@@ -123,22 +126,22 @@ try {
     }
     eval(resolvedPromptsCode);
 
-    console.log("Executing instrumented property-clipper.js...");
+    console.log('Executing instrumented property-clipper.js...');
     eval(scriptCode);
 } catch (e) {
-    console.error("Script evaluation failed", e);
+    console.error('Script evaluation failed', e);
     process.exit(1);
 }
 
 async function runTests() {
-    console.log("Starting Tests...");
+    console.log('Starting Tests...');
     const { PropertyExtractor, ImageProcessor } = global.ExposedClipper;
 
-    assert.ok(PropertyExtractor, "PropertyExtractor should be exposed");
-    assert.ok(ImageProcessor, "ImageProcessor should be exposed");
+    assert.ok(PropertyExtractor, 'PropertyExtractor should be exposed');
+    assert.ok(ImageProcessor, 'ImageProcessor should be exposed');
 
     // TEST 1: DOM Fallback (with Corrupt JSON)
-    console.log("\nTest 1: DOM Fallback extraction (Corrupt JSON present)");
+    console.log('\nTest 1: DOM Fallback extraction (Corrupt JSON present)');
     // The JSDOM is setup with corrupt JSON.
     // So JSON extraction should fail (logged to console), and it should fallback to DOM.
 
@@ -152,11 +155,11 @@ async function runTests() {
     console.warn = originalWarn; // Restore
 
     // Verify Warning
-    const jsonWarning = warnings.find(w => w[0] && w[0].includes('JSON Parse Error'));
+    const jsonWarning = warnings.find((w) => w[0] && w[0].includes('JSON Parse Error'));
     if (jsonWarning) {
-        console.log("✅ correctly warned about JSON failure.");
+        console.log('✅ correctly warned about JSON failure.');
     } else {
-        console.error("❌ Failed to warn about JSON failure.");
+        console.error('❌ Failed to warn about JSON failure.');
         process.exit(1);
     }
 
@@ -169,31 +172,33 @@ async function runTests() {
     assert.strictEqual(data.specs['Beds'], '3', 'Beds should be extracted');
     assert.strictEqual(data.specs['Baths'], '2', 'Baths should be extracted');
 
-    console.log("✅ DOM Extraction successful.");
+    console.log('✅ DOM Extraction successful.');
 
     // TEST 2: Image Processor Error Handling
-    console.log("\nTest 2: Image Processor Error Handling");
+    console.log('\nTest 2: Image Processor Error Handling');
 
-    const errorUrl = "http://example.com/error.jpg";
+    const errorUrl = 'http://example.com/error.jpg';
     const result = await ImageProcessor.process(errorUrl);
 
-    assert.strictEqual(result, null, "ImageProcessor should return null on error");
-    console.log("✅ ImageProcessor handled error correctly.");
+    assert.strictEqual(result, null, 'ImageProcessor should return null on error');
+    console.log('✅ ImageProcessor handled error correctly.');
 
     // TEST 3: Image Processor Success
-    console.log("\nTest 3: Image Processor Success");
-    const successUrl = "http://example.com/success.jpg";
+    console.log('\nTest 3: Image Processor Success');
+    const successUrl = 'http://example.com/success.jpg';
     const successResult = await ImageProcessor.process(successUrl);
 
-    assert.ok(successResult, "ImageProcessor should return result on success");
-    assert.ok(successResult.dataUrl, "Result should have dataUrl");
-    assert.strictEqual(successResult.width, 100, "Width should be 100 (mock)");
-    console.log("✅ ImageProcessor processed successfully.");
+    assert.ok(successResult, 'ImageProcessor should return result on success');
+    assert.ok(successResult.dataUrl, 'Result should have dataUrl');
+    assert.strictEqual(successResult.width, 100, 'Width should be 100 (mock)');
+    console.log('✅ ImageProcessor processed successfully.');
 }
 
-runTests().then(() => {
-    console.log("\nAll tests passed!");
-}).catch(e => {
-    console.error("\nTest failed:", e);
-    process.exit(1);
-});
+runTests()
+    .then(() => {
+        console.log('\nAll tests passed!');
+    })
+    .catch((e) => {
+        console.error('\nTest failed:', e);
+        process.exit(1);
+    });

@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const jsdom = require("jsdom");
+const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
 const assert = require('assert');
 
@@ -10,7 +10,8 @@ const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
 const utilsCode = fs.readFileSync(utilsPath, 'utf8');
 
 // Create JSDOM with initial data
-const dom = new JSDOM(`<!DOCTYPE html>
+const dom = new JSDOM(
+    `<!DOCTYPE html>
 <body>
     <script id="__NEXT_DATA__" type="application/json">
     {
@@ -30,11 +31,13 @@ const dom = new JSDOM(`<!DOCTYPE html>
         }
     }
     </script>
-</body>`, {
-    url: "https://example.com",
-    runScripts: "dangerously",
-    resources: "usable"
-});
+</body>`,
+    {
+        url: 'https://example.com',
+        runScripts: 'dangerously',
+        resources: 'usable',
+    }
+);
 
 // Mock Globals
 global.window = dom.window;
@@ -62,9 +65,11 @@ class MockImage {
     constructor() {
         this.onload = null;
         this.src = '';
-        this.width = 800;  // Landscape
+        this.width = 800; // Landscape
         this.height = 600; // 4:3
-        setTimeout(() => { if (this.onload) this.onload(); }, 10);
+        setTimeout(() => {
+            if (this.onload) this.onload();
+        }, 10);
     }
 }
 global.window.Image = MockImage;
@@ -86,7 +91,9 @@ const MockJsPDF = class {
     roundedRect() {}
     setDrawColor() {}
     text() {}
-    splitTextToSize() { return []; }
+    splitTextToSize() {
+        return [];
+    }
     addImage(dataUrl, format, x, y, w, h) {
         imagesOnPage[pageCount] = (imagesOnPage[pageCount] || 0) + 1;
     }
@@ -101,7 +108,7 @@ global.window.jspdf = { jsPDF: MockJsPDF };
 // Run Test
 (async () => {
     try {
-        console.log("Running Regression Test for PDF Layout...");
+        console.log('Running Regression Test for PDF Layout...');
 
         // Exec Utils
         eval(utilsCode);
@@ -112,28 +119,29 @@ global.window.jspdf = { jsPDF: MockJsPDF };
 
         // Trigger Flow
         const modal = document.getElementById('pc-pdf-modal');
-        if (!modal) throw new Error("Modal not found");
+        if (!modal) throw new Error('Modal not found');
 
-        const pdfBtn = Array.from(modal.querySelectorAll('button')).find(b => b.textContent === 'PDF');
+        const pdfBtn = Array.from(modal.querySelectorAll('button')).find((b) => b.textContent === 'PDF');
         pdfBtn.click();
 
-        await new Promise(r => setTimeout(r, 100)); // Wait for Wizard init
+        await new Promise((r) => setTimeout(r, 100)); // Wait for Wizard init
 
-        const allPhotosBtn = Array.from(modal.querySelectorAll('button')).find(b => b.textContent.includes('All Photos'));
+        const allPhotosBtn = Array.from(modal.querySelectorAll('button')).find((b) =>
+            b.textContent.includes('All Photos')
+        );
         allPhotosBtn.click();
 
-        await new Promise(r => setTimeout(r, 1000)); // Wait for generation
+        await new Promise((r) => setTimeout(r, 1000)); // Wait for generation
 
-        console.log("Images per Page:", JSON.stringify(imagesOnPage));
+        console.log('Images per Page:', JSON.stringify(imagesOnPage));
 
         // Assertions
         if (imagesOnPage[1] !== 1) throw new Error(`Page 1 should have 1 image (Hero), found ${imagesOnPage[1]}`);
         if (imagesOnPage[2] !== 2) throw new Error(`Page 2 should have 2 images (Photos), found ${imagesOnPage[2]}`);
 
-        console.log("✅ Regression Test Passed: 2 images found on Page 2.");
-
+        console.log('✅ Regression Test Passed: 2 images found on Page 2.');
     } catch (e) {
-        console.error("❌ Test Failed:", e);
+        console.error('❌ Test Failed:', e);
         process.exit(1);
     }
 })();

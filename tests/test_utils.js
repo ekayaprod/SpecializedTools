@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const jsdom = require("jsdom");
+const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
 const assert = require('assert');
 
@@ -8,7 +8,8 @@ const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
 const utilsCode = fs.readFileSync(utilsPath, 'utf8');
 
 // Create a JSDOM instance
-const dom = new JSDOM(`<!DOCTYPE html>
+const dom = new JSDOM(
+    `<!DOCTYPE html>
 <body>
     <div id="source" style="color: red; width: 100px; height: 100px; position: absolute; top: 10px;">
         <span id="child" style="font-size: 20px;">Text</span>
@@ -21,7 +22,9 @@ const dom = new JSDOM(`<!DOCTYPE html>
         <img id="img2" srcset="small.jpg 100w, big.jpg 200w" src="spacer.gif">
     </div>
 </body>
-`, { url: "http://localhost/" }); // Set URL for relative paths
+`,
+    { url: 'http://localhost/' }
+); // Set URL for relative paths
 
 global.window = dom.window;
 global.document = dom.window.document;
@@ -37,23 +40,23 @@ global.performance = { now: () => Date.now() };
 try {
     eval(utilsCode);
 } catch (e) {
-    console.error("Error evaluating utils.js:", e);
+    console.error('Error evaluating utils.js:', e);
     process.exit(1);
 }
 
 // Verify BookmarkletUtils exists
 if (!window.BookmarkletUtils) {
-    console.error("BookmarkletUtils not found on window");
+    console.error('BookmarkletUtils not found on window');
     process.exit(1);
 }
 
-console.log("Running BookmarkletUtils tests...");
+console.log('Running BookmarkletUtils tests...');
 
-(async function() {
+(async function () {
     try {
         // Test 1: escapeHtml
         {
-            console.log("Test 1: escapeHtml");
+            console.log('Test 1: escapeHtml');
             const input = '<div class="foo">&\'bar\'</div>';
             const expected = '&lt;div class=&quot;foo&quot;&gt;&amp;&#039;bar&#039;&lt;/div&gt;';
             const result = window.BookmarkletUtils.escapeHtml(input);
@@ -65,12 +68,12 @@ console.log("Running BookmarkletUtils tests...");
             assert.strictEqual(window.BookmarkletUtils.escapeHtml(undefined), '', 'Undefined input failed');
             assert.strictEqual(window.BookmarkletUtils.escapeHtml(0), '0', 'Number 0 failed');
 
-            console.log("✅ escapeHtml passed");
+            console.log('✅ escapeHtml passed');
         }
 
         // Test 2: normalizeImages
         {
-            console.log("Test 2: normalizeImages");
+            console.log('Test 2: normalizeImages');
             const container = document.getElementById('img-container');
             const img1 = document.getElementById('img1');
             const img2 = document.getElementById('img2');
@@ -85,32 +88,44 @@ console.log("Running BookmarkletUtils tests...");
             assert.strictEqual(img1.style.maxWidth, '100%', 'maxWidth should be 100%');
             assert.strictEqual(img1.style.display, 'block', 'display should be block');
 
-            console.log("✅ normalizeImages passed");
+            console.log('✅ normalizeImages passed');
         }
 
         // Test 3: sanitizeFilename
         {
-            console.log("Test 3: sanitizeFilename");
+            console.log('Test 3: sanitizeFilename');
 
             // 1. Basic happy path
             const safe = window.BookmarkletUtils.sanitizeFilename('My File Name!');
             assert.strictEqual(safe, 'My_File_Name_', 'Basic sanitization failed');
 
             // 2. Empty/Null
-            assert.strictEqual(window.BookmarkletUtils.sanitizeFilename(''), 'export', 'Empty string should return export');
+            assert.strictEqual(
+                window.BookmarkletUtils.sanitizeFilename(''),
+                'export',
+                'Empty string should return export'
+            );
             assert.strictEqual(window.BookmarkletUtils.sanitizeFilename(null), 'export', 'Null should return export');
-            assert.strictEqual(window.BookmarkletUtils.sanitizeFilename(undefined), 'export', 'Undefined should return export');
+            assert.strictEqual(
+                window.BookmarkletUtils.sanitizeFilename(undefined),
+                'export',
+                'Undefined should return export'
+            );
 
             // 3. Length check
             const long = 'a'.repeat(100);
-            assert.strictEqual(window.BookmarkletUtils.sanitizeFilename(long).length, 50, 'Should truncate to 50 chars');
+            assert.strictEqual(
+                window.BookmarkletUtils.sanitizeFilename(long).length,
+                50,
+                'Should truncate to 50 chars'
+            );
 
             // 4. Non-string input (Regression Test)
             try {
                 const numResult = window.BookmarkletUtils.sanitizeFilename(12345);
                 assert.strictEqual(numResult, '12345', 'Number should be converted to string');
             } catch (e) {
-                console.error("❌ sanitizeFilename crashed on number input: " + e.message);
+                console.error('❌ sanitizeFilename crashed on number input: ' + e.message);
                 throw e; // Rethrow to fail the test suite
             }
 
@@ -118,12 +133,12 @@ console.log("Running BookmarkletUtils tests...");
             const zeroResult = window.BookmarkletUtils.sanitizeFilename(0);
             assert.strictEqual(zeroResult, '0', 'Zero should be preserved as string "0"');
 
-            console.log("✅ sanitizeFilename passed");
+            console.log('✅ sanitizeFilename passed');
         }
 
         // Test 4: normalizeImages with <picture> (New Robust Test)
         {
-            console.log("Test 4: normalizeImages <picture> support");
+            console.log('Test 4: normalizeImages <picture> support');
             const container = document.createElement('div');
             container.innerHTML = `
                 <picture id="pic-1">
@@ -149,16 +164,16 @@ console.log("Running BookmarkletUtils tests...");
             assert.ok(img2.src.includes('source-missing.jpg'), 'Picture 2: source should fill missing img src');
 
             document.body.removeChild(container);
-            console.log("✅ normalizeImages <picture> passed");
+            console.log('✅ normalizeImages <picture> passed');
         }
 
         // Test 5: inlineStylesAsync Fragility (Async Crash Handling)
         {
-            console.log("Test 5: inlineStylesAsync Fragility (Async Crash Handling)");
+            console.log('Test 5: inlineStylesAsync Fragility (Async Crash Handling)');
             // Create a deep structure to force yielding
             const deepContainer = document.createElement('div');
             const deepTarget = document.createElement('div');
-            for(let i=0; i<60; i++) {
+            for (let i = 0; i < 60; i++) {
                 deepContainer.appendChild(document.createElement('span'));
                 deepTarget.appendChild(document.createElement('span'));
             }
@@ -170,7 +185,7 @@ console.log("Running BookmarkletUtils tests...");
             window.getComputedStyle = (el) => {
                 callCount++;
                 if (callCount === 55) {
-                     throw new Error("Simulated Async Crash");
+                    throw new Error('Simulated Async Crash');
                 }
                 return originalGetComputedStyle(el);
             };
@@ -178,10 +193,10 @@ console.log("Running BookmarkletUtils tests...");
             try {
                 // If fix works, this should reject
                 await window.BookmarkletUtils.inlineStylesAsync(deepContainer, deepTarget);
-                throw new Error("Should have rejected but resolved");
+                throw new Error('Should have rejected but resolved');
             } catch (e) {
-                if (e.message === "Simulated Async Crash") {
-                    console.log("✅ Correctly caught async crash");
+                if (e.message === 'Simulated Async Crash') {
+                    console.log('✅ Correctly caught async crash');
                 } else {
                     throw e;
                 }
@@ -190,9 +205,9 @@ console.log("Running BookmarkletUtils tests...");
             }
         }
 
-        console.log("All tests passed!");
+        console.log('All tests passed!');
     } catch (err) {
-        console.error("Test failed:", err);
+        console.error('Test failed:', err);
         process.exit(1);
     }
 })();

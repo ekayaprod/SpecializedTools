@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const jsdom = require("jsdom");
+const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
 const assert = require('assert');
 
@@ -8,11 +8,14 @@ const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
 const utilsCode = fs.readFileSync(utilsPath, 'utf8');
 
 // Create a JSDOM instance
-const dom = new JSDOM(`<!DOCTYPE html>
+const dom = new JSDOM(
+    `<!DOCTYPE html>
 <body>
     <div id="test-content"></div>
 </body>
-`, { url: "http://localhost/" });
+`,
+    { url: 'http://localhost/' }
+);
 
 global.window = dom.window;
 global.document = dom.window.document;
@@ -30,20 +33,20 @@ global.window.crypto = {
             arr[i] = Math.floor(Math.random() * 256);
         }
         return arr;
-    }
+    },
 };
 
 // Execute utils.js
 try {
     eval(utilsCode);
 } catch (e) {
-    console.error("Error evaluating utils.js:", e);
+    console.error('Error evaluating utils.js:', e);
     process.exit(1);
 }
 
 // Verify BookmarkletUtils exists
 if (!window.BookmarkletUtils) {
-    console.error("BookmarkletUtils not found on window");
+    console.error('BookmarkletUtils not found on window');
     process.exit(1);
 }
 
@@ -66,7 +69,6 @@ function it(name, fn) {
 
 // Tests
 describe('BookmarkletUtils.htmlToMarkdown', () => {
-
     // 1. Basic Text
     it('should convert basic paragraphs to text', () => {
         const input = '<p>Hello World</p>';
@@ -141,7 +143,8 @@ describe('BookmarkletUtils.htmlToMarkdown', () => {
 
     // 10. Complex Mixed Content
     it('should handle mixed content with proper spacing', () => {
-        const input = '<h1>My Page</h1><p>Start with a <strong>bold</strong> statement.</p><ul><li>Point 1</li><li>Point 2</li></ul>';
+        const input =
+            '<h1>My Page</h1><p>Start with a <strong>bold</strong> statement.</p><ul><li>Point 1</li><li>Point 2</li></ul>';
         // Correct expectation after fixing `p` tag spacing
         const expected = '# My Page\n\nStart with a **bold** statement.\n\n- Point 1\n- Point 2';
         const result = window.BookmarkletUtils.htmlToMarkdown(input);

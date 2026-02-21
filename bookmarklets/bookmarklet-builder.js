@@ -1,4 +1,4 @@
-(function(root) {
+(function (root) {
     // Regex source string for matching strings and block comments
     // Note on escaping: In a string literal, we need quadruple backslashes to match a literal backslash in the regex.
     // Pattern parts:
@@ -21,7 +21,8 @@
 
     // Added support for regex literals: /\/((?:[^/\\\r\n]|\\.)+)\/[gimuy]*/
     // This prevents the parser from confusing quotes inside regex literals with string delimiters.
-    const TOKEN_PATTERN = '("(?:[^"\\\\]|\\\\[\\s\\S])*"|\'(?:[^\'\\\\]|\\\\[\\s\\S])*\'|`(?:[^`\\\\]|\\\\[\\s\\S])*`|\\/\\*[\\s\\S]*?\\*\\/|\\/(?:[^/\\\\\\r\\n]|\\\\.)+\\/[gimuy]*)';
+    const TOKEN_PATTERN =
+        '("(?:[^"\\\\]|\\\\[\\s\\S])*"|\'(?:[^\'\\\\]|\\\\[\\s\\S])*\'|`(?:[^`\\\\]|\\\\[\\s\\S])*`|\\/\\*[\\s\\S]*?\\*\\/|\\/(?:[^/\\\\\\r\\n]|\\\\.)+\\/[gimuy]*)';
 
     /**
      * Compiles source code by removing block comments and trimming lines while preserving strings and regex literals.
@@ -55,7 +56,11 @@
 
         // 2. Trim lines and remove empty lines
         // This effectively minifies the code structure while keeping newlines for readability/debugging
-        maskedCode = maskedCode.split('\n').map(line => line.trim()).filter(l => l.length > 0).join('\n');
+        maskedCode = maskedCode
+            .split('\n')
+            .map((line) => line.trim())
+            .filter((l) => l.length > 0)
+            .join('\n');
 
         // 3. Restore strings from placeholders
         return maskedCode.replace(/__BKM_STR_(\d+)__/g, (_, index) => {

@@ -33,7 +33,6 @@ console.log('Running PA County Finder Tests...');
     console.log(`✅ Split ZIP ${input} (Exact Match)`);
 }
 
-
 // 3. Valid City (Gettysburg)
 {
     const input = 'Gettysburg';

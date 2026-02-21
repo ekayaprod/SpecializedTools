@@ -1,208 +1,286 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Browser Toolkit | 2026 Collection</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .bookmarklet-btn { cursor: move; }
-        .loading { opacity: 0.5; pointer-events: none; }
-
-        /* Smooth transitions */
-        @media (prefers-reduced-motion: no-preference) {
-            .card-enter { animation: fadeIn 0.4s ease-out forwards; }
-            @keyframes fadeIn {
-                from { opacity: 0; transform: translateY(10px); }
-                to { opacity: 1; transform: translateY(0); }
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Browser Toolkit | 2026 Collection</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+            .bookmarklet-btn {
+                cursor: move;
+            }
+            .loading {
+                opacity: 0.5;
+                pointer-events: none;
             }
 
-            /* Toast Animations */
-            @keyframes slideIn {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-            @keyframes fadeOut {
-                from { opacity: 1; }
-                to { opacity: 0; }
-            }
-            .toast-enter { animation: slideIn 0.3s ease-out forwards; }
-            .toast-exit { animation: fadeOut 0.3s ease-in forwards; }
-        }
-    </style>
-</head>
-<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
-    <div class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <!-- HEADER -->
-        <header class="mb-12 text-center border-b border-slate-200 pb-8">
-            <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight">Browser Toolkit</h1>
-            <p class="text-lg text-slate-600 mt-4 max-w-2xl mx-auto">
-                Boost productivity with <span class="text-indigo-600 font-semibold">self-contained bookmarklets</span>. No extensions required.
-            </p>
-        </header>
+            /* Smooth transitions */
+            @media (prefers-reduced-motion: no-preference) {
+                .card-enter {
+                    animation: fadeIn 0.4s ease-out forwards;
+                }
+                @keyframes fadeIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(10px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
 
-        <!-- FILTERS & SEARCH -->
-        <div class="mb-10 flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-slate-200 sticky top-4 z-10 backdrop-blur-md bg-white/90">
-            <div class="flex gap-2 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto" id="filter-container">
-                <button data-filter="all" aria-pressed="true" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-indigo-600 text-white shadow-md transition-all">All</button>
-                <button data-filter="content" aria-pressed="false" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">Content</button>
-                <button data-filter="automation" aria-pressed="false" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">Automation</button>
-                <button data-filter="security" aria-pressed="false" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">Security</button>
-            </div>
-            <div class="relative w-full md:w-64">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg class="h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-                    </svg>
+                /* Toast Animations */
+                @keyframes slideIn {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+                @keyframes fadeOut {
+                    from {
+                        opacity: 1;
+                    }
+                    to {
+                        opacity: 0;
+                    }
+                }
+                .toast-enter {
+                    animation: slideIn 0.3s ease-out forwards;
+                }
+                .toast-exit {
+                    animation: fadeOut 0.3s ease-in forwards;
+                }
+            }
+        </style>
+    </head>
+    <body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+        <div class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <!-- HEADER -->
+            <header class="mb-12 text-center border-b border-slate-200 pb-8">
+                <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight">Browser Toolkit</h1>
+                <p class="text-lg text-slate-600 mt-4 max-w-2xl mx-auto">
+                    Boost productivity with
+                    <span class="text-indigo-600 font-semibold">self-contained bookmarklets</span>. No extensions
+                    required.
+                </p>
+            </header>
+
+            <!-- FILTERS & SEARCH -->
+            <div
+                class="mb-10 flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-slate-200 sticky top-4 z-10 backdrop-blur-md bg-white/90"
+            >
+                <div class="flex gap-2 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto" id="filter-container">
+                    <button
+                        data-filter="all"
+                        aria-pressed="true"
+                        class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-indigo-600 text-white shadow-md transition-all"
+                    >
+                        All
+                    </button>
+                    <button
+                        data-filter="content"
+                        aria-pressed="false"
+                        class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all"
+                    >
+                        Content
+                    </button>
+                    <button
+                        data-filter="automation"
+                        aria-pressed="false"
+                        class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all"
+                    >
+                        Automation
+                    </button>
+                    <button
+                        data-filter="security"
+                        aria-pressed="false"
+                        class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all"
+                    >
+                        Security
+                    </button>
                 </div>
-                <input type="text" id="search-input" placeholder="Search tools..." class="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-500 focus:outline-none focus:placeholder-slate-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm shadow-sm transition-shadow">
+                <div class="relative w-full md:w-64">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg
+                            class="h-5 w-5 text-slate-400"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                        >
+                            <path
+                                fill-rule="evenodd"
+                                d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                                clip-rule="evenodd"
+                            />
+                        </svg>
+                    </div>
+                    <input
+                        type="text"
+                        id="search-input"
+                        placeholder="Search tools..."
+                        class="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-500 focus:outline-none focus:placeholder-slate-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm shadow-sm transition-shadow"
+                    />
+                </div>
+            </div>
+
+            <!-- GRID CONTAINER -->
+            <main id="tools-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+                <!-- Cards injected by JS -->
+            </main>
+
+            <div id="empty-state" class="hidden text-center py-20">
+                <p class="text-slate-500 text-lg">No matching tools found.</p>
+                <button id="clear-search" class="mt-4 text-indigo-600 hover:underline">Reset Filters</button>
             </div>
         </div>
 
-        <!-- GRID CONTAINER -->
-        <main id="tools-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-            <!-- Cards injected by JS -->
-        </main>
+        <footer class="bg-white border-t border-slate-200 mt-auto">
+            <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center">
+                <p class="text-slate-400 text-sm">© 2026 Browser Toolkit. Open Source Project.</p>
+            </div>
+        </footer>
 
-        <div id="empty-state" class="hidden text-center py-20">
-            <p class="text-slate-500 text-lg">No matching tools found.</p>
-            <button id="clear-search" class="mt-4 text-indigo-600 hover:underline">Reset Filters</button>
-        </div>
-    </div>
+        <!-- Toast Container -->
+        <div
+            id="toast-container"
+            class="fixed bottom-5 right-5 flex flex-col gap-3 z-50 pointer-events-none"
+            aria-live="polite"
+            aria-atomic="true"
+        ></div>
 
-    <footer class="bg-white border-t border-slate-200 mt-auto">
-        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center">
-            <p class="text-slate-400 text-sm">© 2026 Browser Toolkit. Open Source Project.</p>
-        </div>
-    </footer>
+        <!-- Scripts -->
+        <script src="bookmarklets/bookmarklet-builder.js"></script>
+        <script>
+            // --- DATA ---
+            const tools = [
+                {
+                    id: 'web-clipper',
+                    name: 'Web Clipper',
+                    file: 'bookmarklets/web-clipper.js',
+                    desc: 'Universal content capture. Snapshot articles, recipes, or invoices as clean HTML/Markdown.',
+                    category: 'content',
+                    color: 'blue',
+                },
+                {
+                    id: 'prop-clipper',
+                    name: 'Property Clipper',
+                    file: 'bookmarklets/property-clipper.js',
+                    desc: 'Research tool for Zillow/Redfin. Extracts hidden data and generates AI analysis prompts.',
+                    category: 'content',
+                    color: 'indigo',
+                },
+                {
+                    id: 'pa-county',
+                    name: 'PA County Finder',
+                    file: 'bookmarklets/pa-county-finder.js',
+                    desc: 'Instantly find PA County/Township for any ZIP or City via highlight or prompt.',
+                    category: 'content',
+                    color: 'sky',
+                },
+                {
+                    id: 'quick-clicker',
+                    name: 'Quick Clicker V27',
+                    file: 'bookmarklets/quick-clicker.js',
+                    desc: 'Powerful automation. Schedule clicks (Delay/Clock), fill forms, and maintain wake lock.',
+                    category: 'automation',
+                    color: 'emerald',
+                },
+                {
+                    id: 'macro-builder',
+                    name: 'Macro Builder V22',
+                    file: 'bookmarklets/macro-builder.js',
+                    desc: 'Record & Replay. Generate robust, comment-free bookmarklets from your actions.',
+                    category: 'automation',
+                    color: 'violet',
+                },
+                {
+                    id: 'interaction-recorder',
+                    name: 'Interaction Recorder',
+                    file: 'bookmarklets/interaction-recorder.js',
+                    desc: 'Troubleshoot automation. Captures clicks, Shadow DOM paths, and exports analysis.',
+                    category: 'automation',
+                    color: 'amber',
+                },
+                {
+                    id: 'delayed-clicker',
+                    name: 'Delayed Clicker V5',
+                    file: 'bookmarklets/delayed-clicker.js',
+                    desc: 'Simple, stable timer clicker. Set a delay and a target element.',
+                    category: 'automation',
+                    color: 'slate',
+                },
+                {
+                    id: 'passphrase',
+                    name: 'Passphrase Generator',
+                    file: 'bookmarklets/passphrase-generator.js',
+                    desc: 'Create unbreakable, memorable passwords. Includes temporary disposable mode.',
+                    category: 'security',
+                    color: 'rose',
+                },
+            ];
 
-    <!-- Toast Container -->
-    <div id="toast-container" class="fixed bottom-5 right-5 flex flex-col gap-3 z-50 pointer-events-none" aria-live="polite" aria-atomic="true"></div>
+            // --- RENDER ---
+            const grid = document.getElementById('tools-grid');
+            const emptyState = document.getElementById('empty-state');
+            const searchInput = document.getElementById('search-input');
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            let currentFilter = 'all';
 
-    <!-- Scripts -->
-    <script src="bookmarklets/bookmarklet-builder.js"></script>
-    <script>
-        // --- DATA ---
-        const tools = [
-            {
-                id: 'web-clipper',
-                name: 'Web Clipper',
-                file: 'bookmarklets/web-clipper.js',
-                desc: 'Universal content capture. Snapshot articles, recipes, or invoices as clean HTML/Markdown.',
-                category: 'content',
-                color: 'blue'
-            },
-            {
-                id: 'prop-clipper',
-                name: 'Property Clipper',
-                file: 'bookmarklets/property-clipper.js',
-                desc: 'Research tool for Zillow/Redfin. Extracts hidden data and generates AI analysis prompts.',
-                category: 'content',
-                color: 'indigo'
-            },
-            {
-                id: 'pa-county',
-                name: 'PA County Finder',
-                file: 'bookmarklets/pa-county-finder.js',
-                desc: 'Instantly find PA County/Township for any ZIP or City via highlight or prompt.',
-                category: 'content',
-                color: 'sky'
-            },
-            {
-                id: 'quick-clicker',
-                name: 'Quick Clicker V27',
-                file: 'bookmarklets/quick-clicker.js',
-                desc: 'Powerful automation. Schedule clicks (Delay/Clock), fill forms, and maintain wake lock.',
-                category: 'automation',
-                color: 'emerald'
-            },
-            {
-                id: 'macro-builder',
-                name: 'Macro Builder V22',
-                file: 'bookmarklets/macro-builder.js',
-                desc: 'Record & Replay. Generate robust, comment-free bookmarklets from your actions.',
-                category: 'automation',
-                color: 'violet'
-            },
-            {
-                id: 'interaction-recorder',
-                name: 'Interaction Recorder',
-                file: 'bookmarklets/interaction-recorder.js',
-                desc: 'Troubleshoot automation. Captures clicks, Shadow DOM paths, and exports analysis.',
-                category: 'automation',
-                color: 'amber'
-            },
-            {
-                id: 'delayed-clicker',
-                name: 'Delayed Clicker V5',
-                file: 'bookmarklets/delayed-clicker.js',
-                desc: 'Simple, stable timer clicker. Set a delay and a target element.',
-                category: 'automation',
-                color: 'slate'
-            },
-            {
-                id: 'passphrase',
-                name: 'Passphrase Generator',
-                file: 'bookmarklets/passphrase-generator.js',
-                desc: 'Create unbreakable, memorable passwords. Includes temporary disposable mode.',
-                category: 'security',
-                color: 'rose'
-            }
-        ];
+            function renderTools(filterText = '') {
+                grid.innerHTML = '';
+                let count = 0;
 
-        // --- RENDER ---
-        const grid = document.getElementById('tools-grid');
-        const emptyState = document.getElementById('empty-state');
-        const searchInput = document.getElementById('search-input');
-        const filterBtns = document.querySelectorAll('.filter-btn');
-        let currentFilter = 'all';
+                tools.forEach((tool, index) => {
+                    // Filter Logic
+                    const matchCategory = currentFilter === 'all' || tool.category === currentFilter;
+                    const matchSearch =
+                        tool.name.toLowerCase().includes(filterText.toLowerCase()) ||
+                        tool.desc.toLowerCase().includes(filterText.toLowerCase());
 
-        function renderTools(filterText = '') {
-            grid.innerHTML = '';
-            let count = 0;
+                    if (!matchCategory || !matchSearch) return;
 
-            tools.forEach((tool, index) => {
-                // Filter Logic
-                const matchCategory = currentFilter === 'all' || tool.category === currentFilter;
-                const matchSearch = tool.name.toLowerCase().includes(filterText.toLowerCase()) ||
-                                  tool.desc.toLowerCase().includes(filterText.toLowerCase());
+                    count++;
 
-                if (!matchCategory || !matchSearch) return;
+                    // Color Mapping
+                    const colors = {
+                        blue: 'bg-blue-600 hover:bg-blue-700 ring-blue-500',
+                        indigo: 'bg-indigo-600 hover:bg-indigo-700 ring-indigo-500',
+                        sky: 'bg-sky-600 hover:bg-sky-700 ring-sky-500',
+                        emerald: 'bg-emerald-600 hover:bg-emerald-700 ring-emerald-500',
+                        violet: 'bg-violet-600 hover:bg-violet-700 ring-violet-500',
+                        amber: 'bg-amber-500 hover:bg-amber-600 ring-amber-500',
+                        slate: 'bg-slate-600 hover:bg-slate-700 ring-slate-500',
+                        rose: 'bg-rose-600 hover:bg-rose-700 ring-rose-500',
+                    };
+                    const copyColors = {
+                        blue: 'bg-blue-800 hover:bg-blue-900',
+                        indigo: 'bg-indigo-800 hover:bg-indigo-900',
+                        sky: 'bg-sky-800 hover:bg-sky-900',
+                        emerald: 'bg-emerald-800 hover:bg-emerald-900',
+                        violet: 'bg-violet-800 hover:bg-violet-900',
+                        amber: 'bg-amber-700 hover:bg-amber-800',
+                        slate: 'bg-slate-800 hover:bg-slate-900',
+                        rose: 'bg-rose-800 hover:bg-rose-900',
+                    };
 
-                count++;
+                    const btnClass = colors[tool.color] || colors.slate;
+                    const copyClass = copyColors[tool.color] || copyColors.slate;
 
-                // Color Mapping
-                const colors = {
-                    blue: 'bg-blue-600 hover:bg-blue-700 ring-blue-500',
-                    indigo: 'bg-indigo-600 hover:bg-indigo-700 ring-indigo-500',
-                    sky: 'bg-sky-600 hover:bg-sky-700 ring-sky-500',
-                    emerald: 'bg-emerald-600 hover:bg-emerald-700 ring-emerald-500',
-                    violet: 'bg-violet-600 hover:bg-violet-700 ring-violet-500',
-                    amber: 'bg-amber-500 hover:bg-amber-600 ring-amber-500',
-                    slate: 'bg-slate-600 hover:bg-slate-700 ring-slate-500',
-                    rose: 'bg-rose-600 hover:bg-rose-700 ring-rose-500'
-                };
-                const copyColors = {
-                    blue: 'bg-blue-800 hover:bg-blue-900',
-                    indigo: 'bg-indigo-800 hover:bg-indigo-900',
-                    sky: 'bg-sky-800 hover:bg-sky-900',
-                    emerald: 'bg-emerald-800 hover:bg-emerald-900',
-                    violet: 'bg-violet-800 hover:bg-violet-900',
-                    amber: 'bg-amber-700 hover:bg-amber-800',
-                    slate: 'bg-slate-800 hover:bg-slate-900',
-                    rose: 'bg-rose-800 hover:bg-rose-900'
-                };
+                    // Card HTML
+                    const card = document.createElement('div');
+                    card.className =
+                        'bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col h-full card-enter transition-all hover:shadow-md motion-safe:hover:-translate-y-1';
+                    card.style.animationDelay = `${index * 50}ms`; // Stagger animation
 
-                const btnClass = colors[tool.color] || colors.slate;
-                const copyClass = copyColors[tool.color] || copyColors.slate;
-
-                // Card HTML
-                const card = document.createElement('div');
-                card.className = 'bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col h-full card-enter transition-all hover:shadow-md motion-safe:hover:-translate-y-1';
-                card.style.animationDelay = `${index * 50}ms`; // Stagger animation
-
-                card.innerHTML = `
+                    card.innerHTML = `
                     <div class="flex-grow">
                         <div class="flex items-center justify-between mb-2">
                             <h2 class="text-xl font-bold text-slate-800">${tool.name}</h2>
@@ -231,267 +309,269 @@
                     </div>
                 `;
 
-                grid.appendChild(card);
+                    grid.appendChild(card);
 
-                // Trigger compilation/loading
-                load(`btn-${tool.id}`, tool.file, tool.name);
-            });
+                    // Trigger compilation/loading
+                    load(`btn-${tool.id}`, tool.file, tool.name);
+                });
 
-            if (count === 0) {
-                emptyState.classList.remove('hidden');
-            } else {
-                emptyState.classList.add('hidden');
-            }
-        }
-
-        // --- EVENTS ---
-
-        // Search
-        function debounce(func, wait) {
-            let timeout;
-            return function(...args) {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => func.apply(this, args), wait);
-            };
-        }
-
-        const debouncedRender = debounce((value) => {
-            renderTools(value);
-        }, 300);
-
-        searchInput.addEventListener('input', (e) => {
-            debouncedRender(e.target.value);
-        });
-
-        document.getElementById('clear-search').addEventListener('click', () => {
-            searchInput.value = '';
-            currentFilter = 'all';
-            updateFilterButtons();
-            renderTools();
-        });
-
-        // Filter Buttons
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                currentFilter = btn.dataset.filter;
-                updateFilterButtons();
-                renderTools(searchInput.value);
-            });
-        });
-
-        function updateFilterButtons() {
-            filterBtns.forEach(btn => {
-                const isActive = btn.dataset.filter === currentFilter;
-                btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-                if (isActive) {
-                    btn.className = "filter-btn px-4 py-2 rounded-full text-sm font-medium bg-indigo-600 text-white shadow-md transition-all scale-105";
+                if (count === 0) {
+                    emptyState.classList.remove('hidden');
                 } else {
-                    btn.className = "filter-btn px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all";
+                    emptyState.classList.add('hidden');
                 }
+            }
+
+            // --- EVENTS ---
+
+            // Search
+            function debounce(func, wait) {
+                let timeout;
+                return function (...args) {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(this, args), wait);
+                };
+            }
+
+            const debouncedRender = debounce((value) => {
+                renderTools(value);
+            }, 300);
+
+            searchInput.addEventListener('input', (e) => {
+                debouncedRender(e.target.value);
             });
-        }
 
-        // --- UTILS ---
+            document.getElementById('clear-search').addEventListener('click', () => {
+                searchInput.value = '';
+                currentFilter = 'all';
+                updateFilterButtons();
+                renderTools();
+            });
 
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.setAttribute('role', 'alert');
-            toast.style.pointerEvents = 'auto'; // allow interaction
+            // Filter Buttons
+            filterBtns.forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    currentFilter = btn.dataset.filter;
+                    updateFilterButtons();
+                    renderTools(searchInput.value);
+                });
+            });
 
-            const baseClasses = "px-4 py-3 rounded-lg shadow-xl text-white text-sm font-medium flex items-center gap-3 min-w-[240px] backdrop-blur-sm";
-            const bgClass = type === 'success' ? 'bg-emerald-600/95' : 'bg-slate-800/95';
+            function updateFilterButtons() {
+                filterBtns.forEach((btn) => {
+                    const isActive = btn.dataset.filter === currentFilter;
+                    btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+                    if (isActive) {
+                        btn.className =
+                            'filter-btn px-4 py-2 rounded-full text-sm font-medium bg-indigo-600 text-white shadow-md transition-all scale-105';
+                    } else {
+                        btn.className =
+                            'filter-btn px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all';
+                    }
+                });
+            }
 
-            const iconSvg = type === 'success'
-                ? `<svg class="w-5 h-5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`
-                : `<svg class="w-5 h-5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+            // --- UTILS ---
 
-            toast.className = `${baseClasses} ${bgClass} toast-enter`;
-            toast.innerHTML = `
+            function showToast(message, type = 'info') {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                toast.setAttribute('role', 'alert');
+                toast.style.pointerEvents = 'auto'; // allow interaction
+
+                const baseClasses =
+                    'px-4 py-3 rounded-lg shadow-xl text-white text-sm font-medium flex items-center gap-3 min-w-[240px] backdrop-blur-sm';
+                const bgClass = type === 'success' ? 'bg-emerald-600/95' : 'bg-slate-800/95';
+
+                const iconSvg =
+                    type === 'success'
+                        ? `<svg class="w-5 h-5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`
+                        : `<svg class="w-5 h-5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+
+                toast.className = `${baseClasses} ${bgClass} toast-enter`;
+                toast.innerHTML = `
                 ${iconSvg}
                 <span>${message}</span>
             `;
 
-            container.appendChild(toast);
+                container.appendChild(toast);
 
-            setTimeout(() => {
-                toast.classList.remove('toast-enter');
-                toast.classList.add('toast-exit');
-                toast.addEventListener('animationend', () => toast.remove());
-            }, 3000);
-        }
-
-        function animateCopyButton(btn) {
-            if (!btn.dataset.originalHtml) {
-                btn.dataset.originalHtml = btn.innerHTML;
+                setTimeout(() => {
+                    toast.classList.remove('toast-enter');
+                    toast.classList.add('toast-exit');
+                    toast.addEventListener('animationend', () => toast.remove());
+                }, 3000);
             }
-            const checkIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-            btn.innerHTML = checkIcon;
-            if (btn.dataset.timeoutId) clearTimeout(parseInt(btn.dataset.timeoutId));
-            const timeoutId = setTimeout(() => {
-                btn.innerHTML = btn.dataset.originalHtml;
-                delete btn.dataset.timeoutId;
-            }, 2000);
-            btn.dataset.timeoutId = timeoutId;
-        }
 
-        // --- COMPILER ---
-        async function fetchWithRetry(url, options = {}, retries = 3, backoff = 300) {
-            try {
-                const res = await fetch(url, options);
-                if (res.ok) return res;
-                if (retries > 0 && (res.status >= 500 || res.status === 429)) {
-                    await new Promise(r => setTimeout(r, backoff));
-                    return fetchWithRetry(url, options, retries - 1, backoff * 2);
+            function animateCopyButton(btn) {
+                if (!btn.dataset.originalHtml) {
+                    btn.dataset.originalHtml = btn.innerHTML;
                 }
-                return res;
-            } catch (err) {
-                if (retries > 0) {
-                    await new Promise(r => setTimeout(r, backoff));
-                    return fetchWithRetry(url, options, retries - 1, backoff * 2);
-                }
-                throw err;
+                const checkIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                btn.innerHTML = checkIcon;
+                if (btn.dataset.timeoutId) clearTimeout(parseInt(btn.dataset.timeoutId));
+                const timeoutId = setTimeout(() => {
+                    btn.innerHTML = btn.dataset.originalHtml;
+                    delete btn.dataset.timeoutId;
+                }, 2000);
+                btn.dataset.timeoutId = timeoutId;
             }
-        }
 
-        async function load(id, file, name) {
-            // Need to wait for DOM insertion if run immediately?
-            // Since we call load() inside renderTools(), the elements exist.
-            const el = document.getElementById(id);
-            const copyBtnId = id.replace('btn-', 'copy-'); // e.g. copy-web-clipper
-            const copyBtn = document.getElementById(copyBtnId);
-
-            if (!el) return; // safety
-
-            try {
-                const res = await fetchWithRetry(file);
-                if (!res.ok) throw new Error('Failed to load file: ' + file);
-                let code = await res.text();
-
-                // Dependencies
-                const pathPrefix = file.substring(0, file.lastIndexOf('/') + 1);
-                const deps = BookmarkletBuilder.extractDependencies(code);
-                const reversedDeps = [...deps].reverse();
-
-                for (const dep of reversedDeps) {
-                    const depUrl = pathPrefix + dep;
-                    try {
-                        const depRes = await fetchWithRetry(depUrl);
-                        if (!depRes.ok) throw new Error('Failed dependency: ' + depUrl);
-                        const depCode = await depRes.text();
-                        code = depCode + '\n' + code;
-                        console.log(`[${name}] Injected dependency: ${dep}`);
-                    } catch (depErr) {
-                        console.error(depErr);
-                        throw depErr;
+            // --- COMPILER ---
+            async function fetchWithRetry(url, options = {}, retries = 3, backoff = 300) {
+                try {
+                    const res = await fetch(url, options);
+                    if (res.ok) return res;
+                    if (retries > 0 && (res.status >= 500 || res.status === 429)) {
+                        await new Promise((r) => setTimeout(r, backoff));
+                        return fetchWithRetry(url, options, retries - 1, backoff * 2);
                     }
+                    return res;
+                } catch (err) {
+                    if (retries > 0) {
+                        await new Promise((r) => setTimeout(r, backoff));
+                        return fetchWithRetry(url, options, retries - 1, backoff * 2);
+                    }
+                    throw err;
                 }
+            }
 
-                // --- INCLUDE DIRECTIVES ---
-                // Support for /* @include_text relative/path/to/file.ext */
-                // This replaces the comment with the file content, JSON stringified to ensure valid JS string characters.
-                const includeRegex = /\/\*\s*@include_text\s+['"]?([^'"]+?)['"]?\s*\*\//g;
-                let match;
-                // We need to handle async replacements. String.replace doesn't support async.
-                // So we find all matches first.
-                const replacements = [];
-                while ((match = includeRegex.exec(code)) !== null) {
-                    replacements.push({
-                        fullMatch: match[0],
-                        path: match[1].trim(),
-                        index: match.index
+            async function load(id, file, name) {
+                // Need to wait for DOM insertion if run immediately?
+                // Since we call load() inside renderTools(), the elements exist.
+                const el = document.getElementById(id);
+                const copyBtnId = id.replace('btn-', 'copy-'); // e.g. copy-web-clipper
+                const copyBtn = document.getElementById(copyBtnId);
+
+                if (!el) return; // safety
+
+                try {
+                    const res = await fetchWithRetry(file);
+                    if (!res.ok) throw new Error('Failed to load file: ' + file);
+                    let code = await res.text();
+
+                    // Dependencies
+                    const pathPrefix = file.substring(0, file.lastIndexOf('/') + 1);
+                    const deps = BookmarkletBuilder.extractDependencies(code);
+                    const reversedDeps = [...deps].reverse();
+
+                    for (const dep of reversedDeps) {
+                        const depUrl = pathPrefix + dep;
+                        try {
+                            const depRes = await fetchWithRetry(depUrl);
+                            if (!depRes.ok) throw new Error('Failed dependency: ' + depUrl);
+                            const depCode = await depRes.text();
+                            code = depCode + '\n' + code;
+                            console.log(`[${name}] Injected dependency: ${dep}`);
+                        } catch (depErr) {
+                            console.error(depErr);
+                            throw depErr;
+                        }
+                    }
+
+                    // --- INCLUDE DIRECTIVES ---
+                    // Support for /* @include_text relative/path/to/file.ext */
+                    // This replaces the comment with the file content, JSON stringified to ensure valid JS string characters.
+                    const includeRegex = /\/\*\s*@include_text\s+['"]?([^'"]+?)['"]?\s*\*\//g;
+                    let match;
+                    // We need to handle async replacements. String.replace doesn't support async.
+                    // So we find all matches first.
+                    const replacements = [];
+                    while ((match = includeRegex.exec(code)) !== null) {
+                        replacements.push({
+                            fullMatch: match[0],
+                            path: match[1].trim(),
+                            index: match.index,
+                        });
+                    }
+
+                    // Process replacements in reverse order to not mess up indices
+                    // Or just string replace one by one if we re-run regex or use split/join.
+                    // Simpler: iterate and fetch, then replace.
+                    for (const rep of replacements) {
+                        const incUrl = pathPrefix + rep.path; // e.g. bookmarklets/prompts/str.md
+                        try {
+                            const incRes = await fetchWithRetry(incUrl);
+                            if (!incRes.ok) throw new Error('Failed include: ' + incUrl);
+                            let incText = await incRes.text();
+
+                            // Sanitize/Escape for JS String Literal
+                            // We use JSON.stringify(incText) which returns "content..." (with quotes)
+                            // But the directive might be inside backticks or quotes already in the source?
+                            // In property-clipper-prompts.js: `/* @include_text ... */` (inside backticks)
+                            // So we want the raw text content, but escaped for backticks?
+                            // If source is: `... ${/* @include_text ... */} ...` -> No, it is `... /* @include_text ... */ ...`
+                            // Wait, `prompts.js` has: objective: `/* @include_text ... */`
+                            // So the replacement should be the raw text content, but we must escape backticks if we are inside backticks.
+                            // However, we don't know if we are inside backticks easily.
+                            // BUT, if we use the directive as the *entire* content of a string, we might want to just inject it.
+
+                            // Let's assume the directive is used where a string content is expected.
+                            // If the user wrote: const x = `/* @include_text foo.md */`;
+                            // And foo.md contains: Hello `World`
+                            // Result: const x = `Hello `World``; -> Syntax Error.
+
+                            // Correct approach for this specific usage pattern:
+                            // The directive is inside a template literal in `prompts.js`.
+                            // We should escape backticks and ${} in the included text.
+                            incText = incText.replace(/`/g, '\\`').replace(/\$\{/g, '\\${');
+
+                            // Use global replacement for this specific match string to handle duplicates if any
+                            code = code.replace(rep.fullMatch, incText);
+                            console.log(`[${name}] Included text: ${rep.path}`);
+                        } catch (incErr) {
+                            console.error(incErr);
+                            throw incErr;
+                        }
+                    }
+
+                    code = BookmarkletBuilder.compile(code);
+                    const href = `javascript:${encodeURIComponent(code)}`;
+
+                    el.href = href;
+                    el.innerHTML = name; // Remove loading spinner
+
+                    el.removeAttribute('onclick');
+                    el.removeAttribute('aria-busy');
+                    el.setAttribute('title', `Drag to bookmarks or click to run ${name}`);
+                    el.setAttribute('aria-label', `Drag ${name} bookmarklet to your bookmarks bar`);
+
+                    el.addEventListener('click', (e) => {
+                        e.preventDefault(); // Prevent navigation
+                        showToast(`Run from Bookmarks Bar for best results.`, 'info');
+                        // Actually running it via href click works if it's javascript:
+                        // But preventDefault stops that.
+                        // Let's remove preventDefault if we want them to "test" it,
+                        // OR we just execute the href manually.
+                        // For safety/UX, usually bookmarklets fail on the index page itself due to CSP or context.
+                        // But let's allow it for "delight" if possible.
+                        // If we remove preventDefault, the browser executes the JS.
                     });
-                }
+                    // Re-add click listener that DOES NOT prevent default but shows toast?
+                    // The original code had onclick="return false" which we removed.
+                    // So clicking it now runs the JS.
 
-                // Process replacements in reverse order to not mess up indices
-                // Or just string replace one by one if we re-run regex or use split/join.
-                // Simpler: iterate and fetch, then replace.
-                for (const rep of replacements) {
-                    const incUrl = pathPrefix + rep.path; // e.g. bookmarklets/prompts/str.md
-                    try {
-                        const incRes = await fetchWithRetry(incUrl);
-                        if (!incRes.ok) throw new Error('Failed include: ' + incUrl);
-                        let incText = await incRes.text();
-
-                        // Sanitize/Escape for JS String Literal
-                        // We use JSON.stringify(incText) which returns "content..." (with quotes)
-                        // But the directive might be inside backticks or quotes already in the source?
-                        // In property-clipper-prompts.js: `/* @include_text ... */` (inside backticks)
-                        // So we want the raw text content, but escaped for backticks?
-                        // If source is: `... ${/* @include_text ... */} ...` -> No, it is `... /* @include_text ... */ ...`
-                        // Wait, `prompts.js` has: objective: `/* @include_text ... */`
-                        // So the replacement should be the raw text content, but we must escape backticks if we are inside backticks.
-                        // However, we don't know if we are inside backticks easily.
-                        // BUT, if we use the directive as the *entire* content of a string, we might want to just inject it.
-
-                        // Let's assume the directive is used where a string content is expected.
-                        // If the user wrote: const x = `/* @include_text foo.md */`;
-                        // And foo.md contains: Hello `World`
-                        // Result: const x = `Hello `World``; -> Syntax Error.
-
-                        // Correct approach for this specific usage pattern:
-                        // The directive is inside a template literal in `prompts.js`.
-                        // We should escape backticks and ${} in the included text.
-                        incText = incText.replace(/`/g, '\\`').replace(/\$\{/g, '\\${');
-
-                        // Use global replacement for this specific match string to handle duplicates if any
-                        code = code.replace(rep.fullMatch, incText);
-                        console.log(`[${name}] Included text: ${rep.path}`);
-                    } catch (incErr) {
-                         console.error(incErr);
-                         throw incErr;
+                    if (copyBtn) {
+                        copyBtn.onclick = () => {
+                            navigator.clipboard.writeText(href);
+                            showToast('Code copied.', 'success');
+                            animateCopyButton(copyBtn);
+                        };
+                        copyBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
+                } catch (e) {
+                    console.error(e);
+                    el.innerHTML = 'Error';
+                    el.classList.add('bg-red-500', 'hover:bg-red-600');
+                    if (copyBtn) {
+                        copyBtn.innerHTML = '!';
+                        copyBtn.classList.add('bg-red-800');
                     }
                 }
-
-                code = BookmarkletBuilder.compile(code);
-                const href = `javascript:${encodeURIComponent(code)}`;
-
-                el.href = href;
-                el.innerHTML = name; // Remove loading spinner
-
-                el.removeAttribute('onclick');
-                el.removeAttribute('aria-busy');
-                el.setAttribute('title', `Drag to bookmarks or click to run ${name}`);
-                el.setAttribute('aria-label', `Drag ${name} bookmarklet to your bookmarks bar`);
-
-                el.addEventListener('click', (e) => {
-                    e.preventDefault(); // Prevent navigation
-                    showToast(`Run from Bookmarks Bar for best results.`, 'info');
-                    // Actually running it via href click works if it's javascript:
-                    // But preventDefault stops that.
-                    // Let's remove preventDefault if we want them to "test" it,
-                    // OR we just execute the href manually.
-                    // For safety/UX, usually bookmarklets fail on the index page itself due to CSP or context.
-                    // But let's allow it for "delight" if possible.
-                    // If we remove preventDefault, the browser executes the JS.
-                });
-                // Re-add click listener that DOES NOT prevent default but shows toast?
-                // The original code had onclick="return false" which we removed.
-                // So clicking it now runs the JS.
-
-                if (copyBtn) {
-                    copyBtn.onclick = () => {
-                        navigator.clipboard.writeText(href);
-                        showToast('Code copied.', 'success');
-                        animateCopyButton(copyBtn);
-                    };
-                    copyBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                }
-
-            } catch (e) {
-                console.error(e);
-                el.innerHTML = "Error";
-                el.classList.add("bg-red-500", "hover:bg-red-600");
-                if (copyBtn) {
-                    copyBtn.innerHTML = "!";
-                    copyBtn.classList.add("bg-red-800");
-                }
             }
-        }
 
-        // Initial Render
-        renderTools();
-
-    </script>
-</body>
+            // Initial Render
+            renderTools();
+        </script>
+    </body>
 </html>

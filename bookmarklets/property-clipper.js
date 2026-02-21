@@ -16,12 +16,13 @@
         overlayId: 'pc-pdf-overlay',
         jspdfUrl: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
         imgMaxWidth: 1000,
-        imgQuality: 0.7
+        imgQuality: 0.7,
     };
 
     /* PROMPT LIBRARY (Loaded from property-clipper-prompts.js) */
     const { STANDARD_OUTPUTS, PROMPT_DATA } = (window.BookmarkletUtils && window.BookmarkletUtils.Prompts) || {
-        STANDARD_OUTPUTS: '', PROMPT_DATA: {}
+        STANDARD_OUTPUTS: '',
+        PROMPT_DATA: {},
     };
 
     /* UTILITIES */
@@ -32,7 +33,7 @@
      * @param {number|string|null} val - The value to format.
      * @returns {string} The formatted currency string or 'N/A'.
      */
-    const formatCurrency = (val) => (val != null) ? '$' + Number(val).toLocaleString() : 'N/A';
+    const formatCurrency = (val) => (val != null ? '$' + Number(val).toLocaleString() : 'N/A');
 
     /**
      * Generates a safe filename based on the property address and current timestamp.
@@ -43,12 +44,12 @@
         // Extract first line (e.g. "123 Main St" from "123 Main St, City, ST 12345")
         let firstLine = (address || 'Property_Report').split(',')[0].trim();
         // Sanitize: replace spaces/slashes with underscores, remove special chars
-        firstLine = firstLine.replace(/[\s/]/g, '_').replace(/[^a-zA-Z0-9_\-]/g, '');
+        firstLine = firstLine.replace(/[\s/]/g, '_').replace(/[^a-zA-Z0-9_-]/g, '');
 
         // Compact Timestamp: YYYYMMDD-HHmm
         const now = new Date();
         const pad = (n) => String(n).padStart(2, '0');
-        const ts = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
+        const ts = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
 
         return `${firstLine}_${ts}`;
     };
@@ -65,11 +66,12 @@
         if (!p) return '';
         let text = `${p.role}\n\n${p.objective}`;
         if (!p.noStandardOutput) {
-             text += `\n${STANDARD_OUTPUTS}`;
+            text += `\n${STANDARD_OUTPUTS}`;
         }
         if (data) {
-            text = text.replace(/\[Insert Property Address\]/g, data.address || '[Address]')
-                       .replace(/\[Insert Asking Price\]/g, data.price || '[Price]');
+            text = text
+                .replace(/\[Insert Property Address\]/g, data.address || '[Address]')
+                .replace(/\[Insert Asking Price\]/g, data.price || '[Price]');
         }
         return text;
     };
@@ -81,7 +83,10 @@
     const PropertyExtractor = {
         _parseLocation(pd, data) {
             const loc = pd.location?.address;
-            if (loc) data.address = `${loc.line || ''}, ${loc.city || ''}, ${loc.state_code || ''} ${loc.postal_code || ''}`.replace(/^, | ,/g, '').trim();
+            if (loc)
+                data.address = `${loc.line || ''}, ${loc.city || ''}, ${loc.state_code || ''} ${loc.postal_code || ''}`
+                    .replace(/^, | ,/g, '')
+                    .trim();
             if (pd.list_price) data.price = formatCurrency(pd.list_price);
             data.description = pd.description?.text || '';
         },
@@ -98,9 +103,9 @@
         _parseFinancials(pd, data) {
             if (pd.mortgage?.estimate) {
                 data.financials['Est. Payment'] = formatCurrency(pd.mortgage.estimate.monthly_payment);
-                const tax = pd.mortgage.estimate.monthly_payment_details?.find(d => d.type === 'property_tax');
+                const tax = pd.mortgage.estimate.monthly_payment_details?.find((d) => d.type === 'property_tax');
                 if (tax) data.financials['Taxes'] = formatCurrency(tax.amount);
-                const hoa = pd.mortgage.estimate.monthly_payment_details?.find(d => d.type === 'hoa_fees');
+                const hoa = pd.mortgage.estimate.monthly_payment_details?.find((d) => d.type === 'hoa_fees');
                 if (hoa) data.financials['HOA Fees'] = formatCurrency(hoa.amount);
             }
         },
@@ -108,35 +113,43 @@
         _parseMarketData(pd, data) {
             if (pd.days_on_market) data.market['Days on Market'] = pd.days_on_market;
             const marketData = pd.neighborhood || pd.market || {};
-            if (marketData.median_listing_price) data.market['Listing Price Median'] = formatCurrency(marketData.median_listing_price);
-            if (marketData.median_sold_price) data.market['Sold Price Median'] = formatCurrency(marketData.median_sold_price);
-            if (marketData.median_price_per_sqft) data.market['Price/SqFt Median'] = formatCurrency(marketData.median_price_per_sqft);
+            if (marketData.median_listing_price)
+                data.market['Listing Price Median'] = formatCurrency(marketData.median_listing_price);
+            if (marketData.median_sold_price)
+                data.market['Sold Price Median'] = formatCurrency(marketData.median_sold_price);
+            if (marketData.median_price_per_sqft)
+                data.market['Price/SqFt Median'] = formatCurrency(marketData.median_price_per_sqft);
         },
 
         _parseHistory(pd, data) {
             if (pd.property_history && Array.isArray(pd.property_history)) {
-                data.history = pd.property_history.map(h => ({
+                data.history = pd.property_history.map((h) => ({
                     date: h.date,
                     event: h.event_name,
-                    price: h.price ? formatCurrency(h.price) : '-'
+                    price: h.price ? formatCurrency(h.price) : '-',
                 }));
             }
         },
 
         _parsePhotos(pd, data) {
             if (pd.augmented_gallery && Array.isArray(pd.augmented_gallery)) {
-                pd.augmented_gallery.forEach(group => {
+                pd.augmented_gallery.forEach((group) => {
                     if (group.key === 'all_photos') return;
                     const categoryName = group.category || group.key || 'Other';
-                    const validPhotos = (group.photos || []).filter(p => p.href).map(p => ({
-                        url: p.href.replace('s.jpg', 'od-w1024_h768.webp'),
-                        label: categoryName
-                    }));
+                    const validPhotos = (group.photos || [])
+                        .filter((p) => p.href)
+                        .map((p) => ({
+                            url: p.href.replace('s.jpg', 'od-w1024_h768.webp'),
+                            label: categoryName,
+                        }));
                     if (validPhotos.length > 0) data.photoGroups.push({ category: categoryName, photos: validPhotos });
                 });
             }
             if (data.photoGroups.length === 0 && pd.photos) {
-                data.photoGroups.push({ category: 'Gallery', photos: pd.photos.map(p => ({ url: p.href, label: 'Property Photo' })) });
+                data.photoGroups.push({
+                    category: 'Gallery',
+                    photos: pd.photos.map((p) => ({ url: p.href, label: 'Property Photo' })),
+                });
             }
         },
 
@@ -158,9 +171,15 @@
         _extractHeroImage(data) {
             /* Extract Hero Image (OG:IMAGE is usually most reliable) */
             try {
-                const ogImage = document.querySelector('meta[property="og:image"]');
+                const ogImage = /** @type {HTMLMetaElement} */ (document.querySelector('meta[property="og:image"]'));
                 if (ogImage && ogImage.content) data.heroUrl = ogImage.content;
-            } catch (e) { console.warn('Hero Image Extraction Warning:', { error: e, url: window.location.href, title: document.title }); }
+            } catch (e) {
+                console.warn('Hero Image Extraction Warning:', {
+                    error: e,
+                    url: window.location.href,
+                    title: document.title,
+                });
+            }
         },
 
         /**
@@ -175,7 +194,10 @@
             try {
                 return JSON.parse(text);
             } catch (e) {
-                console.warn(`JSON Parse Error [${sourceLabel}]:`, { error: e, textSnippet: text.substring(0, SNIPPET_LEN) });
+                console.warn(`JSON Parse Error [${sourceLabel}]:`, {
+                    error: e,
+                    textSnippet: text.substring(0, SNIPPET_LEN),
+                });
                 return null;
             }
         },
@@ -213,12 +235,14 @@
         _extractFromDOM(data) {
             // 2. DOM Extraction
             try {
-                const keyFacts = document.querySelectorAll('[data-testid="key-facts"] li, .key-fact-item, ul[data-testid*="detail"] li');
-                keyFacts.forEach(li => {
+                const keyFacts = document.querySelectorAll(
+                    '[data-testid="key-facts"] li, .key-fact-item, ul[data-testid*="detail"] li'
+                );
+                keyFacts.forEach((li) => {
                     const text = /** @type {HTMLElement} */ (li).innerText || '';
                     let parts = text.includes(':') ? text.split(':') : text.split('\n');
-                    parts = parts.map(s => s.trim()).filter(s => s);
-                    
+                    parts = parts.map((s) => s.trim()).filter((s) => s);
+
                     if (parts.length >= 2) {
                         const label = parts[0];
                         const value = parts.slice(1).join(' ');
@@ -227,11 +251,22 @@
                         }
                     }
                 });
-                
-                if (data.address === 'Unknown Address') data.address = /** @type {HTMLElement} */ (document.querySelector('h1'))?.innerText || data.address;
-                if (data.price === 'Unknown Price') data.price = /** @type {HTMLElement} */ (document.querySelector('[data-testid="ldp-list-price"]'))?.innerText || data.price;
-                
-            } catch (e) { console.warn('DOM Extraction Warning:', { error: e, partialAddress: data.address, partialPrice: data.price, url: window.location.href, timestamp: new Date().toISOString() }); }
+
+                if (data.address === 'Unknown Address')
+                    data.address = /** @type {HTMLElement} */ (document.querySelector('h1'))?.innerText || data.address;
+                if (data.price === 'Unknown Price')
+                    data.price =
+                        /** @type {HTMLElement} */ (document.querySelector('[data-testid="ldp-list-price"]'))
+                            ?.innerText || data.price;
+            } catch (e) {
+                console.warn('DOM Extraction Warning:', {
+                    error: e,
+                    partialAddress: data.address,
+                    partialPrice: data.price,
+                    url: window.location.href,
+                    timestamp: new Date().toISOString(),
+                });
+            }
         },
 
         /**
@@ -243,9 +278,16 @@
          */
         getData() {
             let data = {
-                address: 'Unknown Address', price: 'Unknown Price', specs: {},
-                financials: {}, market: {}, history: [], description: '',
-                photoGroups: [], raw: null, heroUrl: null
+                address: 'Unknown Address',
+                price: 'Unknown Price',
+                specs: {},
+                financials: {},
+                market: {},
+                history: [],
+                description: '',
+                photoGroups: [],
+                raw: null,
+                heroUrl: null,
             };
 
             this._extractHeroImage(data);
@@ -253,7 +295,7 @@
             this._extractFromDOM(data);
 
             return data;
-        }
+        },
     };
 
     /* 2. IMAGE PROCESSOR */
@@ -283,9 +325,20 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
                     try {
-                        resolve({ dataUrl: canvas.toDataURL('image/jpeg', CONFIG.imgQuality), width, height, ratio: width / height });
+                        resolve({
+                            dataUrl: canvas.toDataURL('image/jpeg', CONFIG.imgQuality),
+                            width,
+                            height,
+                            ratio: width / height,
+                        });
                     } catch (e) {
-                        console.warn('Image processing failed:', { error: e, url, width, height, timestamp: new Date().toISOString() });
+                        console.warn('Image processing failed:', {
+                            error: e,
+                            url,
+                            width,
+                            height,
+                            timestamp: new Date().toISOString(),
+                        });
                         resolve(null);
                     }
                 };
@@ -295,7 +348,7 @@
                 };
                 img.src = url;
             });
-        }
+        },
     };
 
     /* 3. HTML GENERATOR */
@@ -309,17 +362,25 @@
          * @param {Array<{url: string, label: string}>} selectedPhotos - The list of photos to include.
          */
         create: (data, selectedPhotos) => {
-            const specsHtml = Object.entries({ ...data.specs, ...data.financials }).map(([k, v]) => `
+            const specsHtml = Object.entries({ ...data.specs, ...data.financials })
+                .map(
+                    ([k, v]) => `
                 <div class="metric-box">
                     <div class="metric-label">${BookmarkletUtils.escapeHtml(k)}</div>
                     <div class="metric-value">${BookmarkletUtils.escapeHtml(v)}</div>
-                </div>`).join('');
+                </div>`
+                )
+                .join('');
 
-            const photosHtml = selectedPhotos.map(p => `
+            const photosHtml = selectedPhotos
+                .map(
+                    (p) => `
                 <div class="photo-card">
                     <img src="${p.url}" loading="lazy" alt="Photo: ${BookmarkletUtils.escapeHtml(p.label)}">
                     <div class="photo-label">${BookmarkletUtils.escapeHtml(p.label)}</div>
-                </div>`).join('');
+                </div>`
+                )
+                .join('');
 
             // HERO IMAGE LOGIC
             let heroHtml = '';
@@ -377,9 +438,9 @@
     </div>
 </body>
 </html>`;
-            
+
             BookmarkletUtils.downloadFile(`${generateFilename(data.address)}.html`, html, 'text/html');
-        }
+        },
     };
 
     /* 4. PDF GENERATOR */
@@ -404,28 +465,31 @@
         async _renderHero(doc, data, selectedPhotos, margin, y, contentWidth, statusCb) {
             const heroUrl = data.heroUrl || (selectedPhotos.length > 0 ? selectedPhotos[0].url : null);
             if (heroUrl) {
-                if(statusCb) statusCb('Processing Hero Image...');
+                if (statusCb) statusCb('Processing Hero Image...');
                 const heroProcessed = await ImageProcessor.process(heroUrl);
-                
+
                 if (heroProcessed) {
                     const heroWidth = contentWidth;
                     let heroHeight = contentWidth / heroProcessed.ratio;
-                    
+
                     if (heroHeight > 90) {
                         heroHeight = 90;
                     }
-                    
+
                     doc.addImage(heroProcessed.dataUrl, 'JPEG', margin, y, heroWidth, heroHeight);
                     y += heroHeight + 10;
                 }
             }
-            if (y > 220) { doc.addPage(); y = 20; }
+            if (y > 220) {
+                doc.addPage();
+                y = 20;
+            }
             return y;
         },
 
         _renderGridSection(doc, title, items, margin, y, pageWidth, boxWidth) {
             if (!items || Object.keys(items).length === 0) return y;
-            
+
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(12);
             doc.setTextColor(0, 0, 0);
@@ -439,14 +503,18 @@
             const keys = Object.keys(items);
 
             keys.forEach((key) => {
-                if (margin + (col * (boxWidth + gap)) + boxWidth > pageWidth - margin) {
+                if (margin + col * (boxWidth + gap) + boxWidth > pageWidth - margin) {
                     col = 0;
                     y += boxH + gap;
                 }
 
-                if (y > 270) { doc.addPage(); y = 20; col = 0; }
+                if (y > 270) {
+                    doc.addPage();
+                    y = 20;
+                    col = 0;
+                }
 
-                const x = margin + (col * (boxWidth + gap));
+                const x = margin + col * (boxWidth + gap);
 
                 doc.setFillColor(250, 250, 250);
                 doc.setDrawColor(220, 220, 220);
@@ -471,12 +539,15 @@
         },
 
         _renderDescription(doc, description, margin, y, contentWidth) {
-            if (y > 240) { doc.addPage(); y = 20; }
+            if (y > 240) {
+                doc.addPage();
+                y = 20;
+            }
 
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(14);
             doc.setTextColor(0, 0, 0);
-            doc.text("Property Description", margin, y);
+            doc.text('Property Description', margin, y);
             y += 8;
 
             doc.setFont('helvetica', 'normal');
@@ -493,19 +564,25 @@
 
         _renderHistory(doc, history, margin, y) {
             if (history && history.length > 0) {
-                if (y > 220) { doc.addPage(); y = 20; }
+                if (y > 220) {
+                    doc.addPage();
+                    y = 20;
+                }
 
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(14);
                 doc.setTextColor(0, 0, 0);
-                doc.text("Property History", margin, y);
+                doc.text('Property History', margin, y);
                 y += 8;
 
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(10);
 
-                history.forEach(h => {
-                    if (y > 270) { doc.addPage(); y = 20; }
+                history.forEach((h) => {
+                    if (y > 270) {
+                        doc.addPage();
+                        y = 20;
+                    }
                     const line = `${h.date || 'N/A'} - ${h.event || 'Event'} - ${h.price || '-'}`;
                     doc.text(line, margin, y);
                     y += 6;
@@ -521,17 +598,19 @@
                 y = 20;
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(16);
-                doc.text("Photo Gallery", margin, y);
+                doc.text('Photo Gallery', margin, y);
                 y += 10;
 
                 if (statusCb) statusCb(`Processing ${selectedPhotos.length} photos...`);
                 let processedCount = 0;
-                const processedResults = await Promise.all(selectedPhotos.map(async (photo) => {
-                    const res = await ImageProcessor.process(photo.url);
-                    processedCount++;
-                    if (statusCb) statusCb(`Processing photos (${processedCount}/${selectedPhotos.length})...`);
-                    return res;
-                }));
+                const processedResults = await Promise.all(
+                    selectedPhotos.map(async (photo) => {
+                        const res = await ImageProcessor.process(photo.url);
+                        processedCount++;
+                        if (statusCb) statusCb(`Processing photos (${processedCount}/${selectedPhotos.length})...`);
+                        return res;
+                    })
+                );
 
                 for (let i = 0; i < selectedPhotos.length; i++) {
                     const photo = selectedPhotos[i];
@@ -573,14 +652,17 @@
                 doc.addPage();
                 doc.setFont('courier', 'normal');
                 doc.setFontSize(8);
-                doc.text("Raw Property Data (JSON)", margin, 15);
+                doc.text('Raw Property Data (JSON)', margin, 15);
 
                 const jsonStr = JSON.stringify(rawData);
                 const lines = doc.splitTextToSize(jsonStr, contentWidth);
                 let lineIdx = 0;
                 let pageY = 20;
                 while (lineIdx < lines.length) {
-                    if (pageY > 280) { doc.addPage(); pageY = 15; }
+                    if (pageY > 280) {
+                        doc.addPage();
+                        pageY = 15;
+                    }
                     doc.text(lines[lineIdx], margin, pageY);
                     pageY += 3.5;
                     lineIdx++;
@@ -603,7 +685,7 @@
             const margin = 15;
             let y = 20;
             const pageWidth = 210;
-            const contentWidth = pageWidth - (margin * 2);
+            const contentWidth = pageWidth - margin * 2;
 
             y = this._renderHeader(doc, data, margin, y);
             y = await this._renderHero(doc, data, selectedPhotos, margin, y, contentWidth, statusCb);
@@ -611,12 +693,14 @@
             const primarySpecs = {};
             primarySpecs['Price'] = data.price;
             const targetSpecs = ['Beds', 'Baths', 'Sq. Ft.', 'Lot Size', 'Year Built'];
-            targetSpecs.forEach(k => { if (data.specs[k]) primarySpecs[k] = data.specs[k]; });
+            targetSpecs.forEach((k) => {
+                if (data.specs[k]) primarySpecs[k] = data.specs[k];
+            });
             if (data.financials['HOA Fees']) primarySpecs['HOA Fees'] = data.financials['HOA Fees'];
             if (data.financials['Taxes']) primarySpecs['Taxes'] = data.financials['Taxes'];
 
-            y = this._renderGridSection(doc, "Key Specifications", primarySpecs, margin, y, pageWidth, 43);
-            y = this._renderGridSection(doc, "Market Data", data.market, margin, y, pageWidth, 43);
+            y = this._renderGridSection(doc, 'Key Specifications', primarySpecs, margin, y, pageWidth, 43);
+            y = this._renderGridSection(doc, 'Market Data', data.market, margin, y, pageWidth, 43);
 
             y = this._renderDescription(doc, data.description, margin, y, contentWidth);
             y = this._renderHistory(doc, data.history, margin, y);
@@ -624,7 +708,7 @@
             this._renderRawData(doc, data.raw, margin, y, contentWidth);
 
             doc.save(`${generateFilename(data.address)}.pdf`);
-        }
+        },
     };
 
     /* 5. WIZARD UI */
@@ -633,7 +717,7 @@
      */
     const Wizard = {
         state: { data: null, step: 0, selectedPhotos: [], format: 'pdf' },
-        
+
         /**
          * Initializes the wizard with property data and selected output format.
          * @param {Object} data - The property data.
@@ -654,15 +738,44 @@
             const container = document.getElementById(CONFIG.modalId);
             container.innerHTML = `<h3 style="margin-top:0">Select Photos</h3>`;
             const total = Wizard.state.data.photoGroups.reduce((a, g) => a + g.photos.length, 0);
-            
-            const btnAll = buildElement('button', { width: '100%', padding: '15px', marginBottom: '10px', cursor: 'pointer', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px', textAlign: 'left' }, `Include All Photos (${total})`, container);
+
+            const btnAll = buildElement(
+                'button',
+                {
+                    width: '100%',
+                    padding: '15px',
+                    marginBottom: '10px',
+                    cursor: 'pointer',
+                    background: '#eff6ff',
+                    border: '1px solid #bfdbfe',
+                    borderRadius: '6px',
+                    textAlign: 'left',
+                },
+                `Include All Photos (${total})`,
+                container
+            );
             btnAll.onclick = () => {
-                Wizard.state.selectedPhotos = Wizard.state.data.photoGroups.flatMap(g => g.photos);
+                Wizard.state.selectedPhotos = Wizard.state.data.photoGroups.flatMap((g) => g.photos);
                 Wizard.generate();
             };
 
-            const btnManual = buildElement('button', { width: '100%', padding: '15px', cursor: 'pointer', background: '#f9f9f9', border: '1px solid #ddd', borderRadius: '6px', textAlign: 'left' }, `Manually Select Photos`, container);
-            btnManual.onclick = () => { Wizard.renderStep(); };
+            const btnManual = buildElement(
+                'button',
+                {
+                    width: '100%',
+                    padding: '15px',
+                    cursor: 'pointer',
+                    background: '#f9f9f9',
+                    border: '1px solid #ddd',
+                    borderRadius: '6px',
+                    textAlign: 'left',
+                },
+                `Manually Select Photos`,
+                container
+            );
+            btnManual.onclick = () => {
+                Wizard.renderStep();
+            };
         },
 
         /**
@@ -671,7 +784,7 @@
         renderStep: () => {
             const grp = Wizard.state.data.photoGroups[Wizard.state.step];
             if (!grp) return Wizard.generate();
-            
+
             if (grp.photos.length === 1) {
                 Wizard.state.selectedPhotos.push(grp.photos[0]);
                 Wizard.state.step++;
@@ -679,21 +792,54 @@
             }
 
             const container = document.getElementById(CONFIG.modalId);
-            container.innerHTML = `<h3 style="margin:0 0 10px 0">${grp.category} (${Wizard.state.step+1}/${Wizard.state.data.photoGroups.length})</h3>`;
-            
-            const grid = buildElement('div', { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '5px', maxHeight: '400px', overflowY: 'auto' }, '', container);
+            container.innerHTML = `<h3 style="margin:0 0 10px 0">${grp.category} (${Wizard.state.step + 1}/${Wizard.state.data.photoGroups.length})</h3>`;
+
+            const grid = buildElement(
+                'div',
+                {
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    gap: '5px',
+                    maxHeight: '400px',
+                    overflowY: 'auto',
+                },
+                '',
+                container
+            );
             const checks = [];
-            
-            grp.photos.forEach(p => {
+
+            grp.photos.forEach((p) => {
                 const d = buildElement('div', { position: 'relative' }, '', grid);
-                const img = buildElement('img', { width: '100%', height: '80px', objectFit: 'cover' }, '', d, { src: p.url, alt: p.label || 'Property Photo', loading: 'lazy' });
-                const chk = buildElement('input', { position: 'absolute', top: '2px', left: '2px' }, '', d, { type: 'checkbox', checked: true, 'aria-label': `Select photo: ${p.label || 'Property Photo'}` });
+                const img = buildElement('img', { width: '100%', height: '80px', objectFit: 'cover' }, '', d, {
+                    src: p.url,
+                    alt: p.label || 'Property Photo',
+                    loading: 'lazy',
+                });
+                const chk = buildElement('input', { position: 'absolute', top: '2px', left: '2px' }, '', d, {
+                    type: 'checkbox',
+                    checked: true,
+                    'aria-label': `Select photo: ${p.label || 'Property Photo'}`,
+                });
                 checks.push({ chk, p });
             });
 
-            const nextBtn = buildElement('button', { marginTop: '15px', width: '100%', padding: '10px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }, 'Next', container);
+            const nextBtn = buildElement(
+                'button',
+                {
+                    marginTop: '15px',
+                    width: '100%',
+                    padding: '10px',
+                    background: '#2563eb',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                },
+                'Next',
+                container
+            );
             nextBtn.onclick = () => {
-                Wizard.state.selectedPhotos.push(...checks.filter(c => c.chk.checked).map(c => c.p));
+                Wizard.state.selectedPhotos.push(...checks.filter((c) => c.chk.checked).map((c) => c.p));
                 Wizard.state.step++;
                 Wizard.renderStep();
             };
@@ -704,16 +850,22 @@
          */
         generate: () => {
             const container = document.getElementById(CONFIG.modalId);
-            container.innerHTML = '<div style="text-align:center;padding:20px"><h3>Creating Report...</h3><div id="pdf-status">Initializing...</div></div>';
-            
+            container.innerHTML =
+                '<div style="text-align:center;padding:20px"><h3>Creating Report...</h3><div id="pdf-status">Initializing...</div></div>';
+
             if (Wizard.state.format === 'pdf') {
-                PDFGenerator.create(Wizard.state.data, Wizard.state.selectedPhotos, (msg) => document.getElementById('pdf-status').innerText = msg)
-                    .then(closeModal).catch(e => BookmarkletUtils.showToast(e.message, 'error'));
+                PDFGenerator.create(
+                    Wizard.state.data,
+                    Wizard.state.selectedPhotos,
+                    (msg) => (document.getElementById('pdf-status').innerText = msg)
+                )
+                    .then(closeModal)
+                    .catch((e) => BookmarkletUtils.showToast(e.message, 'error'));
             } else {
                 HTMLGenerator.create(Wizard.state.data, Wizard.state.selectedPhotos);
                 closeModal();
             }
-        }
+        },
     };
 
     /* 6. MAIN UI - PROMPT STUDIO */
@@ -723,9 +875,43 @@
      */
     function createPersonaModal() {
         if (document.getElementById(CONFIG.modalId)) return;
-        const ov = buildElement('div', { position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', zIndex: '999998' }, '', document.body, { id: CONFIG.overlayId });
-        const mo = buildElement('div', { position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: '#fff', padding: '25px', width: '500px', borderRadius: '12px', zIndex: '999999', fontFamily: 'sans-serif', display: 'flex', flexDirection: 'column', gap: '15px' }, '', document.body, { id: CONFIG.modalId });
-        
+        const ov = buildElement(
+            'div',
+            {
+                position: 'fixed',
+                top: '0',
+                left: '0',
+                width: '100%',
+                height: '100%',
+                background: 'rgba(0,0,0,0.5)',
+                zIndex: '999998',
+            },
+            '',
+            document.body,
+            { id: CONFIG.overlayId }
+        );
+        const mo = buildElement(
+            'div',
+            {
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%,-50%)',
+                background: '#fff',
+                padding: '25px',
+                width: '500px',
+                borderRadius: '12px',
+                zIndex: '999999',
+                fontFamily: 'sans-serif',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '15px',
+            },
+            '',
+            document.body,
+            { id: CONFIG.modalId }
+        );
+
         buildElement('h2', { margin: '0', textAlign: 'center', fontSize: '20px' }, 'Property Analysis Studio', mo);
 
         // Data Pre-fetch for Prompt Placeholders
@@ -735,35 +921,116 @@
         // 1. Dropdown
         const row1 = buildElement('div', { display: 'flex', flexDirection: 'column', gap: '5px' }, '', mo);
         buildElement('label', { fontSize: '12px', fontWeight: 'bold', color: '#555' }, 'Analysis Persona:', row1);
-        const select = buildElement('select', { padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }, '', row1, { 'aria-label': 'Select Persona / Analysis Type' });
-        
+        const select = /** @type {HTMLSelectElement} */ (buildElement(
+            'select',
+            { padding: '8px', borderRadius: '4px', border: '1px solid #ccc' },
+            '',
+            row1,
+            { 'aria-label': 'Select Persona / Analysis Type' }
+        ));
+
         Object.entries(PROMPT_DATA).forEach(([k, v]) => {
-            const opt = buildElement('option', {}, v.label, select);
+            const opt = /** @type {HTMLOptionElement} */ (buildElement('option', {}, v.label, select));
             opt.value = k;
         });
 
         // 2. Text Area
         const row2 = buildElement('div', { display: 'flex', flexDirection: 'column', gap: '5px', flex: '1' }, '', mo);
         buildElement('label', { fontSize: '12px', fontWeight: 'bold', color: '#555' }, 'AI Prompt Context:', row2);
-        const txtArea = buildElement('textarea', { width: '100%', height: '150px', padding: '10px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '12px', fontFamily: 'monospace', resize: 'vertical' }, '', row2);
-        
+        const txtArea = /** @type {HTMLTextAreaElement} */ (buildElement(
+            'textarea',
+            {
+                width: '100%',
+                height: '150px',
+                padding: '10px',
+                borderRadius: '4px',
+                border: '1px solid #ccc',
+                fontSize: '12px',
+                fontFamily: 'monospace',
+                resize: 'vertical',
+            },
+            '',
+            row2
+        ));
+
         // Update text area on change
-        const updateText = () => { txtArea.value = getFullPrompt(select.value, data); };
+        const updateText = () => {
+            txtArea.value = getFullPrompt(select.value, data);
+        };
         select.onchange = updateText;
         updateText(); // Init
 
         // 3. Actions Row
-        const row3 = buildElement('div', { display: 'flex', gap: '10px', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #eee', paddingTop: '15px' }, '', mo);
-        
+        const row3 = buildElement(
+            'div',
+            {
+                display: 'flex',
+                gap: '10px',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                borderTop: '1px solid #eee',
+                paddingTop: '15px',
+            },
+            '',
+            mo
+        );
+
         const leftGroup = buildElement('div', { display: 'flex', gap: '5px' }, '', row3);
-        const copyBtn = buildElement('button', { padding: '8px 12px', background: '#f0f0f0', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }, 'Copy', leftGroup);
-        copyBtn.onclick = () => { navigator.clipboard.writeText(txtArea.value); copyBtn.innerText = 'Copied!'; setTimeout(() => copyBtn.innerText = 'Copy', 1500); };
+        const copyBtn = buildElement(
+            'button',
+            {
+                padding: '8px 12px',
+                background: '#f0f0f0',
+                border: '1px solid #ccc',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '12px',
+            },
+            'Copy',
+            leftGroup
+        );
+        copyBtn.onclick = () => {
+            navigator.clipboard.writeText(txtArea.value);
+            copyBtn.innerText = 'Copied!';
+            setTimeout(() => (copyBtn.innerText = 'Copy'), 1500);
+        };
 
         const rightGroup = buildElement('div', { display: 'flex', gap: '10px' }, '', row3);
-        const cancelBtn = buildElement('button', { padding: '8px 12px', background: 'none', border: 'none', color: '#666', cursor: 'pointer' }, 'Close', rightGroup);
-        
-        const htmlBtn = buildElement('button', { padding: '10px 15px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }, 'HTML', rightGroup);
-        const pdfBtn = buildElement('button', { padding: '10px 15px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }, 'PDF', rightGroup);
+        const cancelBtn = buildElement(
+            'button',
+            { padding: '8px 12px', background: 'none', border: 'none', color: '#666', cursor: 'pointer' },
+            'Close',
+            rightGroup
+        );
+
+        const htmlBtn = buildElement(
+            'button',
+            {
+                padding: '10px 15px',
+                background: '#10b981',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+            },
+            'HTML',
+            rightGroup
+        );
+        const pdfBtn = buildElement(
+            'button',
+            {
+                padding: '10px 15px',
+                background: '#2563eb',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+            },
+            'PDF',
+            rightGroup
+        );
 
         // Handlers
         const launchWizard = (fmt) => {

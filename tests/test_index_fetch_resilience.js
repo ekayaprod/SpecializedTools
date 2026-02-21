@@ -20,8 +20,8 @@ async function runTest() {
     // but since we are observing side effects (fetchCalls), we can just wait.
 
     const dom = new JSDOM(htmlContent, {
-        runScripts: "dangerously",
-        resources: "usable",
+        runScripts: 'dangerously',
+        resources: 'usable',
         virtualConsole,
         beforeParse(window) {
             // Mock setTimeout to be immediate
@@ -39,45 +39,46 @@ async function runTest() {
             // Mock BookmarkletBuilder
             window.BookmarkletBuilder = {
                 extractDependencies: () => [],
-                compile: (code) => code
+                compile: (code) => code,
             };
 
             // Mock fetch
             window.fetch = (url) => {
                 // Return a promise that resolves immediately
                 return Promise.resolve().then(() => {
-                    if (url.includes(targetFile)) { // specific file
+                    if (url.includes(targetFile)) {
+                        // specific file
                         fetchCalls++;
                         // Fail the first 3 times with 500
                         if (fetchCalls <= 3) {
                             return {
                                 ok: false,
                                 status: 500,
-                                text: () => Promise.resolve('Server Error')
+                                text: () => Promise.resolve('Server Error'),
                             };
                         }
                         // Succeed on 4th try
                         return {
                             ok: true,
                             status: 200,
-                            text: () => Promise.resolve('console.log("Success");')
+                            text: () => Promise.resolve('console.log("Success");'),
                         };
                     }
                     // Other fetches succeed immediately
                     return {
                         ok: true,
                         status: 200,
-                        text: () => Promise.resolve('')
+                        text: () => Promise.resolve(''),
                     };
                 });
             };
-        }
+        },
     });
 
     // Wait for async operations to complete
     // Since everything is mocked to be immediate (promises resolve microtask),
     // a small timeout should suffice.
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     console.log(`Fetch calls for ${targetFile}: ${fetchCalls}`);
 

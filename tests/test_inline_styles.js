@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const jsdom = require("jsdom");
+const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
 const assert = require('assert');
 
@@ -8,11 +8,14 @@ const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
 const utilsCode = fs.readFileSync(utilsPath, 'utf8');
 
 // JSDOM Setup
-const dom = new JSDOM(`<!DOCTYPE html>
+const dom = new JSDOM(
+    `<!DOCTYPE html>
 <body>
     <div id="test-root"></div>
 </body>
-`, { url: "http://localhost/" });
+`,
+    { url: 'http://localhost/' }
+);
 
 global.window = dom.window;
 global.document = dom.window.document;
@@ -27,39 +30,39 @@ global.window.crypto = {
             arr[i] = Math.floor(Math.random() * 256);
         }
         return arr;
-    }
+    },
 };
 
 // Evaluate Utils
 try {
     eval(utilsCode);
 } catch (e) {
-    console.error("Error evaluating utils.js:", e);
+    console.error('Error evaluating utils.js:', e);
     process.exit(1);
 }
 
 // Ensure BookmarkletUtils exists
 if (!window.BookmarkletUtils) {
-    console.error("BookmarkletUtils not found on window");
+    console.error('BookmarkletUtils not found on window');
     process.exit(1);
 }
 
 // Helper to run async test
 async function runTests() {
-    console.log("Running inlineStylesAsync tests...");
+    console.log('Running inlineStylesAsync tests...');
 
     const testRoot = document.getElementById('test-root');
 
     // Test 1: Basic Style Copying & Filtering
     {
-        console.log("Test 1: Basic Style Copying & Filtering");
+        console.log('Test 1: Basic Style Copying & Filtering');
         const source = document.createElement('div');
         source.style.color = 'rgb(255, 0, 0)'; // Safe (normalized by JSDOM)
-        source.style.fontSize = '20px';       // Safe
-        source.style.margin = '0px';          // Safe (default value preservation check)
-        source.style.width = 'auto';          // Safe (default value preservation check)
-        source.style.cursor = 'pointer';      // Unsafe (not in safelist)
-        source.style.userSelect = 'none';     // Unsafe (not in safelist)
+        source.style.fontSize = '20px'; // Safe
+        source.style.margin = '0px'; // Safe (default value preservation check)
+        source.style.width = 'auto'; // Safe (default value preservation check)
+        source.style.cursor = 'pointer'; // Unsafe (not in safelist)
+        source.style.userSelect = 'none'; // Unsafe (not in safelist)
         testRoot.appendChild(source);
 
         const target = document.createElement('div');
@@ -79,7 +82,7 @@ async function runTests() {
         // JSDOM generally supports standard properties.
         assert.strictEqual(targetStyle.userSelect, '', 'UserSelect (unsafe) should NOT be copied');
 
-        console.log("✅ Basic Style Copying & Filtering Passed");
+        console.log('✅ Basic Style Copying & Filtering Passed');
 
         // Cleanup
         testRoot.removeChild(source);
@@ -88,7 +91,7 @@ async function runTests() {
 
     // Test 2: Recursion / Nested Elements
     {
-        console.log("Test 2: Recursion / Nested Elements");
+        console.log('Test 2: Recursion / Nested Elements');
         const source = document.createElement('div');
         source.style.display = 'flex';
         const child = document.createElement('span');
@@ -106,7 +109,7 @@ async function runTests() {
         assert.strictEqual(target.style.display, 'flex', 'Parent display should be copied');
         assert.strictEqual(targetChild.style.fontWeight, 'bold', 'Child fontWeight should be copied'); // '700' or 'bold'
 
-        console.log("✅ Recursion Passed");
+        console.log('✅ Recursion Passed');
 
         // Cleanup
         testRoot.removeChild(source);
@@ -115,7 +118,7 @@ async function runTests() {
 
     // Test 3: Chunking & Performance (Large Tree)
     {
-        console.log("Test 3: Chunking Logic (Large Tree)");
+        console.log('Test 3: Chunking Logic (Large Tree)');
         const source = document.createElement('div');
         const target = document.createElement('div');
         testRoot.appendChild(source);
@@ -151,10 +154,10 @@ async function runTests() {
         testRoot.removeChild(target);
     }
 
-    console.log("All tests passed!");
+    console.log('All tests passed!');
 }
 
-runTests().catch(e => {
-    console.error("Test Failed:", e);
+runTests().catch((e) => {
+    console.error('Test Failed:', e);
     process.exit(1);
 });

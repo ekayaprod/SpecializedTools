@@ -1,13 +1,13 @@
 const fs = require('fs');
 const path = require('path');
-const jsdom = require("jsdom");
+const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
 const assert = require('assert');
 
 const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
 const utilsCode = fs.readFileSync(utilsPath, 'utf8');
 
-const dom = new JSDOM(`<!DOCTYPE html><body></body>`, { url: "http://localhost/" });
+const dom = new JSDOM(`<!DOCTYPE html><body></body>`, { url: 'http://localhost/' });
 global.window = dom.window;
 global.document = dom.window.document;
 global.Uint32Array = Uint32Array;
@@ -17,12 +17,12 @@ global.window.crypto = { getRandomValues: () => {} };
 try {
     eval(utilsCode);
 } catch (e) {
-    console.error("Error evaluating utils.js:", e);
+    console.error('Error evaluating utils.js:', e);
     process.exit(1);
 }
 
 // Test sanitizeAttributes
-console.log("Testing sanitizeAttributes...");
+console.log('Testing sanitizeAttributes...');
 
 const container = document.createElement('div');
 container.innerHTML = `
@@ -73,7 +73,10 @@ assert.ok(document.getElementById('clean').textContent === 'Clean', 'Clean conte
 
 // Assertions for new cases
 assert.ok(!document.getElementById('srcdoc-iframe').hasAttribute('srcdoc'), 'srcdoc should be removed');
-assert.ok(!document.getElementById('formaction-btn').hasAttribute('formaction'), 'javascript: formaction should be removed');
+assert.ok(
+    !document.getElementById('formaction-btn').hasAttribute('formaction'),
+    'javascript: formaction should be removed'
+);
 assert.ok(!document.getElementById('poster-video').hasAttribute('poster'), 'javascript: poster should be removed');
 
 const xlinkEl = document.getElementById('xlink-href');
@@ -91,14 +94,23 @@ assert.ok(styleSafe.getAttribute('style').includes('color: red'), 'Safe style sh
 assert.ok(!document.getElementById('tab-href').hasAttribute('href'), 'java\\tscript: href should be removed');
 assert.ok(!document.getElementById('srcset-img').hasAttribute('srcset'), 'srcset with javascript: should be removed');
 assert.ok(!document.getElementById('svg-iframe').hasAttribute('src'), 'data:image/svg+xml in iframe should be removed');
-assert.ok(!document.getElementById('png-iframe').hasAttribute('src'), 'data:image/png in iframe should be removed (only allowed on image tags)');
+assert.ok(
+    !document.getElementById('png-iframe').hasAttribute('src'),
+    'data:image/png in iframe should be removed (only allowed on image tags)'
+);
 assert.ok(!document.getElementById('svg-img').hasAttribute('src'), 'data:image/svg+xml in img should be removed');
 assert.ok(document.getElementById('valid-png').hasAttribute('src'), 'data:image/png in img should be preserved');
 
 // Mixed Case Assertions
 assert.ok(!document.getElementById('mixed-href').hasAttribute('href'), 'Mixed case javascript: href should be removed');
 assert.ok(!document.getElementById('mixed-vb').hasAttribute('href'), 'Mixed case vbscript: href should be removed');
-assert.ok(!document.getElementById('mixed-data').hasAttribute('src'), 'Mixed case data:image/svg+xml should be removed');
-assert.ok(document.getElementById('mixed-valid').hasAttribute('src'), 'Mixed case valid data:image/png should be preserved');
+assert.ok(
+    !document.getElementById('mixed-data').hasAttribute('src'),
+    'Mixed case data:image/svg+xml should be removed'
+);
+assert.ok(
+    document.getElementById('mixed-valid').hasAttribute('src'),
+    'Mixed case valid data:image/png should be preserved'
+);
 
-console.log("✅ sanitizeAttributes passed");
+console.log('✅ sanitizeAttributes passed');

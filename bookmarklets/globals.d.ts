@@ -3,6 +3,13 @@ export {};
 declare global {
     interface BookmarkletUtilsInterface {
         /**
+         * Makes an element draggable using a specific handle.
+         * @param {HTMLElement} handle - The element to drag by.
+         * @param {HTMLElement} target - The element to move.
+         */
+        makeDraggable(handle: HTMLElement, target: HTMLElement): void;
+
+        /**
          * Creates a DOM element with specified properties.
          * @param {string} tag - The tag name of the element.
          * @param {Object} [styles={}] - The style object to apply.
@@ -11,7 +18,13 @@ declare global {
          * @param {Object} [props={}] - Additional properties to assign to the element.
          * @returns {HTMLElement} The created element.
          */
-        buildElement(tag: string, styles?: Record<string, string>, text?: string, parent?: HTMLElement | null, props?: Record<string, string | number | boolean | Function | null | undefined>): HTMLElement;
+        buildElement(
+            tag: string,
+            styles?: Record<string, string>,
+            text?: string,
+            parent?: HTMLElement | null,
+            props?: Record<string, string | number | boolean | Function | null | undefined>
+        ): HTMLElement;
 
         /**
          * Shows a toast notification.
@@ -50,7 +63,13 @@ declare global {
          * @param {number} [initialDelay=1000] - Initial delay in ms before first retry.
          * @returns {Promise<void>} Resolves when loaded or already present.
          */
-        loadLibrary(globalVar: string, url: string, integrity?: string, retries?: number, initialDelay?: number): Promise<void>;
+        loadLibrary(
+            globalVar: string,
+            url: string,
+            integrity?: string,
+            retries?: number,
+            initialDelay?: number
+        ): Promise<void>;
 
         /**
          * Stabilizes images for export by resolving lazy loading attributes (data-src)
@@ -81,7 +100,11 @@ declare global {
          * @param {function(number): void} [onProgress] - Callback reporting processed count.
          * @returns {Promise<void>}
          */
-        inlineStylesAsync(source: HTMLElement, target: HTMLElement, onProgress?: (count: number) => void): Promise<void>;
+        inlineStylesAsync(
+            source: HTMLElement,
+            target: HTMLElement,
+            onProgress?: (count: number) => void
+        ): Promise<void>;
 
         /**
          * Converts an HTML string to Markdown format.
@@ -98,6 +121,11 @@ declare global {
          * @returns {string} The escaped string.
          */
         escapeHtml(str: string | number | null | undefined): string;
+
+        Prompts?: {
+            STANDARD_OUTPUTS: string;
+            PROMPT_DATA: Record<string, any>;
+        };
     }
 
     interface Window {
