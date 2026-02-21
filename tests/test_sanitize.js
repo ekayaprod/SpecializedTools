@@ -22,6 +22,7 @@ try {
 }
 
 // Test sanitizeAttributes
+(async function() {
 console.log("Testing sanitizeAttributes...");
 
 const container = document.createElement('div');
@@ -59,7 +60,7 @@ container.innerHTML = `
 `;
 document.body.appendChild(container);
 
-window.BookmarkletUtils.sanitizeAttributes(container);
+await window.BookmarkletUtils.sanitizeAttributes(container);
 
 // Assertions
 assert.ok(!document.getElementById('onclick').hasAttribute('onclick'), 'onclick should be removed');
@@ -102,3 +103,4 @@ assert.ok(!document.getElementById('mixed-data').hasAttribute('src'), 'Mixed cas
 assert.ok(document.getElementById('mixed-valid').hasAttribute('src'), 'Mixed case valid data:image/png should be preserved');
 
 console.log("✅ sanitizeAttributes passed");
+})();

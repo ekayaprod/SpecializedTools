@@ -8,7 +8,7 @@ const scriptPath = path.join(__dirname, '../bookmarklets/property-clipper.js');
 const scriptCode = fs.readFileSync(scriptPath, 'utf8');
 const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
 const utilsCode = fs.readFileSync(utilsPath, 'utf8');
-const promptsPath = path.join(__dirname, '../bookmarklets/prompts/loader.js');
+const promptsPath = path.join(__dirname, '../bookmarklets/property-clipper-prompts.js');
 const promptsCode = fs.readFileSync(promptsPath, 'utf8');
 
 // Create JSDOM
@@ -192,7 +192,7 @@ try {
     // Propagate to global for the next script
     global.BookmarkletUtils = window.BookmarkletUtils;
 
-    console.log("Executing prompts/loader.js...");
+    console.log("Executing property-clipper-prompts.js...");
     // Manually resolve @include_text directives for testing
     let resolvedPromptsCode = promptsCode;
     const includeRegex = /\/\*\s*@include_text\s+['"]?([^'"]+)['"]?\s*\*\//g;

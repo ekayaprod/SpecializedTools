@@ -8,7 +8,7 @@ const scriptPath = path.join(__dirname, '../bookmarklets/property-clipper.js');
 let scriptCode = fs.readFileSync(scriptPath, 'utf8');
 const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
 const utilsCode = fs.readFileSync(utilsPath, 'utf8');
-const promptsPath = path.join(__dirname, '../bookmarklets/prompts/loader.js');
+const promptsPath = path.join(__dirname, '../bookmarklets/property-clipper-prompts.js');
 const promptsCode = fs.readFileSync(promptsPath, 'utf8');
 
 // Instrument script to expose internals

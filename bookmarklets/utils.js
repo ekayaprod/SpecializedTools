@@ -516,17 +516,54 @@
         /**
          * Recursively removes dangerous attributes (event handlers, javascript: URIs)
          * from a root element and all its descendants to prevent XSS.
+         * Processes in chunks to avoid blocking the main thread.
          *
          * @param {HTMLElement} root - The root element to sanitize.
-         * @returns {void}
+         * @param {function(number): void} [onProgress] - Callback reporting processed count.
+         * @returns {Promise<void>}
          */
-        sanitizeAttributes(root) {
-            /* Recursively remove dangerous attributes from root and its descendants */
-            Sanitizer.sanitizeElement(root);
-            const all = root.querySelectorAll('*');
-            for (let i = 0; i < all.length; i++) {
-                Sanitizer.sanitizeElement(all[i]);
-            }
+        sanitizeAttributes(root, onProgress) {
+            return new Promise((resolve, reject) => {
+                /* Use stack-based traversal (DFS) to avoid expensive querySelectorAll on huge DOMs */
+                const queue = [root];
+                let count = 0;
+                const CHUNK_SIZE = 50;
+
+                function processChunk() {
+                    try {
+                        const startTime = performance.now();
+                        let chunkNodes = 0;
+
+                        while (queue.length > 0) {
+                            const node = queue.pop();
+                            chunkNodes++;
+                            count++;
+
+                            Sanitizer.sanitizeElement(node);
+
+                            if (node.children && node.children.length > 0) {
+                                for (let i = node.children.length - 1; i >= 0; i--) {
+                                    queue.push(node.children[i]);
+                                }
+                            }
+
+                            /* Yield if chunk size reached AND time exceeded 12ms */
+                            if (chunkNodes % CHUNK_SIZE === 0 && (performance.now() - startTime) > 12) {
+                                 if (onProgress) onProgress(count);
+                                 setTimeout(processChunk, 0);
+                                 return;
+                            }
+                        }
+
+                        if (onProgress) onProgress(count);
+                        resolve();
+                    } catch (e) {
+                        reject(e);
+                    }
+                }
+
+                processChunk();
+            });
         },
         /**
          * Asynchronously applies computed styles from a source element to a target element.

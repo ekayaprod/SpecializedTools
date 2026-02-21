@@ -269,7 +269,7 @@
             });
 
             /* 4. Cleanup - remove scripts but KEEP classes and styles */
-            this.cleanupDOM(clone);
+            await this.cleanupDOM(clone);
 
             const overlay = document.createElement('div');
             overlay.id = this.config.overlayId;
@@ -411,13 +411,13 @@
          * Cleans up the DOM by removing dangerous elements and attributes.
          * @param {HTMLElement} node
          */
-        cleanupDOM(node) {
+        async cleanupDOM(node) {
             /* General Cleanup: Remove active scripts and dangerous elements only. */
             const dangerous = node.querySelectorAll('script, iframe, object, embed, noscript, form, input, button, select, textarea');
             dangerous.forEach((n) => { n.remove(); });
 
             /* Attribute Cleanup: Remove event handlers (on*) and dangerous URLs */
-            BookmarkletUtils.sanitizeAttributes(node);
+            await BookmarkletUtils.sanitizeAttributes(node);
         }
 
         /**
@@ -452,7 +452,7 @@
          * @param {string} format
          * @param {HTMLButtonElement} [btn]
          */
-        handleDownload(contentArea, format, btn) {
+        async handleDownload(contentArea, format, btn) {
             const cleanTitle = BookmarkletUtils.sanitizeFilename(document.title || 'Web_Clip');
 
             if (format === 'md') {
@@ -469,23 +469,24 @@
                 }
 
                 /* Dynamically load html2canvas if needed */
-                BookmarkletUtils.loadLibrary('html2canvas', 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', 'sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H')
-                    .then(() => this.capturePng(contentArea, cleanTitle, btn, originalText))
-                    .catch((err) => {
-                        console.error('Failed to load html2canvas for PNG export:', err);
-                        BookmarkletUtils.showToast('Failed to load html2canvas for PNG export.', 'error');
-                        if (btn) {
-                            btn.textContent = 'Error';
-                            btn.style.background = '#dc3545';
-                            btn.style.color = 'white';
-                            setTimeout(() => {
-                                btn.textContent = originalText;
-                                btn.disabled = false;
-                                btn.style.background = '';
-                                btn.style.color = '';
-                            }, ERROR_RESET_DELAY);
-                        }
-                    });
+                try {
+                    await BookmarkletUtils.loadLibrary('html2canvas', 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', 'sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H');
+                    await this.capturePng(contentArea, cleanTitle, btn, originalText);
+                } catch (err) {
+                    console.error('Failed to load html2canvas for PNG export:', err);
+                    BookmarkletUtils.showToast('Failed to load html2canvas for PNG export.', 'error');
+                    if (btn) {
+                        btn.textContent = 'Error';
+                        btn.style.background = '#dc3545';
+                        btn.style.color = 'white';
+                        setTimeout(() => {
+                            btn.textContent = originalText;
+                            btn.disabled = false;
+                            btn.style.background = '';
+                            btn.style.color = '';
+                        }, ERROR_RESET_DELAY);
+                    }
+                }
             } else {
                 /* HTML Default */
                 const content = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + cleanTitle + '</title></head><body>' + contentArea.innerHTML + '</body></html>';
@@ -500,12 +501,13 @@
          * @param {HTMLButtonElement} [btn]
          * @param {string} [originalText]
          */
-        capturePng(element, title, btn, originalText) {
+        async capturePng(element, title, btn, originalText) {
             /* Temporarily ensure element is visible and has white background for capture */
             const originalBg = element.style.backgroundColor;
             element.style.backgroundColor = '#ffffff';
 
-            html2canvas(element, { useCORS: true, logging: false }).then((canvas) => {
+            try {
+                const canvas = await html2canvas(element, { useCORS: true, logging: false });
                 element.style.backgroundColor = originalBg; /* Restore */
 
                 const link = document.createElement('a');
@@ -517,7 +519,7 @@
                     btn.textContent = originalText;
                     btn.disabled = false;
                 }
-            }).catch((err) => {
+            } catch (err) {
                 console.error('PNG Capture failed:', { error: err, url: window.location.href, timestamp: new Date().toISOString() });
                 element.style.backgroundColor = originalBg;
 
@@ -534,7 +536,7 @@
                 } else {
                     BookmarkletUtils.showToast('PNG export failed. Check console for details.', 'error');
                 }
-            });
+            }
         }
 
         /**

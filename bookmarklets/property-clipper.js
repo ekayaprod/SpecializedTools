@@ -1,6 +1,6 @@
 (function () {
     /** @require utils.js */
-    /** @require prompts/loader.js */
+    /** @require property-clipper-prompts.js */
 
     /* CONFIGURATION */
     /**
