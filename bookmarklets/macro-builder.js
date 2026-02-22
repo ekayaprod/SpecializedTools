@@ -16,7 +16,7 @@
         }
 
         _log(msg, data) {
-            console.log('[MacroBuilder] ' + msg, data || '');
+            BookmarkletUtils.log('MacroBuilder', msg, data);
         }
 
         init() {
@@ -343,7 +343,15 @@
                         this.id = 'run-'+Math.random().toString(36).slice(2);
                         this.init();
                     }
-                    _log(msg, data) { console.log('[MacroRuntime] ' + msg, data || ''); }
+                    _log(msg, data) {
+                        data = data || {};
+                        const safeData = {};
+                        for (const k in data) {
+                             if (/password|token|secret|key|auth|email|phone/i.test(k)) safeData[k] = '***REDACTED***';
+                             else safeData[k] = data[k];
+                        }
+                        console.log('[MacroRuntime] ' + msg, safeData);
+                    }
                     init(){
                         this._log('Initialized', { id: this.id, stepCount: steps.length });
                         this.h = document.createElement('div');

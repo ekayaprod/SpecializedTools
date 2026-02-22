@@ -205,6 +205,56 @@ console.log('Running BookmarkletUtils tests...');
             }
         }
 
+        // Test 6: log (Structured Logging and PII Redaction)
+        {
+            console.log('Test 6: log (Structured Logging and PII Redaction)');
+            let capturedLog = null;
+            let capturedArgs = null;
+            const originalLog = console.log;
+            const originalInfo = console.info;
+
+            // Mock console.log and console.info
+            const mockLog = (msg, context) => {
+                capturedLog = msg;
+                capturedArgs = context;
+            };
+            console.log = mockLog;
+            console.info = mockLog;
+
+            try {
+                // 1. Basic format
+                window.BookmarkletUtils.log('TestComponent', 'Hello World', { count: 1 });
+                assert.strictEqual(capturedLog, '[TestComponent] Hello World', 'Log format incorrect');
+                assert.deepStrictEqual(capturedArgs, { count: 1 }, 'Context not preserved');
+
+                // 2. PII Redaction
+                const sensitiveData = {
+                    userId: 123,
+                    userEmail: 'test@example.com',
+                    authToken: 'secret-token-123',
+                    password: 'password123',
+                    apiKey: 'key-abc',
+                    phone: '555-0199',
+                };
+
+                window.BookmarkletUtils.log('SecurityTest', 'User logged in', sensitiveData);
+                assert.strictEqual(capturedLog, '[SecurityTest] User logged in');
+
+                // Check redactions
+                assert.strictEqual(capturedArgs.userId, 123, 'Non-sensitive data should remain');
+                assert.strictEqual(capturedArgs.userEmail, '***REDACTED***', 'Email not redacted');
+                assert.strictEqual(capturedArgs.authToken, '***REDACTED***', 'Token not redacted');
+                assert.strictEqual(capturedArgs.password, '***REDACTED***', 'Password not redacted');
+                assert.strictEqual(capturedArgs.apiKey, '***REDACTED***', 'Key not redacted');
+                assert.strictEqual(capturedArgs.phone, '***REDACTED***', 'Phone not redacted');
+
+            } finally {
+                console.log = originalLog;
+                console.info = originalInfo;
+            }
+            console.log('✅ log passed');
+        }
+
         console.log('All tests passed!');
     } catch (err) {
         console.error('Test failed:', err);

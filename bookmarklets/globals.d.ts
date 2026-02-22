@@ -3,6 +3,15 @@ export {};
 declare global {
     interface BookmarkletUtilsInterface {
         /**
+         * Logs a message with context and consistent formatting.
+         * @param {string} component - The component name (e.g., 'MacroBuilder').
+         * @param {string} message - The message to log.
+         * @param {Object} [context={}] - Additional context data.
+         * @param {'info'|'warn'|'error'} [level='info'] - The log level.
+         */
+        log(component: string, message: string, context?: Record<string, any>, level?: 'info' | 'warn' | 'error'): void;
+
+        /**
          * Makes an element draggable using a specific handle.
          * @param {HTMLElement} handle - The element to drag by.
          * @param {HTMLElement} target - The element to move.
