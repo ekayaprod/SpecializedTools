@@ -44,6 +44,9 @@ global.window.alert = (msg) => {
     console.log('ALERT:', msg);
 };
 
+global.requestAnimationFrame = (cb) => setTimeout(cb, 0);
+global.cancelAnimationFrame = (id) => clearTimeout(id);
+
 // Mock BookmarkletUtils
 global.window.BookmarkletUtils = {
     normalizeImages: async (el) => {
@@ -97,6 +100,9 @@ async function runTest() {
         view: window,
     });
     content.dispatchEvent(mouseOver);
+
+    // Wait for requestAnimationFrame
+    await new Promise((r) => setTimeout(r, 10));
 
     // Verify Highlight
     const highlight = document.getElementById('wc-bookmarklet-highlight');

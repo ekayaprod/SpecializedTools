@@ -1,3 +1,4 @@
+/* global html2canvas */
 (function () {
     /** @require utils.js */
     /** @require web-clipper-constants.js */
@@ -40,6 +41,8 @@
 
             /** @type {HTMLElement|null} */
             this.activeElement = null;
+            /** @type {number|null} */
+            this.rafId = null;
 
             // Bind methods to this instance
             this.handleMouseOver = this.handleMouseOver.bind(this);
@@ -95,6 +98,7 @@
          * Stops the element selection phase and cleans up highlights.
          */
         stopFinder() {
+            if (this.rafId) cancelAnimationFrame(this.rafId);
             document.body.style.cursor = 'default';
             document.removeEventListener('mouseover', this.handleMouseOver);
             document.removeEventListener('mouseout', this.handleMouseOut);
@@ -113,61 +117,65 @@
          * @param {MouseEvent} e
          */
         handleMouseOver(e) {
-            const target = /** @type {HTMLElement} */ (e.target);
-            if (
-                this.config.ignoreTags.includes(target.tagName) ||
-                target.closest('#' + this.config.overlayId) ||
-                target.closest('#' + this.config.highlightId)
-            )
-                return;
+            if (this.rafId) cancelAnimationFrame(this.rafId);
 
-            this.activeElement = target;
-            const rect = this.activeElement.getBoundingClientRect();
+            this.rafId = requestAnimationFrame(() => {
+                const target = /** @type {HTMLElement} */ (e.target);
+                if (
+                    this.config.ignoreTags.includes(target.tagName) ||
+                    target.closest('#' + this.config.overlayId) ||
+                    target.closest('#' + this.config.highlightId)
+                )
+                    return;
 
-            /* 1. Highlight Active Element */
-            const highlight = this.getOrCreateHighlightEl(
-                this.config.highlightId,
-                this.config.outlineStyle,
-                this.config.highlightColor,
-                '1000000'
-            );
-            highlight.style.top = rect.top + 'px';
-            highlight.style.left = rect.left + 'px';
-            highlight.style.width = rect.width + 'px';
-            highlight.style.height = rect.height + 'px';
-            highlight.style.display = 'block';
+                this.activeElement = target;
+                const rect = this.activeElement.getBoundingClientRect();
 
-            /* 2. Highlight Parent Element */
-            const parent = this.activeElement.parentElement;
-            if (parent && !this.config.ignoreTags.includes(parent.tagName)) {
-                const parentRect = parent.getBoundingClientRect();
-                const parentHighlight = this.getOrCreateHighlightEl(
-                    this.config.parentHighlightId,
-                    this.config.parentOutlineStyle,
-                    this.config.parentHighlightColor,
-                    '999999'
+                /* 1. Highlight Active Element */
+                const highlight = this.getOrCreateHighlightEl(
+                    this.config.highlightId,
+                    this.config.outlineStyle,
+                    this.config.highlightColor,
+                    '1000000'
                 );
+                highlight.style.top = rect.top + 'px';
+                highlight.style.left = rect.left + 'px';
+                highlight.style.width = rect.width + 'px';
+                highlight.style.height = rect.height + 'px';
+                highlight.style.display = 'block';
 
-                let pTop = parentRect.top;
-                let pLeft = parentRect.left;
-                let pWidth = parentRect.width;
-                let pHeight = parentRect.height;
+                /* 2. Highlight Parent Element */
+                const parent = this.activeElement.parentElement;
+                if (parent && !this.config.ignoreTags.includes(parent.tagName)) {
+                    const parentRect = parent.getBoundingClientRect();
+                    const parentHighlight = this.getOrCreateHighlightEl(
+                        this.config.parentHighlightId,
+                        this.config.parentOutlineStyle,
+                        this.config.parentHighlightColor,
+                        '999999'
+                    );
 
-                const padding = 6;
-                pTop -= padding;
-                pLeft -= padding;
-                pWidth += padding * 2;
-                pHeight += padding * 2;
+                    let pTop = parentRect.top;
+                    let pLeft = parentRect.left;
+                    let pWidth = parentRect.width;
+                    let pHeight = parentRect.height;
 
-                parentHighlight.style.top = pTop + 'px';
-                parentHighlight.style.left = pLeft + 'px';
-                parentHighlight.style.width = pWidth + 'px';
-                parentHighlight.style.height = pHeight + 'px';
-                parentHighlight.style.display = 'block';
-            } else {
-                const ph = document.getElementById(this.config.parentHighlightId);
-                if (ph) ph.style.display = 'none';
-            }
+                    const padding = 6;
+                    pTop -= padding;
+                    pLeft -= padding;
+                    pWidth += padding * 2;
+                    pHeight += padding * 2;
+
+                    parentHighlight.style.top = pTop + 'px';
+                    parentHighlight.style.left = pLeft + 'px';
+                    parentHighlight.style.width = pWidth + 'px';
+                    parentHighlight.style.height = pHeight + 'px';
+                    parentHighlight.style.display = 'block';
+                } else {
+                    const ph = document.getElementById(this.config.parentHighlightId);
+                    if (ph) ph.style.display = 'none';
+                }
+            });
         }
 
         /**
@@ -175,6 +183,7 @@
          * @param {MouseEvent} e
          */
         handleMouseOut(e) {
+            if (this.rafId) cancelAnimationFrame(this.rafId);
             if (e.target === this.activeElement) {
                 this.clearHighlights();
                 this.activeElement = null;
@@ -563,47 +572,46 @@
          * @param {HTMLButtonElement} [btn]
          * @param {string} [originalText]
          */
-        capturePng(element, title, btn, originalText) {
+        async capturePng(element, title, btn, originalText) {
             /* Temporarily ensure element is visible and has white background for capture */
             const originalBg = element.style.backgroundColor;
             element.style.backgroundColor = '#ffffff';
 
-            html2canvas(element, { useCORS: true, logging: false })
-                .then((canvas) => {
-                    element.style.backgroundColor = originalBg; /* Restore */
+            try {
+                const canvas = await html2canvas(element, { useCORS: true, logging: false });
+                element.style.backgroundColor = originalBg; /* Restore */
 
-                    const link = document.createElement('a');
-                    link.download = title + '_' + Date.now() + '.png';
-                    link.href = canvas.toDataURL();
-                    link.click();
+                const link = document.createElement('a');
+                link.download = title + '_' + Date.now() + '.png';
+                link.href = canvas.toDataURL();
+                link.click();
 
-                    if (btn) {
+                if (btn) {
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                console.error('PNG Capture failed:', {
+                    error: err,
+                    url: window.location.href,
+                    timestamp: new Date().toISOString(),
+                });
+                element.style.backgroundColor = originalBg;
+
+                if (btn) {
+                    btn.textContent = C.BTN_ERROR;
+                    btn.style.background = '#dc3545';
+                    btn.style.color = 'white';
+                    setTimeout(() => {
                         btn.textContent = originalText;
                         btn.disabled = false;
-                    }
-                })
-                .catch((err) => {
-                    console.error('PNG Capture failed:', {
-                        error: err,
-                        url: window.location.href,
-                        timestamp: new Date().toISOString(),
-                    });
-                    element.style.backgroundColor = originalBg;
-
-                    if (btn) {
-                        btn.textContent = C.BTN_ERROR;
-                        btn.style.background = '#dc3545';
-                        btn.style.color = 'white';
-                        setTimeout(() => {
-                            btn.textContent = originalText;
-                            btn.disabled = false;
-                            btn.style.background = '';
-                            btn.style.color = '';
-                        }, ERROR_RESET_DELAY);
-                    } else {
-                        BookmarkletUtils.showToast(C.ERR_PNG_EXPORT, 'error');
-                    }
-                });
+                        btn.style.background = '';
+                        btn.style.color = '';
+                    }, ERROR_RESET_DELAY);
+                } else {
+                    BookmarkletUtils.showToast(C.ERR_PNG_EXPORT, 'error');
+                }
+            }
         }
 
         /**

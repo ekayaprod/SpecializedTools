@@ -138,6 +138,7 @@ declare global {
         __mb_v22: any;
         __mb_run: any;
         __wc_instance: any;
+        WebClipperConstants: any;
     }
 
     const JSZip: any;

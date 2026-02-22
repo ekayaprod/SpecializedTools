@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { compile } = require('../bookmarklets/bookmarklet-builder.js');
+const { compile } = require('../scripts/bookmarklet-builder.js');
 
 console.log('Running tests for bookmarklet regex handling...');
 
