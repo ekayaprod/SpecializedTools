@@ -6,6 +6,8 @@ const assert = require('assert');
 
 const scriptPath = path.join(__dirname, '../bookmarklets/web-clipper.js');
 const scriptCode = fs.readFileSync(scriptPath, 'utf8');
+const constantsPath = path.join(__dirname, '../bookmarklets/web-clipper-constants.js');
+const constantsCode = fs.readFileSync(constantsPath, 'utf8');
 
 // Create JSDOM
 const dom = new JSDOM(
@@ -79,6 +81,7 @@ async function runTest() {
     // 1. Load the script
     try {
         // We wrap in a try-catch because the script executes immediately
+        eval(constantsCode);
         eval(scriptCode);
         console.log('Script loaded and executed.');
     } catch (e) {
@@ -131,7 +134,7 @@ async function runTest() {
     } else {
         // Fallback to Cancel button if icon not found (though script adds icon)
         const buttons = Array.from(modal.querySelectorAll('button'));
-        const cancelBtn = buttons.find((b) => b.textContent === 'Cancel');
+        const cancelBtn = buttons.find((b) => b.textContent === window.WebClipperConstants.BTN_CANCEL);
         if (cancelBtn) cancelBtn.click();
     }
 

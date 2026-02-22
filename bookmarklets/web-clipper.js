@@ -1,5 +1,8 @@
 (function () {
     /** @require utils.js */
+    /** @require web-clipper-constants.js */
+
+    const C = window.WebClipperConstants;
 
     if (window.__wc_instance) {
         window.__wc_instance.destroy();
@@ -233,7 +236,7 @@
          * @param {string} [message]
          */
         showLoadingOverlay(message) {
-            const msg = message || 'Capturing content...';
+            const msg = message || C.MSG_CAPTURING;
             let div = document.getElementById('wc-loading');
             if (!div) {
                 div = document.createElement('div');
@@ -278,7 +281,7 @@
             /* 3. Inline "Safe" Computed Styles */
             /* Changed strategy: Minimal stabilization to avoid layout breakage */
             await BookmarkletUtils.inlineStylesAsync(element, clone, (count) => {
-                this.showLoadingOverlay('Processing ' + count + ' elements...');
+                this.showLoadingOverlay(C.MSG_PROCESSING_PREFIX + count + C.MSG_PROCESSING_SUFFIX);
             });
 
             /* 4. Cleanup - remove scripts but KEEP classes and styles */
@@ -296,8 +299,8 @@
             header.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <span style="font-weight:700; font-size:16px;">Web Clipper</span>
-                        <span style="font-size:12px; color:#666; margin-left:8px;">Preview</span>
+                        <span style="font-weight:700; font-size:16px;">${C.TITLE_HEADER}</span>
+                        <span style="font-size:12px; color:#666; margin-left:8px;">${C.LABEL_PREVIEW}</span>
                     </div>
                     <div id="wc-close-icon" role="button" aria-label="Close" tabindex="0" style="cursor:pointer; font-size:20px; color:#999; line-height:1;">&times;</div>
                 </div>
@@ -326,11 +329,11 @@
             footer.className = 'wc-footer';
 
             const btnCancel = document.createElement('button');
-            btnCancel.textContent = 'Cancel';
+            btnCancel.textContent = C.BTN_CANCEL;
             btnCancel.onclick = this.closeEditor;
 
             const btnRetry = document.createElement('button');
-            btnRetry.textContent = 'Select Another';
+            btnRetry.textContent = C.BTN_RETRY;
             btnRetry.onclick = () => {
                 this.closeEditor();
                 this.startFinder();
@@ -344,10 +347,10 @@
             formatSelect.style.border = '1px solid #ccc';
 
             const formats = [
-                { val: 'html', txt: 'HTML File (.html)' },
-                { val: 'md', txt: 'Markdown (.md)' },
-                { val: 'txt', txt: 'Plain Text (.txt)' },
-                { val: 'png', txt: 'Image (.png)' },
+                { val: 'html', txt: C.FORMAT_HTML },
+                { val: 'md', txt: C.FORMAT_MD },
+                { val: 'txt', txt: C.FORMAT_TXT },
+                { val: 'png', txt: C.FORMAT_PNG },
             ];
 
             formats.forEach((f) => {
@@ -358,13 +361,13 @@
             });
 
             const btnDownload = document.createElement('button');
-            btnDownload.textContent = 'Save as File';
+            btnDownload.textContent = C.BTN_DOWNLOAD;
             btnDownload.onclick = () => {
                 this.handleDownload(contentArea, formatSelect.value, btnDownload);
             };
 
             const btnCopy = document.createElement('button');
-            btnCopy.textContent = 'Copy';
+            btnCopy.textContent = C.BTN_COPY;
             btnCopy.className = 'primary';
             btnCopy.onclick = () => {
                 this.handleCopy(contentArea);
@@ -477,7 +480,7 @@
                     }),
                 ];
                 await navigator.clipboard.write(data);
-                btn.textContent = 'Copied!';
+                btn.textContent = C.BTN_COPIED;
                 btn.style.background = '#28a745';
                 setTimeout(() => {
                     this.closeEditor();
@@ -488,10 +491,10 @@
                     url: window.location.href,
                     timestamp: new Date().toISOString(),
                 });
-                btn.textContent = 'Error';
+                btn.textContent = C.BTN_ERROR;
                 btn.style.background = '#dc3545';
                 setTimeout(() => {
-                    btn.textContent = 'Copy';
+                    btn.textContent = C.BTN_COPY;
                     btn.style.background = '#007bff';
                 }, 1000);
             }
@@ -504,7 +507,7 @@
          * @param {HTMLButtonElement} [btn]
          */
         handleDownload(contentArea, format, btn) {
-            const cleanTitle = BookmarkletUtils.sanitizeFilename(document.title || 'Web_Clip');
+            const cleanTitle = BookmarkletUtils.sanitizeFilename(document.title || C.FILENAME_DEFAULT);
 
             if (format === 'md') {
                 const content = BookmarkletUtils.htmlToMarkdown(contentArea.innerHTML);
@@ -513,9 +516,9 @@
                 const content = contentArea.innerText;
                 BookmarkletUtils.downloadFile(cleanTitle + '_' + Date.now() + '.txt', content, 'text/plain');
             } else if (format === 'png') {
-                const originalText = btn ? btn.textContent : 'Save as File';
+                const originalText = btn ? btn.textContent : C.BTN_DOWNLOAD;
                 if (btn) {
-                    btn.textContent = 'Creating Image...';
+                    btn.textContent = C.BTN_CREATING_IMAGE;
                     btn.disabled = true;
                 }
 
@@ -528,9 +531,9 @@
                     .then(() => this.capturePng(contentArea, cleanTitle, btn, originalText))
                     .catch((err) => {
                         console.error('Failed to load html2canvas for PNG export:', err);
-                        BookmarkletUtils.showToast('Failed to load html2canvas for PNG export.', 'error');
+                        BookmarkletUtils.showToast(C.ERR_HTML2CANVAS, 'error');
                         if (btn) {
-                            btn.textContent = 'Error';
+                            btn.textContent = C.BTN_ERROR;
                             btn.style.background = '#dc3545';
                             btn.style.color = 'white';
                             setTimeout(() => {
@@ -588,7 +591,7 @@
                     element.style.backgroundColor = originalBg;
 
                     if (btn) {
-                        btn.textContent = 'Error';
+                        btn.textContent = C.BTN_ERROR;
                         btn.style.background = '#dc3545';
                         btn.style.color = 'white';
                         setTimeout(() => {
@@ -598,7 +601,7 @@
                             btn.style.color = '';
                         }, ERROR_RESET_DELAY);
                     } else {
-                        BookmarkletUtils.showToast('PNG export failed. Check console for details.', 'error');
+                        BookmarkletUtils.showToast(C.ERR_PNG_EXPORT, 'error');
                     }
                 });
         }
