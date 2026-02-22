@@ -45,6 +45,9 @@ global.window.alert = (msg) => {
     console.log('ALERT:', msg);
 };
 
+global.requestAnimationFrame = (cb) => setTimeout(cb, 0);
+global.cancelAnimationFrame = (id) => clearTimeout(id);
+
 // Mock Console
 const originalConsoleError = console.error;
 let consoleErrorCalls = [];
@@ -93,6 +96,10 @@ async function runTest() {
     // 2. Select Element
     const content = document.getElementById('content');
     content.dispatchEvent(new MouseEvent('mouseover', { bubbles: true, cancelable: true, view: window }));
+
+    // Wait for RAF to set activeElement
+    await new Promise((r) => setTimeout(r, 10));
+
     content.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
 
     await new Promise((r) => setTimeout(r, 200)); // Wait for editor
