@@ -70,6 +70,8 @@
 
 [x] bookmarklets/utils.js (Added makeDraggable test suite in tests/test_make_draggable.js)
 
+[x] bookmarklets/delayed-clicker.js (Added comprehensive edge case tests for validation, cancellation, and toggle logic in tests/test_delayed_clicker_edge_cases.js)
+
 🆙 Modernization Targets
 
 [x] Replace alert() with non-blocking UI (Toast/Modal) across all bookmarklets

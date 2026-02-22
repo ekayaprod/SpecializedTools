@@ -305,6 +305,7 @@
 
         reset() {
             clearInterval(this.tm);
+            this.tm = null;
             this.ui.p2.classList.add('hd');
             this.ui.p1.classList.remove('hd');
         }
@@ -325,6 +326,7 @@
 
         exec() {
             clearInterval(this.tm);
+            this.tm = null;
 
             // Success Animation UI
             this.ui.timer.innerHTML = `
