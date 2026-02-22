@@ -6,6 +6,8 @@ const assert = require('assert');
 
 const scriptPath = path.join(__dirname, '../bookmarklets/web-clipper.js');
 const scriptCode = fs.readFileSync(scriptPath, 'utf8');
+const constantsPath = path.join(__dirname, '../bookmarklets/web-clipper-constants.js');
+const constantsCode = fs.readFileSync(constantsPath, 'utf8');
 
 // Create JSDOM
 const dom = new JSDOM(
@@ -80,6 +82,7 @@ async function runTest() {
 
     // 1. Load the script
     try {
+        eval(constantsCode);
         eval(scriptCode);
         console.log('Script loaded and executed.');
     } catch (e) {
@@ -106,7 +109,7 @@ async function runTest() {
     const footer = modal.querySelector('.wc-footer');
     const buttons = footer.querySelectorAll('button');
     // Find button with text 'Save as File'
-    const btnDownload = Array.from(buttons).find((b) => b.textContent === 'Save as File');
+    const btnDownload = Array.from(buttons).find((b) => b.textContent === window.WebClipperConstants.BTN_DOWNLOAD);
     assert.ok(btnDownload, 'Download button not found');
 
     btnDownload.click();
@@ -121,7 +124,7 @@ async function runTest() {
     console.log('✅ Error logging verified.');
 
     // 6. Assert Toast Shown
-    const toast = showToastCalls.find((c) => c.msg === 'Failed to load html2canvas for PNG export.');
+    const toast = showToastCalls.find((c) => c.msg === window.WebClipperConstants.ERR_HTML2CANVAS);
     assert.ok(toast, 'Toast should be shown');
     assert.strictEqual(toast.type, 'error');
     console.log('✅ Toast verified.');
