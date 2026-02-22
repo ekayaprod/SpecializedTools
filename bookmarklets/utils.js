@@ -805,8 +805,14 @@
          * // "Check [this](https://example.com)."
          */
         htmlToMarkdown(html) {
+            /* Guard: Input must be string */
+            if (typeof html !== 'string') return '';
+
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
+
+            /* Guard: Parsing must produce a body */
+            if (!doc.body) return '';
 
             const parts = [];
             traverse(doc.body, parts);
