@@ -6,7 +6,10 @@
         "target": "ES2022",
         "module": "commonjs",
         "lib": ["es2022", "dom", "dom.iterable"],
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "alwaysStrict": true
     },
     "include": ["bookmarklets/**/*"],
     "exclude": ["node_modules", "tests"]

@@ -263,8 +263,6 @@
                     this.h.style.display = 'none';
                     document.body.appendChild(hl);
                 };
-
-                return false;
             };
 
             this.add(document, 'mousemove', mv);

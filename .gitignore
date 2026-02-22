@@ -15,3 +15,5 @@ pnpm-debug.log*
 .env
 dist/
 build/
+*.tsbuildinfo
+.report.json
