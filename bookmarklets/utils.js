@@ -91,6 +91,18 @@
     /* Sanitization Helpers */
     const REGEX_WHITESPACE = /\s+/g;
 
+    /**
+     * @typedef {Object} SanitizerType
+     * @property {(name: string) => boolean} isEventAttribute
+     * @property {(name: string) => boolean} isUnsafeAttribute
+     * @property {(value: string, isSrcset: boolean) => boolean} containsMaliciousProtocol
+     * @property {(tagName: string, value: string) => boolean} isValidDataUri
+     * @property {(value: string) => boolean} isSafeStyle
+     * @property {(el: Element) => void} sanitizeElement
+     * @property {(el: Element, name: string) => void} _sanitizeAttribute
+     */
+
+    /** @type {SanitizerType} */
     const Sanitizer = {
         isEventAttribute(name) {
             return name.toLowerCase().startsWith('on');
@@ -124,6 +136,9 @@
                 checkVal.includes('expression(')
             );
         },
+        /**
+         * @param {Element} el
+         */
         sanitizeElement(el) {
             if (!el.attributes) return;
             /* Iterate backwards to safely remove attributes without copying */
@@ -522,7 +537,7 @@
             retries = typeof retries === 'number' ? retries : 3;
             initialDelay = typeof initialDelay === 'number' ? initialDelay : 1000;
 
-            const loadAttempt = (attempt) => {
+            const loadAttempt = () => {
                 return new Promise((resolve, reject) => {
                     const script = document.createElement('script');
                     script.src = url;
@@ -547,7 +562,7 @@
             };
 
             const retry = (attempt) => {
-                return loadAttempt(attempt).catch((err) => {
+                return loadAttempt().catch((err) => {
                     if (attempt >= retries) {
                         throw err;
                     }
@@ -642,7 +657,7 @@
          */
         sanitizeAttributes(root) {
             /* Recursively remove dangerous attributes from root and its descendants */
-            Sanitizer.sanitizeElement(root);
+            Sanitizer.sanitizeElement(/** @type {Element} */ (root));
             const all = root.querySelectorAll('*');
             for (let i = 0; i < all.length; i++) {
                 Sanitizer.sanitizeElement(all[i]);
