@@ -26,6 +26,8 @@ This document tracks the status of features and tools within the Browser Toolkit
 - [x] **Bookmarklet Compilation**: Automated build process to minify and encode scripts.
 - [x] **Performance Optimizations**: Async chunking for large DOM trees in Web Clipper.
     - [x] Bundle size reduction for Passphrase Generator.
+- [x] **Testing & Stability**: Comprehensive test suites for core utilities and drag-and-drop functionality.
+    - [x] **Code Quality**: Enforced JSDoc types and fixed type errors across the codebase.
 
 ## In Progress
 
@@ -33,7 +35,7 @@ This document tracks the status of features and tools within the Browser Toolkit
 
 ## Future Ideas
 
-- [ ] **Job Post Clipper** (Recruiter Mode): Extract job descriptions for resume tailoring. (See [IDEAS.md](IDEAS.md))
-- [ ] **Recipe Clipper** (Chef Mode): Extract schema.org recipes for distraction-free cooking. (See [IDEAS.md](IDEAS.md))
-- [ ] **Video Clipper** (Study Mode): Extract transcripts and metadata for LLM study guides. (See [IDEAS.md](IDEAS.md))
+- [ ] **Job Post Clipper** (Recruiter Mode): Extract job descriptions for resume tailoring. (See [IDEAS.md](IDEAS.md#job-post-clipper-recruiter-mode))
+- [ ] **Recipe Clipper** (Chef Mode): Extract schema.org recipes for distraction-free cooking. (See [IDEAS.md](IDEAS.md#recipe-clipper-chef-mode))
+- [ ] **Video Clipper** (Study Mode): Extract transcripts and metadata for LLM study guides. (See [IDEAS.md](IDEAS.md#video-clipper-study-mode))
 - [ ] **Shopping Clipper** (Deal Hunter Mode): Extract product details and prices for comparison.
