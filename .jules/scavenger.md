@@ -79,3 +79,8 @@ BOUNDARIES
 - **Deleted:** `server.log` (stale log file)
 - **Reason:** Accidental commit of runtime logs. Added to `.gitignore` to prevent recurrence.
 - **Fixed:** `tests/test_macro_builder_runtime.js` (Removed variable redeclaration causing SyntaxError).
+
+## [2026-02-22]
+
+- **Deleted:** `tests/test_property_clipper_json_fragility.js` (redundant test file)
+- **Reason:** Coverage is fully provided by `tests/test_property_clipper.js` (valid JSON) and `tests/test_property_clipper_fallback.js` (invalid JSON/fallback).

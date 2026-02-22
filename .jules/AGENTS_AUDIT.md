@@ -44,6 +44,8 @@
 
 [x] tests/test_inline_styles_optimization.js (Deleted redundant test file, merged checks into test_inline_styles.js)
 
+[x] tests/test_property_clipper_json_fragility.js (Deleted redundant test file, covered by fallback/integration tests)
+
 🛡️ Security Radar
 
 [ ] 0 Vulnerabilities found (npm audit).
