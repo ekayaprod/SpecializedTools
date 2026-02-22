@@ -319,6 +319,35 @@
 
     w.BookmarkletUtils = {
         /**
+         * Logs a message with context and consistent formatting.
+         * @param {string} component - The component name (e.g., 'MacroBuilder').
+         * @param {string} message - The message to log.
+         * @param {Object} [context={}] - Additional context data.
+         * @param {'info'|'warn'|'error'} [level='info'] - The log level.
+         */
+        log(component, message, context, level) {
+            context = context || {};
+            level = level || 'info';
+            const prefix = '[' + component + ']';
+
+            /* Standardize format */
+            const logFn = console[level] || console.log;
+
+            /* Ensure no PII is logged (heuristic: keys like password, token, email) */
+            const safeContext = {};
+            for (const key in context) {
+                if (Object.prototype.hasOwnProperty.call(context, key)) {
+                    if (/password|token|secret|key|auth|email|phone/i.test(key)) {
+                        safeContext[key] = '***REDACTED***';
+                    } else {
+                        safeContext[key] = context[key];
+                    }
+                }
+            }
+
+            logFn(prefix + ' ' + message, safeContext);
+        },
+        /**
          * Creates a DOM element with specified properties.
          * @param {string} tag - The tag name of the element.
          * @param {Object} [styles={}] - The style object to apply.
