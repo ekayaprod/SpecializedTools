@@ -21,6 +21,7 @@ window.BookmarkletUtils = {
     },
     showToast: () => {},
     escapeHtml: (s) => s || '',
+    log: (c, m, d, l) => { console[l || 'log']('[' + c + '] ' + m, d); },
     Prompts: { STANDARD_OUTPUTS: '', PROMPT_DATA: { 'investor': { label: 'Investor', role: 'Role for [Insert Property Address]', objective: 'Obj', noStandardOutput: false } } }
 };
 `;

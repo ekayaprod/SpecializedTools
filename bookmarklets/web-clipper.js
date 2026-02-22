@@ -202,16 +202,21 @@
             this.showLoadingOverlay();
             setTimeout(() => {
                 this.openEditor(target).catch((err) => {
-                    console.error('Web Clipper editor open failed', {
-                        target: {
-                            tagName: target.tagName,
-                            id: target.id,
-                            className: target.className,
+                    BookmarkletUtils.log(
+                        'WebClipper',
+                        'Web Clipper editor open failed',
+                        {
+                            target: {
+                                tagName: target.tagName,
+                                id: target.id,
+                                className: target.className,
+                            },
+                            error: err,
+                            url: window.location.href,
+                            timestamp: new Date().toISOString(),
                         },
-                        error: err,
-                        url: window.location.href,
-                        timestamp: new Date().toISOString(),
-                    });
+                        'error'
+                    );
                     this.hideLoadingOverlay();
                     BookmarkletUtils.showToast('Error opening editor: ' + err.message, 'error');
                 });
@@ -483,11 +488,16 @@
                     this.closeEditor();
                 }, 1000);
             } catch (err) {
-                console.error('Clipboard access failed:', {
-                    error: err,
-                    url: window.location.href,
-                    timestamp: new Date().toISOString(),
-                });
+                BookmarkletUtils.log(
+                    'WebClipper',
+                    'Clipboard access failed:',
+                    {
+                        error: err,
+                        url: window.location.href,
+                        timestamp: new Date().toISOString(),
+                    },
+                    'error'
+                );
                 btn.textContent = 'Error';
                 btn.style.background = '#dc3545';
                 setTimeout(() => {
@@ -580,11 +590,16 @@
                     }
                 })
                 .catch((err) => {
-                    console.error('PNG Capture failed:', {
-                        error: err,
-                        url: window.location.href,
-                        timestamp: new Date().toISOString(),
-                    });
+                    BookmarkletUtils.log(
+                        'WebClipper',
+                        'PNG Capture failed:',
+                        {
+                            error: err,
+                            url: window.location.href,
+                            timestamp: new Date().toISOString(),
+                        },
+                        'error'
+                    );
                     element.style.backgroundColor = originalBg;
 
                     if (btn) {

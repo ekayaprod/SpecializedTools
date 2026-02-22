@@ -122,6 +122,15 @@ declare global {
          */
         escapeHtml(str: string | number | null | undefined): string;
 
+        /**
+         * Standardized logging with component name and optional data.
+         * @param {string} component - The component name.
+         * @param {string} msg - The message to log.
+         * @param {any} [data] - Optional data to log.
+         * @param {'log'|'warn'|'error'} [level='log'] - The log level.
+         */
+        log(component: string, msg: string, data?: any, level?: 'log' | 'warn' | 'error'): void;
+
         Prompts?: {
             STANDARD_OUTPUTS: string;
             PROMPT_DATA: Record<string, any>;
@@ -129,7 +138,6 @@ declare global {
     }
 
     interface Window {
-        JSZip: any;
         BookmarkletUtils: BookmarkletUtilsInterface;
         jspdf: any;
         __dc_v27: any;
@@ -140,7 +148,6 @@ declare global {
         __wc_instance: any;
     }
 
-    const JSZip: any;
     const BookmarkletUtils: BookmarkletUtilsInterface;
     const html2canvas: any;
 }

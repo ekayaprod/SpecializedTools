@@ -773,5 +773,21 @@
                 .replace(/\n\s+\n/g, '\n\n')
                 .trim();
         },
+        /**
+         * Standardized logging with component name and optional data.
+         * @param {string} component - The component name.
+         * @param {string} msg - The message to log.
+         * @param {any} [data] - Optional data to log.
+         * @param {'log'|'warn'|'error'} [level='log'] - The log level.
+         */
+        log(component, msg, data, level) {
+            level = level || 'log';
+            const prefix = '[' + component + '] ';
+            if (data) {
+                console[level](prefix + msg, data);
+            } else {
+                console[level](prefix + msg);
+            }
+        },
     };
 })(window);

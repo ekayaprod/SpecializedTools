@@ -17,7 +17,7 @@
         }
 
         _log(msg, data) {
-            console.log('[InteractionRecorder] ' + msg, data || '');
+            BookmarkletUtils.log('InteractionRecorder', msg, data);
         }
 
         init() {

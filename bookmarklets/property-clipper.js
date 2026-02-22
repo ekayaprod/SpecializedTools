@@ -174,11 +174,16 @@
                 const ogImage = /** @type {HTMLMetaElement} */ (document.querySelector('meta[property="og:image"]'));
                 if (ogImage && ogImage.content) data.heroUrl = ogImage.content;
             } catch (e) {
-                console.warn('Hero Image Extraction Warning:', {
-                    error: e,
-                    url: window.location.href,
-                    title: document.title,
-                });
+                BookmarkletUtils.log(
+                    'PropertyClipper',
+                    'Hero Image Extraction Warning',
+                    {
+                        error: e,
+                        url: window.location.href,
+                        title: document.title,
+                    },
+                    'warn'
+                );
             }
         },
 
@@ -194,10 +199,15 @@
             try {
                 return JSON.parse(text);
             } catch (e) {
-                console.warn(`JSON Parse Error [${sourceLabel}]:`, {
-                    error: e,
-                    textSnippet: text.substring(0, SNIPPET_LEN),
-                });
+                BookmarkletUtils.log(
+                    'PropertyClipper',
+                    `JSON Parse Error [${sourceLabel}]`,
+                    {
+                        error: e,
+                        textSnippet: text.substring(0, SNIPPET_LEN),
+                    },
+                    'warn'
+                );
                 return null;
             }
         },

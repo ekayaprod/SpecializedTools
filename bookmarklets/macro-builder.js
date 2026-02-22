@@ -16,7 +16,7 @@
         }
 
         _log(msg, data) {
-            console.log('[MacroBuilder] ' + msg, data || '');
+            BookmarkletUtils.log('MacroBuilder', msg, data);
         }
 
         init() {
