@@ -216,8 +216,7 @@
         const computed = window.getComputedStyle(s);
         if (computed) {
             const targetStyle = t.style;
-            for (let i = 0, len = safeProperties.length; i < len; i++) {
-                const prop = safeProperties[i];
+            for (const prop of safeProperties) {
                 const val = computed.getPropertyValue(prop);
                 if (val && val !== 'none' && val !== 'normal') {
                     /* Optimization: Skip if target already has this style */
