@@ -561,6 +561,16 @@
          * @param {number} [retries=3] - Number of retry attempts.
          * @param {number} [initialDelay=1000] - Initial delay in ms before first retry.
          * @returns {Promise<void>} Resolves when loaded or already present.
+         *
+         * @example
+         * BookmarkletUtils.loadLibrary(
+         *   'jspdf',
+         *   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
+         * ).then(() => {
+         *   console.log('jsPDF loaded!');
+         * }).catch(err => {
+         *   console.error('Failed to load jsPDF', err);
+         * });
          */
         loadLibrary(globalVar, url, integrity, retries, initialDelay) {
             retries = typeof retries === 'number' ? retries : 3;
