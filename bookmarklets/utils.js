@@ -1,4 +1,3 @@
-// @ts-nocheck
 (function (w) {
     /**
      * Restricted list: Stabilize layout without breaking flexible content.
@@ -289,7 +288,9 @@
         }
         if (node.nodeType !== 1) return;
 
-        const tag = node.tagName.toLowerCase();
+        // Cast to HTMLElement for safe access to tagName and attributes
+        const el = /** @type {HTMLElement} */ (node);
+        const tag = el.tagName.toLowerCase();
         if (tag === 'script' || tag === 'style' || tag === 'noscript') return;
 
         switch (tag) {
@@ -321,8 +322,8 @@
                 break;
             case 'li':
                 parts.push(
-                    node.parentElement && node.parentElement.tagName.toLowerCase() === 'ol'
-                        ? `\n${Array.prototype.indexOf.call(node.parentElement.children, node) + 1}. `
+                    el.parentElement && el.parentElement.tagName.toLowerCase() === 'ol'
+                        ? `\n${Array.prototype.indexOf.call(el.parentElement.children, el) + 1}. `
                         : '\n- '
                 );
                 break;
@@ -330,7 +331,7 @@
                 parts.push('[');
                 break;
             case 'img':
-                parts.push(`![${node.getAttribute('alt') || ''}](${node.getAttribute('src') || ''})`);
+                parts.push(`![${el.getAttribute('alt') || ''}](${el.getAttribute('src') || ''})`);
                 return;
             case 'table':
                 parts.push('\n\n');
@@ -341,7 +342,7 @@
                 break;
         }
 
-        for (let i = 0; i < node.childNodes.length; i++) traverse(node.childNodes[i], parts);
+        for (let i = 0; i < el.childNodes.length; i++) traverse(el.childNodes[i], parts);
 
         switch (tag) {
             case 'strong':
@@ -353,7 +354,7 @@
                 parts.push('*');
                 break;
             case 'a':
-                parts.push(`](${node.getAttribute('href') || ''})`);
+                parts.push(`](${el.getAttribute('href') || ''})`);
                 break;
             case 'h1':
             case 'h2':
@@ -680,6 +681,7 @@
                 const queue = [root];
                 let imagesProcessed = 0;
                 const CHUNK_SIZE = 50; // Check time every 50 nodes
+                const TIME_SLICE_MS = 12;
 
                 function processChunk() {
                     try {
@@ -692,13 +694,14 @@
                             chunkNodes++;
 
                             /* Process if image or picture */
-                            if (node.tagName) {
-                                const tag = node.tagName.toLowerCase();
+                            const el = /** @type {HTMLElement} */ (node);
+                            if (el.tagName) {
+                                const tag = el.tagName.toLowerCase();
                                 if (tag === 'picture') {
-                                    processPictureElement(node);
+                                    processPictureElement(el);
                                     imagesProcessed++;
                                 } else if (tag === 'img') {
-                                    processImageElement(node);
+                                    processImageElement(/** @type {HTMLImageElement} */ (el));
                                     imagesProcessed++;
                                 }
                             }
@@ -706,12 +709,12 @@
                             /* Add children to queue (reverse order for DFS visual order) */
                             if (node.children && node.children.length > 0) {
                                 for (let i = node.children.length - 1; i >= 0; i--) {
-                                    queue.push(node.children[i]);
+                                    queue.push(/** @type {HTMLElement} */ (node.children[i]));
                                 }
                             }
 
-                            /* Yield if chunk size reached AND time exceeded 12ms */
-                            if (chunkNodes % CHUNK_SIZE === 0 && performance.now() - startTime > 12) {
+                            /* Yield if chunk size reached AND time exceeded limit */
+                            if (chunkNodes % CHUNK_SIZE === 0 && performance.now() - startTime > TIME_SLICE_MS) {
                                 if (onProgress) onProgress(imagesProcessed);
                                 setTimeout(processChunk, 0);
                                 return;
@@ -765,6 +768,7 @@
                 const queue = [{ s: source, t: target }];
                 let count = 0;
                 const CHUNK_SIZE = 50;
+                const TIME_SLICE_MS = 12;
 
                 function processChunk() {
                     try {
@@ -797,7 +801,7 @@
                             }
 
                             /* Yield if chunk size reached or time exceeded */
-                            if (count % CHUNK_SIZE === 0 || performance.now() - startTime > 12) {
+                            if (count % CHUNK_SIZE === 0 || performance.now() - startTime > TIME_SLICE_MS) {
                                 if (onProgress) onProgress(count);
                                 setTimeout(processChunk, 0);
                                 return;
