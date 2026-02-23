@@ -79,3 +79,8 @@ BOUNDARIES
 - **Deleted:** `server.log` (stale log file)
 - **Reason:** Accidental commit of runtime logs. Added to `.gitignore` to prevent recurrence.
 - **Fixed:** `tests/test_macro_builder_runtime.js` (Removed variable redeclaration causing SyntaxError).
+
+## [2026-02-23]
+
+- **Deleted:** `tests/test_html_to_markdown_fragility.js` (redundant test file)
+- **Reason:** Consolidated tests into `tests/test_html_to_markdown.js` to simplify test suite and remove duplication.
