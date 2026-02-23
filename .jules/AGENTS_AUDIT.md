@@ -44,6 +44,8 @@
 
 [x] tests/test_inline_styles_optimization.js (Deleted redundant test file, merged checks into test_inline_styles.js)
 
+[x] tests/test_html_to_markdown_fragility.js (Deleted redundant test file, merged checks into test_html_to_markdown.js)
+
 🛡️ Security Radar
 
 [ ] 0 Vulnerabilities found (npm audit).

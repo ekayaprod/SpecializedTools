@@ -172,4 +172,28 @@ describe('BookmarkletUtils.htmlToMarkdown', () => {
         const result = window.BookmarkletUtils.htmlToMarkdown(input);
         assert.strictEqual(result.trim(), expected);
     });
+
+    // 13. Null Input
+    it('should return empty string for null input', () => {
+        const result = window.BookmarkletUtils.htmlToMarkdown(null);
+        assert.strictEqual(result, '');
+    });
+
+    // 14. Undefined Input
+    it('should return empty string for undefined input', () => {
+        const result = window.BookmarkletUtils.htmlToMarkdown(undefined);
+        assert.strictEqual(result, '');
+    });
+
+    // 15. Empty String
+    it('should return empty string for empty string input', () => {
+        const result = window.BookmarkletUtils.htmlToMarkdown('');
+        assert.strictEqual(result, '');
+    });
+
+    // 16. Non-string Input
+    it('should return empty string for non-string input', () => {
+        const result = window.BookmarkletUtils.htmlToMarkdown(12345);
+        assert.strictEqual(result, '');
+    });
 });
