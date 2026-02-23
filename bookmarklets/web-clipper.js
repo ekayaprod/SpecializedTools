@@ -99,7 +99,13 @@
             el.style.zIndex = zIndex;
 
             /* Cache it */
-            if (id === this.config.highlightId) this.highlightEl = el;
+            if (id === this.config.highlightId) {
+                this.highlightEl = el;
+                /* Palette+: Smooth transition for selection */
+                if (window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+                    el.style.transition = 'all 0.15s ease-out';
+                }
+            }
             if (id === this.config.parentHighlightId) this.parentHighlightEl = el;
 
             return el;
@@ -280,16 +286,35 @@
                 div.style.left = '0';
                 div.style.width = '100%';
                 div.style.height = '100%';
-                div.style.background = 'rgba(255,255,255,0.8)';
+                div.style.background = 'rgba(255,255,255,0.95)';
                 div.style.zIndex = '2000000';
                 div.style.display = 'flex';
+                div.style.flexDirection = 'column';
                 div.style.justifyContent = 'center';
                 div.style.alignItems = 'center';
-                div.style.fontSize = '20px';
-                div.style.fontFamily = 'sans-serif';
+                div.style.gap = '16px';
+                div.style.fontSize = '16px';
+                div.style.color = '#333';
+                div.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                 document.body.appendChild(div);
             }
-            div.innerHTML = '<span>' + msg + '</span>';
+
+            /* Curator: Polished SVG Spinner */
+            const spinner = `
+                <svg width="40" height="40" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" role="status" aria-label="Loading">
+                    <circle cx="12" cy="12" r="10" stroke="#e5e7eb" stroke-width="4"></circle>
+                    <path fill="#2563eb" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite" />
+                    </path>
+                </svg>
+            `;
+
+            /* Remove animation for reduced motion */
+            const safeSpinner = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+                ? spinner.replace('<animateTransform', '<!-- <animateTransform').replace('/>', '-->')
+                : spinner;
+
+            div.innerHTML = safeSpinner + '<span style="font-weight:500;">' + msg + '</span>';
         }
 
         /**

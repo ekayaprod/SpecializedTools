@@ -47,6 +47,20 @@ global.window.alert = (msg) => {
 global.requestAnimationFrame = (cb) => setTimeout(cb, 0);
 global.cancelAnimationFrame = (id) => clearTimeout(id);
 
+// Mock matchMedia
+global.window.matchMedia = (query) => {
+    return {
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: () => {},
+        removeListener: () => {},
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        dispatchEvent: () => {},
+    };
+};
+
 // Mock BookmarkletUtils
 global.window.BookmarkletUtils = {
     normalizeImages: async (el) => {
