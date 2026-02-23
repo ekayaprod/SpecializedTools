@@ -1,9 +1,10 @@
 // @ts-nocheck
 (function (w) {
-    /*
+    /**
      * Restricted list: Stabilize layout without breaking flexible content.
      * This whitelist ensures only safe visual styles are copied, preventing
      * style-injection attacks (e.g. binding behaviors) and keeping the export lightweight.
+     * @type {string[]}
      */
     const safeProperties = [
         'display',
@@ -104,13 +105,29 @@
 
     /** @type {SanitizerType} */
     const Sanitizer = {
+        /**
+         * Checks if an attribute is an event handler (starts with 'on').
+         * @param {string} name - The attribute name.
+         * @returns {boolean} True if it's an event attribute.
+         */
         isEventAttribute(name) {
             return name.toLowerCase().startsWith('on');
         },
+        /**
+         * Checks if an attribute is known to be unsafe (e.g., href, src, data).
+         * @param {string} name - The attribute name.
+         * @returns {boolean} True if it's an unsafe attribute.
+         */
         isUnsafeAttribute(name) {
             const lower = name.toLowerCase();
             return ['href', 'src', 'action', 'data', 'formaction', 'poster', 'xlink:href', 'srcset'].includes(lower);
         },
+        /**
+         * Checks if a value contains malicious protocols like javascript: or vbscript:.
+         * @param {string} value - The attribute value.
+         * @param {boolean} isSrcset - Whether the attribute is srcset.
+         * @returns {boolean} True if it contains a malicious protocol.
+         */
         containsMaliciousProtocol(value, isSrcset) {
             const checkVal = value.replace(REGEX_WHITESPACE, '').toLowerCase();
             if (isSrcset) {
@@ -118,6 +135,12 @@
             }
             return checkVal.startsWith('javascript:') || checkVal.startsWith('vbscript:');
         },
+        /**
+         * Checks if a Data URI is valid and safe (image only, no SVG).
+         * @param {string} tagName - The tag name of the element.
+         * @param {string} value - The attribute value.
+         * @returns {boolean} True if valid and safe.
+         */
         isValidDataUri(tagName, value) {
             const checkVal = value.replace(REGEX_WHITESPACE, '').toLowerCase();
             if (!checkVal.startsWith('data:')) return true;
@@ -128,6 +151,11 @@
 
             return isImageTag && isImageMime && !isSvg;
         },
+        /**
+         * Checks if a style value is safe (no javascript: or expression).
+         * @param {string} value - The style string.
+         * @returns {boolean} True if safe.
+         */
         isSafeStyle(value) {
             const checkVal = value.replace(REGEX_WHITESPACE, '').toLowerCase();
             return !(
@@ -137,7 +165,8 @@
             );
         },
         /**
-         * @param {Element} el
+         * Sanitizes all attributes of an element.
+         * @param {Element} el - The element to sanitize.
          */
         sanitizeElement(el) {
             if (!el.attributes) return;
@@ -146,6 +175,11 @@
                 Sanitizer._sanitizeAttribute(el, el.attributes[i].name);
             }
         },
+        /**
+         * Internal helper to sanitize a single attribute.
+         * @param {Element} el - The element.
+         * @param {string} name - The attribute name.
+         */
         _sanitizeAttribute(el, name) {
             const lowerName = name.toLowerCase();
             const val = (el.getAttribute(name) || '').toLowerCase().trim();
@@ -173,6 +207,10 @@
         },
     };
 
+    /**
+     * Processes a <picture> element to ensure the fallback <img> has a valid src.
+     * @param {HTMLElement} pic - The picture element.
+     */
     function processPictureElement(pic) {
         const img = pic.querySelector('img');
         const source = pic.querySelector('source');
@@ -185,6 +223,10 @@
         }
     }
 
+    /**
+     * Processes an <img> element to resolve lazy loading and stabilize dimensions.
+     * @param {HTMLImageElement} img - The image element.
+     */
     function processImageElement(img) {
         /* 1. Resolve Lazy Loading */
         if (img.dataset.src) img.src = img.dataset.src;
@@ -212,6 +254,11 @@
         img.style.display = 'block';
     }
 
+    /**
+     * Copies safe computed styles from a source element to a target element.
+     * @param {HTMLElement} s - The source element.
+     * @param {HTMLElement} t - The target element.
+     */
     function copySafeStyles(s, t) {
         const computed = window.getComputedStyle(s);
         if (computed) {
@@ -230,6 +277,11 @@
         }
     }
 
+    /**
+     * Recursively traverses a DOM node to build a Markdown representation.
+     * @param {Node} node - The current DOM node.
+     * @param {string[]} parts - The array accumulating Markdown parts.
+     */
     function traverse(node, parts) {
         if (node.nodeType === 3) {
             parts.push(node.nodeValue);
