@@ -6,7 +6,7 @@ const assert = require('assert');
 
 const scriptPath = path.join(__dirname, '../bookmarklets/web-clipper.js');
 const scriptCode = fs.readFileSync(scriptPath, 'utf8');
-const constantsPath = path.join(__dirname, '../bookmarklets/web-clipper-constants.js');
+const constantsPath = path.join(__dirname, '../bookmarklets/i18n/web-clipper-en.js');
 const constantsCode = fs.readFileSync(constantsPath, 'utf8');
 
 // Create JSDOM

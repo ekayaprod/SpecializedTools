@@ -1,7 +1,7 @@
 /* global html2canvas */
 (function () {
     /** @require utils.js */
-    /** @require web-clipper-constants.js */
+    /** @require i18n/web-clipper-en.js */
 
     const C = window.WebClipperConstants;
 
@@ -43,6 +43,10 @@
             this.activeElement = null;
             /** @type {number|null} */
             this.rafId = null;
+            /** @type {HTMLElement|null} */
+            this.highlightEl = null;
+            /** @type {HTMLElement|null} */
+            this.parentHighlightEl = null;
 
             // Bind methods to this instance
             this.handleMouseOver = this.handleMouseOver.bind(this);
@@ -62,6 +66,20 @@
          * @returns {HTMLElement}
          */
         getOrCreateHighlightEl(id, outline, color, zIndex) {
+            /* Check cache first */
+            if (id === this.config.highlightId && this.highlightEl) {
+                this.highlightEl.style.border = outline;
+                this.highlightEl.style.backgroundColor = color;
+                this.highlightEl.style.zIndex = zIndex;
+                return this.highlightEl;
+            }
+            if (id === this.config.parentHighlightId && this.parentHighlightEl) {
+                this.parentHighlightEl.style.border = outline;
+                this.parentHighlightEl.style.backgroundColor = color;
+                this.parentHighlightEl.style.zIndex = zIndex;
+                return this.parentHighlightEl;
+            }
+
             let el = document.getElementById(id);
             if (!el) {
                 el = document.createElement('div');
@@ -79,6 +97,11 @@
             el.style.border = outline;
             el.style.backgroundColor = color;
             el.style.zIndex = zIndex;
+
+            /* Cache it */
+            if (id === this.config.highlightId) this.highlightEl = el;
+            if (id === this.config.parentHighlightId) this.parentHighlightEl = el;
+
             return el;
         }
 
@@ -106,10 +129,14 @@
             document.removeEventListener('keydown', this.handleEscape);
             this.clearHighlights();
 
-            const h1 = document.getElementById(this.config.highlightId);
-            if (h1) h1.remove();
-            const h2 = document.getElementById(this.config.parentHighlightId);
-            if (h2) h2.remove();
+            if (this.highlightEl) {
+                this.highlightEl.remove();
+                this.highlightEl = null;
+            }
+            if (this.parentHighlightEl) {
+                this.parentHighlightEl.remove();
+                this.parentHighlightEl = null;
+            }
         }
 
         /**
@@ -194,10 +221,8 @@
          * Hides highlight elements.
          */
         clearHighlights() {
-            const h1 = document.getElementById(this.config.highlightId);
-            if (h1) h1.style.display = 'none';
-            const h2 = document.getElementById(this.config.parentHighlightId);
-            if (h2) h2.style.display = 'none';
+            if (this.highlightEl) this.highlightEl.style.display = 'none';
+            if (this.parentHighlightEl) this.parentHighlightEl.style.display = 'none';
         }
 
         /**

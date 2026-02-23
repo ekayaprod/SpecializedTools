@@ -86,7 +86,7 @@ global.HTMLElement = mockWindow.HTMLElement;
 // 2. Load the Web Clipper script
 const scriptPath = path.join(__dirname, '../bookmarklets/web-clipper.js');
 const scriptCode = fs.readFileSync(scriptPath, 'utf8');
-const constantsPath = path.join(__dirname, '../bookmarklets/web-clipper-constants.js');
+const constantsPath = path.join(__dirname, '../bookmarklets/i18n/web-clipper-en.js');
 const constantsCode = fs.readFileSync(constantsPath, 'utf8');
 
 console.log('Running Web Clipper Event Tests...');
