@@ -16,8 +16,8 @@
             this.init();
         }
 
-        _log(msg, data) {
-            BookmarkletUtils.log('InteractionRecorder', msg, data);
+        _log(msg, data, level) {
+            BookmarkletUtils.log('InteractionRecorder', msg, data, level);
         }
 
         init() {
@@ -97,6 +97,10 @@
                     ariaLabel: t.getAttribute('aria-label'),
                     role: t.getAttribute('role'),
                     path: this.getPath(t),
+                    x: e.clientX,
+                    y: e.clientY,
+                    windowSize: window.innerWidth + 'x' + window.innerHeight,
+                    scrollPosition: window.scrollX + ',' + window.scrollY,
                 };
 
                 this.log.push(clickData);
