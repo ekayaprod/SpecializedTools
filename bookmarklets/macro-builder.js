@@ -343,17 +343,23 @@
                         this.id = 'run-'+Math.random().toString(36).slice(2);
                         this.init();
                     }
-                    _log(msg, data) {
+                    _log(msg, data, level) {
                         data = data || {};
+                        level = level || 'info';
                         const safeData = {};
                         for (const k in data) {
                              if (/password|token|secret|key|auth|email|phone/i.test(k)) safeData[k] = '***REDACTED***';
                              else safeData[k] = data[k];
                         }
-                        console.log('[MacroRuntime] ' + msg, safeData);
+                        (console[level] || console.log)('[MacroRuntime] ' + msg, safeData);
                     }
                     init(){
-                        this._log('Initialized', { id: this.id, stepCount: steps.length });
+                        this._log('Initialized', {
+                            id: this.id,
+                            stepCount: steps.length,
+                            userAgent: navigator.userAgent,
+                            windowSize: window.innerWidth + 'x' + window.innerHeight
+                        });
                         this.h = document.createElement('div');
                         this.h.id = this.id;
                         this.h.style.cssText = 'position:fixed;top:15px;right:15px;z-index:2147483647;font-family:system-ui,sans-serif';
@@ -375,7 +381,7 @@
                     }
                     async run(){
                         this._log('Execution started');
-                        try { if('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch(e){ console.warn('Wake Lock failed:', { error: e.message, type: e.name }); }
+                        try { if('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch(e){ this._log('Wake Lock failed', { error: e.message, type: e.name }, 'warn'); }
                         const wait = ms => new Promise(r => setTimeout(r, ms));
 
                         const queryDeep = (selector, root = document) => {
@@ -452,8 +458,8 @@
                                 const el = await find(action.sel, action.txt);
 
                                 if(!el) {
-                                    const err = { step: i+1, action: j+1, sel: action.sel };
-                                    console.error('[MacroRuntime] Element not found', err);
+                                    const err = { step: i+1, action: j+1, sel: action.sel, url: window.location.href };
+                                    this._log('Element not found', err, 'error');
                                     alert('Step '+(i+1)+' Sub-action '+(j+1)+' Failed: Not found ('+action.sel+')');
                                     return;
                                 }
