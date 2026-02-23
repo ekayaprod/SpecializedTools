@@ -137,20 +137,99 @@ declare global {
         };
     }
 
-    interface Window {
-        JSZip: any;
-        BookmarkletUtils: BookmarkletUtilsInterface;
-        jspdf: any;
-        __dc_v27: any;
-        dc_running: any;
-        __ir_v1: any;
-        __mb_v22: any;
-        __mb_run: any;
-        __wc_instance: any;
-        WebClipperConstants: any;
+    interface WebClipperConstantsInterface {
+        MSG_CAPTURING: string;
+        MSG_PROCESSING: string;
+        MSG_PROCESSING_PREFIX: string;
+        MSG_PROCESSING_SUFFIX: string;
+        TITLE_HEADER: string;
+        LABEL_PREVIEW: string;
+        BTN_CANCEL: string;
+        BTN_RETRY: string;
+        BTN_DOWNLOAD: string;
+        BTN_COPY: string;
+        BTN_COPIED: string;
+        BTN_ERROR: string;
+        BTN_CREATING_IMAGE: string;
+        FORMAT_HTML: string;
+        FORMAT_MD: string;
+        FORMAT_TXT: string;
+        FORMAT_PNG: string;
+        FILENAME_DEFAULT: string;
+        ERR_HTML2CANVAS: string;
+        ERR_PNG_EXPORT: string;
+        ERR_EDITOR_OPEN: string;
     }
 
-    const JSZip: any;
+    interface JSPDFOptions {
+        unit: string;
+        format: string;
+    }
+
+    interface JSPDFInstance {
+        setFontSize(size: number): void;
+        setFont(fontName: string, fontStyle?: string): void;
+        text(text: string | string[], x: number, y: number, options?: any): void;
+        setTextColor(r: number, g: number, b: number): void;
+        addImage(imageData: string, format: string, x: number, y: number, w: number, h: number): void;
+        addPage(): void;
+        setFillColor(r: number, g: number, b: number): void;
+        setDrawColor(r: number, g: number, b: number): void;
+        roundedRect(x: number, y: number, w: number, h: number, rx: number, ry: number, style: string): void;
+        splitTextToSize(text: string, maxlen: number, options?: any): string[];
+        save(filename: string): void;
+    }
+
+    interface JSPDFConstructor {
+        new (options: JSPDFOptions): JSPDFInstance;
+    }
+
+    interface HTML2CanvasOptions {
+        useCORS?: boolean;
+        logging?: boolean;
+        [key: string]: any;
+    }
+
+    type HTML2CanvasFunction = (element: HTMLElement, options?: HTML2CanvasOptions) => Promise<HTMLCanvasElement>;
+
+    interface DelayedClicker {
+        toggle(): void;
+        destroy(): void;
+    }
+
+    interface QuickClicker {
+        destroy(): void;
+    }
+
+    interface InteractionRecorder {
+        destroy(): void;
+    }
+
+    interface MacroBuilder {
+        destroy(): void;
+    }
+
+    interface MacroRuntime {
+        destroy(): void;
+    }
+
+    interface WebClipper {
+        destroy(): void;
+    }
+
+    interface Window {
+        BookmarkletUtils: BookmarkletUtilsInterface;
+        jspdf: { jsPDF: JSPDFConstructor };
+        html2canvas: HTML2CanvasFunction;
+        __dc_v27: QuickClicker;
+        dc_running: DelayedClicker;
+        __ir_v1: InteractionRecorder;
+        __mb_v22: MacroBuilder;
+        __mb_run: MacroRuntime;
+        __wc_instance: WebClipper;
+        WebClipperConstants: WebClipperConstantsInterface;
+    }
+
     const BookmarkletUtils: BookmarkletUtilsInterface;
-    const html2canvas: any;
+    const html2canvas: HTML2CanvasFunction;
 }
