@@ -70,6 +70,8 @@
 
 [x] bookmarklets/utils.js (Added makeDraggable test suite in tests/test_make_draggable.js)
 
+[x] bookmarklets/prompts/loader.js (Added comprehensive test suite in tests/test_prompts_loader.js)
+
 🆙 Modernization Targets
 
 [x] Replace alert() with non-blocking UI (Toast/Modal) across all bookmarklets
