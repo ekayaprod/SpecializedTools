@@ -62,16 +62,6 @@
             BookmarkletUtils.makeDraggable(this.q('#drag'), this.h);
         }
 
-        getDeepTarget(e) {
-            let t = e.target;
-            while (t.shadowRoot && t.shadowRoot.elementFromPoint) {
-                const nested = t.shadowRoot.elementFromPoint(e.clientX, e.clientY);
-                if (!nested || nested === t) break;
-                t = nested;
-            }
-            return t;
-        }
-
         start() {
             this._log('Recording started');
             this.isRecording = true;
@@ -87,7 +77,7 @@
             const handleClick = (e) => {
                 if (this.h.contains(e.target)) return;
 
-                const t = this.getDeepTarget(e);
+                const t = BookmarkletUtils.getDeepTarget(e);
                 const clickData = {
                     timeOffset: Date.now() - this.startTime,
                     tagName: t.tagName,

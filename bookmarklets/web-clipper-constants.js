@@ -1,7 +1,6 @@
 (function (w) {
     w.WebClipperConstants = {
         MSG_CAPTURING: 'Selecting Element...',
-        MSG_PROCESSING: 'Refining elements...', // Fallback
         MSG_PROCESSING_PREFIX: 'Refining ',
         MSG_PROCESSING_SUFFIX: ' elements...',
         TITLE_HEADER: 'Web Clipper',

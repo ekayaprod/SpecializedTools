@@ -131,6 +131,13 @@ declare global {
          */
         escapeHtml(str: string | number | null | undefined): string;
 
+        /**
+         * Traverses Shadow DOM boundaries to find the deeply nested target element at the event coordinates.
+         * @param {Event} e - The mouse event.
+         * @returns {HTMLElement} The deep target element.
+         */
+        getDeepTarget(e: Event): HTMLElement;
+
         Prompts?: {
             STANDARD_OUTPUTS: string;
             PROMPT_DATA: Record<string, any>;

@@ -191,23 +191,10 @@
         }
 
         /**
-         * Helper to pierce Shadow DOM boundaries to find the true target.
-         */
-        getDeepTarget(e) {
-            let t = e.target;
-            while (t.shadowRoot && t.shadowRoot.elementFromPoint) {
-                const nested = t.shadowRoot.elementFromPoint(e.clientX, e.clientY);
-                if (!nested || nested === t) break;
-                t = nested;
-            }
-            return t;
-        }
-
-        /**
          * Heuristic to select the most relevant clickable element (button, link, input).
          */
         getTarget(e) {
-            let t = this.getDeepTarget(e);
+            let t = BookmarkletUtils.getDeepTarget(e);
 
             let targetEl = t.closest('button, a, [role="button"], [role="radio"], label');
             if (!targetEl) targetEl = t.closest('.menu-selector, .entity-image-button');

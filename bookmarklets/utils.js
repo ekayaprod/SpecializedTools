@@ -784,6 +784,20 @@
                 .replace(/'/g, '&#039;');
         },
         /**
+         * Traverses Shadow DOM boundaries to find the deeply nested target element at the event coordinates.
+         * @param {Event} e - The mouse event.
+         * @returns {HTMLElement} The deep target element.
+         */
+        getDeepTarget(e) {
+            let t = e.target;
+            while (t.shadowRoot && t.shadowRoot.elementFromPoint) {
+                const nested = t.shadowRoot.elementFromPoint(e.clientX, e.clientY);
+                if (!nested || nested === t) break;
+                t = nested;
+            }
+            return t;
+        },
+        /**
          * Converts an HTML string to Markdown format.
          * Supported tags:
          * - Headings (h1-h4)
