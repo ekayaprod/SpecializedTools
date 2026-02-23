@@ -15,8 +15,9 @@
     "scripts": {
         "format": "prettier --write .",
         "lint": "eslint . && tsc --noEmit",
+        "pretest": "npm run lint",
         "test": "node scripts/run_tests.js",
-        "pretest": "npm run lint"
+        "verify-links": "python3 scripts/verify_links.py"
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
