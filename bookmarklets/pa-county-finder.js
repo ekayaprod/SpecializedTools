@@ -1323,10 +1323,9 @@
             const z = parseInt(c, 10);
 
             /* O Specifics */
-            for (const city in O) {
-                const counties = O[city];
-                for (const county in counties) {
-                    if (counties[county].includes(z)) {
+            for (const counties of Object.values(O)) {
+                for (const [county, zips] of Object.entries(counties)) {
+                    if (zips.includes(z)) {
                         if (!results.includes(county)) results.push(county);
                     }
                 }
@@ -1337,11 +1336,9 @@
             }
 
             /* D Ranges */
-            for (let i = 0; i < D.length; i++) {
-                const rangeStart = /** @type {number} */ (D[i][1]);
-                const rangeEnd = /** @type {number} */ (D[i][2]);
+            for (const [county, rangeStart, rangeEnd] of D) {
                 if (z >= rangeStart && z <= rangeEnd) {
-                    if (!results.includes(D[i][0])) results.push(D[i][0]);
+                    if (!results.includes(county)) results.push(county);
                 }
             }
 
@@ -1354,17 +1351,16 @@
         /* O Search (Overrides) */
         if (Object.prototype.hasOwnProperty.call(O, l)) {
             const counties = O[l];
-            for (const county in counties) {
+            for (const county of Object.keys(counties)) {
                 if (!results.includes(county)) results.push(county);
             }
         }
 
         /* D Search */
-        for (let i = 0; i < D.length; i++) {
-            const cities = /** @type {string[]} */ (D[i][3]);
-            for (let j = 0; j < cities.length; j++) {
-                if (cities[j] === l) {
-                    if (!results.includes(D[i][0])) results.push(D[i][0]);
+        for (const [county, , , cities] of D) {
+            for (const city of cities) {
+                if (city === l) {
+                    if (!results.includes(county)) results.push(county);
                     break;
                 }
             }

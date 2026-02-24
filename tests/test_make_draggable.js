@@ -24,6 +24,15 @@ global.window = dom.window;
 global.document = dom.window.document;
 global.MouseEvent = dom.window.MouseEvent;
 
+// Mock RAF
+global.requestAnimationFrame = (cb) => {
+    setTimeout(cb, 0);
+    return 1;
+};
+global.cancelAnimationFrame = (id) => {
+    clearTimeout(id);
+};
+
 // Execute utils.js
 try {
     eval(utilsCode);
@@ -114,6 +123,9 @@ console.log('Running BookmarkletUtils.makeDraggable tests...');
             */
 
             triggerMouseEvent(document, 'mousemove', 120, 130);
+
+            // Wait for RAF
+            await new Promise(resolve => setTimeout(resolve, 10));
 
             assert.strictEqual(target.style.top, '120px', 'Top position should update');
             assert.strictEqual(target.style.left, '110px', 'Left position should update');

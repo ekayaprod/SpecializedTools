@@ -1,6 +1,7 @@
 /* global html2canvas */
 (function () {
     /** @require utils.js */
+    /** @require html-to-markdown.js */
     /** @require i18n/web-clipper-en.js */
 
     const C = window.WebClipperConstants;
