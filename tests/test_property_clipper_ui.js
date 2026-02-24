@@ -98,8 +98,9 @@ async function runTest() {
 
     // 2. Click Generate PDF to open Wizard
     const buttons = Array.from(modal.querySelectorAll('button'));
-    const pdfBtn = buttons.find((b) => b.textContent === 'PDF');
+    const pdfBtn = buttons.find((b) => b.textContent.includes('Export PDF'));
     assert.ok(pdfBtn, 'Generate PDF button should exist');
+    assert.ok(pdfBtn.classList.contains('pc-btn'), 'PDF button should have pc-btn class');
     pdfBtn.click();
 
     // Wait for Start Screen
@@ -108,7 +109,7 @@ async function runTest() {
     // 3. Click 'Select Photos'
     // It is a button in current UI
     const wizardButtons = Array.from(modal.querySelectorAll('button'));
-    const manualBtn = wizardButtons.find((b) => b.textContent === 'Manually Select Photos');
+    const manualBtn = wizardButtons.find((b) => b.textContent.includes('Select Photos Manually'));
 
     if (!manualBtn) {
         console.error(
@@ -118,7 +119,7 @@ async function runTest() {
     }
     assert.ok(manualBtn, 'Select Photos option should exist');
 
-    console.log('Clicking Manually Select Photos...');
+    console.log('Clicking Select Photos Manually...');
     manualBtn.click();
 
     // Wait for Step 1

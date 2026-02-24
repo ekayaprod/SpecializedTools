@@ -256,7 +256,7 @@ async function runTest() {
 
     // 4. Click 'Generate PDF' Button -> Opens Wizard
     const buttons = Array.from(modal.querySelectorAll('button'));
-    const pdfButton = buttons.find((b) => b.textContent === 'PDF');
+    const pdfButton = buttons.find((b) => b.textContent.includes('Export PDF'));
     assert.ok(pdfButton, 'Generate PDF Button should exist');
     console.log('✅ Generate PDF Button found.');
 
@@ -273,12 +273,12 @@ async function runTest() {
     // 5. Find 'Include All Photos' option
     // It is a button now
     const wizardButtons = Array.from(modal.querySelectorAll('button'));
-    const allPhotosOption = wizardButtons.find((o) => o.textContent.includes('All Photos'));
-    assert.ok(allPhotosOption, "'Include All Photos' option should exist");
-    console.log("✅ 'Include All Photos' option found.");
+    const allPhotosOption = wizardButtons.find((o) => o.textContent.includes('Export All Photos'));
+    assert.ok(allPhotosOption, "'Export All Photos' option should exist");
+    console.log("✅ 'Export All Photos' option found.");
 
     // 5. Click 'Include All Photos' -> Triggers Generation
-    console.log("Clicking 'Include All Photos'...");
+    console.log("Clicking 'Export All Photos'...");
     allPhotosOption.click();
 
     // Wait for generation
@@ -380,7 +380,7 @@ async function runTest() {
     const modal2 = dom.window.document.getElementById('pc-pdf-modal');
     assert.ok(modal2, 'Modal should reopen');
 
-    const htmlButton = Array.from(modal2.querySelectorAll('button')).find((b) => b.textContent === 'HTML');
+    const htmlButton = Array.from(modal2.querySelectorAll('button')).find((b) => b.textContent.includes('Export HTML'));
     assert.ok(htmlButton, 'Generate HTML Button should exist');
 
     console.log('Clicking Generate HTML button...');
@@ -389,9 +389,9 @@ async function runTest() {
 
     // Select All Photos
     const allPhotosOption2 = Array.from(modal2.querySelectorAll('button')).find((o) =>
-        o.textContent.includes('All Photos')
+        o.textContent.includes('Export All Photos')
     );
-    assert.ok(allPhotosOption2, "'Include All Photos' option should exist for HTML");
+    assert.ok(allPhotosOption2, "'Export All Photos' option should exist for HTML");
 
     allPhotosOption2.click();
 
@@ -440,13 +440,13 @@ async function runTest() {
     const modal3 = dom.window.document.getElementById('pc-pdf-modal');
     assert.ok(modal3, 'Modal should reopen');
 
-    const pdfBtn3 = Array.from(modal3.querySelectorAll('button')).find((b) => b.textContent === 'PDF');
+    const pdfBtn3 = Array.from(modal3.querySelectorAll('button')).find((b) => b.textContent.includes('Export PDF'));
     pdfBtn3.click();
     await new Promise((r) => setTimeout(r, 100)); // Wait for Wizard
 
     // Click Manual Selection
     const manualBtn = Array.from(modal3.querySelectorAll('button')).find((b) =>
-        b.textContent.includes('Manually Select Photos')
+        b.textContent.includes('Select Photos Manually')
     );
     assert.ok(manualBtn, 'Manual Selection button should exist');
     manualBtn.click();
