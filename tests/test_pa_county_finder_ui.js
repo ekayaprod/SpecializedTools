@@ -89,6 +89,9 @@ async function runUITest() {
         input.value = '17301';
         searchBtn.click();
 
+        // Wait for loading delay (300ms)
+        await new Promise(resolve => setTimeout(resolve, 350));
+
         const resultDiv = card.querySelector('#pa-result');
         if (!resultDiv) throw new Error('Result div not found');
 
@@ -96,8 +99,8 @@ async function runUITest() {
         if (!resultText.includes('Adams')) throw new Error(`Expected 'Adams' in result, got: ${resultText}`);
 
         // Check success class
-        const successMsg = resultDiv.querySelector('.pa-result-success');
-        if (!successMsg) throw new Error('Result missing .pa-result-success class');
+        const successMsg = resultDiv.querySelector('.pa-result-card');
+        if (!successMsg) throw new Error('Result missing .pa-result-card class');
         console.log('✅ Search result styled correctly');
 
         // --- Test 3: Escape Key & Focus Return ---
@@ -154,6 +157,9 @@ async function runUITest() {
         const xssInput = '15201<img src=x onerror=alert(1)>';
         input3.value = xssInput;
         searchBtn3.click();
+
+        // Wait for loading delay (300ms)
+        await new Promise(resolve => setTimeout(resolve, 350));
 
         const resultDiv3 = card3.querySelector('#pa-result');
         const resultHTML = resultDiv3.innerHTML;

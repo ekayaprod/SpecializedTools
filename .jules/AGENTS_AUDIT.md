@@ -89,3 +89,5 @@
 [x] bookmarklets/quick-clicker.js (Good A11y coverage in tests/test_quick_clicker_ux.js)
 
 [x] bookmarklets/delayed-clicker.js (Polished UI: Dark mode, transitions, accessible states)
+
+[x] bookmarklets/pa-county-finder.js (Polished UI: Loading states, Clear/Copy buttons, Motion, A11y)
