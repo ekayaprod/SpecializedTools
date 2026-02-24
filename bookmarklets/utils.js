@@ -276,7 +276,7 @@
         }
     }
 
-    w.BookmarkletUtils = {
+    w.BookmarkletUtils = /** @type {any} */ ({
         /**
          * Logs a message with context and consistent formatting.
          * @param {string} component - The component name (e.g., 'MacroBuilder').
@@ -782,5 +782,5 @@
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
         },
-    };
+    });
 })(window);
