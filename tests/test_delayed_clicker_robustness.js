@@ -4,6 +4,8 @@ const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
 const assert = require('assert');
 
+const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
+const utilsCode = fs.readFileSync(utilsPath, 'utf8');
 const scriptPath = path.join(__dirname, '../bookmarklets/delayed-clicker.js');
 const scriptCode = fs.readFileSync(scriptPath, 'utf8');
 
@@ -53,6 +55,17 @@ global.HTMLElement = dom.window.HTMLElement;
 global.Node = dom.window.Node;
 global.Event = dom.window.Event;
 global.MouseEvent = dom.window.MouseEvent;
+global.requestAnimationFrame = (cb) => setTimeout(cb, 0);
+global.cancelAnimationFrame = (id) => clearTimeout(id);
+
+// Load utils
+try {
+    eval(utilsCode);
+    global.BookmarkletUtils = window.BookmarkletUtils;
+} catch (e) {
+    console.error('Error evaluating utils.js:', e);
+    process.exit(1);
+}
 
 // Load script
 eval(scriptCode);

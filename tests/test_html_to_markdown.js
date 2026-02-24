@@ -6,8 +6,6 @@ const assert = require('assert');
 
 const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
 const utilsCode = fs.readFileSync(utilsPath, 'utf8');
-const h2mPath = path.join(__dirname, '../bookmarklets/html-to-markdown.js');
-const h2mCode = fs.readFileSync(h2mPath, 'utf8');
 
 // Create a JSDOM instance
 const dom = new JSDOM(
@@ -43,14 +41,6 @@ try {
     eval(utilsCode);
 } catch (e) {
     console.error('Error evaluating utils.js:', e);
-    process.exit(1);
-}
-
-// Execute html-to-markdown.js
-try {
-    eval(h2mCode);
-} catch (e) {
-    console.error('Error evaluating html-to-markdown.js:', e);
     process.exit(1);
 }
 
