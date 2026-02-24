@@ -36,6 +36,15 @@ declare global {
         ): HTMLElement;
 
         /**
+         * Creates a shadow DOM host and root.
+         * @param {string} [id] - The ID for the host element.
+         * @param {string} [cssText] - The CSS text for the host element.
+         * @param {HTMLElement|null} [parent=document.body] - The parent to append the host to.
+         * @returns {{ h: HTMLElement, s: ShadowRoot }}
+         */
+        createShadowRoot(id?: string, cssText?: string, parent?: HTMLElement | null): { h: HTMLElement; s: ShadowRoot };
+
+        /**
          * Shows a toast notification.
          * @param {string} message - The message to display.
          * @param {'info'|'success'|'error'} [type='info'] - The type of notification.

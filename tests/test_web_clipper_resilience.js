@@ -40,6 +40,17 @@ global.URL = dom.window.URL;
 global.ClipboardItem = class ClipboardItem {};
 global.html2canvas = () => Promise.resolve({ toDataURL: () => 'data:image/png;base64,fake' }); // Mock html2canvas global
 
+// Mock matchMedia
+global.window.matchMedia =
+    global.window.matchMedia ||
+    function () {
+        return {
+            matches: false,
+            addListener: function () {},
+            removeListener: function () {},
+        };
+    };
+
 // Mock Alert
 global.window.alert = (msg) => {
     console.log('ALERT:', msg);

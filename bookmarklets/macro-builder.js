@@ -21,12 +21,12 @@
 
         init() {
             this._log('Initialized', { id: this.id });
-            this.h = document.createElement('div');
-            this.h.style.cssText =
+            const cssText =
                 'position:fixed;top:15px;right:15px;z-index:2147483647;font-family:system-ui,sans-serif';
-            this.s = this.h.attachShadow({ mode: 'open' });
+            const { h, s } = BookmarkletUtils.createShadowRoot(null, cssText);
+            this.h = h;
+            this.s = s;
             this.render();
-            document.body.appendChild(this.h);
         }
 
         render() {

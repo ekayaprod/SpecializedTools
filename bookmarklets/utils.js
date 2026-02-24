@@ -446,6 +446,25 @@
             return el;
         },
 
+
+        /**
+         * Creates a shadow DOM host and root.
+         * @param {string} [id] - The ID for the host element.
+         * @param {string} [cssText] - The CSS text for the host element.
+         * @param {HTMLElement|null} [parent=document.body] - The parent to append the host to.
+         * @returns {{ h: HTMLElement, s: ShadowRoot }}
+         */
+        createShadowRoot(id, cssText, parent) {
+            const h = document.createElement('div');
+            if (id) h.id = id;
+            if (cssText) h.style.cssText = cssText;
+            const s = h.attachShadow({ mode: 'open' });
+            if (parent !== null) {
+                (parent || document.body).appendChild(h);
+            }
+            return { h, s };
+        },
+
         /**
          * Makes an element draggable using a specific handle.
          * @param {HTMLElement} handle - The element to drag by.

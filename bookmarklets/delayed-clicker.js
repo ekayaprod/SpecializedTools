@@ -15,18 +15,16 @@
         constructor() {
             this.id = 'dc-' + Math.random().toString(36).slice(2, 7);
             this.el = null; // Target element
-            this.val = null; // Value to set (if select)
             this.tm = null; // Timer
             this.init();
         }
 
         init() {
-            this.h = document.createElement('div');
-            this.h.id = this.id;
-            // Initial styles for the container (reset)
-            this.h.style.cssText =
+            const cssText =
                 'position:fixed;top:20px;right:20px;z-index:2147483647;display:block;font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;';
-            this.s = this.h.attachShadow({ mode: 'open' });
+            const { h, s } = BookmarkletUtils.createShadowRoot(this.id, cssText);
+            this.h = h;
+            this.s = s;
 
             // Modern UI Styles & Markup
             this.s.innerHTML = `
@@ -203,8 +201,6 @@
                 timer: /** @type {HTMLElement} */ (this.s.querySelector('#cd')),
             };
 
-            document.body.appendChild(this.h);
-
             // Event Listeners
             this.ui.pickBtn.onclick = () => this.pick();
             this.ui.goBtn.onclick = () => this.start();
@@ -340,15 +336,9 @@
             this.ui.timer.appendChild(doneSpan);
 
             try {
-                if (this.el.tagName === 'SELECT') {
-                    this.el.value = this.val; // Note: 'this.val' isn't set in UI currently, usually for specialized use
-                    this.el.dispatchEvent(new Event('input', { bubbles: true }));
-                    this.el.dispatchEvent(new Event('change', { bubbles: true }));
-                } else {
-                    ['mousedown', 'mouseup', 'click'].forEach((ev) => {
-                        this.el.dispatchEvent(new MouseEvent(ev, { view: window, bubbles: true, cancelable: true }));
-                    });
-                }
+                ['mousedown', 'mouseup', 'click'].forEach((ev) => {
+                    this.el.dispatchEvent(new MouseEvent(ev, { view: window, bubbles: true, cancelable: true }));
+                });
             } catch (e) {
                 console.error('Delayed Clicker Error:', {
                     error: e.message,

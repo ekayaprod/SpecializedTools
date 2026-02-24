@@ -4,6 +4,8 @@ const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
 const assert = require('assert');
 
+const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
+const utilsCode = fs.readFileSync(utilsPath, 'utf8');
 const scriptPath = path.join(__dirname, '../bookmarklets/delayed-clicker.js');
 const scriptCode = fs.readFileSync(scriptPath, 'utf8');
 
@@ -50,6 +52,9 @@ global.Node = dom.window.Node;
 global.Event = dom.window.Event;
 global.MouseEvent = dom.window.MouseEvent;
 
+// Load utils
+eval(utilsCode);
+global.BookmarkletUtils = window.BookmarkletUtils;
 // Load script
 eval(scriptCode);
 
