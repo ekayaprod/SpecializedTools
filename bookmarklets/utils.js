@@ -276,99 +276,6 @@
         }
     }
 
-    /**
-     * Recursively traverses a DOM node to build a Markdown representation.
-     * @param {Node} node - The current DOM node.
-     * @param {string[]} parts - The array accumulating Markdown parts.
-     */
-    function traverse(node, parts) {
-        if (node.nodeType === 3) {
-            parts.push(node.nodeValue);
-            return;
-        }
-        if (node.nodeType !== 1) return;
-
-        // Cast to HTMLElement for safe access to tagName and attributes
-        const el = /** @type {HTMLElement} */ (node);
-        const tag = el.tagName.toLowerCase();
-        if (tag === 'script' || tag === 'style' || tag === 'noscript') return;
-
-        switch (tag) {
-            case 'h1':
-                parts.push('\n# ');
-                break;
-            case 'h2':
-                parts.push('\n## ');
-                break;
-            case 'h3':
-                parts.push('\n### ');
-                break;
-            case 'h4':
-                parts.push('\n#### ');
-                break;
-            case 'strong':
-            case 'b':
-                parts.push('**');
-                break;
-            case 'em':
-            case 'i':
-                parts.push('*');
-                break;
-            case 'p':
-                parts.push('\n\n');
-                break;
-            case 'br':
-                parts.push('\n');
-                break;
-            case 'li':
-                parts.push(
-                    el.parentElement && el.parentElement.tagName.toLowerCase() === 'ol'
-                        ? `\n${Array.prototype.indexOf.call(el.parentElement.children, el) + 1}. `
-                        : '\n- '
-                );
-                break;
-            case 'a':
-                parts.push('[');
-                break;
-            case 'img':
-                parts.push(`![${el.getAttribute('alt') || ''}](${el.getAttribute('src') || ''})`);
-                return;
-            case 'table':
-                parts.push('\n\n');
-                break;
-            case 'td':
-            case 'th':
-                parts.push('| ');
-                break;
-        }
-
-        for (let i = 0; i < el.childNodes.length; i++) traverse(el.childNodes[i], parts);
-
-        switch (tag) {
-            case 'strong':
-            case 'b':
-                parts.push('**');
-                break;
-            case 'em':
-            case 'i':
-                parts.push('*');
-                break;
-            case 'a':
-                parts.push(`](${el.getAttribute('href') || ''})`);
-                break;
-            case 'h1':
-            case 'h2':
-            case 'h3':
-            case 'h4':
-            case 'p':
-                parts.push('\n');
-                break;
-            case 'tr':
-                parts.push('|\n');
-                break;
-        }
-    }
-
     w.BookmarkletUtils = {
         /**
          * Logs a message with context and consistent formatting.
@@ -475,6 +382,10 @@
                 pos2 = 0,
                 pos3 = 0,
                 pos4 = 0;
+            let rafId = null;
+            let latestX = 0;
+            let latestY = 0;
+
             const dragMouseDown = (e) => {
                 e = e || window.event;
                 e.preventDefault();
@@ -483,17 +394,31 @@
                 document.addEventListener('mouseup', closeDragElement);
                 document.addEventListener('mousemove', elementDrag);
             };
+
             const elementDrag = (e) => {
                 e = e || window.event;
                 e.preventDefault();
-                pos1 = pos3 - e.clientX;
-                pos2 = pos4 - e.clientY;
-                pos3 = e.clientX;
-                pos4 = e.clientY;
-                target.style.top = target.offsetTop - pos2 + 'px';
-                target.style.left = target.offsetLeft - pos1 + 'px';
+                latestX = e.clientX;
+                latestY = e.clientY;
+
+                if (rafId) return;
+
+                rafId = requestAnimationFrame(() => {
+                    pos1 = pos3 - latestX;
+                    pos2 = pos4 - latestY;
+                    pos3 = latestX;
+                    pos4 = latestY;
+                    target.style.top = target.offsetTop - pos2 + 'px';
+                    target.style.left = target.offsetLeft - pos1 + 'px';
+                    rafId = null;
+                });
             };
+
             const closeDragElement = () => {
+                if (rafId) {
+                    cancelAnimationFrame(rafId);
+                    rafId = null;
+                }
                 document.removeEventListener('mouseup', closeDragElement);
                 document.removeEventListener('mousemove', elementDrag);
             };
@@ -856,46 +781,6 @@
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
-        },
-        /**
-         * Converts an HTML string to Markdown format.
-         * Supported tags:
-         * - Headings (h1-h4)
-         * - Text formatting (strong, b, em, i)
-         * - Paragraphs and line breaks
-         * - Lists (ul, ol)
-         * - Links and Images
-         * - Tables (basic support)
-         *
-         * @param {string} html - The HTML string to convert.
-         * @returns {string} The Markdown representation.
-         *
-         * @example
-         * const html = '<h1>Title</h1><p>Check <a href="https://example.com">this</a>.</p>';
-         * const md = BookmarkletUtils.htmlToMarkdown(html);
-         * // Returns:
-         * // "# Title"
-         * // ""
-         * // "Check [this](https://example.com)."
-         */
-        htmlToMarkdown(html) {
-            /* Guard: Input must be string */
-            if (typeof html !== 'string') return '';
-
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-
-            /* Guard: Parsing must produce a body */
-            if (!doc.body) return '';
-
-            const parts = [];
-            traverse(doc.body, parts);
-
-            /* Cleanup excessive newlines */
-            return parts
-                .join('')
-                .replace(/\n\s+\n/g, '\n\n')
-                .trim();
         },
     };
 })(window);
