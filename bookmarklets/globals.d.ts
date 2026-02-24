@@ -146,17 +146,66 @@ declare global {
         };
     }
 
+    interface WebClipperConstantsInterface {
+        MSG_CAPTURING: string;
+        MSG_PROCESSING: string;
+        MSG_PROCESSING_PREFIX: string;
+        MSG_PROCESSING_SUFFIX: string;
+        TITLE_HEADER: string;
+        LABEL_PREVIEW: string;
+        BTN_CANCEL: string;
+        BTN_RETRY: string;
+        BTN_DOWNLOAD: string;
+        BTN_COPY: string;
+        BTN_COPIED: string;
+        BTN_ERROR: string;
+        BTN_CREATING_IMAGE: string;
+        FORMAT_HTML: string;
+        FORMAT_MD: string;
+        FORMAT_TXT: string;
+        FORMAT_PNG: string;
+        FILENAME_DEFAULT: string;
+        ERR_HTML2CANVAS: string;
+        ERR_PNG_EXPORT: string;
+        ERR_EDITOR_OPEN: string;
+    }
+
+    interface WebClipperInterface {
+        destroy(): void;
+    }
+
+    interface DelayedClickerInterface {
+        toggle(): void;
+        destroy(): void;
+    }
+
+    interface QuickClickerInterface {
+        destroy(): void;
+    }
+
+    interface InteractionRecorderInterface {
+        destroy(): void;
+    }
+
+    interface MacroBuilderInterface {
+        destroy(): void;
+    }
+
+    interface MacroRuntimeInterface {
+        destroy(): void;
+    }
+
     interface Window {
         JSZip: any;
         BookmarkletUtils: BookmarkletUtilsInterface;
         jspdf: any;
-        __dc_v27: any;
-        dc_running: any;
-        __ir_v1: any;
-        __mb_v22: any;
-        __mb_run: any;
-        __wc_instance: any;
-        WebClipperConstants: any;
+        __dc_v27: QuickClickerInterface | undefined;
+        dc_running: DelayedClickerInterface | undefined;
+        __ir_v1: InteractionRecorderInterface | undefined;
+        __mb_v22: MacroBuilderInterface | undefined;
+        __mb_run: MacroRuntimeInterface | undefined;
+        __wc_instance: WebClipperInterface | undefined;
+        WebClipperConstants: WebClipperConstantsInterface;
     }
 
     const JSZip: any;
