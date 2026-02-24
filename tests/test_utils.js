@@ -255,6 +255,30 @@ console.log('Running BookmarkletUtils tests...');
             console.log('✅ log passed');
         }
 
+        // Test 7: createShadowRoot
+        {
+            console.log('Test 7: createShadowRoot');
+            const id = 'shadow-host';
+            const cssText = 'color: red;';
+            const { h, s } = window.BookmarkletUtils.createShadowRoot(id, cssText);
+
+            assert.strictEqual(h.id, id, 'Host ID mismatch');
+            assert.strictEqual(h.style.color, 'red', 'Host style mismatch');
+            // JSDOM ShadowRoot check
+            assert.ok(s.mode === 'open', 'Shadow root mode should be open');
+            assert.strictEqual(h.parentNode, document.body, 'Host not appended to body by default');
+
+            // Cleanup
+            h.remove();
+
+            // Test with custom parent
+            const parent = document.createElement('div');
+            const { h: h2 } = window.BookmarkletUtils.createShadowRoot('host2', '', parent);
+            assert.strictEqual(h2.parentNode, parent, 'Host not appended to custom parent');
+
+            console.log('✅ createShadowRoot passed');
+        }
+
         console.log('All tests passed!');
     } catch (err) {
         console.error('Test failed:', err);
