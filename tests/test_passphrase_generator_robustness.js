@@ -187,6 +187,31 @@ const tests = [
             });
         },
     },
+    {
+        name: 'UI: Accessibility and Controls',
+        run: () => {
+            mockDate = new OriginalDate('2023-01-01');
+            runScript();
+
+            // Test Regenerate Button Aria Label
+            const regenBtn = Array.from(document.querySelectorAll('button')).find((b) => b.textContent === 'Regenerate');
+            assert.ok(regenBtn, 'Regenerate button should exist');
+            assert.strictEqual(
+                regenBtn.getAttribute('aria-label'),
+                'Generate new passphrases',
+                'Regenerate button has incorrect aria-label'
+            );
+
+            // Test Temp Password Mode Toggle
+            const toggleBtn = Array.from(document.querySelectorAll('button')).find((b) => b.textContent.includes('Mode'));
+            assert.ok(toggleBtn, 'Mode toggle button should exist');
+
+            // Toggle it
+            toggleBtn.click();
+            const passwords = getGeneratedPasswords();
+            assert.ok(passwords.length > 0, 'Should generate passwords in Temp mode');
+        },
+    },
 ];
 
 // Test Runner
