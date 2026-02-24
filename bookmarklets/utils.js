@@ -1,4 +1,4 @@
-(function (w) {
+(function (/** @type {Window} */ w) {
     /**
      * Restricted list: Stabilize layout without breaking flexible content.
      * This whitelist ensures only safe visual styles are copied, preventing
@@ -90,6 +90,10 @@
 
     /* Sanitization Helpers */
     const REGEX_WHITESPACE = /\s+/g;
+
+    /* Constants for Async Processing */
+    const ASYNC_CHUNK_SIZE = 50;
+    const ASYNC_TIME_SLICE_MS = 12;
 
     /**
      * @typedef {Object} SanitizerType
@@ -276,7 +280,7 @@
         }
     }
 
-    w.BookmarkletUtils = /** @type {any} */ ({
+    w.BookmarkletUtils = /** @type {BookmarkletUtilsInterface} */ (/** @type {Omit<BookmarkletUtilsInterface, 'htmlToMarkdown' | 'Prompts'>} */ ({
         /**
          * Logs a message with context and consistent formatting.
          * @param {string} component - The component name (e.g., 'MacroBuilder').
@@ -571,7 +575,7 @@
                         script.crossOrigin = 'anonymous';
                     }
                     script.onload = () => {
-                        if (window[globalVar]) {
+                        if (/** @type {Record<string, any>} */ (window)[globalVar]) {
                             resolve();
                         } else {
                             script.remove();
@@ -596,7 +600,7 @@
                 });
             };
 
-            if (window[globalVar]) {
+            if (/** @type {Record<string, any>} */ (window)[globalVar]) {
                 return Promise.resolve();
             }
 
@@ -624,8 +628,6 @@
                 /* Use stack-based traversal (DFS) to avoid expensive querySelectorAll on huge DOMs */
                 const queue = [root];
                 let imagesProcessed = 0;
-                const CHUNK_SIZE = 50; // Check time every 50 nodes
-                const TIME_SLICE_MS = 12;
 
                 function processChunk() {
                     try {
@@ -658,7 +660,7 @@
                             }
 
                             /* Yield if chunk size reached AND time exceeded limit */
-                            if (chunkNodes % CHUNK_SIZE === 0 && performance.now() - startTime > TIME_SLICE_MS) {
+                            if (chunkNodes % ASYNC_CHUNK_SIZE === 0 && performance.now() - startTime > ASYNC_TIME_SLICE_MS) {
                                 if (onProgress) onProgress(imagesProcessed);
                                 setTimeout(processChunk, 0);
                                 return;
@@ -711,8 +713,6 @@
                 /** @type {Array<{s: HTMLElement, t: HTMLElement}>} */
                 const queue = [{ s: source, t: target }];
                 let count = 0;
-                const CHUNK_SIZE = 50;
-                const TIME_SLICE_MS = 12;
 
                 function processChunk() {
                     try {
@@ -745,7 +745,7 @@
                             }
 
                             /* Yield if chunk size reached or time exceeded */
-                            if (count % CHUNK_SIZE === 0 || performance.now() - startTime > TIME_SLICE_MS) {
+                            if (count % ASYNC_CHUNK_SIZE === 0 || performance.now() - startTime > ASYNC_TIME_SLICE_MS) {
                                 if (onProgress) onProgress(count);
                                 setTimeout(processChunk, 0);
                                 return;
@@ -782,5 +782,5 @@
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
         },
-    });
+    }));
 })(window);
