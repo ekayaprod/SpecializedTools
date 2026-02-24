@@ -380,7 +380,8 @@
                         head.onmousedown = dragMouseDown;
                     }
                     async run(){
-                        this._log('Execution started');
+                        const startTime = Date.now();
+                        this._log('Execution started', { startTime: new Date(startTime).toISOString() });
                         try { if('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch(e){ this._log('Wake Lock failed', { error: e.message, type: e.name }, 'warn'); }
                         const wait = ms => new Promise(r => setTimeout(r, ms));
 
@@ -463,7 +464,7 @@
                                     alert('Step '+(i+1)+' Sub-action '+(j+1)+' Failed: Not found ('+action.sel+')');
                                     return;
                                 }
-                                this._log('Element found', { sel: action.sel });
+                                this._log('Element found', { sel: action.sel, tagName: el.tagName, innerText: el.innerText ? el.innerText.substring(0, 20) : '' });
 
                                 if(action.val !== null || action.ask){
                                     let v = action.val;
@@ -487,7 +488,8 @@
                         }
                         this.q('#tm').innerText = 'Done';
                         this.q('#st').innerText = 'Finished';
-                        this._log('Execution finished');
+                        const duration = Date.now() - startTime;
+                        this._log('Execution finished', { duration: duration });
                         setTimeout(()=>this.destroy(), 3000);
                     }
                     destroy(){ this.h.remove(); delete window.__mb_run; }

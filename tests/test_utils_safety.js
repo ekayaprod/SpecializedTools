@@ -6,6 +6,8 @@ const assert = require('assert');
 
 const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
 const utilsCode = fs.readFileSync(utilsPath, 'utf8');
+const htmPath = path.join(__dirname, '../bookmarklets/html-to-markdown.js');
+const htmCode = fs.readFileSync(htmPath, 'utf8');
 
 // Create a JSDOM instance
 const dom = new JSDOM(
@@ -48,8 +50,9 @@ global.performance = { now: () => Date.now() }; // Mock performance.now
 // Execute utils.js
 try {
     eval(utilsCode);
+    eval(htmCode);
 } catch (e) {
-    console.error('Error evaluating utils.js:', e);
+    console.error('Error evaluating scripts:', e);
     process.exit(1);
 }
 

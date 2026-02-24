@@ -73,7 +73,7 @@
         }
 
         start() {
-            this._log('Recording started');
+            this._log('Recording started', { url: window.location.href, startTime: new Date().toISOString() });
             this.isRecording = true;
             this.log = [];
             this.startTime = Date.now();
@@ -104,7 +104,15 @@
                 };
 
                 this.log.push(clickData);
-                this._log('Click captured', { tag: t.tagName, id: t.id, path: clickData.path });
+                this._log('Click captured', {
+                    tag: t.tagName,
+                    id: t.id,
+                    path: clickData.path,
+                    x: clickData.x,
+                    y: clickData.y,
+                    windowSize: clickData.windowSize,
+                    scrollPosition: clickData.scrollPosition,
+                });
                 this.q('#cnt').innerText = this.log.length + ' Clicks';
             };
 
@@ -137,7 +145,8 @@
         }
 
         stop() {
-            this._log('Recording stopped', { totalClicks: this.log.length });
+            const duration = Date.now() - this.startTime;
+            this._log('Recording stopped', { totalClicks: this.log.length, duration: duration });
             this.isRecording = false;
             this.cleanupFns.forEach((fn) => fn());
             this.cleanupFns = [];
@@ -154,7 +163,7 @@
             const text = JSON.stringify(this.log, null, 2);
             const filename = 'interaction_log_' + Date.now() + '.txt';
             BookmarkletUtils.downloadFile(filename, text, 'text/plain');
-            this._log('Log exported', { filename: filename });
+            this._log('Log exported', { filename: filename, byteSize: text.length });
         }
 
         destroy() {
