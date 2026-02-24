@@ -1383,19 +1383,30 @@
         style.textContent = `
             @keyframes pa-fade-in { from { opacity: 0; } to { opacity: 1; } }
             @keyframes pa-slide-up { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+            @keyframes pa-spin { to { transform: rotate(360deg); } }
             .pa-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 99999; animation: pa-fade-in 0.2s ease-out; backdrop-filter: blur(2px); }
-            .pa-card { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); width: 320px; font-family: system-ui, -apple-system, sans-serif; animation: pa-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-width: 90vw; }
-            .pa-btn { width: 100%; padding: 10px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; transition: transform 0.1s; }
+            .pa-card { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); width: 320px; font-family: system-ui, -apple-system, sans-serif; animation: pa-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-width: 90vw; display: flex; flex-direction: column; gap: 12px; }
+            .pa-btn { width: 100%; padding: 10px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
             .pa-btn:active { transform: scale(0.98); }
-            .pa-btn-primary { background: #2563eb; color: white; margin-bottom: 12px; }
-            .pa-btn-primary:hover { background: #1d4ed8; }
+            .pa-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+            .pa-btn-primary { background: #2563eb; color: white; }
+            .pa-btn-primary:hover:not(:disabled) { background: #1d4ed8; }
             .pa-btn-sec { background: #f1f5f9; color: #475569; }
             .pa-btn-sec:hover { background: #e2e8f0; }
-            .pa-input { width: 100%; padding: 12px; margin-bottom: 12px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; transition: border-color 0.2s; font-size: 14px; }
+            .pa-input-wrapper { position: relative; width: 100%; }
+            .pa-input { width: 100%; padding: 12px; padding-right: 36px; margin: 0; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; transition: border-color 0.2s; font-size: 14px; }
             .pa-input:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.2); }
-            .pa-result-success { color: #166534; background: #dcfce7; padding: 12px; border-radius: 6px; margin-bottom: 12px; font-size: 14px; line-height: 1.4; border: 1px solid #bbf7d0; }
-            .pa-result-error { color: #991b1b; background: #fee2e2; padding: 12px; border-radius: 6px; margin-bottom: 12px; font-size: 14px; border: 1px solid #fecaca; }
-            .pa-title { margin: 0 0 16px; font-size: 18px; font-weight: 700; color: #1e293b; }
+            .pa-clear-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px; border-radius: 50%; display: none; }
+            .pa-clear-btn:hover { background: #f1f5f9; color: #475569; }
+            .pa-input:not(:placeholder-shown) + .pa-clear-btn { display: block; }
+            .pa-result-card { background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0; animation: pa-fade-in 0.3s ease-out; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+            .pa-result-text { font-size: 14px; color: #1e293b; line-height: 1.5; flex: 1; }
+            .pa-result-error { background: #fee2e2; border-color: #fecaca; color: #991b1b; }
+            .pa-copy-btn { background: white; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px; cursor: pointer; color: #64748b; transition: all 0.2s; min-width: 32px; display: flex; align-items: center; justify-content: center; }
+            .pa-copy-btn:hover { background: #f1f5f9; color: #334155; }
+            .pa-copy-success { color: #166534; border-color: #bbf7d0; background: #dcfce7; }
+            .pa-spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: pa-spin 0.8s linear infinite; }
+            .pa-title { margin: 0; font-size: 18px; font-weight: 700; color: #1e293b; }
         `;
         document.head.appendChild(style);
     }
@@ -1416,7 +1427,7 @@
 
     const card = document.createElement('div');
     card.className = 'pa-card';
-    card.innerHTML = `<h3 id="pa-title" class="pa-title">PA County Finder</h3><div id="pa-content"></div>`;
+    card.innerHTML = `<h3 id="pa-title" class="pa-title">PA County Finder</h3><div id="pa-content" style="display: flex; flex-direction: column; gap: 12px;"></div>`;
     overlay.appendChild(card);
 
     // Close on overlay click
@@ -1457,6 +1468,7 @@
     const content = /** @type {HTMLElement} */ (card.querySelector('#pa-content'));
     const resultDiv = document.createElement('div');
     resultDiv.id = 'pa-result';
+    resultDiv.setAttribute('aria-live', 'polite');
 
     /**
      * Creates a close button element.
@@ -1477,11 +1489,47 @@
      * @param {string} q - The original query string for error message.
      */
     const updateResult = (r, q) => {
+        resultDiv.innerHTML = '';
         const safeQ = BookmarkletUtils.escapeHtml(q);
-        const safeR = r ? BookmarkletUtils.escapeHtml(r) : '';
-        resultDiv.innerHTML = r
-            ? `<div class="pa-result-success"><strong>Result:</strong><br>${safeR}</div>`
-            : `<div class="pa-result-error">No match for "${safeQ}".</div>`;
+
+        if (!r) {
+            const errDiv = document.createElement('div');
+            errDiv.className = 'pa-result-card pa-result-error';
+            errDiv.innerHTML = `<span class="pa-result-text">No match for "<strong>${safeQ}</strong>"</span>`;
+            resultDiv.appendChild(errDiv);
+            return;
+        }
+
+        const safeR = BookmarkletUtils.escapeHtml(r);
+        const resCard = document.createElement('div');
+        resCard.className = 'pa-result-card';
+
+        const textDiv = document.createElement('div');
+        textDiv.className = 'pa-result-text';
+        textDiv.innerHTML = `<strong>Result:</strong><br>${safeR}`;
+
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'pa-copy-btn';
+        copyBtn.setAttribute('aria-label', 'Copy result');
+        // SVG Icon for Copy
+        copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+
+        copyBtn.onclick = () => {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(r).then(() => {
+                    copyBtn.innerHTML = '✓';
+                    copyBtn.classList.add('pa-copy-success');
+                    setTimeout(() => {
+                        copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+                        copyBtn.classList.remove('pa-copy-success');
+                    }, 2000);
+                }).catch(err => console.error('Failed to copy', err));
+            }
+        };
+
+        resCard.appendChild(textDiv);
+        resCard.appendChild(copyBtn);
+        resultDiv.appendChild(resCard);
     };
 
     let s = window.getSelection().toString().trim();
@@ -1493,22 +1541,52 @@
         // Focus close button if immediate result
         setTimeout(() => cBtn.focus(), 50);
     } else {
+        const inputWrapper = document.createElement('div');
+        inputWrapper.className = 'pa-input-wrapper';
+
         const inp = document.createElement('input');
         inp.className = 'pa-input';
         inp.placeholder = 'ZIP or City';
         inp.setAttribute('aria-label', 'Enter ZIP code or City name');
 
+        const clearBtn = document.createElement('button');
+        clearBtn.className = 'pa-clear-btn';
+        clearBtn.innerHTML = '✕';
+        clearBtn.setAttribute('aria-label', 'Clear input');
+        clearBtn.onclick = () => {
+            inp.value = '';
+            inp.focus();
+        };
+
+        inputWrapper.appendChild(inp);
+        inputWrapper.appendChild(clearBtn);
+
         const btn = document.createElement('button');
         btn.textContent = 'Find';
         btn.className = 'pa-btn pa-btn-primary';
 
-        btn.onclick = () => {
+        const performSearch = () => {
+            if (btn.disabled) return;
             const val = inp.value.trim();
-            if (val) updateResult(find(val), val);
-        };
-        inp.onkeydown = (/** @type {KeyboardEvent} */ e) => e.key === 'Enter' && btn.click();
+            if (!val) return;
 
-        content.append(inp, btn, resultDiv, createCloseBtn());
+            // Loading state
+            const originalText = btn.textContent;
+            btn.innerHTML = '<div class="pa-spinner"></div>';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                updateResult(find(val), val);
+                btn.textContent = originalText;
+                btn.disabled = false;
+                // Announce for screen readers handled by aria-live on resultDiv
+            }, 300);
+        };
+
+        btn.onclick = performSearch;
+        inp.onkeydown = (/** @type {KeyboardEvent} */ e) => e.key === 'Enter' && performSearch();
+
+        content.append(inputWrapper, btn, resultDiv, createCloseBtn());
         setTimeout(() => inp.focus(), 50);
     }
     document.body.appendChild(overlay);
