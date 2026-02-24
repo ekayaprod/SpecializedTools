@@ -74,6 +74,8 @@
 
 [x] bookmarklets/prompts/loader.js (Added comprehensive test suite in tests/test_prompts_loader.js)
 
+[x] tests/test_delayed_clicker_robustness.js (Implemented comprehensive tests for Delayed Clicker logic and UI)
+
 🆙 Modernization Targets
 
 [x] Replace alert() with non-blocking UI (Toast/Modal) across all bookmarklets
