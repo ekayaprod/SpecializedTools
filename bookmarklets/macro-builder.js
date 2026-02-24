@@ -7,28 +7,75 @@
     }
     if (!document.body) return alert('Page has no body.');
 
+    /**
+     * @typedef {Object} MacroAction
+     * @property {string} sel - The CSS selector for the target element.
+     * @property {string} txt - The inner text of the element (for display or fallback).
+     * @property {string|null} val - The value to input (for inputs/textareas), or null if none.
+     * @property {boolean} enter - Whether to simulate pressing Enter after input.
+     * @property {boolean} ask - Whether to prompt the user for the value at runtime.
+     */
+
+    /**
+     * @typedef {Object} MacroStep
+     * @property {MacroAction[]} actions - The list of actions in this step (sequence).
+     * @property {number} delay - The delay in seconds before executing this step.
+     */
+
+    /**
+     * Macro Builder
+     *
+     * A visual tool for recording and exporting automation macros as bookmarklets.
+     * It allows users to pick elements on the page, define actions (click, input),
+     * and compile them into a standalone JavaScript bookmarklet.
+     *
+     * @see MACRO_BUILDER.md
+     * @class
+     */
     class MacroBuilder {
+        /**
+         * Initializes the MacroBuilder instance.
+         * Sets up state, unique ID, and triggers UI initialization.
+         */
         constructor() {
+            /** @type {string} Unique ID for this instance to avoid conflicts. */
             this.id = 'mb-' + Math.random().toString(36).slice(2);
+            /** @type {MacroStep[]} List of recorded steps. */
             this.steps = [];
+            /** @type {Function[]} Array of cleanup functions to run on destroy. */
             this.cleanupFns = [];
             this.init();
         }
 
+        /**
+         * Internal logging helper.
+         * @param {string} msg - The message to log.
+         * @param {Object} [data] - Optional data to log.
+         * @private
+         */
         _log(msg, data) {
             BookmarkletUtils.log('MacroBuilder', msg, data);
         }
 
+        /**
+         * Initializes the UI.
+         * Creates the shadow DOM host and renders the interface.
+         */
         init() {
             this._log('Initialized', { id: this.id });
             const cssText =
                 'position:fixed;top:15px;right:15px;z-index:2147483647;font-family:system-ui,sans-serif';
             const { h, s } = BookmarkletUtils.createShadowRoot(null, cssText);
+            /** @type {HTMLElement} The shadow DOM host element. */
             this.h = h;
+            /** @type {ShadowRoot} The shadow root. */
             this.s = s;
             this.render();
         }
 
+        /**
+         * Renders the HTML and CSS for the Macro Builder UI.
+         */
         render() {
             this.s.innerHTML =
                 '<style>' +
@@ -81,6 +128,9 @@
             this.bind();
         }
 
+        /**
+         * Binds event listeners to the UI elements.
+         */
         bind() {
             this.q('#x').onclick = () => this.destroy();
             this.q('#add').onclick = () => this.startSequence();
@@ -88,16 +138,32 @@
             BookmarkletUtils.makeDraggable(this.q('#drag'), this.h);
         }
 
+        /**
+         * Adds an event listener to a target and tracks it for cleanup.
+         * @param {EventTarget} t - The target element.
+         * @param {string} ev - The event name.
+         * @param {EventListenerOrEventListenerObject} fn - The event handler.
+         * @param {boolean|AddEventListenerOptions} [opt] - Options for the listener.
+         */
         add(t, ev, fn, opt) {
             t.addEventListener(ev, fn, opt);
             this.cleanupFns.push(() => t.removeEventListener(ev, fn, opt));
         }
 
+        /**
+         * Removes all tracked event listeners.
+         */
         clearListeners() {
             this.cleanupFns.forEach((fn) => fn());
             this.cleanupFns = [];
         }
 
+        /**
+         * Generates a CSS selector for the given element.
+         * Prioritizes specific classes, aria-labels, IDs, and structural paths.
+         * @param {HTMLElement} el - The element to generate a selector for.
+         * @returns {string} The generated selector.
+         */
         getSel(el) {
             if (el.matches('button[class*="presence-"]')) {
                 const match = el.className.match(/presence-(break|meal|available|busy|away)/);
@@ -121,12 +187,17 @@
             if (document.querySelectorAll(path).length > 1 && el.parentElement) {
                 let i = 1,
                     s = el;
-                while ((s = s.previousElementSibling)) i++;
+                while ((s = /** @type {HTMLElement} */ (s.previousElementSibling))) i++;
                 path += ':nth-child(' + i + ')';
             }
             return path;
         }
 
+        /**
+         * Starts the sequence picking process.
+         * Resets current sequence and prompts user.
+         * @see MACRO_BUILDER.md
+         */
         startSequence() {
             this._log('Sequence picking started');
             this.currentSequence = [];
@@ -134,16 +205,27 @@
             this.pick('sequence');
         }
 
+        /**
+         * Traverses shadow roots to find the deepest element at the pointer's coordinates.
+         * @param {MouseEvent} e - The mouse event.
+         * @returns {HTMLElement} The deepest element found.
+         */
         getDeepTarget(e) {
-            let t = e.target;
+            let t = /** @type {HTMLElement} */ (e.target);
             while (t.shadowRoot && t.shadowRoot.elementFromPoint) {
-                const nested = t.shadowRoot.elementFromPoint(e.clientX, e.clientY);
+                const nested = /** @type {HTMLElement} */ (t.shadowRoot.elementFromPoint(e.clientX, e.clientY));
                 if (!nested || nested === t) break;
                 t = nested;
             }
             return t;
         }
 
+        /**
+         * Gets the significant target element from an event.
+         * Filters out structural elements and finds interactive ancestors.
+         * @param {MouseEvent} e - The mouse event.
+         * @returns {HTMLElement|null} The interactive target or null.
+         */
         getTarget(e) {
             let t = this.getDeepTarget(e);
 
@@ -153,14 +235,23 @@
                 targetEl = t.parentElement;
             if (!targetEl) targetEl = t;
 
-            if (targetEl.tagName === 'BODY' || targetEl.tagName === 'HTML') return null;
+            // Ensure targetEl is actually an HTMLElement (closest returns Element)
+            const htmlTarget = /** @type {HTMLElement | null} */ (targetEl);
+            if (!htmlTarget) return null;
 
-            const r = targetEl.getBoundingClientRect();
+            if (htmlTarget.tagName === 'BODY' || htmlTarget.tagName === 'HTML') return null;
+
+            const r = htmlTarget.getBoundingClientRect();
             if (r.width >= window.innerWidth * 0.95 && r.height >= window.innerHeight * 0.95) return null;
 
-            return targetEl;
+            return htmlTarget;
         }
 
+        /**
+         * Enters pick mode to select elements from the page.
+         * Renders a highlight overlay and handles mouse interactions.
+         * @param {'sequence'} mode - The picking mode (currently only 'sequence').
+         */
         pick(mode) {
             this.h.style.display = 'none';
             const hl = document.createElement('div');
@@ -168,11 +259,7 @@
                 'position:absolute;border:2px solid #a855f7;background:rgba(168,85,247,0.2);pointer-events:none;z-index:999999';
             document.body.appendChild(hl);
 
-            const stopPicking = () => {
-                hl.remove();
-                this.h.style.display = 'block';
-                this.clearListeners();
-            };
+            // Removing unused stopPicking function
 
             const mv = (e) => {
                 if (e.shiftKey) {
@@ -195,7 +282,7 @@
 
             const stopEvent = (e) => {
                 if (e.shiftKey) return;
-                if (this.h.contains(e.target)) return;
+                if (this.h.contains(/** @type {Node} */ (e.target))) return;
                 e.preventDefault();
                 e.stopPropagation();
                 e.stopImmediatePropagation();
@@ -204,7 +291,7 @@
             const cl = (e) => {
                 if (e.shiftKey) return;
 
-                if (this.h.contains(e.target)) return;
+                if (this.h.contains(/** @type {Node} */ (e.target))) return;
                 stopEvent(e);
 
                 let targetEl = this.getTarget(e);
@@ -230,7 +317,8 @@
                         const tag = targetEl.tagName;
                         let ask = false;
                         if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
-                            const isPwd = targetEl.type === 'password';
+                            const inputEl = /** @type {HTMLInputElement} */ (targetEl);
+                            const isPwd = inputEl.type === 'password';
                             val = prompt(isPwd ? 'Value (Not Stored):' : 'Type text (Empty to click):');
                             ask = isPwd;
                             if (val && !isPwd) {
@@ -271,6 +359,9 @@
             this.add(document, 'click', cl, true);
         }
 
+        /**
+         * Refreshes the step list in the UI.
+         */
         refreshList() {
             const l = this.q('#list');
             if (this.steps.length === 0) {
@@ -284,7 +375,7 @@
                 d.className = 'step';
 
                 let actionHtml = '';
-                s.actions.forEach((act, ai) => {
+                s.actions.forEach((act) => {
                     let desc = act.val ? 'Type "' + act.val + '"' : act.txt ? 'Click "' + act.txt + '"' : 'Click';
                     actionHtml += '<div class="action-item">' + desc + '</div>';
                 });
@@ -316,6 +407,11 @@
             this._log('Step list refreshed', { steps: this.steps.length });
         }
 
+        /**
+         * Compiles the recorded steps into a standalone JavaScript bookmarklet.
+         * The generated code includes a `MacroRuntime` class that executes the steps.
+         * @see MACRO_BUILDER.md
+         */
         compile() {
             this._log('Compiling macro', { steps: this.steps.length });
             if (this.steps.length === 0) return alert('Add steps first');
@@ -502,6 +598,10 @@
             area.style.display = 'block';
         }
 
+        /**
+         * Destroys the MacroBuilder instance.
+         * Cleans up event listeners and removes the UI from the DOM.
+         */
         destroy() {
             this.clearListeners();
             this.h.remove();

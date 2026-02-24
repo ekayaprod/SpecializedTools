@@ -54,6 +54,14 @@ global.Node = dom.window.Node;
 global.Event = dom.window.Event;
 global.MouseEvent = dom.window.MouseEvent;
 
+// Load utils
+const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
+const utilsCode = fs.readFileSync(utilsPath, 'utf8');
+eval(utilsCode);
+if (window.BookmarkletUtils) {
+    global.BookmarkletUtils = window.BookmarkletUtils;
+}
+
 // Load script
 eval(scriptCode);
 
