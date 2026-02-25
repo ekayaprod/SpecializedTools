@@ -1313,6 +1313,10 @@
      * Finds county information based on ZIP code or city name.
      * @param {string} q - The query string (ZIP or City).
      * @returns {string|null} The formatted result string or null if not found.
+     *
+     * @example
+     * const result = find('17301');
+     * console.log(result); // "17301: Adams"
      */
     function find(q) {
         const c = q.trim();

@@ -48,4 +48,4 @@ graph TD
 1.  **Distribution (`index.html`)**: The entry point. It fetches source code, injects dependencies (if specified via `@require`), runs the compiler, and generates the drag-and-drop bookmarklet buttons.
 2.  **Shared Library (`utils.js`)**: A collection of common functions (DOM manipulation, sanitation, Markdown conversion) used primarily by the `Web Clipper`. Most other tools are self-contained.
 3.  **Compiler (`bookmarklet-builder.js`)**: A utility that strips comments, trims whitespace, and formats code for use in `javascript:` URIs. It also handles dependency extraction.
-4.  **Verification (`test_bookmarklet_generation.js`)**: A unit test suite that validates the compiler's logic (comment stripping, dependency extraction) to ensure safe and correct bookmarklet generation.
+4.  **Verification (`tests/test_bookmarklet_builder_robustness.js`)**: A unit test suite that validates the compiler's logic (comment stripping, dependency extraction) to ensure safe and correct bookmarklet generation.
