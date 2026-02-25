@@ -77,6 +77,7 @@ global.window.BookmarkletUtils = {
     },
     sanitizeAttributes: (el) => {},
     sanitizeFilename: (s) => (s || 'export').replace(/[^a-z0-9]/gi, '_'),
+    generateFilename: (s) => (s || 'export').replace(/[^a-z0-9]/gi, '_') + '_20230101-0000',
     loadLibrary: async (name) => {
         if (name === 'html2canvas') {
             return Promise.reject(new Error('Simulated html2canvas load failure'));

@@ -167,7 +167,7 @@
 
         download() {
             const text = JSON.stringify(this.log, null, 2);
-            const filename = 'interaction_log_' + Date.now() + '.txt';
+            const filename = BookmarkletUtils.generateFilename('interaction_log') + '.txt';
             BookmarkletUtils.downloadFile(filename, text, 'text/plain');
             this._log('Log exported', { filename: filename });
         }

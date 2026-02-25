@@ -70,6 +70,7 @@ const mockWindow = {
         downloadFile: () => {},
         htmlToMarkdown: (h) => h,
         sanitizeFilename: (s) => s,
+        generateFilename: (s) => s + '_20230101-0000',
     },
     setTimeout: (fn, ms) => setTimeout(fn, ms),
     setInterval: (fn, ms) => setInterval(fn, ms),

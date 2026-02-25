@@ -138,16 +138,8 @@
      */
     const generateFilename = (address) => {
         // Extract first line (e.g. "123 Main St" from "123 Main St, City, ST 12345")
-        let firstLine = (address || 'Property_Report').split(',')[0].trim();
-        // Sanitize: replace spaces/slashes with underscores, remove special chars
-        firstLine = firstLine.replace(/[\s/]/g, '_').replace(/[^a-zA-Z0-9_-]/g, '');
-
-        // Compact Timestamp: YYYYMMDD-HHmm
-        const now = new Date();
-        const pad = (n) => String(n).padStart(2, '0');
-        const ts = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
-
-        return `${firstLine}_${ts}`;
+        const firstLine = (address || 'Property_Report').split(',')[0].trim();
+        return BookmarkletUtils.generateFilename(firstLine);
     };
 
     /**

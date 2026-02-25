@@ -76,6 +76,7 @@ global.window.BookmarkletUtils = {
         console.log('Mock: sanitizeAttributes');
     },
     sanitizeFilename: (s) => (s || 'export').replace(/[^a-z0-9]/gi, '_'),
+    generateFilename: (s) => (s || 'export').replace(/[^a-z0-9]/gi, '_') + '_20230101-0000',
     loadLibrary: async (name) => {
         console.log('Mock: loadLibrary', name);
     },

@@ -62,6 +62,13 @@ declare global {
         sanitizeFilename(s: string | number): string;
 
         /**
+         * Generates a filename with a timestamp (YYYYMMDD-HHmm).
+         * @param {string} baseName - The base name for the file.
+         * @returns {string} The generated filename.
+         */
+        generateFilename(baseName: string): string;
+
+        /**
          * Triggers a download of a file with the given content.
          *
          * @param {string} filename - The name of the file to download.
@@ -196,7 +203,6 @@ declare global {
     }
 
     interface Window {
-        JSZip: any;
         BookmarkletUtils: BookmarkletUtilsInterface;
         jspdf: any;
         __dc_v27: QuickClickerInterface | undefined;
@@ -208,7 +214,6 @@ declare global {
         WebClipperConstants: WebClipperConstantsInterface;
     }
 
-    const JSZip: any;
     const BookmarkletUtils: BookmarkletUtilsInterface;
     const html2canvas: any;
 }

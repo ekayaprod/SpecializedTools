@@ -525,6 +525,18 @@
                 .substring(0, 50);
         },
         /**
+         * Generates a filename with a timestamp (YYYYMMDD-HHmm).
+         * @param {string} baseName - The base name for the file.
+         * @returns {string} The generated filename (e.g., "Report_20231027-1430").
+         */
+        generateFilename(baseName) {
+            const name = this.sanitizeFilename(baseName);
+            const now = new Date();
+            const pad = (n) => String(n).padStart(2, '0');
+            const ts = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
+            return `${name}_${ts}`;
+        },
+        /**
          * Triggers a download of a file with the given content.
          *
          * @param {string} filename - The name of the file to download.
