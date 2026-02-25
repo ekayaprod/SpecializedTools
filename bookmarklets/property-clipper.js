@@ -376,7 +376,7 @@
                 .map(
                     (p) => `
                 <div class="photo-card">
-                    <img src="${p.url}" loading="lazy" alt="Photo: ${BookmarkletUtils.escapeHtml(p.label)}">
+                    <img src="${BookmarkletUtils.escapeHtml(p.url)}" loading="lazy" alt="Photo: ${BookmarkletUtils.escapeHtml(p.label)}">
                     <div class="photo-label">${BookmarkletUtils.escapeHtml(p.label)}</div>
                 </div>`
                 )
@@ -388,7 +388,7 @@
             if (heroUrl) {
                 heroHtml = `
                 <div class="hero-section" style="margin-bottom: 30px; border-radius: 8px; overflow: hidden; border: 1px solid #e5e7eb;">
-                    <img src="${heroUrl}" alt="Primary view of ${BookmarkletUtils.escapeHtml(data.address)}" style="width: 100%; height: auto; max-height: 500px; object-fit: cover; display: block;">
+                    <img src="${BookmarkletUtils.escapeHtml(heroUrl)}" alt="Primary view of ${BookmarkletUtils.escapeHtml(data.address)}" style="width: 100%; height: auto; max-height: 500px; object-fit: cover; display: block;">
                 </div>`;
             }
 
@@ -792,7 +792,7 @@
             }
 
             const container = document.getElementById(CONFIG.modalId);
-            container.innerHTML = `<h3 style="margin:0 0 10px 0">${grp.category} (${Wizard.state.step + 1}/${Wizard.state.data.photoGroups.length})</h3>`;
+            container.innerHTML = `<h3 style="margin:0 0 10px 0">${BookmarkletUtils.escapeHtml(grp.category)} (${Wizard.state.step + 1}/${Wizard.state.data.photoGroups.length})</h3>`;
 
             const grid = buildElement(
                 'div',
