@@ -118,7 +118,11 @@
             while (curr && curr !== document.body && curr !== document.documentElement) {
                 let selector = curr.tagName.toLowerCase();
                 if (curr.id) {
-                    selector += '#' + curr.id;
+                    if (window.CSS && window.CSS.escape) {
+                        selector += '#' + window.CSS.escape(curr.id);
+                    } else {
+                        selector += `[id="${curr.id.replace(/"/g, '\\"')}"]`;
+                    }
                     path.unshift(selector);
                     break;
                 } else {
@@ -129,6 +133,17 @@
                             .filter((c) => c);
                         if (classes.length) selector += '.' + classes.join('.');
                     }
+
+                    // Disambiguate siblings using nth-of-type if necessary
+                    const parent = curr.parentElement;
+                    if (parent) {
+                        const siblings = Array.from(parent.children).filter((c) => c.tagName === curr.tagName);
+                        if (siblings.length > 1) {
+                            const index = siblings.indexOf(curr) + 1;
+                            selector += `:nth-of-type(${index})`;
+                        }
+                    }
+
                     path.unshift(selector);
                     curr = curr.parentElement;
                 }

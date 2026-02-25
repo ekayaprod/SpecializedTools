@@ -42,6 +42,12 @@ global.alert = (msg) => {
     console.log('Alert:', msg);
 };
 
+// Mock CSS.escape
+if (!global.window.CSS) global.window.CSS = {};
+if (!global.window.CSS.escape) {
+    global.window.CSS.escape = (s) => s.replace(/([:])/g, '\\$1');
+}
+
 // Load script
 const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
 const utilsContent = fs.readFileSync(utilsPath, 'utf8');

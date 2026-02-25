@@ -76,6 +76,8 @@
 
 [x] tests/test_delayed_clicker_robustness.js (Implemented comprehensive tests for Delayed Clicker logic and UI)
 
+[x] tests/test_interaction_recorder_robustness.js (Implemented robust tests for sibling ambiguity, SVG, and Shadow DOM)
+
 🆙 Modernization Targets
 
 [x] Replace alert() with non-blocking UI (Toast/Modal) across all bookmarklets
