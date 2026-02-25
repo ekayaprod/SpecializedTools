@@ -572,14 +572,14 @@
          * @param {HTMLButtonElement} [btn]
          */
         handleDownload(contentArea, format, btn) {
-            const cleanTitle = BookmarkletUtils.sanitizeFilename(document.title || C.FILENAME_DEFAULT);
+            const filename = BookmarkletUtils.generateFilename(document.title || C.FILENAME_DEFAULT);
 
             if (format === 'md') {
                 const content = BookmarkletUtils.htmlToMarkdown(contentArea.innerHTML);
-                BookmarkletUtils.downloadFile(cleanTitle + '_' + Date.now() + '.md', content, 'text/markdown');
+                BookmarkletUtils.downloadFile(filename + '.md', content, 'text/markdown');
             } else if (format === 'txt') {
                 const content = contentArea.innerText;
-                BookmarkletUtils.downloadFile(cleanTitle + '_' + Date.now() + '.txt', content, 'text/plain');
+                BookmarkletUtils.downloadFile(filename + '.txt', content, 'text/plain');
             } else if (format === 'png') {
                 const originalText = btn ? btn.textContent : C.BTN_DOWNLOAD;
                 if (btn) {
@@ -593,7 +593,7 @@
                     'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
                     'sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H'
                 )
-                    .then(() => this.capturePng(contentArea, cleanTitle, btn, originalText))
+                    .then(() => this.capturePng(contentArea, filename, btn, originalText))
                     .catch((err) => {
                         console.error('Failed to load html2canvas for PNG export:', err);
                         BookmarkletUtils.showToast(C.ERR_HTML2CANVAS, 'error');
@@ -613,22 +613,22 @@
                 /* HTML Default */
                 const content =
                     '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' +
-                    cleanTitle +
+                    filename +
                     '</title></head><body>' +
                     contentArea.innerHTML +
                     '</body></html>';
-                BookmarkletUtils.downloadFile(cleanTitle + '_' + Date.now() + '.html', content, 'text/html');
+                BookmarkletUtils.downloadFile(filename + '.html', content, 'text/html');
             }
         }
 
         /**
          * Captures the element as a PNG image using html2canvas.
          * @param {HTMLElement} element
-         * @param {string} title
+         * @param {string} filename
          * @param {HTMLButtonElement} [btn]
          * @param {string} [originalText]
          */
-        async capturePng(element, title, btn, originalText) {
+        async capturePng(element, filename, btn, originalText) {
             /* Temporarily ensure element is visible and has white background for capture */
             const originalBg = element.style.backgroundColor;
             element.style.backgroundColor = '#ffffff';
@@ -638,7 +638,7 @@
                 element.style.backgroundColor = originalBg; /* Restore */
 
                 const link = document.createElement('a');
-                link.download = title + '_' + Date.now() + '.png';
+                link.download = filename + '.png';
                 link.href = canvas.toDataURL();
                 link.click();
 
