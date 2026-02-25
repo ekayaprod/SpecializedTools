@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import urllib.parse
+from functools import lru_cache
 
 def find_markdown_files(root_dir):
     md_files = []
@@ -22,6 +23,7 @@ def slugify(text):
     text = text.strip('-')
     return text
 
+@lru_cache(maxsize=None)
 def get_anchors(filepath):
     anchors = set()
     if not os.path.exists(filepath):
