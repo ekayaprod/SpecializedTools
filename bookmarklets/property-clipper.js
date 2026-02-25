@@ -29,6 +29,102 @@
     const buildElement = BookmarkletUtils.buildElement;
 
     /**
+     * Injects the necessary CSS styles for the UI.
+     */
+    const injectStyles = () => {
+        const styleId = 'pc-styles';
+        if (document.getElementById(styleId)) return;
+        const style = document.createElement('style');
+        style.id = styleId;
+        style.textContent = `
+            :root {
+                --pc-primary: #2563eb;
+                --pc-primary-hover: #1d4ed8;
+                --pc-bg: #ffffff;
+                --pc-text: #1f2937;
+                --pc-border: #e5e7eb;
+                --pc-radius: 12px;
+                --pc-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            }
+            @keyframes pc-fade-in { from { opacity: 0; } to { opacity: 1; } }
+            @keyframes pc-slide-up { from { transform: translate(-50%, -45%); opacity: 0; } to { transform: translate(-50%, -50%); opacity: 1; } }
+            @keyframes pc-spin { to { transform: rotate(360deg); } }
+
+            .pc-overlay {
+                position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999998;
+                backdrop-filter: blur(4px); animation: pc-fade-in 0.2s ease-out;
+            }
+            .pc-modal {
+                position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                background: var(--pc-bg); padding: 24px; width: 500px; max-width: 90vw;
+                border-radius: var(--pc-radius); z-index: 999999;
+                box-shadow: var(--pc-shadow); font-family: system-ui, -apple-system, sans-serif;
+                display: flex; flex-direction: column; gap: 16px; color: var(--pc-text);
+                animation: pc-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            .pc-header { margin: 0; font-size: 20px; font-weight: 700; text-align: center; }
+            .pc-row { display: flex; gap: 10px; align-items: center; }
+            .pc-col { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+            .pc-label { font-size: 13px; font-weight: 600; color: #4b5563; }
+            .pc-input, .pc-select, .pc-textarea {
+                width: 100%; padding: 10px; border: 1px solid var(--pc-border); border-radius: 6px;
+                font-size: 14px; transition: border-color 0.2s; box-sizing: border-box;
+            }
+            .pc-input:focus, .pc-select:focus, .pc-textarea:focus {
+                outline: none; border-color: var(--pc-primary); ring: 2px solid rgba(37,99,235,0.1);
+            }
+            .pc-textarea { resize: vertical; min-height: 100px; font-family: monospace; }
+
+            .pc-btn {
+                display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+                padding: 10px 16px; border-radius: 6px; font-weight: 500; font-size: 14px;
+                cursor: pointer; transition: all 0.2s; border: 1px solid transparent;
+                text-decoration: none; line-height: 1.2;
+            }
+            .pc-btn:active { transform: scale(0.98); }
+            .pc-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+            .pc-btn-primary { background: var(--pc-primary); color: white; border: 1px solid var(--pc-primary); }
+            .pc-btn-primary:hover:not(:disabled) { background: var(--pc-primary-hover); border-color: var(--pc-primary-hover); }
+
+            .pc-btn-secondary { background: #f3f4f6; color: #374151; border-color: #d1d5db; }
+            .pc-btn-secondary:hover:not(:disabled) { background: #e5e7eb; border-color: #d1d5db; }
+
+            .pc-btn-ghost { background: transparent; color: #6b7280; }
+            .pc-btn-ghost:hover:not(:disabled) { background: #f9fafb; color: #374151; }
+
+            .pc-btn-success { background: #10b981; color: white; border-color: #10b981; }
+            .pc-btn-success:hover:not(:disabled) { background: #059669; border-color: #059669; }
+
+            .pc-icon { width: 16px; height: 16px; stroke-width: 2px; flex-shrink: 0; }
+            .pc-spinner {
+                width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3);
+                border-radius: 50%; border-top-color: white; animation: pc-spin 0.8s linear infinite;
+            }
+
+            .pc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-height: 400px; overflow-y: auto; padding-right: 4px; }
+            .pc-grid-item { position: relative; border-radius: 6px; overflow: hidden; border: 1px solid var(--pc-border); }
+            .pc-grid-img { width: 100%; height: 80px; object-fit: cover; display: block; }
+            .pc-grid-check { position: absolute; top: 4px; left: 4px; transform: scale(1.2); cursor: pointer; }
+
+            @media (prefers-reduced-motion: reduce) {
+                .pc-overlay, .pc-modal, .pc-spinner, .pc-btn { animation: none; transition: none; }
+            }
+        `;
+        document.head.appendChild(style);
+    };
+
+    /* ICONS (Feather) */
+    const ICONS = {
+        copy: '<svg class="pc-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>',
+        check: '<svg class="pc-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>',
+        code: '<svg class="pc-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>',
+        file: '<svg class="pc-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>',
+        x: '<svg class="pc-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
+        arrowRight: '<svg class="pc-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>'
+    };
+
+    /**
      * Formats a number as a currency string (USD).
      * @param {number|string|null} val - The value to format.
      * @returns {string} The formatted currency string or 'N/A'.
@@ -736,24 +832,17 @@
          */
         renderStart: () => {
             const container = document.getElementById(CONFIG.modalId);
-            container.innerHTML = `<h3 style="margin-top:0">Select Photos</h3>`;
+            container.innerHTML = `<h3 class="pc-header" style="text-align:left;font-size:16px;">Select Photos</h3>`;
             const total = Wizard.state.data.photoGroups.reduce((a, g) => a + g.photos.length, 0);
 
             const btnAll = buildElement(
                 'button',
-                {
-                    width: '100%',
-                    padding: '15px',
-                    marginBottom: '10px',
-                    cursor: 'pointer',
-                    background: '#eff6ff',
-                    border: '1px solid #bfdbfe',
-                    borderRadius: '6px',
-                    textAlign: 'left',
-                },
-                `Include All Photos (${total})`,
-                container
+                { width: '100%', justifyContent: 'space-between', marginBottom: '8px' },
+                '',
+                container,
+                { class: 'pc-btn pc-btn-secondary' }
             );
+            btnAll.innerHTML = `<span>Export All Photos (${total})</span>${ICONS.arrowRight}`;
             btnAll.onclick = () => {
                 Wizard.state.selectedPhotos = Wizard.state.data.photoGroups.flatMap((g) => g.photos);
                 Wizard.generate();
@@ -761,18 +850,12 @@
 
             const btnManual = buildElement(
                 'button',
-                {
-                    width: '100%',
-                    padding: '15px',
-                    cursor: 'pointer',
-                    background: '#f9f9f9',
-                    border: '1px solid #ddd',
-                    borderRadius: '6px',
-                    textAlign: 'left',
-                },
-                `Manually Select Photos`,
-                container
+                { width: '100%', justifyContent: 'space-between' },
+                '',
+                container,
+                { class: 'pc-btn pc-btn-ghost' }
             );
+            btnManual.innerHTML = `<span>Select Photos Manually</span>${ICONS.arrowRight}`;
             btnManual.onclick = () => {
                 Wizard.renderStep();
             };
@@ -792,30 +875,21 @@
             }
 
             const container = document.getElementById(CONFIG.modalId);
-            container.innerHTML = `<h3 style="margin:0 0 10px 0">${grp.category} (${Wizard.state.step + 1}/${Wizard.state.data.photoGroups.length})</h3>`;
+            container.innerHTML = `<h3 class="pc-header" style="text-align:left;font-size:16px;margin-bottom:12px;">${grp.category} (${Wizard.state.step + 1}/${Wizard.state.data.photoGroups.length})</h3>`;
 
-            const grid = buildElement(
-                'div',
-                {
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(3, 1fr)',
-                    gap: '5px',
-                    maxHeight: '400px',
-                    overflowY: 'auto',
-                },
-                '',
-                container
-            );
+            const grid = buildElement('div', {}, '', container, { class: 'pc-grid' });
             const checks = [];
 
             grp.photos.forEach((p) => {
-                const d = buildElement('div', { position: 'relative' }, '', grid);
-                const img = buildElement('img', { width: '100%', height: '80px', objectFit: 'cover' }, '', d, {
+                const d = buildElement('div', {}, '', grid, { class: 'pc-grid-item' });
+                const img = buildElement('img', {}, '', d, {
+                    class: 'pc-grid-img',
                     src: p.url,
                     alt: p.label || 'Property Photo',
                     loading: 'lazy',
                 });
-                const chk = buildElement('input', { position: 'absolute', top: '2px', left: '2px' }, '', d, {
+                const chk = buildElement('input', {}, '', d, {
+                    class: 'pc-grid-check',
                     type: 'checkbox',
                     checked: true,
                     'aria-label': `Select photo: ${p.label || 'Property Photo'}`,
@@ -825,18 +899,10 @@
 
             const nextBtn = buildElement(
                 'button',
-                {
-                    marginTop: '15px',
-                    width: '100%',
-                    padding: '10px',
-                    background: '#2563eb',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                },
-                'Next',
-                container
+                { marginTop: '15px', width: '100%' },
+                'Continue',
+                container,
+                { class: 'pc-btn pc-btn-primary' }
             );
             nextBtn.onclick = () => {
                 Wizard.state.selectedPhotos.push(...checks.filter((c) => c.chk.checked).map((c) => c.p));
@@ -851,7 +917,7 @@
         generate: () => {
             const container = document.getElementById(CONFIG.modalId);
             container.innerHTML =
-                '<div style="text-align:center;padding:20px"><h3>Creating Report...</h3><div id="pdf-status">Initializing...</div></div>';
+                '<div style="text-align:center;padding:20px;display:flex;flex-direction:column;align-items:center;gap:15px;"><div class="pc-spinner" style="border-color:#2563eb;border-top-color:transparent;"></div><div id="pdf-status" style="font-weight:500;">Creating Report...</div></div>';
 
             if (Wizard.state.format === 'pdf') {
                 PDFGenerator.create(
@@ -874,59 +940,39 @@
      * Extracts initial data to populate prompt placeholders.
      */
     function createPersonaModal() {
+        injectStyles();
         if (document.getElementById(CONFIG.modalId)) return;
+
         const ov = buildElement(
             'div',
-            {
-                position: 'fixed',
-                top: '0',
-                left: '0',
-                width: '100%',
-                height: '100%',
-                background: 'rgba(0,0,0,0.5)',
-                zIndex: '999998',
-            },
+            {},
             '',
             document.body,
-            { id: CONFIG.overlayId }
+            { id: CONFIG.overlayId, class: 'pc-overlay' }
         );
         const mo = buildElement(
             'div',
-            {
-                position: 'fixed',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%,-50%)',
-                background: '#fff',
-                padding: '25px',
-                width: '500px',
-                borderRadius: '12px',
-                zIndex: '999999',
-                fontFamily: 'sans-serif',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '15px',
-            },
+            {},
             '',
             document.body,
-            { id: CONFIG.modalId }
+            { id: CONFIG.modalId, class: 'pc-modal' }
         );
 
-        buildElement('h2', { margin: '0', textAlign: 'center', fontSize: '20px' }, 'Property Analysis Studio', mo);
+        buildElement('h2', { class: 'pc-header' }, 'Property Analysis Studio', mo);
 
         // Data Pre-fetch for Prompt Placeholders
         const data = PropertyExtractor.getData();
         if (!data.raw) BookmarkletUtils.showToast('Warning: Raw data not found. Report limited.', 'error');
 
         // 1. Dropdown
-        const row1 = buildElement('div', { display: 'flex', flexDirection: 'column', gap: '5px' }, '', mo);
-        buildElement('label', { fontSize: '12px', fontWeight: 'bold', color: '#555' }, 'Analysis Persona:', row1);
+        const row1 = buildElement('div', { class: 'pc-col' }, '', mo);
+        buildElement('label', { class: 'pc-label' }, 'Analysis Persona:', row1);
         const select = /** @type {HTMLSelectElement} */ (buildElement(
             'select',
-            { padding: '8px', borderRadius: '4px', border: '1px solid #ccc' },
+            {},
             '',
             row1,
-            { 'aria-label': 'Select Persona / Analysis Type' }
+            { class: 'pc-select', 'aria-label': 'Select Persona / Analysis Type' }
         ));
 
         Object.entries(PROMPT_DATA).forEach(([k, v]) => {
@@ -935,22 +981,14 @@
         });
 
         // 2. Text Area
-        const row2 = buildElement('div', { display: 'flex', flexDirection: 'column', gap: '5px', flex: '1' }, '', mo);
-        buildElement('label', { fontSize: '12px', fontWeight: 'bold', color: '#555' }, 'AI Prompt Context:', row2);
+        const row2 = buildElement('div', { class: 'pc-col', flex: '1' }, '', mo);
+        buildElement('label', { class: 'pc-label' }, 'AI Prompt Context:', row2);
         const txtArea = /** @type {HTMLTextAreaElement} */ (buildElement(
             'textarea',
-            {
-                width: '100%',
-                height: '150px',
-                padding: '10px',
-                borderRadius: '4px',
-                border: '1px solid #ccc',
-                fontSize: '12px',
-                fontFamily: 'monospace',
-                resize: 'vertical',
-            },
+            {},
             '',
-            row2
+            row2,
+            { class: 'pc-textarea' }
         ));
 
         // Update text area on change
@@ -968,78 +1006,80 @@
                 gap: '10px',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                borderTop: '1px solid #eee',
+                borderTop: '1px solid var(--pc-border)',
                 paddingTop: '15px',
             },
             '',
             mo
         );
 
-        const leftGroup = buildElement('div', { display: 'flex', gap: '5px' }, '', row3);
+        const leftGroup = buildElement('div', { display: 'flex', gap: '8px' }, '', row3);
         const copyBtn = buildElement(
             'button',
-            {
-                padding: '8px 12px',
-                background: '#f0f0f0',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '12px',
-            },
-            'Copy',
-            leftGroup
+            {},
+            '',
+            leftGroup,
+            { class: 'pc-btn pc-btn-secondary' }
         );
+        copyBtn.innerHTML = `${ICONS.copy} Copy Prompt`;
+
         copyBtn.onclick = () => {
             navigator.clipboard.writeText(txtArea.value);
-            copyBtn.innerText = 'Copied!';
-            setTimeout(() => (copyBtn.innerText = 'Copy'), 1500);
+            copyBtn.innerHTML = `${ICONS.check} Copied!`;
+            copyBtn.classList.replace('pc-btn-secondary', 'pc-btn-success');
+            setTimeout(() => {
+                copyBtn.innerHTML = `${ICONS.copy} Copy Prompt`;
+                copyBtn.classList.replace('pc-btn-success', 'pc-btn-secondary');
+            }, 1500);
         };
 
-        const rightGroup = buildElement('div', { display: 'flex', gap: '10px' }, '', row3);
+        const rightGroup = buildElement('div', { display: 'flex', gap: '8px' }, '', row3);
         const cancelBtn = buildElement(
             'button',
-            { padding: '8px 12px', background: 'none', border: 'none', color: '#666', cursor: 'pointer' },
-            'Close',
-            rightGroup
+            {},
+            '',
+            rightGroup,
+            { class: 'pc-btn pc-btn-ghost' }
         );
+        cancelBtn.innerHTML = `${ICONS.x} Cancel`;
+        cancelBtn.onclick = closeModal;
 
         const htmlBtn = buildElement(
             'button',
-            {
-                padding: '10px 15px',
-                background: '#10b981',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-            },
-            'HTML',
-            rightGroup
+            {},
+            '',
+            rightGroup,
+            { class: 'pc-btn pc-btn-success' }
         );
+        htmlBtn.innerHTML = `${ICONS.code} Export HTML`;
+
         const pdfBtn = buildElement(
             'button',
-            {
-                padding: '10px 15px',
-                background: '#2563eb',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-            },
-            'PDF',
-            rightGroup
+            {},
+            '',
+            rightGroup,
+            { class: 'pc-btn pc-btn-primary' }
         );
+        pdfBtn.innerHTML = `${ICONS.file} Export PDF`;
 
         // Handlers
-        const launchWizard = (fmt) => {
-            Wizard.init(data, fmt);
+        const launchWizard = (fmt, btn) => {
+            const originalContent = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<div class="pc-spinner"></div> Processing...';
+            // Small delay to allow spinner to render before synchronous work or just for visual feedback
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    Wizard.init(data, fmt);
+                    // Reset button state (though modal content will change, this is safety)
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                }, 50);
+            });
         };
 
-        cancelBtn.onclick = closeModal;
-        htmlBtn.onclick = () => launchWizard('html');
-        pdfBtn.onclick = () => launchWizard('pdf');
+        htmlBtn.onclick = () => launchWizard('html', htmlBtn);
+        pdfBtn.onclick = () => launchWizard('pdf', pdfBtn);
     }
 
     /**
