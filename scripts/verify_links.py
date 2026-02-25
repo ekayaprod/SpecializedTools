@@ -1,7 +1,6 @@
 import os
 import re
 import sys
-import urllib.parse
 
 def find_markdown_files(root_dir):
     md_files = []
