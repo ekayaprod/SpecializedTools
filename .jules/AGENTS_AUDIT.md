@@ -60,7 +60,7 @@
 
 [x] bookmarklets/utils.js (Added missing 'buildElement' and 'showToast' to interface)
 
-[x] bookmarklets/bookmarklet-builder.js (Indirectly tested via tests/test_bookmarklet_generation.js, but explicit unit tests for builder logic could be improved)
+[x] bookmarklets/bookmarklet-builder.js (Explicitly tested via tests/test_bookmarklet_builder_robustness.js and tests/test_bookmarklet_builder_edge_cases.js)
 
 [x] bookmarklets/pa-county-finder.js (Added robust tests for split city lookups and fixed logic gap)
 
@@ -77,6 +77,8 @@
 [x] tests/test_delayed_clicker_robustness.js (Implemented comprehensive tests for Delayed Clicker logic and UI)
 
 [x] tests/test_interaction_recorder_robustness.js (Implemented robust tests for sibling ambiguity, SVG, and Shadow DOM)
+
+[x] tests/test_bookmarklet_builder_edge_cases.js (Implemented comprehensive tests for line comments and regex ambiguity)
 
 🆙 Modernization Targets
 
