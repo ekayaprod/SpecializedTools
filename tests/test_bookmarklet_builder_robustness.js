@@ -34,11 +34,10 @@ const tests = [
         input: `
 /* Remove me */
 const s = "Keep me";
-// Keep me (line comment)
+// Remove me (line comment)
 /* Remove me too */
         `,
-        expected: `const s = "Keep me";
-// Keep me (line comment)`,
+        expected: `const s = "Keep me";`,
     },
     {
         name: 'Multiple strings and templates',

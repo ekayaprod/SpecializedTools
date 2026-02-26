@@ -21,11 +21,12 @@
 
     // Added support for regex literals: /\/((?:[^/\\\r\n]|\\.)+)\/[gimuy]*/
     // This prevents the parser from confusing quotes inside regex literals with string delimiters.
+    // Added support for line comments: /\/\/[^\r\n]*/
     const TOKEN_PATTERN =
-        '("(?:[^"\\\\]|\\\\[\\s\\S])*"|\'(?:[^\'\\\\]|\\\\[\\s\\S])*\'|`(?:[^`\\\\]|\\\\[\\s\\S])*`|\\/\\*[\\s\\S]*?\\*\\/|\\/(?:[^/\\\\\\r\\n]|\\\\.)+\\/[gimuy]*)';
+        '("(?:[^"\\\\]|\\\\[\\s\\S])*"|\'(?:[^\'\\\\]|\\\\[\\s\\S])*\'|`(?:[^`\\\\]|\\\\[\\s\\S])*`|\\/\\*[\\s\\S]*?\\*\\/|\\/\\/[^\\r\\n]*|\\/(?:[^/\\\\\\r\\n]|\\\\.)+\\/[gimuy]*)';
 
     /**
-     * Compiles source code by removing block comments and trimming lines while preserving strings and regex literals.
+     * Compiles source code by removing block and line comments and trimming lines while preserving strings and regex literals.
      * This acts as a basic minifier to prepare code for bookmarklet encoding.
      *
      * @param {string} code - The raw source code to compile.
@@ -41,10 +42,10 @@
         // Create fresh regex instance to avoid state issues
         const tokenRegex = new RegExp(TOKEN_PATTERN, 'g');
 
-        // 1. Mask strings and remove block comments
+        // 1. Mask strings and remove block/line comments
         let maskedCode = code.replace(tokenRegex, (match) => {
-            if (match.startsWith('/*')) {
-                // Block comment: remove it
+            if (match.startsWith('/*') || match.startsWith('//')) {
+                // Comment: remove it
                 return '';
             }
             // String/Template: preserve it by replacing with a placeholder
