@@ -8,6 +8,8 @@ const scriptPath = path.join(__dirname, '../bookmarklets/property-clipper.js');
 const scriptCode = fs.readFileSync(scriptPath, 'utf8');
 const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
 const utilsCode = fs.readFileSync(utilsPath, 'utf8');
+const promptsPath = path.join(__dirname, '../bookmarklets/prompts/loader.js');
+const promptsCode = fs.readFileSync(promptsPath, 'utf8');
 
 // Create JSDOM with initial data
 const dom = new JSDOM(
@@ -114,6 +116,24 @@ global.window.jspdf = { jsPDF: MockJsPDF };
         eval(utilsCode);
         global.BookmarkletUtils = window.BookmarkletUtils;
 
+        // Exec Prompts Loader
+        let resolvedPromptsCode = promptsCode;
+        const includeRegex = /\/\*\s*@include_text\s+['"]?([^'"]+)['"]?\s*\*\//g;
+        let match;
+        const replacements = [];
+        while ((match = includeRegex.exec(resolvedPromptsCode)) !== null) {
+            replacements.push({ fullMatch: match[0], path: match[1].trim() });
+        }
+        for (const rep of replacements) {
+            const incPath = path.join(__dirname, '../bookmarklets/' + rep.path);
+            if (fs.existsSync(incPath)) {
+                let incText = fs.readFileSync(incPath, 'utf8');
+                incText = incText.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$\{/g, '\\${');
+                resolvedPromptsCode = resolvedPromptsCode.replace(rep.fullMatch, incText);
+            }
+        }
+        eval(resolvedPromptsCode);
+
         // Exec Property Clipper
         eval(scriptCode);
 
@@ -121,14 +141,18 @@ global.window.jspdf = { jsPDF: MockJsPDF };
         const modal = document.getElementById('pc-pdf-modal');
         if (!modal) throw new Error('Modal not found');
 
-        const pdfBtn = Array.from(modal.querySelectorAll('button')).find((b) => b.textContent === 'PDF');
+        // Look for the "Export PDF" button (inner text may vary, checking logic)
+        const pdfBtn = Array.from(modal.querySelectorAll('button')).find((b) => b.textContent.includes('Export PDF'));
+        if (!pdfBtn) throw new Error('Export PDF button not found');
         pdfBtn.click();
 
         await new Promise((r) => setTimeout(r, 100)); // Wait for Wizard init
 
+        // Look for "Export All Photos" button
         const allPhotosBtn = Array.from(modal.querySelectorAll('button')).find((b) =>
-            b.textContent.includes('All Photos')
+            b.textContent.includes('Export All Photos')
         );
+        if (!allPhotosBtn) throw new Error('Export All Photos button not found');
         allPhotosBtn.click();
 
         await new Promise((r) => setTimeout(r, 1000)); // Wait for generation

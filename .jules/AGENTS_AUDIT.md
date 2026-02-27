@@ -80,6 +80,8 @@
 
 [x] tests/test_bookmarklet_builder_edge_cases.js (Implemented comprehensive tests for line comments and regex ambiguity)
 
+[x] scripts/verify_links.py (Added robust test suite in tests/test_verify_links.js)
+
 🆙 Modernization Targets
 
 [x] Replace alert() with non-blocking UI (Toast/Modal) across all bookmarklets
