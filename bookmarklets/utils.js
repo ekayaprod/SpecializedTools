@@ -91,6 +91,14 @@
     /* Sanitization Helpers */
     const REGEX_WHITESPACE = /\s+/g;
 
+    const ESCAPE_MAP = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;',
+    };
+
     /* Constants for Async Processing */
     const ASYNC_CHUNK_SIZE = 50;
     const ASYNC_TIME_SLICE_MS = 12;
@@ -332,10 +340,8 @@
         buildElement(tag, styles, text, parent, props) {
             const el = document.createElement(tag);
             if (styles) {
-                for (let key in styles) {
-                    if (Object.prototype.hasOwnProperty.call(styles, key)) {
-                        el.style[key] = styles[key];
-                    }
+                for (const [key, val] of Object.entries(styles)) {
+                    el.style[key] = val;
                 }
             }
             if (text) el.textContent = text;
@@ -787,12 +793,7 @@
          */
         escapeHtml(s) {
             const input = s || s === 0 ? s : '';
-            return String(input)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;');
+            return String(input).replace(/[&<>"']/g, (m) => ESCAPE_MAP[m]);
         },
     }));
 })(window);
