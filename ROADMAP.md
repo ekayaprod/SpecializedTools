@@ -8,6 +8,7 @@ This document tracks the status of features and tools within the Browser Toolkit
     - [x] **Image Export**: Save element as PNG via html2canvas.
     - [x] **Markdown Export**: Convert HTML to clean Markdown.
     - [x] **Rich Text Clipboard Copy**: Copy content with styles for pasting into Google Docs/Word.
+- [x] **Job Post Clipper** (Recruiter Mode): Extract job descriptions and generate ATS resume tailoring prompts.
 - [x] **Property Clipper**: Specialized real estate research tool.
     - [x] **Prompt Engine**: Generates investment analysis prompts.
         - [x] Short-Term Rental (STR)
@@ -35,7 +36,6 @@ This document tracks the status of features and tools within the Browser Toolkit
 
 ## Future Ideas
 
-- [ ] **Job Post Clipper** (Recruiter Mode): Extract job descriptions for resume tailoring. (See [IDEAS.md](IDEAS.md#job-post-clipper-recruiter-mode))
 - [ ] **Recipe Clipper** (Chef Mode): Extract schema.org recipes for distraction-free cooking. (See [IDEAS.md](IDEAS.md#recipe-clipper-chef-mode))
 - [ ] **Video Clipper** (Study Mode): Extract transcripts and metadata for LLM study guides. (See [IDEAS.md](IDEAS.md#video-clipper-study-mode))
 - [ ] **Shopping Clipper** (Deal Hunter Mode): Extract product details and prices for comparison.
