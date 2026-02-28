@@ -1,6 +1,6 @@
 # Curator Audit Report
 
-**Date:** 2024-05-19
+**Date:** 2024-06-12
 **Curator:** Jules (AI Assistant)
 
 ## Summary
@@ -9,17 +9,22 @@ A comprehensive audit of the project's static assets (images, fonts, icons) and 
 
 ## Findings
 
-### 1. Unused Assets
+### 1. Format Conversions (PNG to WebP)
+
+- **Status:** PASS
+- **Details:** No `.png`, `.jpg`, `.jpeg`, `.gif`, `.svg`, `.webp`, or `.avif` files were found stored directly in the repository directory or any sub-directory.
+
+### 2. Unused Assets
 
 - **Status:** PASS
 - **Details:** No unused static assets (images, fonts, etc.) were found in the repository. The project primarily relies on dynamic content generation and external CDNs (Tailwind CSS, jsPDF, html2canvas).
 
-### 2. Missing Alt Attributes
+### 3. Missing Alt Attributes
 
 - **Status:** PASS
 - **Details:**
     - **Production Code:**
-        - `bookmarklets/property-clipper.js`: `new Image()` is used for canvas drawing (not user-visible), so no `alt` attribute is required. `BookmarkletUtils.buildElement('img', ...)` correctly uses `alt` attributes derived from property data (`label` or fallback 'Property Photo').
+        - `bookmarklets/property-clipper.js`: `new Image()` is used for canvas drawing (not user-visible), so no `alt` attribute is required. `BookmarkletUtils.buildElement('img', ...)` correctly uses `alt` attributes derived from property data (`label` or fallback 'Property Photo'). Template literals generating `<img>` tags (e.g. `Hero Image`, `photo-card`) properly include robust `alt` attributes dynamically injected from property addresses and photo labels (escaped for safety).
         - `bookmarklets/web-clipper.js`: `<img>` tags are cloned from the source page. The clipper normalizes them but does not inject new `alt` attributes (which is correct as it captures existing content).
         - `index.html`: Uses inline SVGs for icons, which are decorative or have appropriate `aria-label` attributes on their containers.
     - **Test Code:**
