@@ -82,6 +82,8 @@
 
 [x] scripts/verify_links.py (Added robust test suite in tests/test_verify_links.js)
 
+[x] bookmarklets/pa-county-finder.js (Implemented comprehensive tests for focus trap logic in tests/test_pa_county_finder_focus_trap.js)
+
 🆙 Modernization Targets
 
 [x] Replace alert() with non-blocking UI (Toast/Modal) across all bookmarklets
