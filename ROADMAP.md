@@ -22,6 +22,7 @@ This document tracks the status of features and tools within the Browser Toolkit
     - [x] **Temp Password Mode**: Quick disposable passwords.
 - [x] **PA County Finder**: ZIP code and city lookup for Pennsylvania.
 - [x] **Quick Clicker**: Automated single-target clicking with scheduled execution and wake lock.
+- [x] **Delayed Clicker**: Simple, stable timer clicker with delayed execution.
 - [x] **Macro Builder**: Record and replay complex click sequences with shadow DOM support.
 - [x] **Interaction Recorder**: Debug automation issues by logging click paths and element attributes.
 - [x] **Bookmarklet Compilation**: Automated build process to minify and encode scripts.
@@ -32,10 +33,9 @@ This document tracks the status of features and tools within the Browser Toolkit
 
 ## In Progress
 
-- [ ] (No active tasks currently)
+- [ ] **Recipe Clipper** (Chef Mode): Extract schema.org recipes for distraction-free cooking.
 
 ## Future Ideas
 
-- [ ] **Recipe Clipper** (Chef Mode): Extract schema.org recipes for distraction-free cooking. (See [IDEAS.md](IDEAS.md#recipe-clipper-chef-mode))
 - [ ] **Video Clipper** (Study Mode): Extract transcripts and metadata for LLM study guides. (See [IDEAS.md](IDEAS.md#video-clipper-study-mode))
 - [ ] **Shopping Clipper** (Deal Hunter Mode): Extract product details and prices for comparison.
