@@ -2,21 +2,6 @@
 
 This document serves as a staging area for new concepts before they graduate to the Roadmap.
 
-## 🍳 Recipe Clipper (Chef Mode)
-
-**Problem:** Modern food blogs are unusable due to ads, popups, and excessive storytelling required for SEO ranking. Finding the actual ingredients and instructions is a chore.
-
-**Solution:** A culinary-focused bookmarklet that bypasses the visual clutter by extracting the standardized `application/ld+json` (Schema.org/Recipe) metadata hidden in the page code.
-
-**Core Features:**
-
-- **Schema Extraction:** Instantly parses the hidden JSON-LD data used by Google Rich Snippets.
-- **Distraction-Free View:** Overlays a clean, printable recipe card with just Ingredients, Steps, and Timings.
-- **Smart Scaling:** Simple multiplier (0.5x, 2x, 4x) to auto-calculate ingredient quantities.
-- **Cookbook Export:** One-click save to Markdown (for personal wikis like Obsidian) or PDF.
-
-**Alignment:** Extends the "Clipper" family into a high-value consumer vertical. Reuses the existing `PdfProcessor` and `Markdown` export logic from Property Clipper and Web Clipper.
-
 ## 🎥 Video Clipper (Study Mode)
 
 **Problem:** Consuming long-form educational videos (lectures, tutorials, webinars) to find specific answers is inefficient. Manually copying transcripts often results in messy text full of timestamps and line breaks.
