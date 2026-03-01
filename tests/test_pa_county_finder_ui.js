@@ -103,6 +103,28 @@ async function runUITest() {
         if (!successMsg) throw new Error('Result missing .pa-result-card class');
         console.log('✅ Search result styled correctly');
 
+        // --- Test 2b: Copy Button ---
+        console.log('\n--- Test 2b: Copy Button ---');
+        const copyBtn = resultDiv.querySelector('.pa-copy-btn');
+        if (!copyBtn) throw new Error('Copy button not found');
+
+        let clipboardText = '';
+        global.navigator.clipboard = {
+            writeText: async (text) => {
+                clipboardText = text;
+            }
+        };
+
+        copyBtn.click();
+
+        // Wait for copy interaction
+        await new Promise(resolve => setTimeout(resolve, 50));
+
+        if (!clipboardText.includes('Adams')) {
+            throw new Error(`Expected 'Adams' in clipboard, got: ${clipboardText}`);
+        }
+        console.log('✅ Copy button writes to clipboard');
+
         // --- Test 3: Escape Key & Focus Return ---
         console.log('\n--- Test 3: Escape Key & Focus Return ---');
 
@@ -135,9 +157,12 @@ async function runUITest() {
         if (!closeBtn) throw new Error("Close button missing aria-label='Close'");
         console.log('✅ Close button has aria-label');
 
-        // Clean up
-        closeBtn.click();
-        if (document.body.contains(overlay2)) throw new Error('Close button failed to close');
+        // Test clicking background overlay to close
+        console.log('\n--- Test 4b: Click Background to Close ---');
+        overlay2.click(); // Should close overlay
+        if (document.body.contains(overlay2)) throw new Error('Clicking background overlay failed to close');
+        console.log('✅ Clicking background overlay closed the dialog');
+
 
         // --- Test 5: XSS Prevention ---
         console.log('\n--- Test 5: XSS Prevention ---');
@@ -169,8 +194,65 @@ async function runUITest() {
         if (!resultHTML.includes('&lt;img')) throw new Error('Expected escaped HTML entities.');
         console.log('✅ XSS payload escaped correctly');
 
+        // --- Test 6: Clear Button & Empty Input ---
+        console.log('\n--- Test 6: Clear Button & Empty Input ---');
+        const clearBtn = card3.querySelector('.pa-clear-btn');
+        if(!clearBtn) throw new Error('Clear button not found');
+
+        input3.value = '15201';
+        clearBtn.click();
+
+        if (input3.value !== '') throw new Error('Clear button did not clear input');
+        if (document.activeElement !== input3) throw new Error('Clear button did not focus input');
+        console.log('✅ Clear button cleared and focused input');
+
+        // Test empty submit
+        input3.value = '';
+        searchBtn3.click();
+
+        // Should not trigger loading if empty
+        if (searchBtn3.disabled) throw new Error('Search triggered on empty input');
+        console.log('✅ Empty input ignores search');
+
+        // Test Enter key
+        input3.value = '15201';
+        const enterEvent = new global.window.KeyboardEvent('keydown', {
+            key: 'Enter',
+            bubbles: true,
+            cancelable: true,
+        });
+        input3.dispatchEvent(enterEvent);
+
+        if (!searchBtn3.disabled) throw new Error('Enter key did not trigger search');
+        console.log('✅ Enter key triggered search');
+
         // Clean up
         overlay3.remove();
+
+        // --- Test 7: Error Result Update ---
+        console.log('\n--- Test 7: Error Result Update ---');
+        // Run script again to get fresh instance
+        eval(scriptContent);
+
+        const overlay4 = document.querySelector('.pa-overlay');
+        const card4 = overlay4.querySelector('.pa-card');
+        const input4 = card4.querySelector('.pa-input');
+        const searchBtn4 = card4.querySelector('.pa-btn-primary');
+
+        input4.value = '99999';
+        searchBtn4.click();
+
+        // Wait for loading delay (300ms)
+        await new Promise(resolve => setTimeout(resolve, 350));
+
+        const resultDiv4 = card4.querySelector('#pa-result');
+        if (!resultDiv4.querySelector('.pa-result-error')) {
+            throw new Error('Error message not displayed for invalid query');
+        }
+        console.log('✅ Error message displayed correctly');
+
+        overlay4.remove();
+
     } catch (e) {
         console.error('❌ Test Failed:', e);
         passed = false;
