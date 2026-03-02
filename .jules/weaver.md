@@ -1,0 +1,3 @@
+## 2024-11-20 - [Extracted & Flattened: getDeepTarget and getTarget utilities]
+**Learning:** `getDeepTarget` and `getTarget` were repeatedly duplicated in `interaction-recorder`, `macro-builder`, and `quick-clicker`. These methods pierced Shadow DOM boundaries to retrieve elements at `[e.clientX, e.clientY]` and performed heuristic checks for relevant, clickable targets.
+**Action:** Centralized both methods in `bookmarklets/utils.js` within the `BookmarkletUtils` namespace, while flattening the `while` loops and applying early returns to the heuristic checks, to produce cleaner and more maintainable code.

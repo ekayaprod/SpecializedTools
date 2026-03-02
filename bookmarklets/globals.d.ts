@@ -147,6 +147,20 @@ declare global {
          */
         escapeHtml(str: string | number | null | undefined): string;
 
+        /**
+         * Helper to pierce Shadow DOM boundaries to find the true target.
+         * @param {MouseEvent} e - The mouse event.
+         * @returns {HTMLElement} The deepest element at the event coordinates.
+         */
+        getDeepTarget(e: MouseEvent): HTMLElement;
+
+        /**
+         * Heuristic to select the most relevant clickable element (button, link, input).
+         * @param {MouseEvent} e - The mouse event.
+         * @returns {HTMLElement|null} The most relevant clickable target, or null if none suitable.
+         */
+        getTarget(e: MouseEvent): HTMLElement | null;
+
         Prompts?: {
             STANDARD_OUTPUTS: string;
             PROMPT_DATA: Record<string, any>;

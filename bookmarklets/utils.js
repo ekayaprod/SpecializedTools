@@ -795,5 +795,50 @@
             const input = s || s === 0 ? s : '';
             return String(input).replace(/[&<>"']/g, (m) => ESCAPE_MAP[m]);
         },
+        /**
+         * Helper to pierce Shadow DOM boundaries to find the true target.
+         * @param {MouseEvent} e - The mouse event.
+         * @returns {HTMLElement} The deepest element at the event coordinates.
+         */
+        getDeepTarget(e) {
+            let t = /** @type {HTMLElement} */ (e.target);
+            while (true) {
+                if (!t.shadowRoot) break;
+                if (!t.shadowRoot.elementFromPoint) break;
+                const nested = /** @type {HTMLElement} */ (t.shadowRoot.elementFromPoint(e.clientX, e.clientY));
+                if (!nested) break;
+                if (nested === t) break;
+                t = nested;
+            }
+            return t;
+        },
+        /**
+         * Heuristic to select the most relevant clickable element (button, link, input).
+         * @param {MouseEvent} e - The mouse event.
+         * @returns {HTMLElement|null} The most relevant clickable target, or null if none suitable.
+         */
+        getTarget(e) {
+            const t = this.getDeepTarget(e);
+
+            let targetEl = /** @type {HTMLElement|null} */ (t.closest('button, a, [role="button"], [role="radio"], label'));
+
+            if (!targetEl) {
+                targetEl = /** @type {HTMLElement|null} */ (t.closest('.menu-selector, .entity-image-button'));
+            }
+
+            if (!targetEl && ['IMG', 'SVG', 'PATH', 'SPAN', 'I', 'GUX-ICON'].includes(t.tagName)) {
+                targetEl = t.parentElement;
+            }
+
+            targetEl = targetEl || t;
+
+            if (targetEl.tagName === 'BODY') return null;
+            if (targetEl.tagName === 'HTML') return null;
+
+            const r = targetEl.getBoundingClientRect();
+            if (r.width >= window.innerWidth * 0.95 && r.height >= window.innerHeight * 0.95) return null;
+
+            return targetEl;
+        },
     }));
 })(window);
