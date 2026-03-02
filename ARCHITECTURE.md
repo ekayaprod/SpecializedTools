@@ -9,14 +9,24 @@ This project provides a collection of standalone browser bookmarklets. The archi
 ```mermaid
 graph TD
     %% Core System
-    Index[("🌐 index.html <br/>(Installer UI)")]
-    Compiler[("⚙️ bookmarklet-builder.js <br/>(Build System)")]
-    Utils[("🧰 utils.js <br/>(Shared Library)")]
+    subgraph "Build System"
+        Index[("🌐 index.html <br/>(Installer UI)")]
+        Compiler[("⚙️ bookmarklet-builder.js <br/>(Build System)")]
+    end
+
+    %% Shared Libraries
+    subgraph "Shared Libraries"
+        Utils[("🧰 utils.js")]
+        H2M[("📄 html-to-markdown.js")]
+        PL[("🧠 prompts/loader.js")]
+        MD[("📝 *.md Templates")]
+    end
 
     %% Domain: Content & Utilities
     subgraph "Content & Utilities"
         WC[("✂️ Web Clipper")]
         PC[("🏠 Property Clipper")]
+        JC[("💼 Job Clipper")]
         PG[("🔑 Passphrase Gen")]
         CF[("📍 PA County Finder")]
     end
@@ -32,11 +42,22 @@ graph TD
     %% Build Flow
     Index -->|Loads & Compiles| Compiler
 
+    %% Text Injection
+    PL -.->|@include_text| MD
+
     %% Dependency Injection
     WC -.->|@require| Utils
+    WC -.->|@require| H2M
+    PC -.->|@require| Utils
+    PC -.->|@require| PL
+    JC -.->|@require| Utils
+    QC -.->|@require| Utils
+    MB -.->|@require| Utils
+    IR -.->|@require| Utils
+    CF -.->|@require| Utils
 
     %% Installation Flow
-    Index -->|Generates Bookmarklet| WC & PC & PG & CF
+    Index -->|Generates Bookmarklet| WC & PC & JC & PG & CF
     Index -->|Generates Bookmarklet| QC & MB & IR & DC
 
     %% Verification
