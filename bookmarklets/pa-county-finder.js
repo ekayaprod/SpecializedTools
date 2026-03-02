@@ -1374,13 +1374,9 @@
     }
 
     /* UI LOGIC */
-    if (typeof module !== 'undefined' && module.exports) {
-        module.exports = { find };
-        return;
-    }
-
-    /* Inject CSS for Animation & Styling */
-    const styleId = 'pa-css';
+    function initUI() {
+        /* Inject CSS for Animation & Styling */
+        const styleId = 'pa-css';
     if (!document.getElementById(styleId)) {
         const style = document.createElement('style');
         style.id = styleId;
@@ -1594,4 +1590,11 @@
         setTimeout(() => inp.focus(), 50);
     }
     document.body.appendChild(overlay);
+    }
+
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = { find, initUI };
+    } else {
+        initUI();
+    }
 })();

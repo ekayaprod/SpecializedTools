@@ -15,7 +15,7 @@
 - [ ] 1 High vulnerability in dependency minimatch (npm audit)
 
 ## 🕵️ Coverage Gaps
-- [ ] None detected
+- [x] pa-county-finder.js UI tested natively
 
 ## 🆙 Modernization Targets
 - [ ] 1 Class Component pattern found in tests/test_passphrase_generator_robustness.js
