@@ -22,18 +22,14 @@ global.Event = dom.window.Event;
 global.KeyboardEvent = dom.window.KeyboardEvent;
 global.MouseEvent = dom.window.MouseEvent;
 
-// Load script
-const scriptPath = path.join(__dirname, '../bookmarklets/pa-county-finder.js');
-let scriptContent = fs.readFileSync(scriptPath, 'utf8');
-
+// Load utils first
 const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
 const utilsCode = fs.readFileSync(utilsPath, 'utf8');
+eval(utilsCode);
+global.BookmarkletUtils = window.BookmarkletUtils;
 
-// Strip module.exports check to force UI execution
-scriptContent = scriptContent.replace(
-    /if\s*\(\s*typeof\s*module\s*!==\s*'undefined'\s*&&\s*module\.exports\s*\)\s*\{[\s\S]*?return;\s*\}/,
-    'if (false) {}'
-);
+// Load script natively
+const { initUI } = require('../bookmarklets/pa-county-finder.js');
 
 // Mock clipboard
 global.navigator.clipboard = {
@@ -48,15 +44,11 @@ async function runPaletteTest() {
     let passed = true;
 
     try {
-        // Load utils first
-        eval(utilsCode);
-        global.BookmarkletUtils = window.BookmarkletUtils;
-
         // Mock getSelection
         global.window.getSelection = () => ({ toString: () => '' });
 
-        // Run the script
-        eval(scriptContent);
+        // Run the script natively
+        initUI();
 
         const overlay = document.querySelector('.pa-overlay');
         if (!overlay) throw new Error('Overlay not created');

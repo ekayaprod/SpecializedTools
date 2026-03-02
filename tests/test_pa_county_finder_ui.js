@@ -22,18 +22,14 @@ global.Event = dom.window.Event;
 global.KeyboardEvent = dom.window.KeyboardEvent;
 global.MouseEvent = dom.window.MouseEvent;
 
-// Load script
-const scriptPath = path.join(__dirname, '../bookmarklets/pa-county-finder.js');
-let scriptContent = fs.readFileSync(scriptPath, 'utf8');
-
+// Load utils first
 const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
 const utilsCode = fs.readFileSync(utilsPath, 'utf8');
+eval(utilsCode);
+global.BookmarkletUtils = window.BookmarkletUtils;
 
-// Strip module.exports check to force UI execution
-scriptContent = scriptContent.replace(
-    /if\s*\(\s*typeof\s*module\s*!==\s*'undefined'\s*&&\s*module\.exports\s*\)\s*\{[\s\S]*?return;\s*\}/,
-    'if (false) {}'
-);
+// Load script natively
+const { initUI } = require('../bookmarklets/pa-county-finder.js');
 
 async function runUITest() {
     console.log('🚀 Starting UI test for PA County Finder...');
@@ -56,12 +52,8 @@ async function runUITest() {
             triggerFocused = true;
         };
 
-        // Load utils first
-        eval(utilsCode);
-        global.BookmarkletUtils = window.BookmarkletUtils;
-
-        // Run the script
-        eval(scriptContent);
+        // Run the script natively via initUI
+        initUI();
 
         const overlay = document.querySelector('.pa-overlay');
         if (!overlay) throw new Error('Overlay (.pa-overlay) not created');
@@ -149,7 +141,7 @@ async function runUITest() {
         global.window.getSelection = () => ({ toString: () => '15222' });
 
         // Run script again
-        eval(scriptContent);
+        initUI();
 
         const overlay2 = document.querySelector('.pa-overlay');
         const closeBtn = overlay2.querySelector('button[aria-label="Close"]');
@@ -171,7 +163,7 @@ async function runUITest() {
         global.window.getSelection = () => ({ toString: () => '' });
 
         // Run script again to get fresh instance
-        eval(scriptContent);
+        initUI();
 
         const overlay3 = document.querySelector('.pa-overlay');
         const card3 = overlay3.querySelector('.pa-card');
@@ -232,7 +224,7 @@ async function runUITest() {
         // --- Test 7: Error Result Update ---
         console.log('\n--- Test 7: Error Result Update ---');
         // Run script again to get fresh instance
-        eval(scriptContent);
+        initUI();
 
         const overlay4 = document.querySelector('.pa-overlay');
         const card4 = overlay4.querySelector('.pa-card');
