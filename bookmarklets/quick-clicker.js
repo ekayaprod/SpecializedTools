@@ -190,39 +190,6 @@
         }
 
         /**
-         * Helper to pierce Shadow DOM boundaries to find the true target.
-         */
-        getDeepTarget(e) {
-            let t = e.target;
-            while (t.shadowRoot && t.shadowRoot.elementFromPoint) {
-                const nested = t.shadowRoot.elementFromPoint(e.clientX, e.clientY);
-                if (!nested || nested === t) break;
-                t = nested;
-            }
-            return t;
-        }
-
-        /**
-         * Heuristic to select the most relevant clickable element (button, link, input).
-         */
-        getTarget(e) {
-            let t = this.getDeepTarget(e);
-
-            let targetEl = t.closest('button, a, [role="button"], [role="radio"], label');
-            if (!targetEl) targetEl = t.closest('.menu-selector, .entity-image-button');
-            if (!targetEl && ['IMG', 'SVG', 'PATH', 'SPAN', 'I', 'GUX-ICON'].includes(t.tagName))
-                targetEl = t.parentElement;
-            if (!targetEl) targetEl = t;
-
-            if (targetEl.tagName === 'BODY' || targetEl.tagName === 'HTML') return null;
-
-            const r = targetEl.getBoundingClientRect();
-            if (r.width >= window.innerWidth * 0.95 && r.height >= window.innerHeight * 0.95) return null;
-
-            return targetEl;
-        }
-
-        /**
          * Starts the element picker mode.
          */
         pick() {
@@ -244,7 +211,7 @@
                     hl.style.display = 'none';
                     return;
                 }
-                const t = this.getTarget(e);
+                const t = BookmarkletUtils.getTarget(e);
                 if (!t) {
                     hl.style.display = 'none';
                     return;
@@ -270,7 +237,7 @@
                 stopEvent(e);
                 if (e.target.tagName === 'IFRAME') return this.showToast('Cannot click inside IFrame', 'error');
 
-                let targetEl = this.getTarget(e);
+                let targetEl = BookmarkletUtils.getTarget(e);
                 if (!targetEl) return;
 
                 this.state.t1 = targetEl;

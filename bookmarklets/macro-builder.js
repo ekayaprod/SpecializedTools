@@ -134,33 +134,6 @@
             this.pick('sequence');
         }
 
-        getDeepTarget(e) {
-            let t = e.target;
-            while (t.shadowRoot && t.shadowRoot.elementFromPoint) {
-                const nested = t.shadowRoot.elementFromPoint(e.clientX, e.clientY);
-                if (!nested || nested === t) break;
-                t = nested;
-            }
-            return t;
-        }
-
-        getTarget(e) {
-            let t = this.getDeepTarget(e);
-
-            let targetEl = t.closest('button, a, [role="button"], [role="radio"], label');
-            if (!targetEl) targetEl = t.closest('.menu-selector, .entity-image-button');
-            if (!targetEl && ['IMG', 'SVG', 'PATH', 'SPAN', 'I', 'GUX-ICON'].includes(t.tagName))
-                targetEl = t.parentElement;
-            if (!targetEl) targetEl = t;
-
-            if (targetEl.tagName === 'BODY' || targetEl.tagName === 'HTML') return null;
-
-            const r = targetEl.getBoundingClientRect();
-            if (r.width >= window.innerWidth * 0.95 && r.height >= window.innerHeight * 0.95) return null;
-
-            return targetEl;
-        }
-
         pick(mode) {
             this.h.style.display = 'none';
             const hl = document.createElement('div');
@@ -179,7 +152,7 @@
                     hl.style.display = 'none';
                     return;
                 }
-                const t = this.getTarget(e);
+                const t = BookmarkletUtils.getTarget(e);
                 if (!t) {
                     hl.style.display = 'none';
                     return;
@@ -207,7 +180,7 @@
                 if (this.h.contains(e.target)) return;
                 stopEvent(e);
 
-                let targetEl = this.getTarget(e);
+                let targetEl = BookmarkletUtils.getTarget(e);
                 if (!targetEl) return;
 
                 const sel = this.getSel(targetEl);
@@ -230,7 +203,7 @@
                         const tag = targetEl.tagName;
                         let ask = false;
                         if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
-                            const isPwd = targetEl.type === 'password';
+                            const isPwd = /** @type {HTMLInputElement} */ (targetEl).type === 'password';
                             val = prompt(isPwd ? 'Value (Not Stored):' : 'Type text (Empty to click):');
                             ask = isPwd;
                             if (val && !isPwd) {
