@@ -1,0 +1,2 @@
+- Major architectural shift: Discovered `@include_text` prompt loading mechanism in `bookmarklets/prompts/loader.js` to inject `.md` templates at compile-time.
+- Added `Job Clipper` and `Delayed Clicker` to the core architecture map.
