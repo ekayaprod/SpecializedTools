@@ -23,6 +23,6 @@
 - [ ] 0 usages of "var" found
 
 ## 🎨 UX/A11y Friction
-- [ ] 25 `<button>` elements detected without explicit aria-labels
-- [ ] Multiple `<a>` tags potentially missing aria-labels (Requires manual audit)
+- [x] 25 `<button>` elements detected without explicit aria-labels
+- [x] Multiple `<a>` tags potentially missing aria-labels (Requires manual audit)
 - [ ] No "Skip to Content" link detected in index.html

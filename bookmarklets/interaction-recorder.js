@@ -44,7 +44,7 @@
                 '<div class="row" id="drag"><h3>Recorder</h3><span id="x" style="cursor:pointer">✕</span></div>' +
                 '<div class="status" id="st">Ready</div>' +
                 '<div class="count" id="cnt">0 Clicks</div>' +
-                '<button id="btn">Start</button>' +
+                '<button id="btn" aria-label="Start Recording">Start</button>' +
                 '</div>';
 
             this.q = (s) => this.s.querySelector(s);

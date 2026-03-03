@@ -85,6 +85,7 @@
                 >
                     <button
                         data-filter="all"
+                        aria-label="Filter all"
                         aria-pressed="true"
                         class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-indigo-600 text-white shadow-md transition-all"
                     >
@@ -92,6 +93,7 @@
                     </button>
                     <button
                         data-filter="content"
+                        aria-label="Filter by content"
                         aria-pressed="false"
                         class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all"
                     >
@@ -99,6 +101,7 @@
                     </button>
                     <button
                         data-filter="automation"
+                        aria-label="Filter by automation"
                         aria-pressed="false"
                         class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all"
                     >
@@ -106,6 +109,7 @@
                     </button>
                     <button
                         data-filter="security"
+                        aria-label="Filter by security"
                         aria-pressed="false"
                         class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all"
                     >
@@ -308,7 +312,7 @@
 
                     <div class="mt-auto">
                          <div class="flex w-full shadow-md rounded-lg overflow-hidden group">
-                            <a id="btn-${tool.id}" href="#" onclick="return false;" aria-busy="true"
+                            <a id="btn-${tool.id}" href="#" onclick="return false;" aria-busy="true" aria-label="Drag to install ${tool.name}"
                                class="bookmarklet-btn flex-1 ${btnClass} text-white font-bold py-3 px-4 text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 transition-all motion-safe:active:scale-95 truncate flex items-center justify-center">
                                 <svg class="animate-spin mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

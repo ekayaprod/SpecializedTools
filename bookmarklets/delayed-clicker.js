@@ -162,7 +162,7 @@
                         <div class="form-group">
                             <label>Target Element</label>
                             <div id="picked-label" class="target-display">None selected</div>
-                            <button id="pick" class="btn btn-secondary">
+                            <button id="pick" aria-label="Pick Element to Click" class="btn btn-secondary">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"/><path d="M22 19l-3-3l-3 3"/><path d="M19 16v6"/></svg>
                                 Pick Element
                             </button>
@@ -173,7 +173,7 @@
                             <input type="number" id="mn" value="0.5" step="0.1" min="0.01">
                         </div>
                         
-                        <button id="go" class="btn btn-primary" disabled>
+                        <button id="go" aria-label="Start Timer" class="btn btn-primary" disabled>
                             Start Timer
                         </button>
                     </div>
@@ -182,7 +182,7 @@
                     <div id="p2" class="panel hd">
                         <label style="text-align:center">Executing In</label>
                         <div id="cd" class="timer-display">00:00</div>
-                        <button id="cancel" class="btn btn-secondary" style="margin-top:0">Cancel</button>
+                        <button id="cancel" aria-label="Cancel Timer" class="btn btn-secondary" style="margin-top:0">Cancel</button>
                     </div>
                 </div>
             </div>`;

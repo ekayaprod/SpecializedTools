@@ -47,3 +47,8 @@ BOUNDARIES
 
 **Learning:** Toast notifications alone are sometimes too subtle for primary actions like "Copy Code". Users expect immediate visual confirmation at the point of interaction (the button itself).
 **Action:** Implemented a pattern where the copy button temporarily changes its icon to a checkmark (✓) for 2 seconds, providing clear, delightful feedback that the action succeeded.
+
+## 2024-05-27 - Explicit ARIA Labels for Interaction Controls
+
+**Learning:** Buttons without visible text (like icon-only buttons) or `<button>` elements generally used in highly interactive bookmarklets often fail accessibility audits due to missing context for screen readers. This makes interactive tools like macros and clickers difficult to use for vision-impaired users.
+**Action:** Consistently add descriptive `aria-label` attributes to all interactive elements (`<button>`, `<a>` acting as buttons) to clearly indicate their action (e.g., `aria-label="Confirm Selection"`, `aria-label="Filter all"`), ensuring inclusive accessibility and full compliance with A11y standards.
