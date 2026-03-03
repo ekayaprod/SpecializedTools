@@ -245,6 +245,35 @@ async function runUITest() {
 
         overlay4.remove();
 
+        // --- Test 8: Multiple clicks while loading ---
+        console.log('\n--- Test 8: Multiple clicks while loading ---');
+        initUI();
+        const overlay5 = document.querySelector('.pa-overlay');
+        const card5 = overlay5.querySelector('.pa-card');
+        const input5 = card5.querySelector('.pa-input');
+        const searchBtn5 = card5.querySelector('.pa-btn-primary');
+
+        input5.value = '17301';
+        searchBtn5.click();
+
+        // btn should be disabled now
+        if (!searchBtn5.disabled) throw new Error('Search button should be disabled after click');
+
+        // Attempt a second click while disabled (should return early in performSearch)
+        searchBtn5.click();
+
+        // Attempt submit via Enter while disabled
+        const enterEvent2 = new global.window.KeyboardEvent('keydown', {
+            key: 'Enter',
+            bubbles: true,
+            cancelable: true,
+        });
+        input5.dispatchEvent(enterEvent2);
+
+        await new Promise(resolve => setTimeout(resolve, 350));
+        overlay5.remove();
+        console.log('✅ Handled multiple clicks and enter gracefully');
+
     } catch (e) {
         console.error('❌ Test Failed:', e);
         passed = false;
