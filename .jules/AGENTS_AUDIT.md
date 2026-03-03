@@ -15,6 +15,7 @@
 - [ ] 1 High vulnerability in dependency minimatch (npm audit)
 
 ## 🕵️ Coverage Gaps
+- [x] pa-county-finder.js disabled state handling
 - [x] pa-county-finder.js UI tested natively
 
 ## 🆙 Modernization Targets
