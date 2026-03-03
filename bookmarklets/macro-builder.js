@@ -258,7 +258,11 @@
 
                 let actionHtml = '';
                 s.actions.forEach((act, ai) => {
-                    let desc = act.val ? 'Type "' + act.val + '"' : act.txt ? 'Click "' + act.txt + '"' : 'Click';
+                    let desc = act.val
+                        ? 'Type "' + BookmarkletUtils.escapeHtml(act.val) + '"'
+                        : act.txt
+                          ? 'Click "' + BookmarkletUtils.escapeHtml(act.txt) + '"'
+                          : 'Click';
                     actionHtml += '<div class="action-item">' + desc + '</div>';
                 });
 
