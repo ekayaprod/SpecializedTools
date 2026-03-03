@@ -61,8 +61,8 @@
                 '<div class="row" id="drag"><h3>Macro Builder</h3><span id="x" style="cursor:pointer">✕</span></div>' +
                 '<div id="view_steps">' +
                 '<div id="list" class="list"><div class="empty-msg">No steps. Add one to start.</div></div>' +
-                '<button id="add">➕ Add Sequence</button>' +
-                '<button id="exp" style="background:#db2777">⚡ Export</button>' +
+                '<button id="add" aria-label="Add Macro Sequence">➕ Add Sequence</button>' +
+                '<button id="exp" aria-label="Export Macro" style="background:#db2777">⚡ Export</button>' +
                 '<div id="out" class="export-area" style="display:none">' +
                 '<p style="text-align:center;color:#e2e8f0;margin:0 0 10px 0">Drag to toolbar:</p>' +
                 '<a id="lnk" href="#" class="bm-btn">🤖 Macro</a>' +
@@ -72,8 +72,8 @@
                 '<div style="font-weight:bold;margin-bottom:10px">Confirm Selection</div>' +
                 '<div id="prev_tag" style="color:#94a3b8;font-size:12px;margin-bottom:5px"></div>' +
                 '<div id="prev_sel" style="color:#c7d2fe;font-size:11px;margin-bottom:15px;word-break:break-all"></div>' +
-                '<button id="prev_yes" style="background:#059669;margin-right:10px;width:auto;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;color:white;">Confirm</button>' +
-                '<button id="prev_no" style="background:#ef4444;width:auto;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;color:white;">Retry</button>' +
+                '<button id="prev_yes" aria-label="Confirm Selection" style="background:#059669;margin-right:10px;width:auto;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;color:white;">Confirm</button>' +
+                '<button id="prev_no" aria-label="Retry Selection" style="background:#ef4444;width:auto;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;color:white;">Retry</button>' +
                 '</div>' +
                 '</div>';
 
@@ -337,7 +337,7 @@
                         this.h.id = this.id;
                         this.h.style.cssText = 'position:fixed;top:15px;right:15px;z-index:2147483647;font-family:system-ui,sans-serif';
                         this.s = this.h.attachShadow({mode:'open'});
-                        this.s.innerHTML = '<style>:host{all:initial;font-family:system-ui,sans-serif}.box{background:#1e1b4b;color:#e2e8f0;width:240px;padding:16px;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,0.7);border:1px solid #4338ca;font-size:13px}.row{display:flex;justify-content:space-between;align-items:center;cursor:move;user-select:none;padding-bottom:5px;border-bottom:1px solid #334155;margin-bottom:10px}.timer{font-size:32px;text-align:center;color:#a5b4fc;margin:10px 0;font-family:monospace}button{width:100%;background:#ef4444;color:#fff;border:none;padding:8px;border-radius:6px;cursor:pointer}</style><div class="box"><div class="row" id="drag"><b>RUNNING</b><span id="x" style="cursor:pointer">✕</span></div><div style="text-align:center;color:#c7d2fe;font-size:11px" id="st">Initializing...</div><div class="timer" id="tm">00:00</div><button id="cn">Stop</button></div>';
+                        this.s.innerHTML = '<style>:host{all:initial;font-family:system-ui,sans-serif}.box{background:#1e1b4b;color:#e2e8f0;width:240px;padding:16px;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,0.7);border:1px solid #4338ca;font-size:13px}.row{display:flex;justify-content:space-between;align-items:center;cursor:move;user-select:none;padding-bottom:5px;border-bottom:1px solid #334155;margin-bottom:10px}.timer{font-size:32px;text-align:center;color:#a5b4fc;margin:10px 0;font-family:monospace}button{width:100%;background:#ef4444;color:#fff;border:none;padding:8px;border-radius:6px;cursor:pointer}</style><div class="box"><div class="row" id="drag"><b>RUNNING</b><span id="x" style="cursor:pointer">✕</span></div><div style="text-align:center;color:#c7d2fe;font-size:11px" id="st">Initializing...</div><div class="timer" id="tm">00:00</div><button id="cn" aria-label="Stop Macro">Stop</button></div>';
                         this.q = s => this.s.querySelector(s);
                         this.q('#x').onclick = () => this.destroy();
                         this.q('#cn').onclick = () => this.destroy();

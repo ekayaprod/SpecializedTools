@@ -73,7 +73,7 @@
                 '<div class="box">' +
                 '<div class="row" id="drag"><b>QUICK CLICKER V27</b><button id="x" aria-label="Close" style="background:transparent;border:none;color:#e2e8f0;font-size:14px;cursor:pointer;padding:0;">✕</button></div>' +
                 '<div id="v1" class="view">' +
-                '<button id="pk">🎯 Select Element</button>' +
+                '<button id="pk" aria-label="Select Target Element">🎯 Select Element</button>' +
                 '<div id="warn" class="hidden warn"></div>' +
                 '<div id="inp" class="hidden">' +
                 '<div style="font-size:11px;color:#94a3b8;margin-top:8px">Input Text</div>' +
@@ -90,11 +90,11 @@
                 '<div id="box_clock" class="hidden">' +
                 '<input type="time" id="clk">' +
                 '</div>' +
-                '<button id="go" disabled>Start</button>' +
+                '<button id="go" aria-label="Start Quick Clicker" disabled>Start</button>' +
                 '</div>' +
                 '<div id="v2" class="view hidden">' +
                 '<div class="timer" id="tm">00:00</div>' +
-                '<button id="cn" style="background:#ef4444">Stop</button>' +
+                '<button id="cn" aria-label="Stop Quick Clicker" style="background:#ef4444">Stop</button>' +
                 '<div id="toast" class="toast hidden" role="alert" aria-live="assertive">No Sleep Active</div>' +
                 '</div>' +
                 '</div>';
