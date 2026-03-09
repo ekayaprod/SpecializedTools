@@ -139,6 +139,13 @@
     const CURRENT_SEASON = getSeason(new Date());
 
     /* GENERATION LOGIC */
+    /**
+     * Generates a list of passphrases based on current configuration state.
+     * Uses a probabilistic "guess and check" retry loop to satisfy length constraints
+     * because the random word selections have variable lengths.
+     *
+     * @returns {string[]} An array of generated passphrases or error messages.
+     */
     function generatePassphrases() {
         const C = STATE.config;
         const [lenStr, idxStr] = C.structure.split('-');
@@ -152,6 +159,10 @@
         const categories = structDef.categories;
 
         let passes = [];
+        // WARN: Do not attempt to optimize this into a single deterministic pass.
+        // Because words are selected randomly from banks with varying lengths,
+        // it is impossible to calculate the exact final length prior to selection.
+        // We must retry generation if the `minLength` / `maxLength` constraints fail.
         const MAX_RETRIES = 500;
 
         // Base symbols
@@ -225,6 +236,10 @@
                      if (C.symPlacement === 'suffix') {
                          result = result + symStr;
                      } else if (C.symPlacement === 'aroundNum') {
+                         // WARN: This logic relies on exact string indices based on `numStr.length`.
+                         // If `numStr` generation changes (e.g., adding padding that is not part of `numStr.length`),
+                         // these indices will break, placing symbols inside words instead of around numbers.
+
                          // We merged numStr. It's either at start or end of 'merged'.
                          // If numStr is start, put sym at start or after numStr (idx = numStr.length)
                          // If numStr is end, put sym before numStr or at end.
