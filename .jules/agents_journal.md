@@ -1,0 +1,3 @@
+## YYYY-MM-DD - 🌌 Singularity - [Bespoke Testing & DOM utilities]
+**Learning:** The repository uses a bespoke Node.js test runner (`scripts/run_tests.js`) to execute tests, and a bespoke DOM utility (`BookmarkletUtils.buildElement`) that requires exact HTML attribute names (e.g., `'class'`, `'aria-label'`), not JS properties (like `'className'` or `'ariaLabel'`), due to its internal use of `setAttribute`.
+**Action:** All newly spawned child agents must be strictly constrained to use the native test runner (`node scripts/run_tests.js` or `npm run test`) and use exact HTML attribute names when interacting with `BookmarkletUtils.buildElement`.
