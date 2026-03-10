@@ -19,7 +19,7 @@
 - [x] pa-county-finder.js UI tested natively
 
 ## 🆙 Modernization Targets
-- [ ] 1 Class Component pattern found in tests/test_passphrase_generator_robustness.js
+- [ ] 1 Class Component pattern found in tests/test-passphrase-generator-robustness.js
 - [ ] 0 usages of "var" found
 
 ## 🎨 UX/A11y Friction

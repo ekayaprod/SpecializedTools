@@ -14,7 +14,7 @@ if (!fs.existsSync(testsDir)) {
 // Find test files
 const files = fs
     .readdirSync(testsDir)
-    .filter((file) => file.startsWith('test_') && file.endsWith('.js'))
+    .filter((file) => file.startsWith('test-') && file.endsWith('.js'))
     .sort(); // Sort alphabetically for consistent execution order
 
 if (files.length === 0) {
