@@ -5,7 +5,7 @@
         window.__mb_v22.destroy();
         return;
     }
-    if (!document.body) return alert('Page has no body.');
+    if (!document.body) return console.error('Page has no body.', { url: window.location.href });
 
     class MacroBuilder {
         constructor() {
@@ -54,13 +54,13 @@
                 '.bm-btn{display:block;background:#059669;color:#fff;text-align:center;padding:10px;border-radius:6px;text-decoration:none;font-weight:bold;border:2px dashed #34d399}' +
                 '.bm-btn:hover{background:#047857}' +
                 'input.delay{width:40px;background:#0f172a;border:1px solid #334155;color:#fff;border-radius:4px;padding:2px;font-size:11px;text-align:center}' +
-                '.empty-msg{text-align:center;color:#64748b;padding:20px;font-style:italic}' +
+                '.empty-msg{text-align:center;color:#64748b;padding:30px 20px;display:flex;flex-direction:column;align-items:center;gap:10px}' +
                 '.cfg-grp{margin-bottom:10px;padding:10px;background:#0f172a;border-radius:6px;border:1px solid #334155}' +
                 '</style>' +
                 '<div class="box">' +
-                '<div class="row" id="drag"><h3>Macro Builder</h3><span id="x" style="cursor:pointer">✕</span></div>' +
+                '<div class="row" id="drag"><h3>Macro Builder</h3><button id="x" aria-label="Close Macro Builder" style="background:transparent;border:none;color:#e2e8f0;font-size:14px;cursor:pointer;padding:0;width:auto;margin:0;">✕</button></div>' +
                 '<div id="view_steps">' +
-                '<div id="list" class="list"><div class="empty-msg">No steps. Add one to start.</div></div>' +
+                '<div id="list" class="list"><div class="empty-msg"><div style="font-size:24px;margin-bottom:8px">🤖</div><div style="font-weight:500;color:#94a3b8">No steps yet.</div><div style="font-size:11px;opacity:0.7">Click "Add Sequence" to start recording actions.</div></div></div>' +
                 '<button id="add" aria-label="Add Macro Sequence">➕ Add Sequence</button>' +
                 '<button id="exp" aria-label="Export Macro" style="background:#db2777">⚡ Export</button>' +
                 '<div id="out" class="export-area" style="display:none">' +
@@ -247,7 +247,7 @@
         refreshList() {
             const l = this.q('#list');
             if (this.steps.length === 0) {
-                l.innerHTML = '<div class="empty-msg">No steps.</div>';
+                l.innerHTML = '<div class="empty-msg"><div style="font-size:24px;margin-bottom:8px">🤖</div><div style="font-weight:500;color:#94a3b8">No steps yet.</div><div style="font-size:11px;opacity:0.7">Click "Add Sequence" to start recording actions.</div></div>';
                 return;
             }
             l.innerHTML = '';
@@ -295,7 +295,7 @@
 
         compile() {
             this._log('Compiling macro', { steps: this.steps.length });
-            if (this.steps.length === 0) return alert('Add steps first');
+            if (this.steps.length === 0) return BookmarkletUtils.showToast('Add steps first', 'error');
 
             this.steps.forEach((step) => {
                 step.actions.forEach((action) => {
@@ -341,7 +341,7 @@
                         this.h.id = this.id;
                         this.h.style.cssText = 'position:fixed;top:15px;right:15px;z-index:2147483647;font-family:system-ui,sans-serif';
                         this.s = this.h.attachShadow({mode:'open'});
-                        this.s.innerHTML = '<style>:host{all:initial;font-family:system-ui,sans-serif}.box{background:#1e1b4b;color:#e2e8f0;width:240px;padding:16px;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,0.7);border:1px solid #4338ca;font-size:13px}.row{display:flex;justify-content:space-between;align-items:center;cursor:move;user-select:none;padding-bottom:5px;border-bottom:1px solid #334155;margin-bottom:10px}.timer{font-size:32px;text-align:center;color:#a5b4fc;margin:10px 0;font-family:monospace}button{width:100%;background:#ef4444;color:#fff;border:none;padding:8px;border-radius:6px;cursor:pointer}</style><div class="box"><div class="row" id="drag"><b>RUNNING</b><span id="x" style="cursor:pointer">✕</span></div><div style="text-align:center;color:#c7d2fe;font-size:11px" id="st">Initializing...</div><div class="timer" id="tm">00:00</div><button id="cn" aria-label="Stop Macro">Stop</button></div>';
+                        this.s.innerHTML = '<style>:host{all:initial;font-family:system-ui,sans-serif}.box{background:#1e1b4b;color:#e2e8f0;width:240px;padding:16px;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,0.7);border:1px solid #4338ca;font-size:13px}.row{display:flex;justify-content:space-between;align-items:center;cursor:move;user-select:none;padding-bottom:5px;border-bottom:1px solid #334155;margin-bottom:10px}.timer{font-size:32px;text-align:center;color:#a5b4fc;margin:10px 0;font-family:monospace}button{width:100%;background:#ef4444;color:#fff;border:none;padding:8px;border-radius:6px;cursor:pointer}</style><div class="box"><div class="row" id="drag"><b>RUNNING</b><button id="x" aria-label="Close Macro Runtime" style="background:transparent;border:none;color:#e2e8f0;font-size:14px;cursor:pointer;padding:0;width:auto;margin:0;">✕</button></div><div style="text-align:center;color:#c7d2fe;font-size:11px" id="st">Initializing...</div><div class="timer" id="tm">00:00</div><button id="cn" aria-label="Stop Macro">Stop</button></div>';
                         this.q = s => this.s.querySelector(s);
                         this.q('#x').onclick = () => this.destroy();
                         this.q('#cn').onclick = () => this.destroy();
@@ -437,7 +437,8 @@
                                 if(!el) {
                                     const err = { step: i+1, action: j+1, sel: action.sel, url: window.location.href };
                                     this._log('Element not found', err, 'error');
-                                    alert('Step '+(i+1)+' Sub-action '+(j+1)+' Failed: Not found ('+action.sel+')');
+                                    this.q('#st').innerText = 'Error: Step '+(i+1)+' Sub-action '+(j+1)+' Failed';
+                                    this.q('#st').style.color = '#ef4444';
                                     return;
                                 }
                                 this._log('Element found', { sel: action.sel });
