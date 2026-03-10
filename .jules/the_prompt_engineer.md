@@ -1,3 +1,7 @@
 ## 2026-02-23 - Bookmarklet Prompt Injection
 **Learning:** Prompts are stored as individual `.md` files in `bookmarklets/prompts/` and injected into `bookmarklets/prompts/loader.js` via `/* @include_text ... */` comments within template literals. This allows for modular, compile-time prompt management without runtime fetch overhead.
 **Action:** When modifying prompt files, verify that the `@include_text` paths in `loader.js` remain correct and that no JS syntax (like backticks) is introduced into the markdown that could break the template literal.
+
+## 2026-02-23 - ✨ Prompt Engineer - Persona & Constraint Upgrade: flip-objective.md
+**Learning:** Vague human wishes for "Estimate ARV, rehab CapEx based on visual condition, and identify structural risks" result in unpredictable AI hallucination outputs lacking structured data. Incorporating negative boundaries ("ABSOLUTELY NO MULTI-PARAGRAPH NARRATIVES") and structured formats (Markdown tables, specific list patterns) mitigates this risk while providing domain-specific real estate concepts like MAO, ARV, 70% rule, and functional obsolescence enforces the AI "Fix-and-Flip Project Manager" persona.
+**Action:** When translating vague human prompts into expert-level directives, always map subjective terms to industry-standard frameworks (e.g., using a 70% Rule MAO worksheet for flip valuation), use explicit markdown structures, and inject negative formatting constraints to constrain output size and shape.
