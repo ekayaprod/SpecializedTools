@@ -25,4 +25,4 @@
 ## 🎨 UX/A11y Friction
 - [x] 25 `<button>` elements detected without explicit aria-labels
 - [x] Multiple `<a>` tags potentially missing aria-labels (Requires manual audit)
-- [ ] No "Skip to Content" link detected in index.html
+- [x] No "Skip to Content" link detected in index.html
