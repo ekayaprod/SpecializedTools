@@ -163,7 +163,7 @@
                             <label>Target Element</label>
                             <div id="picked-label" class="target-display">None selected</div>
                             <button id="pick" aria-label="Pick Element to Click" class="btn btn-secondary">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"/><path d="M22 19l-3-3l-3 3"/><path d="M19 16v6"/></svg>
+                                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"/><path d="M22 19l-3-3l-3 3"/><path d="M19 16v6"/></svg>
                                 Pick Element
                             </button>
                         </div>
@@ -265,7 +265,7 @@
 
             this.ui.label.innerText = `<${name}>`;
             this.ui.pickBtn.innerHTML = `
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
                 Reselect Element
             `;
 
