@@ -102,20 +102,33 @@
             this.cleanupFns.push(() => document.removeEventListener('click', handleClick, true));
         }
 
+        /**
+         * Generates a unique CSS selector path for a given element by traversing up the DOM tree.
+         * The traversal stops early if a unique ID is encountered, as IDs provide a reliable absolute anchor.
+         *
+         * @param {HTMLElement} el - The target DOM element to generate a path for.
+         * @returns {string} A unique CSS selector string (e.g., "div#container > ul > li.item:nth-of-type(2)").
+         */
         getPath(el) {
             const path = [];
             let curr = el;
+            // WARN: We stop at body/html because absolute paths from the root are brittle
+            // to minor layout wrappers (like modals or overlays) injected by the browser or extensions.
             while (curr && curr !== document.body && curr !== document.documentElement) {
                 let selector = curr.tagName.toLowerCase();
                 if (curr.id) {
+                    // ID is assumed to be a globally unique anchor, so we can safely stop traversing.
                     if (window.CSS && window.CSS.escape) {
                         selector += '#' + window.CSS.escape(curr.id);
                     } else {
+                        // Fallback for older browsers lacking CSS.escape or for severely malformed IDs containing quotes.
                         selector += `[id="${curr.id.replace(/"/g, '\\"')}"]`;
                     }
                     path.unshift(selector);
                     break;
                 } else {
+                    // We must strict-check the type of className because certain DOM elements
+                    // return non-string objects, which would cause runtime errors on .trim().
                     if (curr.className && typeof curr.className === 'string') {
                         const classes = curr.className
                             .trim()
@@ -125,6 +138,8 @@
                     }
 
                     // Disambiguate siblings using nth-of-type if necessary
+                    // WARN: This relies on DOM order. If the page heavily uses dynamic DOM mutation
+                    // (like React/Vue virtual lists), this index may become invalid upon replay.
                     const parent = curr.parentElement;
                     if (parent) {
                         const siblings = Array.from(parent.children).filter((c) => c.tagName === curr.tagName);
