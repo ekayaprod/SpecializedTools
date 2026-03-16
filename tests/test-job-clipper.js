@@ -129,8 +129,8 @@ function runTests() {
          };
 
          const prompt = win.PromptGenerator.generate(data);
-         assert.ok(prompt.includes('Act as a Senior Recruiter at Acme'));
-         assert.ok(prompt.includes('Expected Salary Range: $100k'));
+         assert.ok(prompt.includes('Act as an Expert ATS Optimizer and Senior Technical Recruiter at Acme'));
+         assert.ok(prompt.includes('Expected Salary Range:** $100k'));
          assert.ok(prompt.includes('collaboration'));
     });
 
