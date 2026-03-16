@@ -203,14 +203,19 @@
     /* PROMPT GENERATOR */
     const PromptGenerator = {
         generate(data) {
-            return `Act as a Senior Recruiter at ${data.company}.
+            return `Act as an Expert ATS Optimizer and Senior Technical Recruiter at ${data.company}.
 
-I am applying for the "${data.title}" position.
-${data.salary !== '[Salary Range]' ? 'Expected Salary Range: ' + data.salary : ''}
+**Context:** I am applying for the "${data.title}" position.
+${data.salary !== '[Salary Range]' ? '**Expected Salary Range:** ' + data.salary + '\n' : ''}
+**Task:** Analyze the provided job description to extract the core technical requirements and key competencies. Pay special attention to these detected soft skills/cultural cues: ${data.keywords.length > 0 ? data.keywords.join(', ') : 'Not clearly defined'}.
 
-Analyze this job description for key competencies, particularly focusing on these detected soft skills/cultural cues: ${data.keywords.length > 0 ? data.keywords.join(', ') : 'Not clearly defined'}.
+Then, rewrite my existing resume bullet points (pasted below) to aggressively align with this specific role.
 
-Rewrite my resume bullet points (pasted below) to align with these requirements. Prioritize metrics and achievements that match their exact needs, and use the same terminology as the job description.
+**Tone & Style Rules (CRITICAL):**
+- **ATS Optimization:** Maximize exact-match keyword density from the job description without keyword stuffing. Use the exact terminology the company uses.
+- **STAR Method:** Enforce the Situation, Task, Action, Result framework. EVERY bullet must start with a strong action verb and end with a quantifiable metric or concrete business impact.
+- **Banned Words:** Eliminate passive or cliché phrases (e.g., "Responsible for," "Helped with," "Worked on," "Synergy," "Thought leader").
+- **Format:** Output strictly as a Markdown list of bullet points. No conversational filler, introductory remarks, or concluding summaries.
 
 --- JOB DESCRIPTION ---
 ${data.description.substring(0, 3000)}${data.description.length > 3000 ? '...[Truncated]' : ''}
