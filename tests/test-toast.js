@@ -64,23 +64,73 @@ console.log('Running Toast & BuildElement tests...');
             console.log('✅ buildElement null/undefined props passed');
         }
 
-        // Test 2: showToast
+        // Test 2: showToast - Default parameters
         {
-            console.log('Test 2: showToast');
-            window.BookmarkletUtils.showToast('Success!', 'success', 100);
+            console.log('Test 2: showToast - Default parameters');
+            window.BookmarkletUtils.showToast('Info message');
 
             const container = document.getElementById('bm-toast-container');
             assert.ok(container, 'Toast container created');
 
             const toast = container.querySelector('[role="alert"]');
             assert.ok(toast, 'Toast element created');
-            assert.strictEqual(toast.textContent, 'Success!', 'Toast message match');
+            assert.strictEqual(toast.textContent, 'Info message', 'Toast message match');
+            // 'info' color is #2563eb but JSDOM might return rgb(37, 99, 235) or similar
+            // It should be applied to background
+            assert.ok(toast.style.background.includes('2563eb') || toast.style.background.includes('rgb(37, 99, 235)'), 'Default background should be info color');
 
-            // Wait for dismiss
+            // Clean up manually for next tests
+            toast.remove();
+            console.log('✅ showToast default parameters passed');
+        }
+
+        // Test 3: showToast - Explicit type and auto-dismiss
+        {
+            console.log('Test 3: showToast - Explicit type and auto-dismiss');
+            window.BookmarkletUtils.showToast('Error!', 'error', 100);
+
+            const container = document.getElementById('bm-toast-container');
+            const toast = container.lastElementChild;
+            assert.strictEqual(toast.textContent, 'Error!', 'Toast message match');
+            assert.ok(toast.style.background.includes('ef4444') || toast.style.background.includes('rgb(239, 68, 68)'), 'Error background applied');
+
+            // Wait for auto-dismiss
             await new Promise((r) => setTimeout(r, 500));
-
             assert.strictEqual(toast.parentElement, null, 'Toast removed after timeout');
-            console.log('✅ showToast passed');
+            console.log('✅ showToast explicit type and auto-dismiss passed');
+        }
+
+        // Test 4: showToast - Multiple toasts reuse container
+        {
+            console.log('Test 4: showToast - Multiple toasts reuse container');
+            window.BookmarkletUtils.showToast('First', 'success', 5000);
+            window.BookmarkletUtils.showToast('Second', 'info', 5000);
+
+            const containers = document.querySelectorAll('#bm-toast-container');
+            assert.strictEqual(containers.length, 1, 'Should only create one container');
+
+            const toasts = containers[0].querySelectorAll('[role="alert"]');
+            assert.strictEqual(toasts.length, 2, 'Should have two toasts in the container');
+
+            // Clean up
+            toasts.forEach(t => t.remove());
+            console.log('✅ showToast container reuse passed');
+        }
+
+        // Test 5: showToast - Manual dismiss via click
+        {
+            console.log('Test 5: showToast - Manual dismiss via click');
+            window.BookmarkletUtils.showToast('Click me', 'info', 5000);
+
+            const container = document.getElementById('bm-toast-container');
+            const toast = container.lastElementChild;
+            assert.strictEqual(toast.textContent, 'Click me', 'Toast created');
+
+            // Simulate click
+            toast.onclick();
+
+            assert.strictEqual(toast.parentElement, null, 'Toast removed immediately on click');
+            console.log('✅ showToast manual dismiss passed');
         }
 
         console.log('All tests passed!');
