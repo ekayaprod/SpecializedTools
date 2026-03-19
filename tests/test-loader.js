@@ -1,31 +1,10 @@
 const fs = require('fs');
 const path = require('path');
-const jsdom = require('jsdom');
-const { JSDOM } = jsdom;
 const assert = require('assert');
 
 // Path to the script under test
 const scriptPath = path.join(__dirname, '../bookmarklets/prompts/loader.js');
-const scriptCode = fs.readFileSync(scriptPath, 'utf8');
-
-/**
- * Helper to create a fresh JSDOM environment for each test case.
- */
-function createEnv() {
-    const dom = new JSDOM('<!DOCTYPE html><body></body>', {
-        url: 'http://localhost/',
-        runScripts: 'dangerously',
-        resources: 'usable',
-    });
-    // Expose window globally so eval works
-    global.window = dom.window;
-    global.document = dom.window.document;
-
-    // Clear BookmarkletUtils if it leaked from previous runs (though new JSDOM should prevent this on window, global pollution is possible)
-    delete global.window.BookmarkletUtils;
-
-    return dom;
-}
+let scriptCode = fs.readFileSync(scriptPath, 'utf8');
 
 console.log('Running Prompt Loader Tests...');
 
@@ -35,29 +14,37 @@ let failed = 0;
 function runTestCase(name, testFn) {
     try {
         console.log(`Running: ${name}`);
-        const dom = createEnv();
-        testFn(dom);
+        // Create a fresh mock window for each test case
+        const mockWindow = {};
+        testFn(mockWindow);
         console.log(`✅ Passed: ${name}`);
         passed++;
     } catch (e) {
         console.error(`❌ Failed: ${name}`);
         console.error(e);
         failed++;
-    } finally {
-        // Cleanup globals to avoid pollution between tests
-        delete global.window;
-        delete global.document;
     }
 }
 
+// Strip the IIFE and run inside a Function to mock window
+// The file is (function (w) { ... })(window);
+// We can just evaluate the scriptCode as it is, but replace window with our mock Window
+// Or even better: just evaluate the source with new Function('window', scriptCode)(mockWindow) will fail because the script is `(function(w) {})(window)`. Wait, it will try to access the global `window`.
+// Let's strip the IIFE wrapper or execute it by providing window in scope.
+
+// Since the script code has `})(window);` at the end, it references `window`.
+// If we evaluate:
+// `new Function('window', scriptCode)(mockWindow)`
+// Inside the function, the `window` identifier points to `mockWindow`, so `})(window);` passes `mockWindow` as `w`.
+
 // Test Case 1: Initialize from scratch
-runTestCase('Initialize BookmarkletUtils and Prompts when undefined', (dom) => {
-    assert.strictEqual(global.window.BookmarkletUtils, undefined, 'Start with undefined utils');
+runTestCase('Initialize BookmarkletUtils and Prompts when undefined', (mockWindow) => {
+    assert.strictEqual(mockWindow.BookmarkletUtils, undefined, 'Start with undefined utils');
 
     // Execute script
-    eval(scriptCode);
+    new Function('window', scriptCode)(mockWindow);
 
-    const utils = global.window.BookmarkletUtils;
+    const utils = mockWindow.BookmarkletUtils;
     assert.ok(utils, 'BookmarkletUtils should be created');
     assert.ok(utils.Prompts, 'Prompts object should be attached');
     assert.ok(utils.Prompts.PROMPT_DATA, 'PROMPT_DATA should exist');
@@ -65,23 +52,23 @@ runTestCase('Initialize BookmarkletUtils and Prompts when undefined', (dom) => {
 });
 
 // Test Case 2: Preserve existing utils
-runTestCase('Preserve existing BookmarkletUtils properties', (dom) => {
+runTestCase('Preserve existing BookmarkletUtils properties', (mockWindow) => {
     // Setup existing utils
-    global.window.BookmarkletUtils = { existingProp: 'test' };
+    mockWindow.BookmarkletUtils = { existingProp: 'test' };
 
     // Execute script
-    eval(scriptCode);
+    new Function('window', scriptCode)(mockWindow);
 
-    const utils = global.window.BookmarkletUtils;
+    const utils = mockWindow.BookmarkletUtils;
     assert.strictEqual(utils.existingProp, 'test', 'Existing property should be preserved');
     assert.ok(utils.Prompts, 'Prompts should be added');
 });
 
 // Test Case 3: Verify PROMPT_DATA structure
-runTestCase('Verify PROMPT_DATA keys and structure', (dom) => {
-    eval(scriptCode);
+runTestCase('Verify PROMPT_DATA keys and structure', (mockWindow) => {
+    new Function('window', scriptCode)(mockWindow);
 
-    const data = global.window.BookmarkletUtils.Prompts.PROMPT_DATA;
+    const data = mockWindow.BookmarkletUtils.Prompts.PROMPT_DATA;
     const expectedKeys = ['str', 'ltr', 'flip', 'househack', 'appraisal'];
 
     expectedKeys.forEach(key => {
@@ -93,10 +80,10 @@ runTestCase('Verify PROMPT_DATA keys and structure', (dom) => {
 });
 
 // Test Case 4: Verify specific data integrity
-runTestCase('Verify specific prompt data integrity', (dom) => {
-    eval(scriptCode);
+runTestCase('Verify specific prompt data integrity', (mockWindow) => {
+    new Function('window', scriptCode)(mockWindow);
 
-    const data = global.window.BookmarkletUtils.Prompts.PROMPT_DATA;
+    const data = mockWindow.BookmarkletUtils.Prompts.PROMPT_DATA;
 
     // Check STR
     assert.strictEqual(data.str.label, 'Short-Term Rental (STR)');
