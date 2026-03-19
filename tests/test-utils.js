@@ -279,6 +279,47 @@ console.log('Running BookmarkletUtils tests...');
             console.log('✅ createShadowRoot passed');
         }
 
+        // Test 8: generateFilename
+        {
+            console.log('Test 8: generateFilename');
+
+            // 1. Basic format test using regex
+            const result1 = window.BookmarkletUtils.generateFilename('My Report');
+            // Should start with My_Report_ and end with YYYYMMDD-HHmm (8 digits - 4 digits)
+            assert.ok(/^My_Report_\d{8}-\d{4}$/.test(result1), `Filename format incorrect: ${result1}`);
+
+            // 2. Mock Date to test zero-padding logic precisely
+            const OriginalDate = global.Date;
+            try {
+                // Mock a specific date: 2023-05-04 08:09 (May 4th, 2023, 08:09 AM)
+                // Note: Months are 0-indexed in JS Date constructor
+                const fixedDate = new OriginalDate(2023, 4, 4, 8, 9);
+                global.Date = class extends OriginalDate {
+                    constructor() {
+                        super();
+                        return fixedDate;
+                    }
+                };
+
+                const result2 = window.BookmarkletUtils.generateFilename('ZeroPadTest');
+                assert.strictEqual(result2, 'ZeroPadTest_20230504-0809', 'Zero padding logic failed');
+
+                // Test an edge case where input needs sanitization
+                const result3 = window.BookmarkletUtils.generateFilename('Invalid/Chars:Here');
+                assert.strictEqual(result3, 'Invalid_Chars_Here_20230504-0809', 'Sanitization within generateFilename failed');
+
+                // Test empty input
+                const result4 = window.BookmarkletUtils.generateFilename('');
+                assert.strictEqual(result4, 'export_20230504-0809', 'Empty input handling failed');
+
+            } finally {
+                // Restore original Date
+                global.Date = OriginalDate;
+            }
+
+            console.log('✅ generateFilename passed');
+        }
+
         console.log('All tests passed!');
     } catch (err) {
         console.error('Test failed:', err);
