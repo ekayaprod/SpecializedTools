@@ -56,10 +56,24 @@ container.innerHTML = `
     <a id="mixed-vb" href="VbScRiPt:alert(1)">Mixed Case VB</a>
     <iframe id="mixed-data" src="DaTa:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxzY3JpcHQ+YWxlcnQoMSk8L3NjcmlwdD48L3N2Zz4="></iframe>
     <img id="mixed-valid" src="DaTa:ImAgE/PnG;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAFhAJ/wlseKgAAAABJRU5ErkJggg==">
+
+    <!-- sanitizeElement Specific Tests -->
+    <div id="multiple-malicious" id-safe="true" onclick="alert(1)" onmouseover="alert(2)" style="javascript:alert(3)" srcdoc="<script>"></div>
+    <div id="empty-attributes"></div>
+    <svg id="svg-element"></svg>
 `;
 document.body.appendChild(container);
 
+// DocumentFragment Test
+const fragment = document.createDocumentFragment();
+const fragDiv = document.createElement('div');
+fragDiv.id = 'fragment-div';
+fragDiv.setAttribute('onclick', 'alert(1)');
+fragment.appendChild(fragDiv);
+
+// Sanitize everything
 window.BookmarkletUtils.sanitizeAttributes(container);
+window.BookmarkletUtils.sanitizeAttributes(fragment);
 
 // Assertions
 assert.ok(!document.getElementById('onclick').hasAttribute('onclick'), 'onclick should be removed');
@@ -112,5 +126,27 @@ assert.ok(
     document.getElementById('mixed-valid').hasAttribute('src'),
     'Mixed case valid data:image/png should be preserved'
 );
+
+// sanitizeElement Specific Assertions
+
+// Multiple Malicious Attributes (tests backward iteration)
+const multiEl = document.getElementById('multiple-malicious');
+assert.ok(multiEl.hasAttribute('id-safe'), 'Safe attribute should be preserved');
+assert.ok(!multiEl.hasAttribute('onclick'), 'onclick should be removed');
+assert.ok(!multiEl.hasAttribute('onmouseover'), 'onmouseover should be removed');
+assert.ok(!multiEl.hasAttribute('style'), 'malicious style should be removed');
+assert.ok(!multiEl.hasAttribute('srcdoc'), 'srcdoc should be removed');
+
+// Empty Attributes (ensures no throw)
+const emptyEl = document.getElementById('empty-attributes');
+assert.ok(emptyEl, 'Empty element should still exist and not crash');
+
+// SVG Element
+const svgEl = document.getElementById('svg-element');
+assert.ok(svgEl, 'SVG element should be processed safely');
+
+// DocumentFragment (tests !el.attributes guard)
+const sanitizedFragDiv = fragment.getElementById ? fragment.getElementById('fragment-div') : fragment.querySelector('#fragment-div');
+assert.ok(!sanitizedFragDiv.hasAttribute('onclick'), 'onclick should be removed from fragment child');
 
 console.log('✅ sanitizeAttributes passed');
