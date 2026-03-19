@@ -328,6 +328,66 @@ console.log('Running BookmarkletUtils tests...');
             console.log('✅ createShadowRoot passed');
         }
 
+                // Test 8: sanitizeAttributes
+        {
+            console.log('Test 8: sanitizeAttributes');
+            const container = document.createElement('div');
+            container.innerHTML = `
+                <div id="safe-div" class="content">
+                    <a href="javascript:alert(1)" id="bad-link">Click</a>
+                    <a href="https://example.com" id="good-link">Click</a>
+                    <img src="javascript:evil()" id="bad-img">
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" id="good-img">
+                    <iframe srcdoc="<script>alert(1)</script>" id="bad-iframe"></iframe>
+                    <div onclick="alert(1)" onmouseover="foo()" id="event-div">Hover</div>
+                    <div style="color: red; background: url(javascript:alert(1))" id="bad-style">Red</div>
+                    <img srcset="javascript:alert(1)" id="bad-srcset">
+                    <img src="data:image/svg+xml;base64,..." id="bad-svg-data">
+                    <script id="bad-script">alert(1)</script>
+                    <object id="bad-object" data="javascript:alert(1)"></object>
+                </div>
+            `;
+
+            window.BookmarkletUtils.sanitizeAttributes(container);
+
+            const safeDiv = container.querySelector('#safe-div');
+            assert.strictEqual(safeDiv.getAttribute('id'), 'safe-div', 'Safe id removed');
+            assert.strictEqual(safeDiv.getAttribute('class'), 'content', 'Safe class removed');
+
+            const badLink = container.querySelector('#bad-link');
+            assert.strictEqual(badLink.hasAttribute('href'), false, 'javascript: href not removed');
+
+            const goodLink = container.querySelector('#good-link');
+            assert.strictEqual(goodLink.getAttribute('href'), 'https://example.com', 'Safe href removed');
+
+            const badImg = container.querySelector('#bad-img');
+            assert.strictEqual(badImg.hasAttribute('src'), false, 'javascript: src not removed');
+
+            const goodImg = container.querySelector('#good-img');
+            assert.ok(goodImg.hasAttribute('src'), 'Safe data: image src removed');
+
+            const badIframe = container.querySelector('#bad-iframe');
+            assert.strictEqual(badIframe.hasAttribute('srcdoc'), false, 'srcdoc not removed');
+
+            const eventDiv = container.querySelector('#event-div');
+            assert.strictEqual(eventDiv.hasAttribute('onclick'), false, 'onclick not removed');
+            assert.strictEqual(eventDiv.hasAttribute('onmouseover'), false, 'onmouseover not removed');
+
+            const badStyle = container.querySelector('#bad-style');
+            assert.strictEqual(badStyle.hasAttribute('style'), false, 'Malicious style not removed');
+
+            const badSrcset = container.querySelector('#bad-srcset');
+            assert.strictEqual(badSrcset.hasAttribute('srcset'), false, 'javascript: srcset not removed');
+
+            const badSvgData = container.querySelector('#bad-svg-data');
+            assert.strictEqual(badSvgData.hasAttribute('src'), false, 'SVG data URI not removed');
+
+            const badObject = container.querySelector('#bad-object');
+            assert.strictEqual(badObject.hasAttribute('data'), false, 'javascript: data not removed');
+
+            console.log('✅ sanitizeAttributes passed');
+        }
+
         console.log('All tests passed!');
     } catch (err) {
         console.error('Test failed:', err);
