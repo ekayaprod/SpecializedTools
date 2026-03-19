@@ -255,9 +255,58 @@ console.log('Running BookmarkletUtils tests...');
             console.log('✅ log passed');
         }
 
-        // Test 7: createShadowRoot
+        // Test 7: buildElement
         {
-            console.log('Test 7: createShadowRoot');
+            console.log('Test 7: buildElement');
+            const parent = document.createElement('div');
+
+            // 1. Happy path: tag, styles, text, parent, props
+            let clicked = false;
+            const btn = window.BookmarkletUtils.buildElement('button', {
+                color: 'blue',
+                fontSize: '14px'
+            }, 'Click Me', parent, {
+                id: 'test-btn',
+                'class': 'my-btn',
+                onclick: () => clicked = true,
+                'data-test': '123'
+            });
+
+            assert.strictEqual(btn.tagName, 'BUTTON', 'Tag name should be BUTTON');
+            assert.strictEqual(btn.style.color, 'blue', 'Style should be applied');
+            assert.strictEqual(btn.style.fontSize, '14px', 'Style should be applied');
+            assert.strictEqual(btn.textContent, 'Click Me', 'Text content should match');
+            assert.strictEqual(btn.id, 'test-btn', 'Property id should be set');
+            assert.strictEqual(btn.className, 'my-btn', 'Property className should be set');
+            assert.strictEqual(btn.getAttribute('data-test'), '123', 'Property data-test should be set');
+            assert.strictEqual(btn.parentNode, parent, 'Element should be appended to parent');
+
+            // Verify event handler
+            btn.click();
+            assert.ok(clicked, 'onclick event handler should be triggered');
+
+            // 2. Missing parent
+            const span = window.BookmarkletUtils.buildElement('span', null, 'Hello', null, null);
+            assert.strictEqual(span.tagName, 'SPAN', 'Tag name should be SPAN');
+            assert.strictEqual(span.textContent, 'Hello', 'Text content should match');
+            assert.strictEqual(span.parentNode, null, 'Element should not have a parent');
+
+            // 3. Null properties handling
+            const div = window.BookmarkletUtils.buildElement('div', null, null, null, {
+                id: 'test-div',
+                'data-null': null,
+                'data-undefined': undefined,
+            });
+            assert.strictEqual(div.id, 'test-div', 'Valid property should be set');
+            assert.strictEqual(div.hasAttribute('data-null'), false, 'Null property should be ignored');
+            assert.strictEqual(div.hasAttribute('data-undefined'), false, 'Undefined property should be ignored');
+
+            console.log('✅ buildElement passed');
+        }
+
+        // Test 8: createShadowRoot
+        {
+            console.log('Test 8: createShadowRoot');
             const id = 'shadow-host';
             const cssText = 'color: red;';
             const { h, s } = window.BookmarkletUtils.createShadowRoot(id, cssText);
