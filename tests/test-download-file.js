@@ -61,10 +61,19 @@ if (!window.BookmarkletUtils) {
 console.log('Running downloadFile tests...');
 
 // Test downloadFile
-{
+(async function() {
     let appendedElement = null;
     let clicked = false;
     let removedElement = null;
+    let blobCreated = null;
+
+    global.Blob = class MockBlob {
+        constructor(content, options) {
+            this.content = content;
+            this.options = options;
+            blobCreated = this;
+        }
+    };
 
     // Mock document methods
     const originalCreateElement = document.createElement;
@@ -95,37 +104,63 @@ console.log('Running downloadFile tests...');
         return el;
     };
 
-    const filename = 'test.html';
-    const content = '<html>test</html>';
-    const type = 'text/html';
+    const resetState = () => {
+        appendedElement = null;
+        clicked = false;
+        removedElement = null;
+        createdUrl = '';
+        revokedUrl = '';
+        blobCreated = null;
+    };
 
-    window.BookmarkletUtils.downloadFile(filename, content, type);
+    // Test 1: Full arguments including custom MIME type
+    resetState();
+    window.BookmarkletUtils.downloadFile('test.txt', 'hello', 'text/plain');
 
-    // Verify Blob creation (implicit via execution flow)
-
-    // Verify URL creation
+    assert.ok(blobCreated, 'Blob should be created');
+    assert.strictEqual(blobCreated.options.type, 'text/plain', 'Blob type should be set correctly');
     assert.strictEqual(createdUrl, 'blob:mock-url', 'URL should be created');
-
-    // Verify Anchor element setup
     assert.ok(appendedElement, 'Element should be appended');
     assert.strictEqual(appendedElement.tagName, 'A', 'Appended element should be an anchor');
     assert.strictEqual(appendedElement.href, 'blob:mock-url', 'Href should be set');
-    assert.strictEqual(appendedElement.download, filename, 'Download attribute should be set');
-
-    // Verify click
+    assert.strictEqual(appendedElement.download, 'test.txt', 'Download attribute should be set');
     assert.ok(clicked, 'Element should be clicked');
-
-    // Verify cleanup
     assert.strictEqual(removedElement, appendedElement, 'Element should be removed');
 
-    // Verify URL revocation (wait for timeout)
-    setTimeout(() => {
-        assert.strictEqual(revokedUrl, 'blob:mock-url', 'URL should be revoked');
-        console.log('✅ downloadFile passed');
+    await new Promise(resolve => setTimeout(resolve, 150));
+    assert.strictEqual(revokedUrl, 'blob:mock-url', 'URL should be revoked');
+    console.log('✅ downloadFile custom MIME type passed');
 
-        // Restore mocks
-        document.createElement = originalCreateElement;
-        document.body.appendChild = originalAppendChild;
-        document.body.removeChild = originalRemoveChild;
-    }, 200);
-}
+    // Test 2: Default MIME type fallback (when omitted)
+    resetState();
+    window.BookmarkletUtils.downloadFile('test.html', '<html></html>');
+
+    assert.ok(blobCreated, 'Blob should be created');
+    assert.strictEqual(blobCreated.options.type, 'text/html', 'Blob type should default to text/html');
+    assert.strictEqual(createdUrl, 'blob:mock-url', 'URL should be created');
+    assert.ok(appendedElement, 'Element should be appended');
+    assert.strictEqual(appendedElement.download, 'test.html', 'Download attribute should be set');
+    assert.ok(clicked, 'Element should be clicked');
+    assert.strictEqual(removedElement, appendedElement, 'Element should be removed');
+
+    await new Promise(resolve => setTimeout(resolve, 150));
+    assert.strictEqual(revokedUrl, 'blob:mock-url', 'URL should be revoked');
+    console.log('✅ downloadFile default MIME type passed');
+
+    // Test 3: Empty string content
+    resetState();
+    window.BookmarkletUtils.downloadFile('empty.txt', '', 'text/plain');
+    assert.ok(blobCreated, 'Blob should be created');
+    assert.strictEqual(blobCreated.content[0], '', 'Blob content should be an empty string');
+    assert.ok(clicked, 'Element should be clicked');
+
+    await new Promise(resolve => setTimeout(resolve, 150));
+    console.log('✅ downloadFile empty content passed');
+
+    // Restore mocks
+    document.createElement = originalCreateElement;
+    document.body.appendChild = originalAppendChild;
+    document.body.removeChild = originalRemoveChild;
+
+    console.log('✅ All downloadFile tests passed');
+})();
