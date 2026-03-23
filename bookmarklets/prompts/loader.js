@@ -19,12 +19,12 @@
         },
         flip: {
             label: 'Fix & Flip',
-            role: 'Act as a Fix-and-Flip Project Manager.',
+            role: '**Role:** Expert Fix-and-Flip Project Manager and Risk Analyst drafting a rapid margin-and-risk assessment.',
             objective: `/* @include_text prompts/flip-objective.md */`,
         },
         househack: {
             label: 'House Hacking',
-            role: 'Act as a House Hacking Specialist.',
+            role: '**Role:** Expert House Hacking Specialist and Residential Zoning Analyst drafting a rapid feasibility brief.',
             objective: `/* @include_text prompts/househack-objective.md */`,
         },
         appraisal: {
