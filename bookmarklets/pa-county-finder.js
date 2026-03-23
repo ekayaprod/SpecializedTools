@@ -1298,7 +1298,13 @@
      * @typedef {Record<string, CityOverride>} OverrideData
      */
 
-    /** @type {OverrideData} */
+    /**
+     * Edge case overrides mapping cities to exact ZIP codes within their respective counties.
+     * @type {OverrideData}
+     */
+    // WARN: These overrides are required because the primary dataset (D) assigns ZIPs via contiguous ranges.
+    // However, some ZIP codes (like 18015 in Bethlehem) span across county borders or don't fit perfectly within
+    // the contiguous block of their primary county. Searching 'O' before 'D' prevents range false positives.
     const O = {
         bethlehem: { Lehigh: [18015, 18017], Northampton: [18016, 18018, 18020, 18025] },
         trafford: { Allegheny: [15085], Westmoreland: [15085] },
@@ -1326,10 +1332,14 @@
         if (/^\d{5}$/.test(c)) {
             const z = parseInt(c, 10);
 
-            /* O Specifics */
+            /* O Specifics (Overrides) */
+            // Check edge cases first. If a ZIP is explicitly mapped in an override,
+            // it overrides the broad range check to prevent false associations.
             for (const counties of Object.values(O)) {
                 for (const [county, zips] of Object.entries(counties)) {
                     if (zips.includes(z)) {
+                        // WARN: Deduplication is required. A single query might theoretically match multiple
+                        // county arrays if overlapping ranges/overrides exist.
                         if (!results.includes(county)) results.push(county);
                     }
                 }
@@ -1339,7 +1349,7 @@
                 return c + ': ' + results.join(', ');
             }
 
-            /* D Ranges */
+            /* D Ranges (Primary Dataset) */
             for (const [county, rangeStart, rangeEnd] of D) {
                 if (z >= rangeStart && z <= rangeEnd) {
                     if (!results.includes(county)) results.push(county);
@@ -1353,6 +1363,7 @@
         const l = c.toLowerCase();
 
         /* O Search (Overrides) */
+        // Check for cities that inherently span multiple counties before checking the primary dataset.
         if (Object.prototype.hasOwnProperty.call(O, l)) {
             const counties = O[l];
             for (const county of Object.keys(counties)) {
@@ -1360,7 +1371,7 @@
             }
         }
 
-        /* D Search */
+        /* D Search (Primary Dataset) */
         for (const [county, , , cities] of D) {
             for (const city of cities) {
                 if (city === l) {
