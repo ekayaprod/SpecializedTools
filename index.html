@@ -148,9 +148,13 @@
                 <!-- Cards injected by JS -->
             </main>
 
-            <div id="empty-state" class="hidden text-center py-20">
-                <p class="text-slate-500 text-lg">No matching tools found.</p>
-                <button id="clear-search" aria-label="Reset all search filters" class="mt-4 text-indigo-600 hover:underline">Reset Filters</button>
+            <div id="empty-state" class="hidden flex-col items-center justify-center py-20 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
+                <svg class="w-16 h-16 text-slate-300 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <p class="text-slate-500 text-lg font-medium mb-2">No matching tools found.</p>
+                <p class="text-slate-400 text-sm mb-6">Try adjusting your search or category filters.</p>
+                <button id="clear-search" aria-label="Reset all search filters" class="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg font-medium hover:bg-indigo-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Reset Filters</button>
             </div>
         </div>
 
@@ -339,8 +343,10 @@
 
                 if (count === 0) {
                     emptyState.classList.remove('hidden');
+                    emptyState.classList.add('flex');
                 } else {
                     emptyState.classList.add('hidden');
+                    emptyState.classList.remove('flex');
                 }
             }
 
