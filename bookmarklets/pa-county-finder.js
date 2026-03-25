@@ -1501,23 +1501,29 @@
      */
     const updateResult = (r, q) => {
         resultDiv.innerHTML = '';
-        const safeQ = BookmarkletUtils.escapeHtml(q);
 
         if (!r) {
             const errDiv = document.createElement('div');
             errDiv.className = 'pa-result-card pa-result-error';
-            errDiv.innerHTML = `<span class="pa-result-text">No match for "<strong>${safeQ}</strong>"</span>`;
+            const errSpan = document.createElement('span');
+            errSpan.className = 'pa-result-text';
+            errSpan.appendChild(document.createTextNode('No match for "'));
+            const strongQ = document.createElement('strong');
+            strongQ.textContent = q;
+            errSpan.append(strongQ, document.createTextNode('"'));
+            errDiv.appendChild(errSpan);
             resultDiv.appendChild(errDiv);
             return;
         }
 
-        const safeR = BookmarkletUtils.escapeHtml(r);
         const resCard = document.createElement('div');
         resCard.className = 'pa-result-card';
 
         const textDiv = document.createElement('div');
         textDiv.className = 'pa-result-text';
-        textDiv.innerHTML = `<strong>Result:</strong><br>${safeR}`;
+        const strongRes = document.createElement('strong');
+        strongRes.textContent = 'Result:';
+        textDiv.append(strongRes, document.createElement('br'), document.createTextNode(r));
 
         const copyBtn = document.createElement('button');
         copyBtn.className = 'pa-copy-btn';
