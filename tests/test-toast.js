@@ -48,9 +48,9 @@ console.log('Running Toast & BuildElement tests...');
             console.log('✅ buildElement passed');
         }
 
-        // Test 1b: buildElement (Fragility Fix: Null Props)
+        // Test 1b: buildElement (Null Props Handling)
         {
-            console.log('Test 1b: buildElement (Fragility Fix: Null Props)');
+            console.log('Test 1b: buildElement (Null Props Handling)');
             const el = window.BookmarkletUtils.buildElement('div', {}, '', null, {
                 bad: null,
                 missing: undefined,

@@ -129,7 +129,7 @@ console.log('Running BookmarkletUtils tests...');
                 throw e; // Rethrow to fail the test suite
             }
 
-            // 5. Zero handling (Fragility Fix)
+            // 5. Zero handling (Edge Case)
             const zeroResult = window.BookmarkletUtils.sanitizeFilename(0);
             assert.strictEqual(zeroResult, '0', 'Zero should be preserved as string "0"');
 
@@ -300,6 +300,10 @@ console.log('Running BookmarkletUtils tests...');
             assert.strictEqual(div.id, 'test-div', 'Valid property should be set');
             assert.strictEqual(div.hasAttribute('data-null'), false, 'Null property should be ignored');
             assert.strictEqual(div.hasAttribute('data-undefined'), false, 'Undefined property should be ignored');
+
+            // 4. Zero text handling
+            const zeroDiv = window.BookmarkletUtils.buildElement('div', null, 0, null, null);
+            assert.strictEqual(zeroDiv.textContent, '0', 'Number zero should be converted to string "0"');
 
             console.log('✅ buildElement passed');
         }
