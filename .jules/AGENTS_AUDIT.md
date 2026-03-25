@@ -26,3 +26,4 @@
 - [x] 25 `<button>` elements detected without explicit aria-labels
 - [x] Multiple `<a>` tags potentially missing aria-labels (Requires manual audit)
 - [x] No "Skip to Content" link detected in index.html
+- [x] index.html empty state lacks actionable styling
