@@ -80,11 +80,15 @@ async function runUXTest() {
     const minInput = shadowRoot.querySelector('#mn');
     minInput.value = '-5'; // Invalid time
 
-    // We need to enable the Start button first (usually requires picking a target)
-    // Hack: Manually enable it for test
-    const startBtn = shadowRoot.querySelector('#go');
-    startBtn.disabled = false;
+    // Pick a target to naturally enable the Start button
+    const pickBtnEl = shadowRoot.querySelector('#pk');
+    pickBtnEl.click();
 
+    // Simulate clicking the target on the page
+    const targetBtn = document.querySelector('#target-btn');
+    targetBtn.dispatchEvent(new global.window.MouseEvent('click', { bubbles: true, cancelable: true }));
+
+    const startBtn = shadowRoot.querySelector('#go');
     startBtn.click();
 
     // Wait for UI update (microtask)
