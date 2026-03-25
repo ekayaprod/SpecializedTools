@@ -160,9 +160,9 @@
 
             // Fallback for salary: regex match in body text
             if (!salaryStr) {
-                 const bodyText = document.body ? (document.body.innerText || document.body.textContent || "") : "";
-                 const salaryMatch = bodyText.match(/\$[0-9,]+(\.[0-9]{2})?(\s*[-to]+\s*\$[0-9,]+(\.[0-9]{2})?)?/);
-                 if (salaryMatch) salaryStr = salaryMatch[0];
+                const bodyText = document.body ? document.body.innerText || document.body.textContent || '' : '';
+                const salaryMatch = bodyText.match(/\$[0-9,]+(\.[0-9]{2})?(\s*[-to]+\s*\$[0-9,]+(\.[0-9]{2})?)?/);
+                if (salaryMatch) salaryStr = salaryMatch[0];
             }
 
             if (salaryStr) data.salary = salaryStr;
@@ -177,13 +177,23 @@
                 'article',
                 'main',
             ];
-            const descNode = document.querySelector(descSelectors.find(s => document.querySelector(s)) || 'body');
+            let descNode = null;
+            for (const s of descSelectors) {
+                const el = document.querySelector(s);
+                if (el) {
+                    descNode = el;
+                    break;
+                }
+            }
+            if (!descNode) descNode = document.querySelector('body');
 
             if (descNode) {
                 // Deep clone to not affect actual page
                 const clone = descNode.cloneNode(true);
                 // Remove tracking pixels / script tags
-                const scripts = /** @type {HTMLElement} */ (clone).querySelectorAll('script, noscript, style, img, iframe');
+                const scripts = /** @type {HTMLElement} */ (clone).querySelectorAll(
+                    'script, noscript, style, img, iframe'
+                );
                 for (let i = 0; i < scripts.length; i++) {
                     scripts[i].remove();
                 }
@@ -192,12 +202,24 @@
             }
 
             // 5. Keyword analysis (Soft skills / Cultural cues)
-            const softSkills = ['leadership', 'collaboration', 'fast-paced', 'mentorship', 'cross-functional', 'agile', 'startup', 'communication', 'self-starter', 'detail-oriented', 'strategic'];
+            const softSkills = [
+                'leadership',
+                'collaboration',
+                'fast-paced',
+                'mentorship',
+                'cross-functional',
+                'agile',
+                'startup',
+                'communication',
+                'self-starter',
+                'detail-oriented',
+                'strategic',
+            ];
             const lowerDesc = data.description.toLowerCase();
-            data.keywords = softSkills.filter(skill => lowerDesc.includes(skill));
+            data.keywords = softSkills.filter((skill) => lowerDesc.includes(skill));
 
             return data;
-        }
+        },
     };
 
     /* PROMPT GENERATOR */
@@ -222,9 +244,8 @@ ${data.description.substring(0, 3000)}${data.description.length > 3000 ? '...[Tr
 
 --- MY RESUME BULLETS ---
 [PASTE YOUR RESUME BULLETS HERE]`;
-        }
+        },
     };
-
 
     /* MAIN UI */
     function createJobModal() {
@@ -242,14 +263,25 @@ ${data.description.substring(0, 3000)}${data.description.length > 3000 ? '...[Tr
         }
 
         const row2 = buildElement('div', { class: 'jc-col', flex: '1' }, '', mo);
-        const txtArea = /** @type {HTMLTextAreaElement} */ (buildElement('textarea', {}, '', row2, { class: 'jc-textarea' }));
+        const txtArea = /** @type {HTMLTextAreaElement} */ (
+            buildElement('textarea', {}, '', row2, { class: 'jc-textarea' })
+        );
         txtArea.value = PromptGenerator.generate(data);
 
         // Actions Row
-        const row3 = buildElement('div', {
-            display: 'flex', gap: '10px', justifyContent: 'space-between', alignItems: 'center',
-            borderTop: '1px solid var(--jc-border)', paddingTop: '15px'
-        }, '', mo);
+        const row3 = buildElement(
+            'div',
+            {
+                display: 'flex',
+                gap: '10px',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                borderTop: '1px solid var(--jc-border)',
+                paddingTop: '15px',
+            },
+            '',
+            mo
+        );
 
         const leftGroup = buildElement('div', { display: 'flex', gap: '8px' }, '', row3);
         const copyBtn = buildElement('button', {}, '', leftGroup, { class: 'jc-btn jc-btn-primary' });
