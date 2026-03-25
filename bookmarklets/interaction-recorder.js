@@ -142,9 +142,19 @@
                     // (like React/Vue virtual lists), this index may become invalid upon replay.
                     const parent = curr.parentElement;
                     if (parent) {
-                        const siblings = Array.from(parent.children).filter((c) => c.tagName === curr.tagName);
-                        if (siblings.length > 1) {
-                            const index = siblings.indexOf(curr) + 1;
+                        let index = 0;
+                        let sameTagCount = 0;
+                        const children = parent.children;
+                        for (let i = 0; i < children.length; i++) {
+                            const child = children[i];
+                            if (child.tagName === curr.tagName) {
+                                sameTagCount++;
+                                if (child === curr) {
+                                    index = sameTagCount;
+                                }
+                            }
+                        }
+                        if (sameTagCount > 1) {
                             selector += `:nth-of-type(${index})`;
                         }
                     }
