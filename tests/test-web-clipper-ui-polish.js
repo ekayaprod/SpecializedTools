@@ -98,8 +98,14 @@ async function runVerification() {
 
     const svg = overlay.querySelector('svg');
     assert.ok(svg, 'SVG Spinner should exist');
-    assert.strictEqual(svg.getAttribute('role'), 'status', 'SVG should have role="status"');
-    assert.strictEqual(svg.getAttribute('aria-label'), 'Loading', 'SVG should have aria-label="Loading"');
+    assert.strictEqual(svg.getAttribute('aria-hidden'), 'true', 'SVG should have aria-hidden="true"');
+    assert.strictEqual(svg.getAttribute('role'), null, 'SVG should NOT have role="status"');
+    assert.strictEqual(svg.getAttribute('aria-label'), null, 'SVG should NOT have aria-label="Loading"');
+
+    const span = overlay.querySelector('span');
+    assert.ok(span, 'Span should exist');
+    assert.strictEqual(span.getAttribute('role'), 'status', 'Span should have role="status"');
+    assert.strictEqual(span.getAttribute('aria-live'), 'polite', 'Span should have aria-live="polite"');
 
     const animate = svg.querySelector('animateTransform');
     assert.ok(animate, 'Animation should be present (motion enabled)');
