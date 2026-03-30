@@ -1,0 +1,5 @@
+1. **Discover**: In `bookmarklets/job-clipper.js`, I found an in-line generation string containing the phrase `Act as an Expert ATS Optimizer`.
+2. **Select**: This candidate will be selected because it violates the established negative constraint rule to avoid using `Act as...` in persona definitions (as outlined in `.jules/fusion_journal.md`).
+3. **Transmute**: Update the prompt generation payload in `bookmarklets/job-clipper.js` to replace the `Act as an Expert ATS Optimizer...` string with the correct format: `**Role:** Expert ATS Optimizer and Senior Technical Recruiter at ${data.company} drafting ATS-optimized resume bullet points.`. Also update the test in `tests/test-job-clipper.js` that checks for this string.
+4. **Verify**: Run the native build and test commands (like `npm test` or specific `node scripts/run_tests.js`) to ensure nothing is broken.
+5. **Present**: Create a compliance PR with the format `✨ Prompt Engineer: [Upgraded job-clipper.js Prompt Payload]` and log actionable insights into `.jules/fusion_journal.md`.
