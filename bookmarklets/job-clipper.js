@@ -225,7 +225,7 @@
     /* PROMPT GENERATOR */
     const PromptGenerator = {
         generate(data) {
-            return `Act as an Expert ATS Optimizer and Senior Technical Recruiter at ${data.company}.
+            return `**Role:** Expert ATS Optimizer and Senior Technical Recruiter at ${data.company} drafting ATS-optimized resume bullet points.
 
 **Context:** I am applying for the "${data.title}" position.
 ${data.salary !== '[Salary Range]' ? '**Expected Salary Range:** ' + data.salary + '\n' : ''}
