@@ -229,6 +229,8 @@
             /* Check if image is missing or placeholder */
             const isPlaceholder = !img.src || img.src.startsWith('data:') || img.src.includes('spacer');
             if (isPlaceholder) {
+                // WARN: We forcefully extract the first candidate from srcset to guarantee
+                // the export contains *some* valid image source when the fallback <img> is just a blank spacer.
                 img.src = source.srcset.split(',')[0].trim().split(' ')[0];
             }
         }
@@ -249,6 +251,9 @@
             const parts = img.srcset.split(',');
             if (parts.length > 0) {
                 /* Pick the last candidate (usually highest res) */
+                // WARN: We pick the *last* candidate in the srcset string under the assumption
+                // that srcset is typically ordered from smallest to largest resolution.
+                // We want the highest-res image for export.
                 const bestCandidate = parts[parts.length - 1].trim().split(' ')[0];
                 if (bestCandidate) img.src = bestCandidate;
             }
@@ -644,6 +649,9 @@
         normalizeImages(root, onProgress) {
             return new Promise((resolve, reject) => {
                 /* Use stack-based traversal (DFS) to avoid expensive querySelectorAll on huge DOMs */
+                // WARN: A massive querySelectorAll('img, picture') on large pages (like Jira or Confluence)
+                // causes massive layout thrashing and main-thread lockups. We use a manual DFS stack to prevent
+                // maximum call stack errors that would occur with a pure recursive approach.
                 const queue = [root];
                 let imagesProcessed = 0;
 
@@ -678,6 +686,9 @@
                             }
 
                             /* Yield if chunk size reached AND time exceeded limit */
+                            // WARN: We combine both a chunk size counter and a time slice (12ms) check.
+                            // The `performance.now()` call is relatively slow, so we only check the clock
+                            // every ASYNC_CHUNK_SIZE iterations to maintain high throughput while still yielding to the UI.
                             if (chunkNodes % ASYNC_CHUNK_SIZE === 0 && performance.now() - startTime > ASYNC_TIME_SLICE_MS) {
                                 if (onProgress) onProgress(imagesProcessed);
                                 setTimeout(processChunk, 0);
