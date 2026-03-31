@@ -1322,7 +1322,7 @@
      *
      * @example
      * const result = find('17301');
-     * console.log(result); // "17301: Adams"
+     * // Returns: "17301: Adams"
      */
     function find(q) {
         const c = q.trim();
