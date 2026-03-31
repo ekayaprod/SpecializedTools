@@ -27,3 +27,4 @@
 - [x] Multiple `<a>` tags potentially missing aria-labels (Requires manual audit)
 - [x] No "Skip to Content" link detected in index.html
 - [x] index.html empty state lacks actionable styling
+- [x] MailTo Modal lacks focus trap and animation

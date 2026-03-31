@@ -52,3 +52,8 @@ BOUNDARIES
 
 **Learning:** Buttons without visible text (like icon-only buttons) or `<button>` elements generally used in highly interactive bookmarklets often fail accessibility audits due to missing context for screen readers. This makes interactive tools like macros and clickers difficult to use for vision-impaired users.
 **Action:** Consistently add descriptive `aria-label` attributes to all interactive elements (`<button>`, `<a>` acting as buttons) to clearly indicate their action (e.g., `aria-label="Confirm Selection"`, `aria-label="Filter all"`), ensuring inclusive accessibility and full compliance with A11y standards.
+
+## 2026-03-31 - Accessible Modals and CSS Animation Transitions
+
+**Learning:** Setting `.modal-overlay` with `display: none` / `display: flex` prevents CSS transition animations from running. Instead, modals should use `visibility: hidden` and `visibility: visible` paired with `opacity` to animate properly. Also, any newly created custom modal UI must explicitly manage focus.
+**Action:** Always implement a Focus Trap that traps the `Tab` key within the modal boundary, supports `Escape` to close, and safely restores focus to the previously active element (`document.activeElement`) upon closing. Use `visibility` toggling to enable scale and opacity animations on modal open/close.
