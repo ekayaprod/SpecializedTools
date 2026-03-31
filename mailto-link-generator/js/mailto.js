@@ -223,19 +223,70 @@ const UI = {
         const overlay = document.getElementById('modal-overlay');
         const body = document.getElementById('modal-body');
 
-        body.innerHTML = `
-            <h3>${Utils.escapeHTML(title)}</h3>
-            <div>${content}</div>
-            <div class="modal-actions"></div>
-        `;
+        // Reset content using safe APIs
+        body.textContent = '';
 
-        const actions = body.querySelector('.modal-actions');
+        const h3 = document.createElement('h3');
+        h3.textContent = title;
+        body.appendChild(h3);
+
+        const contentDiv = document.createElement('div');
+        // Sanitize content before injection
+        const temp = document.createElement('div');
+        temp.innerHTML = content;
+
+        // Strip dangerous tags
+        const dangerousTags = ['script', 'iframe', 'object', 'embed', 'link', 'style', 'meta'];
+        dangerousTags.forEach(tag => {
+            const elements = temp.querySelectorAll(tag);
+            elements.forEach(el => el.remove());
+        });
+
+        // Strip dangerous attributes
+        const all = temp.querySelectorAll('*');
+        const maliciousProtocols = /^(javascript|vbscript|data):/i;
+        const safeDataUri = /^data:image\/(png|jpeg|jpg|gif|webp|svg\+xml);base64,/i;
+
+        all.forEach(el => {
+            for (let i = el.attributes.length - 1; i >= 0; i--) {
+                const attr = el.attributes[i];
+                const name = attr.name.toLowerCase();
+                const val = attr.value.replace(/\s+/g, '').toLowerCase();
+
+                // 1. Event handlers (on*)
+                if (name.startsWith('on')) {
+                    el.removeAttribute(attr.name);
+                }
+                // 2. SRCDOC
+                else if (name === 'srcdoc') {
+                    el.removeAttribute(attr.name);
+                }
+                // 3. Dangerous URIs in href, src, action, formaction, poster, xlink:href
+                else if (['href', 'src', 'action', 'formaction', 'poster', 'xlink:href', 'srcset'].includes(name)) {
+                    if (maliciousProtocols.test(val)) {
+                        // Allow safe data:image URIs
+                        if (val.startsWith('data:') && !safeDataUri.test(val)) {
+                            el.removeAttribute(attr.name);
+                        } else if (val.startsWith('javascript:') || val.startsWith('vbscript:')) {
+                            el.removeAttribute(attr.name);
+                        }
+                    }
+                }
+            }
+        });
+
+        contentDiv.innerHTML = temp.innerHTML;
+        body.appendChild(contentDiv);
+
+        const actions = document.createElement('div');
+        actions.className = 'modal-actions';
+        body.appendChild(actions);
+
         buttons.forEach(btn => {
             const button = document.createElement('button');
             button.className = btn.class || 'btn-secondary';
             button.textContent = btn.label;
             button.onclick = () => {
-                // If callback returns explicit false, do not close modal
                 if (btn.callback) {
                     const result = btn.callback();
                     if (result === false) return;
