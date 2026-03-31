@@ -897,7 +897,9 @@
                 { class: 'pc-btn pc-btn-primary' }
             );
             nextBtn.onclick = () => {
-                Wizard.state.selectedPhotos.push(...checks.filter((c) => c.chk.checked).map((c) => c.p));
+                for (const c of checks) {
+                    if (c.chk.checked) Wizard.state.selectedPhotos.push(c.p);
+                }
                 Wizard.state.step++;
                 Wizard.renderStep();
             };
