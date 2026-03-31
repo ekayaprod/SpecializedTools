@@ -213,6 +213,11 @@ const Utils = {
    ============================================================================= */
 
 const UI = {
+    _modalFocusParams: {
+        lastActiveElement: null,
+        handleKeydown: null
+    },
+
     /**
      * Injects a modal into the DOM.
      * @param {string} title - Modal header.
@@ -222,6 +227,9 @@ const UI = {
     showModal: (title, content, buttons = []) => {
         const overlay = document.getElementById('modal-overlay');
         const body = document.getElementById('modal-body');
+
+        // Store active element
+        UI._modalFocusParams.lastActiveElement = document.activeElement;
 
         body.innerHTML = `
             <h3>${Utils.escapeHTML(title)}</h3>
@@ -246,10 +254,61 @@ const UI = {
         });
 
         overlay.classList.add('show');
+
+        // Focus trap
+        const focusableElementsString = 'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), iframe, object, embed, [tabindex="0"], [contenteditable]';
+        let focusableElements = Array.from(overlay.querySelectorAll(focusableElementsString));
+
+        if (focusableElements.length > 0) {
+            focusableElements[0].focus();
+        }
+
+        UI._modalFocusParams.handleKeydown = function(e) {
+            if (e.key === 'Escape') {
+                UI.hideModal();
+                return;
+            }
+            if (e.key !== 'Tab') return;
+
+            // Re-query focusable elements in case DOM changed
+            focusableElements = Array.from(overlay.querySelectorAll(focusableElementsString));
+            if (focusableElements.length === 0) {
+                e.preventDefault();
+                return;
+            }
+
+            const firstElement = focusableElements[0];
+            const lastElement = focusableElements[focusableElements.length - 1];
+
+            if (e.shiftKey) {
+                if (document.activeElement === firstElement) {
+                    lastElement.focus();
+                    e.preventDefault();
+                }
+            } else {
+                if (document.activeElement === lastElement) {
+                    firstElement.focus();
+                    e.preventDefault();
+                }
+            }
+        };
+
+        document.addEventListener('keydown', UI._modalFocusParams.handleKeydown);
     },
 
     hideModal: () => {
-        document.getElementById('modal-overlay').classList.remove('show');
+        const overlay = document.getElementById('modal-overlay');
+        overlay.classList.remove('show');
+
+        if (UI._modalFocusParams.handleKeydown) {
+            document.removeEventListener('keydown', UI._modalFocusParams.handleKeydown);
+            UI._modalFocusParams.handleKeydown = null;
+        }
+
+        if (UI._modalFocusParams.lastActiveElement) {
+            UI._modalFocusParams.lastActiveElement.focus();
+            UI._modalFocusParams.lastActiveElement = null;
+        }
     },
 
     /**
@@ -748,7 +807,31 @@ const App = {
     copyLink: () => {
         const link = App.elements.resultMailto.value;
         if (link) {
-            Utils.copyToClipboard(link).then(success => UI.showToast(success ? 'Copied' : 'Copy failed'));
+            Utils.copyToClipboard(link).then(success => {
+                if (success) {
+                    UI.showToast('Copied');
+
+                    // Micro-interaction
+                    const btn = App.elements.btnCopy;
+                    if (!btn.dataset.originalText) {
+                        btn.dataset.originalText = btn.textContent;
+                    }
+                    btn.textContent = 'Copied! ✓';
+                    btn.classList.remove('btn-secondary');
+                    btn.classList.add('btn-success');
+
+                    if (btn.dataset.timeoutId) clearTimeout(parseInt(btn.dataset.timeoutId));
+                    btn.dataset.timeoutId = setTimeout(() => {
+                        btn.textContent = btn.dataset.originalText;
+                        btn.classList.remove('btn-success');
+                        btn.classList.add('btn-secondary');
+                        delete btn.dataset.timeoutId;
+                        delete btn.dataset.originalText;
+                    }, 2000);
+                } else {
+                    UI.showToast('Copy failed');
+                }
+            });
         }
     },
 
