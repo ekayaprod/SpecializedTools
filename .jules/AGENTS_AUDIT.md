@@ -1,30 +1,36 @@
-# 👁️ Overseer Report (2024-05-18)
+# 👁️ Overseer Report (2024-04-01)
 
 ## 🏗️ Structural Hotspots
-- [ ] bookmarklets/pa-county-finder.js (Changed 1 time this month, 48K)
-- [ ] bookmarklets/property-clipper.js (Changed 1 time this month, 46K)
-- [ ] bookmarklets/passphrase-generator.js (Changed 1 time this month, 44K)
+- [ ] tsconfig.json (Changed 1 times this month, 423 lines) - Risk Score: 423
+- [ ] tests/test-web-clipper.js (Changed 1 times this month, 173 lines) - Risk Score: 173
+- [ ] tests/test-web-clipper-ui-polish.js (Changed 1 times this month, 134 lines) - Risk Score: 134
+- [ ] tests/test-web-clipper-resilience.js (Changed 1 times this month, 157 lines) - Risk Score: 157
+- [ ] tests/test-web-clipper-png-error.js (Changed 1 times this month, 180 lines) - Risk Score: 180
+- [ ] tests/test-web-clipper-events.js (Changed 1 times this month, 129 lines) - Risk Score: 129
+- [ ] tests/test-web-clipper-en.js (Changed 1 times this month, 102 lines) - Risk Score: 102
+- [ ] tests/test-verify-links.js (Changed 1 times this month, 96 lines) - Risk Score: 96
+- [ ] tests/test-utils.js (Changed 1 times this month, 400 lines) - Risk Score: 400
+- [ ] tests/test-utils-safety.js (Changed 1 times this month, 119 lines) - Risk Score: 119
 
 ## ⚡ Performance Bottlenecks
-- [ ] No major bottlenecks found (Build script not configured)
+- [ ] None detected (Build script not defined)
 
 ## 🧹 Debris Field
-- [ ] .git/hooks/sendemail-validate.sample (Contains 4 "TODO" comments)
+- [ ] None detected (No JS files older than 180 days)
+- [ ] 4 "TODO" comments found in .git/hooks/sendemail-validate.sample
+- [ ] 1 "TODO" comments found in .jules/prompts/librarian.md
 
 ## 🛡️ Security Radar
-- [ ] 1 High vulnerability in dependency minimatch (npm audit)
+- [ ] 1 Moderate vulnerabilities in dependencies (npm audit)
+- [ ] 3 High vulnerabilities in dependencies (npm audit)
 
 ## 🕵️ Coverage Gaps
-- [x] pa-county-finder.js disabled state handling
-- [x] pa-county-finder.js UI tested natively
+- [ ] None detected (Churned files are mostly test files)
 
 ## 🆙 Modernization Targets
-- [ ] 1 Class Component pattern found in tests/test-passphrase-generator-robustness.js
-- [ ] 0 usages of "var" found
+- [ ] 1 Class Components found (in test-passphrase-generator-robustness.js)
+- [ ] 41 usages of "var" found
 
 ## 🎨 UX/A11y Friction
-- [x] 25 `<button>` elements detected without explicit aria-labels
-- [x] Multiple `<a>` tags potentially missing aria-labels (Requires manual audit)
-- [x] No "Skip to Content" link detected in index.html
-- [x] index.html empty state lacks actionable styling
-- [x] MailTo Modal lacks focus trap and animation
+- [ ] 25 `<button>` elements detected without explicit aria-labels
+- [ ] No "Skip to Content" link detected in index.html
