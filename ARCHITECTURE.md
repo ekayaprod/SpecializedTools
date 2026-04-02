@@ -39,6 +39,17 @@ graph TD
         DC[("⏱️ Delayed Clicker")]
     end
 
+    %% Domain: Standalone Web Apps
+    subgraph "Standalone Web Apps"
+        MTL_Index[("🌐 index.html <br/>(Entry)")]
+        MTL_UI[("🖥️ mailto.js <br/>(UI Logic)")]
+        MTL_Parser[("⚙️ msgreader.js <br/>(ES6 Module Parser)")]
+
+        MTL_Index -->|Loads| MTL_UI
+        MTL_Index -->|Loads| MTL_Parser
+        MTL_UI -.->|Imports| MTL_Parser
+    end
+
     %% Build Flow
     Index -->|Loads & Compiles| Compiler
 
