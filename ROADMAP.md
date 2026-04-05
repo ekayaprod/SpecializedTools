@@ -26,6 +26,7 @@ This document tracks the status of features and tools within the Browser Toolkit
 - [x] **Macro Builder**: Record and replay complex click sequences with shadow DOM support.
 - [x] **Interaction Recorder**: Debug automation issues by logging click paths and element attributes.
 - [x] **Bookmarklet Compilation**: Automated build process to minify and encode scripts.
+- [x] **MailTo Link Generator**: Client-side tool for generating, organizing, and managing mailto hyperlinks.
 - [x] **Performance Optimizations**: Async chunking for large DOM trees in Web Clipper.
     - [x] Bundle size reduction for Passphrase Generator.
 - [x] **Testing & Stability**: Comprehensive test suites for core utilities and drag-and-drop functionality.
@@ -42,4 +43,5 @@ This document tracks the status of features and tools within the Browser Toolkit
     - [ ] **Smart Formatting**: Options to remove timestamps for clean reading or preserve them for "Jump to" links.
     - [ ] **LLM Prompt Generation**: Outputs prompts for summarization, quizzes, and code extraction.
     - [ ] **Timestamped Notes**: Exports to Markdown with clickable links that resume the video at that specific time.
+- [ ] **MailTo Link Generator Improvements**: Unit tests for MsgReader and documentation.
 - [ ] **Shopping Clipper** (Deal Hunter Mode): Extract product details and prices for comparison.
