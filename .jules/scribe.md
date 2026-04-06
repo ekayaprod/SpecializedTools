@@ -1,3 +1,7 @@
+## 2024-06-03 - [MsgReader MIME Boundary Parsing]
+**Learning:** The fallback MIME text extractor `_scanBufferForMimeText` in `mailto-link-generator/js/msgreader.js` uses manual string indexing (`indexOf`) and slicing (`substring`) instead of regular expressions to parse multipart boundaries. This intentional optimization prevents catastrophic backtracking, call stack limits, and excessive memory allocations from array splits on massive email payloads.
+**Action:** When parsing large text blobs (like emails or logs) where boundary offsets are predictable, prefer `indexOf` and `substring` over complex regex splitting. Added JSDoc and `// WARN:` to `_scanBufferForMimeText` to protect this optimization.
+
 ## 2024-05-18 - [Passphrase Generator Retry Loop]
 **Learning:** The passphrase generator uses a probabilistic "guess and check" retry loop (`MAX_RETRIES = 500`) to satisfy length constraints (`minLength`, `maxLength`) because word banks contain variable-length words. It is impossible to calculate the exact final length before selecting the random words.
 **Action:** When working with generative text constraints, check if length is enforced predictively (math) or probabilistically (retries). Added JSDoc and `// WARN:` comments to protect this loop from being "optimized" into a single pass.
