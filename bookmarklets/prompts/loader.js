@@ -29,7 +29,7 @@
         },
         appraisal: {
             label: 'Valuation Analyst',
-            role: '**Role:** Real Estate Valuation Analyst.',
+            role: '**Role:** Expert Real Estate Valuation Analyst drafting a technical, data-driven Valuation Exhibit.',
             objective: `/* @include_text prompts/appraisal-objective.md */`,
             noStandardOutput: true,
         },
