@@ -432,6 +432,17 @@ MsgReaderParser.prototype.readStream = function(entry) {
     }
 };
 
+/**
+ * Scans the raw text buffer to parse out MIME fields and body text as a fallback.
+ * This is primarily used when parsing .eml files or when OLE parsing fails.
+ * @param {string|null} rawText - The raw string representation of the file. If null, it will be decoded from the buffer.
+ * @returns {{subject: string|null, to: string|null, cc: string|null, body: string|null}} Extracted MIME parts.
+ */
+// WARN: This function relies heavily on manual `indexOf` and `substring` operations for
+// parsing multipart boundaries rather than regex or full string splitting.
+// This is intentional: email bodies can be massive. Regular expressions on giant strings
+// can cause catastrophic backtracking or maximum call stack size errors, and array splitting
+// causes unnecessary memory allocation. Slicing with known bounds avoids these issues.
 MsgReaderParser.prototype._scanBufferForMimeText = function(rawText) {
     if (this._mimeScanCache) return this._mimeScanCache;
 
