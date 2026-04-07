@@ -57,3 +57,6 @@ BOUNDARIES
 
 **Learning:** Setting `.modal-overlay` with `display: none` / `display: flex` prevents CSS transition animations from running. Instead, modals should use `visibility: hidden` and `visibility: visible` paired with `opacity` to animate properly. Also, any newly created custom modal UI must explicitly manage focus.
 **Action:** Always implement a Focus Trap that traps the `Tab` key within the modal boundary, supports `Escape` to close, and safely restores focus to the previously active element (`document.activeElement`) upon closing. Use `visibility` toggling to enable scale and opacity animations on modal open/close.
+## 2026-10-25 - Staggered List Animations and Empty States
+**Learning:** Clunky list rendering without empty states feels broken. Adding a staggered entry animation and a polished empty state provides immediate perceived performance and a delightful UX.
+**Action:** Always animate list items (e.g. `animation-delay: ${index * 30}ms`) and style empty states with padding, muted text, and icons.

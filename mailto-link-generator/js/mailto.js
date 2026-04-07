@@ -336,13 +336,13 @@ const UI = {
         container.innerHTML = '';
 
         if (!items || items.length === 0) {
-            container.innerHTML = `<div class="empty-state-message">${emptyMessage}</div>`;
+            container.innerHTML = `<div class="empty-state-message" style="display:flex;flex-direction:column;align-items:center;padding:2rem;color:var(--text-secondary);text-align:center;"><svg width="32" height="32" fill="currentColor" viewBox="0 0 16 16" style="margin-bottom:0.5rem;opacity:0.5;"><path d="M.5 3l.5.5V11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H3.5L2.5 2H1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h.5V3zM1 4v7h13V4H1z"/></svg><span>${emptyMessage}</span></div>`;
             return;
         }
 
         const fragment = document.createDocumentFragment();
-        items.forEach(item => {
-            const element = createItemFn(item);
+        items.forEach((item, index) => {
+            const element = createItemFn(item, index);
             if (element) fragment.appendChild(element);
         });
         container.appendChild(fragment);
@@ -679,7 +679,7 @@ const App = {
                     <select id="modal-save-folder" class="form-input" style="flex-grow:1;">
                         ${folderOptions}
                     </select>
-                    <button id="btn-modal-new-folder" class="btn-secondary" title="New Folder" style="width:auto; padding:0 0.8rem;">+</button>
+                    <button id="btn-modal-new-folder" class="btn-secondary" title="New Folder" aria-label="New Folder" style="width:auto; padding:0 0.8rem;">+</button>
                 </div>
             </div>
         `, [
@@ -871,9 +871,10 @@ const App = {
         const items = result?.item?.children || result?.children || State.data.library;
         const sortedItems = [...items].sort((a, b) => (a.type === b.type) ? a.name.localeCompare(b.name) : (a.type === 'folder' ? -1 : 1));
 
-        UI.renderList(App.elements.treeContainer, sortedItems, 'Empty folder', (item) => {
+        UI.renderList(App.elements.treeContainer, sortedItems, 'Empty folder', (item, index) => {
             const div = document.createElement('div');
             div.className = 'list-item';
+            div.style.animationDelay = `${index * 30}ms`;
             div.dataset.id = item.id;
             div.dataset.type = item.type;
             const isFolder = item.type === 'folder';
@@ -881,9 +882,9 @@ const App = {
                 <div class="item-icon ${isFolder ? 'folder' : 'template'}">${isFolder ? Icons.folder : Icons.template}</div>
                 <div class="item-name" title="${Utils.escapeHTML(item.name)}">${Utils.escapeHTML(item.name)}</div>
                 <div class="item-actions">
-                    <button class="action-btn move-btn" title="Move">${Icons.move}</button>
-                    ${!isFolder ? '' : `<button class="action-btn edit-btn" title="Rename">${Icons.edit}</button>`}
-                    <button class="action-btn delete-btn" title="Delete">${Icons.trash}</button>
+                    <button class="action-btn move-btn" title="Move" aria-label="Move">${Icons.move}</button>
+                    ${!isFolder ? '' : `<button class="action-btn edit-btn" title="Rename" aria-label="Rename">${Icons.edit}</button>`}
+                    <button class="action-btn delete-btn" title="Delete" aria-label="Delete">${Icons.trash}</button>
                 </div>
             `;
             return div;
