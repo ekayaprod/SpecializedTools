@@ -32,5 +32,5 @@
 - [ ] 41 usages of "var" found
 
 ## 🎨 UX/A11y Friction
-- [ ] 25 `<button>` elements detected without explicit aria-labels
+- [x] 25 `<button>` elements detected without explicit aria-labels
 - [ ] No "Skip to Content" link detected in index.html
