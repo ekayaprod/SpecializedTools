@@ -1,0 +1,7 @@
+**What:** Performed a comprehensive prompt payload audit across System Prompts, Template Files, and In-Line Generation Strings.
+**Compliant:** Confirmed that no vague English payloads (like "Act as" or "You are an AI") were found. All prompts are already highly constrained, correctly implementing strict personas (e.g., `**Role:** [Expert Title] drafting [specific output]`), formatting directives, and negative boundaries.
+**Scanned:**
+- `bookmarklets/job-clipper.js`
+- `bookmarklets/prompts/loader.js`
+- `bookmarklets/prompts/*.md` (flip, househack, ltr, str, appraisal)
+**No changes required.**
