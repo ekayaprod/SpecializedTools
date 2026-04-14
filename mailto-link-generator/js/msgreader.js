@@ -307,31 +307,62 @@ MsgReaderParser.prototype.readHeader = function() {
     this.header.miniSectorSize = Math.pow(2, this.header.miniSectorShift);
 };
 
+/**
+ * Reads and constructs the File Allocation Table (FAT) for the OLE Compound Document.
+ * The FAT is essential for traversing sector chains for all streams in the file.
+ * It is built in three stages:
+ * 1. Reading the first 109 FAT sector positions directly from the header.
+ * 2. If the FAT spans more than 109 sectors, reading the Double Indirect FAT (DIF)
+ *    sectors to locate the remaining FAT sectors.
+ * 3. Populating the `this.fat` array by reading the actual sector chain indices
+ *    from each identified FAT sector block.
+ */
 MsgReaderParser.prototype.readFAT = function() {
     let sectorSize = this.header.sectorSize, entriesPerSector = sectorSize / 4;
     this.fat = [];
     let fatSectorPositions = [];
+
+    /* 1. Read primary FAT sector positions from the 109 entries in the header */
     for (let i = 0; i < 109 && i < this.header.fatSectors; i++) {
         let s = this.dataView.getUint32(76 + i * 4, true);
+        // 0xFFFFFFFE = End of Chain (EOC)
+        // 0xFFFFFFFF = Free/Unused Sector
         if (s !== 0xFFFFFFFE && s !== 0xFFFFFFFF) fatSectorPositions.push(s);
     }
+
+    /* 2. Follow the Double Indirect FAT (DIF) chain for massive files */
     if (this.header.difTotalSectors > 0) {
         let difSector = this.header.difFirstSector;
         let sectorsRead = 0;
+
+        // WARN: This loop traverses the DIF chain. A corrupted .msg file with a cyclic
+        // DIF chain could cause an infinite loop. We strictly bound it by `difTotalSectors`.
         while (difSector !== 0xFFFFFFFE && difSector !== 0xFFFFFFFF && sectorsRead < this.header.difTotalSectors) {
             let difOffset = 512 + difSector * sectorSize;
+
+            // The last entry in a DIF sector points to the *next* DIF sector,
+            // so we only read up to `entriesPerSector - 1` for actual FAT positions.
             for (let j = 0; j < entriesPerSector - 1; j++) {
                 let s = this.dataView.getUint32(difOffset + j * 4, true);
                 if (s !== 0xFFFFFFFE && s !== 0xFFFFFFFF) fatSectorPositions.push(s);
             }
+
+            // The last index contains the pointer to the next DIF block
             difSector = this.dataView.getUint32(difOffset + (entriesPerSector - 1) * 4, true);
             sectorsRead++;
         }
     }
+
+    /* 3. Actually construct the FAT array by reading the integers from each FAT block */
+    // WARN: We must check `offset + j * 4 + 4 <= this.buffer.byteLength` on every
+    // read to prevent `RangeError: Offset is outside the bounds of the DataView`
+    // on truncated or malformed .msg attachments.
     for (let i = 0; i < fatSectorPositions.length; i++) {
         let offset = 512 + fatSectorPositions[i] * sectorSize;
         for (let j = 0; j < entriesPerSector; j++) {
-            if (offset + j * 4 + 4 <= this.buffer.byteLength) this.fat.push(this.dataView.getUint32(offset + j * 4, true));
+            if (offset + j * 4 + 4 <= this.buffer.byteLength) {
+                this.fat.push(this.dataView.getUint32(offset + j * 4, true));
+            }
         }
     }
 };
