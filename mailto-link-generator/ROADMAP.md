@@ -6,9 +6,9 @@
 - [x] **Data Persistence**: LocalStorage implementation.
 - [x] **Export/Import**: CSV support for data management.
 - [x] **Client-Side Processing**: No server dependency for logic.
+- [x] Documentation improvements (JSDoc for complex parsers).
 
 ## In Progress
-- [ ] Documentation improvements (JSDoc for complex parsers).
+- [ ] Unit tests for `MsgReader`.
 
 ## Planned
-- [ ] Unit tests for `MsgReader`.
