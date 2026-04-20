@@ -272,8 +272,11 @@
 
     /**
      * Copies safe computed styles from a source element to a target element.
-     * @param {HTMLElement} s - The source element.
-     * @param {HTMLElement} t - The target element.
+     * This ensures layout fidelity when cloning elements while mitigating performance hits
+     * and avoiding overwriting target-specific inline styles.
+     *
+     * @param {HTMLElement} s - The source element from which computed styles are read.
+     * @param {HTMLElement} t - The target element to which inline styles are applied.
      */
     function copySafeStyles(s, t) {
         const computed = window.getComputedStyle(s);
@@ -281,10 +284,12 @@
             const targetStyle = t.style;
             for (const prop of safeProperties) {
                 const val = computed.getPropertyValue(prop);
+                // WARN: We skip 'none' and 'normal' to avoid bloated inline style strings,
+                // but we *cannot* safely skip '0px' defaults because User Agent stylesheet
+                // defaults might be non-zero (e.g., `<p>` tag margins).
                 if (val && val !== 'none' && val !== 'normal') {
                     /* Optimization: Skip if target already has this style */
                     // We strictly check redundancy to avoid overwriting existing inline styles.
-                    // Note: We cannot safely skip '0px' defaults because UA styles might be non-zero (e.g. <p> margin).
                     if (targetStyle.getPropertyValue(prop) === val) continue;
 
                     targetStyle.setProperty(prop, val);

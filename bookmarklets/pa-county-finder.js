@@ -1323,6 +1323,13 @@
      * @example
      * const result = find('17301');
      * // Returns: "17301: Adams"
+     *
+     * @description
+     * Resolves a ZIP code or city name to its corresponding PA County.
+     * Uses explicit overrides first before falling back to ZIP range searches.
+     *
+     * @param {string} q - The search query (ZIP code or city name).
+     * @returns {string|null} The resolved county or formatted result string, or null if not found.
      */
     function find(q) {
         const c = q.trim();
@@ -1334,12 +1341,14 @@
 
             /* O Specifics (Overrides) */
             // Check edge cases first. If a ZIP is explicitly mapped in an override,
-            // it overrides the broad range check to prevent false associations.
+            // it overrides the broad range check to prevent false associations for
+            // ZIPs that span county boundaries or are irregularly assigned.
             for (const counties of Object.values(O)) {
                 for (const [county, zips] of Object.entries(counties)) {
                     if (zips.includes(z)) {
-                        // WARN: Deduplication is required. A single query might theoretically match multiple
-                        // county arrays if overlapping ranges/overrides exist.
+                        // WARN: Deduplication is explicitly required here.
+                        // Because some ZIP codes cross multiple county borders, a single query
+                        // might legitimately match multiple county arrays if overlapping overrides exist.
                         if (!results.includes(county)) results.push(county);
                     }
                 }
