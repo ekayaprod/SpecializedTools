@@ -104,6 +104,7 @@
 
         /**
          * Generates a unique CSS selector path for a given element by traversing up the DOM tree.
+         * This path can be used later to reliably locate the exact element again.
          * The traversal stops early if a unique ID is encountered, as IDs provide a reliable absolute anchor.
          *
          * @param {HTMLElement} el - The target DOM element to generate a path for.
@@ -112,8 +113,9 @@
         getPath(el) {
             const path = [];
             let curr = el;
-            // WARN: We stop at body/html because absolute paths from the root are brittle
-            // to minor layout wrappers (like modals or overlays) injected by the browser or extensions.
+            // WARN: We stop traversing at body/html because absolute paths starting from the root
+            // are incredibly brittle to minor layout wrappers (like modals or overlays)
+            // injected dynamically by the browser, frameworks, or browser extensions.
             while (curr && curr !== document.body && curr !== document.documentElement) {
                 let selector = curr.tagName.toLowerCase();
                 if (curr.id) {
@@ -127,8 +129,8 @@
                     path.unshift(selector);
                     break;
                 } else {
-                    // We must strict-check the type of className because certain DOM elements
-                    // return non-string objects, which would cause runtime errors on .trim().
+                    // We must strict-check the type of className because certain DOM elements (like SVG objects)
+                    // return non-string objects for `className`, which would cause runtime errors when calling `.trim()`.
                     if (curr.className && typeof curr.className === 'string') {
                         const classes = curr.className
                             .trim()
@@ -138,8 +140,10 @@
                     }
 
                     // Disambiguate siblings using nth-of-type if necessary
-                    // WARN: This relies on DOM order. If the page heavily uses dynamic DOM mutation
-                    // (like React/Vue virtual lists), this index may become invalid upon replay.
+                    // WARN: This structural indexing relies purely on static DOM order.
+                    // If the target page heavily uses dynamic DOM mutation for its rendering
+                    // (like React/Vue virtual lists), this absolute index may become invalid
+                    // upon replay when the lists change.
                     const parent = curr.parentElement;
                     if (parent) {
                         let index = 0;

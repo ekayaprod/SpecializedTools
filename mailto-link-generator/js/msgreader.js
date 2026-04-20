@@ -676,12 +676,18 @@ function _extractAddresses(displayString) {
     return emails;
 }
 
+// WARN: The raw OLE structure often does not cleanly distinguish between "To" and "CC"
+// recipients directly on the recipient object nodes themselves. We must extract all recipients,
+// then parse the top-level `DisplayTo` and `DisplayCc` strings (which contain names/emails)
+// and heuristically reconcile them against the extracted objects to assign the correct `recipientType`.
 /**
  * Extracts recipients from the OLE structure.
  * Iterates through directory entries to find recipient objects,
  * parses their properties (Type, Name, Email), and reconciles them
  * with the display strings (DisplayTo, DisplayCc) to determine accurate
  * recipient types (To vs CC).
+ *
+ * @returns {Array<{recipientType: number, name: string, email: string}>} A list of resolved recipient objects.
  */
 MsgReaderParser.prototype.extractRecipients = function() {
     let self = this;
