@@ -354,7 +354,7 @@
                     el.style[key] = val;
                 }
             }
-            if (text || text === 0) el.textContent = text;
+            if (text !== undefined && text !== null) el.textContent = text;
             if (props) {
                 for (let key in props) {
                     if (Object.prototype.hasOwnProperty.call(props, key)) {

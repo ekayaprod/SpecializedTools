@@ -76,7 +76,7 @@ function _decodeQuotedPrintable(str, charset = 'utf-8') {
         if (encoding === 'us-ascii') encoding = 'utf-8';
 
         return new TextDecoder(encoding, { fatal: false }).decode(bytes);
-    } catch (unusedError) {
+    } catch {
         return decoded;
     }
 }
@@ -108,7 +108,7 @@ function _stripHtml(html) {
             const junk = doc.querySelectorAll('style, script, link, meta, title');
             junk.forEach(el => el.remove());
             text = doc.body ? doc.body.textContent : (doc.documentElement.textContent || '');
-        } catch (unusedError) {
+        } catch {
             text = text.replace(/<[^>]+>/g, '');
         }
     } else {
@@ -137,7 +137,7 @@ function dataViewToString(view, encoding) {
             let decoded = new TextDecoder('utf-8', { fatal: true }).decode(view);
             const nullIdx = decoded.indexOf('\0');
             return nullIdx !== -1 ? decoded.substring(0, nullIdx) : decoded;
-        } catch (unusedError) {
+        } catch {
             return dataViewToString(view, 'ascii');
         }
     }
@@ -148,7 +148,7 @@ function dataViewToString(view, encoding) {
             let decoded = getTextDecoder('utf-16le').decode(view);
             const nullIdx = decoded.indexOf('\0');
             return nullIdx !== -1 ? decoded.substring(0, nullIdx) : decoded;
-        } catch (unusedError) {
+        } catch {
             let result = '';
             for (let i = 0; i < view.byteLength - 1; i += 2) {
                 let charCode = view.getUint16(i, true);
@@ -163,7 +163,7 @@ function dataViewToString(view, encoding) {
         let decoded = getTextDecoder('windows-1252').decode(view);
         const nullIdx = decoded.indexOf('\0');
         return nullIdx !== -1 ? decoded.substring(0, nullIdx) : decoded;
-    } catch (unusedError) {
+    } catch {
         let result = '';
         for (let i = 0; i < view.byteLength; i++) {
             let charCode = view.getUint8(i);
@@ -180,7 +180,7 @@ function filetimeToDate(low, high) {
         const FILETIME_EPOCH_DIFF = 116444736000000000n;
         let filetime = (BigInt(high) << 32n) | BigInt(low);
         return new Date(Number((filetime - FILETIME_EPOCH_DIFF) / 10000n));
-    } catch (unusedError) { return null; }
+    } catch { return null; }
 }
 
 /* =============================================================================
@@ -197,7 +197,7 @@ function _parsePropTag(entryName) {
     }
     try {
         return { id: parseInt(propTagStr.substring(0, 4), 16), type: parseInt(propTagStr.substring(4, 8), 16) };
-    } catch (unusedError) { return null; }
+    } catch { return null; }
 }
 
 function _shouldStoreProperty(propId, newPropType, existingProp) {
@@ -255,9 +255,9 @@ MsgReaderParser.prototype.parseMime = function() {
     this._mimeScanCache = null;
     let rawText;
     try { rawText = new TextDecoder('utf-8', { fatal: false }).decode(this.dataView); }
-    catch (unusedError) {
+    catch {
         try { rawText = new TextDecoder('latin1').decode(this.dataView); }
-        catch (unusedError2) { rawText = ''; }
+        catch { rawText = ''; }
     }
 
     let mimeData = this._scanBufferForMimeText(rawText);
@@ -478,9 +478,9 @@ MsgReaderParser.prototype._scanBufferForMimeText = function(rawText) {
 
     if (!rawText) {
         try { rawText = new TextDecoder('utf-8', { fatal: false }).decode(this.dataView); }
-        catch (unusedError) {
+        catch {
             try { rawText = new TextDecoder('latin1').decode(this.dataView); }
-            catch (unusedError2) {
+            catch {
                 return { subject: null, to: null, cc: null, body: null };
             }
         }
@@ -627,8 +627,8 @@ MsgReaderParser.prototype.convertPropertyValue = function(data, type, propId) {
 
     if (isBodyProp || type === PROP_TYPE_STRING || type === PROP_TYPE_STRING8) {
         let u16 = '', u8 = '';
-        try { u16 = dataViewToString(view, 'utf16le'); } catch (unusedError) { /* fallback to empty string */ }
-        try { u8 = dataViewToString(view, 'utf-8'); } catch (unusedError) { /* fallback to empty string */ }
+        try { u16 = dataViewToString(view, 'utf16le'); } catch { /* fallback to empty string */ }
+        try { u8 = dataViewToString(view, 'utf-8'); } catch { /* fallback to empty string */ }
 
         let isPrintable = (s) => {
             if (!s || s.length === 0) return false;

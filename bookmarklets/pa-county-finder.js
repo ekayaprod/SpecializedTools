@@ -1316,17 +1316,12 @@
     };
 
     /**
-     * Finds county information based on ZIP code or city name.
-     * @param {string} q - The query string (ZIP or City).
-     * @returns {string|null} The formatted result string or null if not found.
-     *
-     * @example
-     * const result = find('17301');
-     * // Returns: "17301: Adams"
-     *
-     * @description
      * Resolves a ZIP code or city name to its corresponding PA County.
      * Uses explicit overrides first before falling back to ZIP range searches.
+     *
+     * @example
+     * const result = find("17301");
+     * // Returns: "17301: Adams"
      *
      * @param {string} q - The search query (ZIP code or city name).
      * @returns {string|null} The resolved county or formatted result string, or null if not found.
