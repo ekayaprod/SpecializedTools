@@ -189,7 +189,7 @@ function filetimeToDate(low, high) {
    ============================================================================= */
 
 function _parsePropTag(entryName) {
-    let propTagStr = "00000000";
+    let propTagStr;
     if (entryName.length >= 20) propTagStr = entryName.substring(entryName.length - 8);
     else {
         let parts = entryName.split('_');
@@ -254,7 +254,7 @@ MsgReaderParser.prototype.parse = function() {
 
 MsgReaderParser.prototype.parseMime = function() {
     this._mimeScanCache = null;
-    let rawText = '';
+    let rawText;
     try { rawText = new TextDecoder('utf-8', { fatal: false }).decode(this.dataView); }
     catch (e) {
         try { rawText = new TextDecoder('latin1').decode(this.dataView); }
@@ -628,8 +628,8 @@ MsgReaderParser.prototype.convertPropertyValue = function(data, type, propId) {
 
     if (isBodyProp || type === PROP_TYPE_STRING || type === PROP_TYPE_STRING8) {
         let u16 = '', u8 = '';
-        try { u16 = dataViewToString(view, 'utf16le'); } catch (e) {}
-        try { u8 = dataViewToString(view, 'utf-8'); } catch (e) {}
+        try { u16 = dataViewToString(view, 'utf16le'); } catch (e) { /* ignore */ }
+        try { u8 = dataViewToString(view, 'utf-8'); } catch (e) { /* ignore */ }
 
         let isPrintable = (s) => {
             if (!s || s.length === 0) return false;
@@ -644,7 +644,7 @@ MsgReaderParser.prototype.convertPropertyValue = function(data, type, propId) {
              u8IsBetter = false;
         }
 
-        let useU16 = false;
+        let useU16;
         if (type === PROP_TYPE_STRING8) {
             useU16 = u16IsBetter && !u8IsBetter;
         } else {
