@@ -1,0 +1,4 @@
+- [x] Provision CI pipeline
+- [x] Provision GitHub Pages deployment pipeline
+- [x] Bootstrap professional meta-infrastructure (.github issues/PR templates, dependabot)
+- [x] Configure .mcp.json for Puppeteer and GitHub servers
