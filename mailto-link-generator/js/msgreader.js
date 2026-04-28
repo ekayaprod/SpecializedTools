@@ -19,7 +19,6 @@ const PROP_ID_BODY = 0x1000;
 const PROP_ID_HTML_BODY = 0x1013;
 const PROP_ID_DISPLAY_TO = 0x0E04;
 const PROP_ID_DISPLAY_CC = 0x0E03;
-const PROP_ID_DISPLAY_BCC = 0x0E02;
 
 const PROP_ID_RECIPIENT_TYPE = 0x0C15;
 const PROP_ID_RECIPIENT_DISPLAY_NAME = 0x3001;
@@ -77,7 +76,7 @@ function _decodeQuotedPrintable(str, charset = 'utf-8') {
         if (encoding === 'us-ascii') encoding = 'utf-8';
 
         return new TextDecoder(encoding, { fatal: false }).decode(bytes);
-    } catch (e) {
+    } catch (unusedError) {
         return decoded;
     }
 }
@@ -109,7 +108,7 @@ function _stripHtml(html) {
             const junk = doc.querySelectorAll('style, script, link, meta, title');
             junk.forEach(el => el.remove());
             text = doc.body ? doc.body.textContent : (doc.documentElement.textContent || '');
-        } catch (e) {
+        } catch (unusedError) {
             text = text.replace(/<[^>]+>/g, '');
         }
     } else {
@@ -138,7 +137,7 @@ function dataViewToString(view, encoding) {
             let decoded = new TextDecoder('utf-8', { fatal: true }).decode(view);
             const nullIdx = decoded.indexOf('\0');
             return nullIdx !== -1 ? decoded.substring(0, nullIdx) : decoded;
-        } catch (e) {
+        } catch (unusedError) {
             return dataViewToString(view, 'ascii');
         }
     }
@@ -149,7 +148,7 @@ function dataViewToString(view, encoding) {
             let decoded = getTextDecoder('utf-16le').decode(view);
             const nullIdx = decoded.indexOf('\0');
             return nullIdx !== -1 ? decoded.substring(0, nullIdx) : decoded;
-        } catch (e) {
+        } catch (unusedError) {
             let result = '';
             for (let i = 0; i < view.byteLength - 1; i += 2) {
                 let charCode = view.getUint16(i, true);
@@ -164,7 +163,7 @@ function dataViewToString(view, encoding) {
         let decoded = getTextDecoder('windows-1252').decode(view);
         const nullIdx = decoded.indexOf('\0');
         return nullIdx !== -1 ? decoded.substring(0, nullIdx) : decoded;
-    } catch(e) {
+    } catch (unusedError) {
         let result = '';
         for (let i = 0; i < view.byteLength; i++) {
             let charCode = view.getUint8(i);
@@ -181,7 +180,7 @@ function filetimeToDate(low, high) {
         const FILETIME_EPOCH_DIFF = 116444736000000000n;
         let filetime = (BigInt(high) << 32n) | BigInt(low);
         return new Date(Number((filetime - FILETIME_EPOCH_DIFF) / 10000n));
-    } catch (e) { return null; }
+    } catch (unusedError) { return null; }
 }
 
 /* =============================================================================
@@ -189,7 +188,7 @@ function filetimeToDate(low, high) {
    ============================================================================= */
 
 function _parsePropTag(entryName) {
-    let propTagStr = "00000000";
+    let propTagStr;
     if (entryName.length >= 20) propTagStr = entryName.substring(entryName.length - 8);
     else {
         let parts = entryName.split('_');
@@ -198,7 +197,7 @@ function _parsePropTag(entryName) {
     }
     try {
         return { id: parseInt(propTagStr.substring(0, 4), 16), type: parseInt(propTagStr.substring(4, 8), 16) };
-    } catch (e) { return null; }
+    } catch (unusedError) { return null; }
 }
 
 function _shouldStoreProperty(propId, newPropType, existingProp) {
@@ -254,11 +253,11 @@ MsgReaderParser.prototype.parse = function() {
 
 MsgReaderParser.prototype.parseMime = function() {
     this._mimeScanCache = null;
-    let rawText = '';
+    let rawText;
     try { rawText = new TextDecoder('utf-8', { fatal: false }).decode(this.dataView); }
-    catch (e) {
+    catch (unusedError) {
         try { rawText = new TextDecoder('latin1').decode(this.dataView); }
-        catch (e2) { rawText = ''; }
+        catch (unusedError2) { rawText = ''; }
     }
 
     let mimeData = this._scanBufferForMimeText(rawText);
@@ -385,7 +384,6 @@ MsgReaderParser.prototype.readMiniFAT = function() {
 
 MsgReaderParser.prototype.readDirectory = function() {
     let sector = this.header.directoryFirstSector, sectorSize = this.header.sectorSize, entrySize = 128;
-    let sectorsRead = 0;
     while (sector !== 0xFFFFFFFE && sector !== 0xFFFFFFFF) {
         let offset = 512 + sector * sectorSize;
         for (let i = 0; i < sectorSize / entrySize; i++) {
@@ -396,7 +394,6 @@ MsgReaderParser.prototype.readDirectory = function() {
         }
         if (sector >= this.fat.length) break;
         sector = this.fat[sector];
-        sectorsRead++;
     }
     this.directoryEntries.forEach((de, idx) => de.id = idx);
 };
@@ -481,9 +478,9 @@ MsgReaderParser.prototype._scanBufferForMimeText = function(rawText) {
 
     if (!rawText) {
         try { rawText = new TextDecoder('utf-8', { fatal: false }).decode(this.dataView); }
-        catch (e) {
+        catch (unusedError) {
             try { rawText = new TextDecoder('latin1').decode(this.dataView); }
-            catch (e2) {
+            catch (unusedError2) {
                 return { subject: null, to: null, cc: null, body: null };
             }
         }
@@ -583,7 +580,7 @@ MsgReaderParser.prototype.extractProperties = function() {
         rawProps[propTag.id] = { id: propTag.id, type: propTag.type, data: self.readStream(entry) };
     });
 
-    let getVal = (id, type) => {
+    let getVal = (id) => {
         let p = rawProps[id];
         return p ? self.convertPropertyValue(p.data, p.type, id) : null;
     };
@@ -630,8 +627,8 @@ MsgReaderParser.prototype.convertPropertyValue = function(data, type, propId) {
 
     if (isBodyProp || type === PROP_TYPE_STRING || type === PROP_TYPE_STRING8) {
         let u16 = '', u8 = '';
-        try { u16 = dataViewToString(view, 'utf16le'); } catch (e) {}
-        try { u8 = dataViewToString(view, 'utf-8'); } catch (e) {}
+        try { u16 = dataViewToString(view, 'utf16le'); } catch (unusedError) { /* fallback to empty string */ }
+        try { u8 = dataViewToString(view, 'utf-8'); } catch (unusedError) { /* fallback to empty string */ }
 
         let isPrintable = (s) => {
             if (!s || s.length === 0) return false;
@@ -646,7 +643,7 @@ MsgReaderParser.prototype.convertPropertyValue = function(data, type, propId) {
              u8IsBetter = false;
         }
 
-        let useU16 = false;
+        let useU16;
         if (type === PROP_TYPE_STRING8) {
             useU16 = u16IsBetter && !u8IsBetter;
         } else {
