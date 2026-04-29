@@ -506,65 +506,82 @@ MsgReaderParser.prototype._scanBufferForMimeText = function(rawText) {
         headerOffset = 2;
     }
 
-    if (headerEndIndex !== -1) {
-        let bodyText = rawText.substring(headerEndIndex + headerOffset);
-        let encoding = null;
-        let charset = 'utf-8'; // Default
+    if (headerEndIndex === -1) {
+        this._mimeScanCache = result;
+        return result;
+    }
 
-        if (/Content-Type:\s*multipart/i.test(rawText)) {
-             const plainMatch = bodyText.match(/Content-Type:\s*text\/plain/i);
-             if (plainMatch) {
-                 const plainTypeIndex = plainMatch.index;
+    let bodyText = rawText.substring(headerEndIndex + headerOffset);
+    let encoding = null;
+    let charset = 'utf-8'; // Default
 
-                 let start = -1;
-                 let startOffset = 0;
+    const _extractMultipartPlaintext = (text, initialEncoding, initialCharset) => {
+        const plainMatch = text.match(/Content-Type:\s*text\/plain/i);
+        if (!plainMatch) return { bodyText: text, encoding: initialEncoding, charset: initialCharset };
 
-                 const rnrn = bodyText.indexOf('\r\n\r\n', plainTypeIndex);
-                 const nn = bodyText.indexOf('\n\n', plainTypeIndex);
+        const plainTypeIndex = plainMatch.index;
 
-                 if (rnrn !== -1 && (nn === -1 || rnrn < nn)) {
-                     start = rnrn;
-                     startOffset = 4;
-                 } else if (nn !== -1) {
-                     start = nn;
-                     startOffset = 2;
-                 }
+        let start = -1;
+        let startOffset = 0;
 
-                 const partHeaders = bodyText.substring(plainTypeIndex, start);
-                 if (/Content-Transfer-Encoding:\s*quoted-printable/i.test(partHeaders)) {
-                     encoding = 'quoted-printable';
-                 }
+        const rnrn = text.indexOf('\r\n\r\n', plainTypeIndex);
+        const nn = text.indexOf('\n\n', plainTypeIndex);
 
-                 const charsetMatch = partHeaders.match(/charset=["']?([^"';\r\n]+)/i);
-                 if (charsetMatch) charset = charsetMatch[1];
-
-                 if (start !== -1) {
-                     let end = -1;
-                     const boundRN = bodyText.indexOf('\r\n--', start + startOffset);
-                     const boundN = bodyText.indexOf('\n--', start + startOffset);
-
-                     if (boundRN !== -1 && (boundN === -1 || boundRN < boundN)) {
-                         end = boundRN;
-                     } else if (boundN !== -1) {
-                         end = boundN;
-                     }
-
-                     if (end === -1) end = bodyText.length;
-
-                     bodyText = bodyText.substring(start + startOffset, end).trim();
-                 }
-             }
-        } else {
-             if (rawText.match(/^Content-Transfer-Encoding:\s*quoted-printable/im)) {
-                encoding = 'quoted-printable';
-             }
-             // Check global charset
-             const charsetMatch = rawText.match(/charset=["']?([^"';\r\n]+)/i);
-             if (charsetMatch) charset = charsetMatch[1];
+        if (rnrn !== -1 && (nn === -1 || rnrn < nn)) {
+            start = rnrn;
+            startOffset = 4;
+        } else if (nn !== -1) {
+            start = nn;
+            startOffset = 2;
         }
 
-        result.body = (encoding === 'quoted-printable') ? _decodeQuotedPrintable(bodyText, charset) : bodyText;
+        const partHeaders = text.substring(plainTypeIndex, start);
+        let extractedEncoding = initialEncoding;
+        if (/Content-Transfer-Encoding:\s*quoted-printable/i.test(partHeaders)) {
+            extractedEncoding = 'quoted-printable';
+        }
+
+        const charsetMatch = partHeaders.match(/charset=["']?([^"';\r\n]+)/i);
+        let extractedCharset = charsetMatch ? charsetMatch[1] : initialCharset;
+
+        if (start === -1) {
+             return { bodyText: text, encoding: extractedEncoding, charset: extractedCharset };
+        }
+
+        let end = -1;
+        const boundRN = text.indexOf('\r\n--', start + startOffset);
+        const boundN = text.indexOf('\n--', start + startOffset);
+
+        if (boundRN !== -1 && (boundN === -1 || boundRN < boundN)) {
+            end = boundRN;
+        } else if (boundN !== -1) {
+            end = boundN;
+        }
+
+        if (end === -1) end = text.length;
+
+        return {
+            bodyText: text.substring(start + startOffset, end).trim(),
+            encoding: extractedEncoding,
+            charset: extractedCharset
+        };
+    };
+
+    if (/Content-Type:\s*multipart/i.test(rawText)) {
+        const extracted = _extractMultipartPlaintext(bodyText, encoding, charset);
+        bodyText = extracted.bodyText;
+        encoding = extracted.encoding;
+        charset = extracted.charset;
+    } else {
+        if (rawText.match(/^Content-Transfer-Encoding:\s*quoted-printable/im)) {
+            encoding = 'quoted-printable';
+        }
+        // Check global charset
+        const charsetMatch = rawText.match(/charset=["']?([^"';\r\n]+)/i);
+        if (charsetMatch) charset = charsetMatch[1];
     }
+
+    result.body = (encoding === 'quoted-printable') ? _decodeQuotedPrintable(bodyText, charset) : bodyText;
 
     this._mimeScanCache = result;
     return result;
