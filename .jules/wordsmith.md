@@ -14,4 +14,4 @@
 
 ## Audit Log
 
-- [ ] Microcopy: Global Audit
+- [x] Microcopy: Global Audit
