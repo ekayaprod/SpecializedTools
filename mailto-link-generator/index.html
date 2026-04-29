@@ -42,7 +42,7 @@
         <main id="main-content" class="editor-panel" tabindex="-1">
             <div class="panel-header">
                 <h2>Editor</h2>
-                <button id="btn-clear-all" class="btn-secondary btn-sm" aria-label="Clear Form">Clear</button>
+                <button id="btn-clear-all" class="btn-secondary btn-sm" aria-label="Clear Form">Clear Editor</button>
             </div>
 
             <div class="editor-content">
@@ -50,7 +50,7 @@
                 <div id="upload-wrapper" class="upload-zone">
                     <input type="file" id="msg-upload" accept=".msg,.oft,.eml,.email" hidden>
                     <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/></svg>
-                    <p>Drop email file here or click to browse</p>
+                    <p>Drag email file here or click to browse</p>
                 </div>
 
                 <!-- Input Fields -->
@@ -83,7 +83,7 @@
                 <!-- Action Buttons -->
                 <div class="button-group">
                     <button id="btn-save-to-library" class="btn-success" aria-label="Save to Library">Save to Library</button>
-                    <a href="#" id="result-link" target="_blank" class="btn-primary btn-block" style="margin-top:0; text-align:center; padding-top:0.5rem; text-decoration:none;">Launch Email App</a>
+                    <a href="#" id="result-link" target="_blank" class="btn-primary btn-block" style="margin-top:0; text-align:center; padding-top:0.5rem; text-decoration:none;">Open Email App</a>
                 </div>
 
                 <!-- Live Preview Section (Always Visible) -->
@@ -92,7 +92,7 @@
                         <label for="result-mailto">MailTo Link Preview</label>
                         <div class="input-with-button">
                             <input type="text" id="result-mailto" class="form-input" readonly>
-                            <button id="copy-mailto-btn" class="btn-secondary" aria-label="Copy MailTo Link">Copy</button>
+                            <button id="copy-mailto-btn" class="btn-secondary" aria-label="Copy MailTo Link">Copy Link</button>
                         </div>
                     </div>
                 </div>
