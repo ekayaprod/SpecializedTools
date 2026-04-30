@@ -9,6 +9,15 @@ const constantsCode = fs.readFileSync(constantsPath, 'utf8');
 
 console.log('Running Web Clipper PNG Error Test (No JSDOM)...');
 
+// Mock global setTimeout
+const realSetTimeout = global.setTimeout;
+let pendingTimeouts = [];
+global.setTimeout = (cb, delay) => {
+    pendingTimeouts.push(cb);
+    return 1;
+};
+global.clearTimeout = () => {};
+
 // Mock browser globals
 const mockWindow = {
     location: { href: 'http://localhost/' },
@@ -106,8 +115,9 @@ async function runTest() {
         assert.ok(errorLog[1].timestamp, 'Timestamp should be in error log');
 
         // Wait for reset delay (2000ms + buffer)
-        console.log('Waiting for button reset...');
-        await new Promise((r) => setTimeout(r, 2100));
+        console.log('Fast-forwarding button reset...');
+        pendingTimeouts.forEach(cb => cb());
+        pendingTimeouts = [];
 
         assert.strictEqual(btn.textContent, originalText, 'Button text should reset');
         assert.strictEqual(btn.disabled, false, 'Button should be re-enabled');
@@ -138,6 +148,8 @@ async function runTest() {
         process.exit(1);
     } finally {
         console.error = originalConsoleError;
+        global.setTimeout = realSetTimeout;
+        delete global.clearTimeout;
     }
 }
 
