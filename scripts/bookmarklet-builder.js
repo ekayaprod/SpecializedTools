@@ -14,14 +14,24 @@
     //    So `\\[\s\S]` matches `\` followed by ANY character.
     //    So regex should be: `"(?:[^"\\]|\\[\s\S])*"`
 
-    // String literal representation:
-    // " -> \"
-    // [^"\\] -> [^"\\\\]
-    // \\[\s\S] -> \\\\[\\s\\S]
-
-    // Added support for regex literals: /\/((?:[^/\\\r\n]|\\.)+)\/[gimuy]*/
-    // This prevents the parser from confusing quotes inside regex literals with string delimiters.
-    // Added support for line comments: /\/\/[^\r\n]*/
+    /**
+     * A monolithic regular expression used to parse JavaScript source code into tokens without requiring an AST tree parser (like Acorn or Babel).
+     * By using a regex, we keep this builder script zero-dependency and lightweight enough to run in any environment.
+     *
+     * It captures 6 types of JavaScript tokens in a specific order:
+     * 1. Double-quoted strings: `"(?:[^"\\]|\\[\s\S])*"`
+     * 2. Single-quoted strings: `'(?:[^'\\]|\\[\s\S])*'`
+     * 3. Template literals:     `` `(?:[^`\\]|\\[\s\S])*` ``
+     * 4. Block comments:        `\/\*[\s\S]*?\*\/`
+     * 5. Line comments:         `\/\/[^\r\n]*`
+     * 6. Regex literals:        `\/(?:[^/\\\r\n]|\\.)+\/[gimuy]*`
+     *
+     * @type {string}
+     */
+    // WARN: The order of the OR (|) clauses is CRITICAL.
+    // Strings and comments MUST be matched before regex literals.
+    // If regex literals were parsed first, a division operator followed by a comment (e.g. `const x = 10 / 2; // foo`)
+    // would be incorrectly parsed as a regex literal starting at the division slash and ending at the comment slash.
     const TOKEN_PATTERN =
         '("(?:[^"\\\\]|\\\\[\\s\\S])*"|\'(?:[^\'\\\\]|\\\\[\\s\\S])*\'|`(?:[^`\\\\]|\\\\[\\s\\S])*`|\\/\\*[\\s\\S]*?\\*\\/|\\/\\/[^\\r\\n]*|\\/(?:[^/\\\\\\r\\n]|\\\\.)+\\/[gimuy]*)';
 
