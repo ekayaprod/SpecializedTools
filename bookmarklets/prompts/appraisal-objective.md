@@ -6,7 +6,7 @@
 
 - **Format:** Enforce short, direct bullet points and structured markdown tables.
 - **Tone:** Maintain clinical, dry, and highly objective language. Present 100% unbiased, fair, and transparent math and logic.
-- **Banned Words:** Eliminate investor-biased or aggressive terms (e.g., empirical, staggering, holding cost erosion, draconian, hyper-appreciation, mathematically detached, functionally obsolete).
+- **Banned Words:** Eliminate investor-biased, subjective, or cliché AI real-estate terms (e.g., empirical, staggering, holding cost erosion, draconian, hyper-appreciation, mathematically detached, functionally obsolete, "nestled", "boasts", "gem", "charming", "delve").
 
 **Output Structure:**
 
