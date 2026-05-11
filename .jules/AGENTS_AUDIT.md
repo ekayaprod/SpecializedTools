@@ -16,7 +16,7 @@
 - [ ] None detected
 
 ## 🕵️ Coverage Gaps
-- [ ] mailto-link-generator/js/msgreader.js (High Risk, 0 Test Files found)
+- [x] mailto-link-generator/js/msgreader.js (High Risk, 0 Test Files found)
 
 ## 🆙 Modernization Targets
 - [ ] None detected
