@@ -23,3 +23,7 @@
 ## 2024-06-03 - [Bookmarklet Builder JavaScript Tokenizer Regex]
 **Learning:** The `bookmarklet-builder.js` uses a monolithic regular expression (`TOKEN_PATTERN`) to tokenize JavaScript source code instead of an AST parser to maintain zero dependencies. The order of the OR (`|`) clauses inside the regex is critical; strings and comments must be matched *before* regex literals to prevent division operators followed by comments (e.g., `const x = 10 / 2; // foo`) from being incorrectly parsed as a regex literal.
 **Action:** When creating text or code tokenizers using regular expressions, always order the clauses so that unambiguous, clearly-terminated tokens (like strings and block comments) are captured before potentially ambiguous tokens (like division vs. regex literals).
+
+## 2026-05-11 - [MsgReader Email Address Parsing Logic]
+**Learning:** The `parseAddress` function in `mailto-link-generator/js/msgreader.js` extracts the name and email from an address string by falling back from explicit `<email>` formatting to a raw regex email match. It aggressively strips outer quotes because OLE file artifacts often leave names unquoted or inconsistently formatted.
+**Action:** When extracting text structures from loosely-formatted or historically volatile standards (like email headers or OLE data), prefer a cascading approach (try structured format, fall back to regex extraction) and actively strip legacy artifacts rather than expecting strict compliance.
