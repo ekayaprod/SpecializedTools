@@ -1584,6 +1584,7 @@
 
         const btn = document.createElement('button');
         btn.textContent = 'Find';
+        btn.setAttribute('aria-label', 'Find County');
         btn.className = 'pa-btn pa-btn-primary';
 
         const performSearch = () => {

@@ -392,10 +392,12 @@
 
             const btnCancel = document.createElement('button');
             btnCancel.textContent = C.BTN_CANCEL;
+            btnCancel.setAttribute('aria-label', 'Cancel Web Clipper');
             btnCancel.onclick = this.closeEditor;
 
             const btnRetry = document.createElement('button');
             btnRetry.textContent = C.BTN_RETRY;
+            btnRetry.setAttribute('aria-label', 'Retry Web Clipper');
             btnRetry.onclick = () => {
                 this.closeEditor();
                 this.startFinder();
@@ -424,12 +426,14 @@
 
             const btnDownload = document.createElement('button');
             btnDownload.textContent = C.BTN_DOWNLOAD;
+            btnDownload.setAttribute('aria-label', 'Download Web Clipper Content');
             btnDownload.onclick = () => {
                 this.handleDownload(contentArea, formatSelect.value, btnDownload);
             };
 
             const btnCopy = document.createElement('button');
             btnCopy.textContent = C.BTN_COPY;
+            btnCopy.setAttribute('aria-label', 'Copy Web Clipper Content');
             btnCopy.className = 'primary';
             btnCopy.onclick = () => {
                 this.handleCopy(contentArea);

@@ -312,6 +312,7 @@
     Object.assign(title.style, { margin: '0', fontSize: '18px', fontWeight: 'bold', color: '#1e293b' });
 
     const toggleBtn = document.createElement('button');
+    toggleBtn.setAttribute('aria-label', 'Toggle settings');
     Object.assign(toggleBtn.style, {
         background: '#f1f5f9', border: '1px solid #cbd5e1', padding: '4px 10px',
         borderRadius: '6px', cursor: 'pointer', fontSize: '12px', color: '#475569'
@@ -443,6 +444,7 @@
 
             const copyBtn = document.createElement('button');
             copyBtn.textContent = 'Copy';
+            copyBtn.setAttribute('aria-label', 'Copy passphrase');
             Object.assign(copyBtn.style, {
                 background: 'white', border: '1px solid #cbd5e1', borderRadius: '4px',
                 padding: '4px 8px', fontSize: '12px', cursor: 'pointer', color: '#475569'
@@ -485,6 +487,7 @@
 
     const closeBtn = document.createElement('button');
     closeBtn.textContent = 'Close';
+    closeBtn.setAttribute('aria-label', 'Close Passphrase Generator');
     Object.assign(closeBtn.style, { padding: '8px 16px', background: '#cbd5e1', color: '#1e293b', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' });
     closeBtn.onclick = () => overlay.remove();
 

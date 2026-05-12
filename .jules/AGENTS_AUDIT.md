@@ -22,5 +22,5 @@
 - [ ] None detected
 
 ## 🎨 UX/A11y Friction
-- [ ] 5 Buttons missing aria-labels
+- [x] 5 Buttons missing aria-labels
 - [ ] Skip to Content link found but needs robust testing
