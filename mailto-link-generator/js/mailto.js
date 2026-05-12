@@ -242,6 +242,7 @@ const UI = {
             const button = document.createElement('button');
             button.className = btn.class || 'btn-secondary';
             button.textContent = btn.label;
+            button.setAttribute('aria-label', btn.label);
             button.onclick = () => {
                 // If callback returns explicit false, do not close modal
                 if (btn.callback) {
