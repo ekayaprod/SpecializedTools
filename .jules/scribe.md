@@ -27,3 +27,7 @@
 ## 2026-05-11 - [MsgReader Email Address Parsing Logic]
 **Learning:** The `parseAddress` function in `mailto-link-generator/js/msgreader.js` extracts the name and email from an address string by falling back from explicit `<email>` formatting to a raw regex email match. It aggressively strips outer quotes because OLE file artifacts often leave names unquoted or inconsistently formatted.
 **Action:** When extracting text structures from loosely-formatted or historically volatile standards (like email headers or OLE data), prefer a cascading approach (try structured format, fall back to regex extraction) and actively strip legacy artifacts rather than expecting strict compliance.
+
+## 2024-05-18 - Documented Heuristic String Encoding Fallback Logic
+**Learning:** OLE properties often lack explicit encoding markers. We use a 70% printable character heuristic to guess whether the raw data is UTF-8 or UTF-16LE. If a string decodes as garbage in UTF-8 (lots of non-printable bytes like `\x00`), it's likely UTF-16LE. We check both decodings and score them. There is a mitigation for short string false-positives: short UTF-8 strings can sometimes technically decode cleanly as short UTF-16 strings because of accidental alignment. If both decode well, but the UTF-8 version is very short, we assume it's a false positive and prefer the UTF-16 version.
+**Action:** Documented `MsgReaderParser.prototype.convertPropertyValue` with JSDoc and `// WARN:` inline comments explaining the logic. Also documented `_readSectorChain`.

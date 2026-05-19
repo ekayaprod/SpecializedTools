@@ -428,6 +428,17 @@ MsgReaderParser.prototype.readDirectoryEntry = function(offset) {
     };
 };
 
+/**
+ * Reads a chain of sectors from the File Allocation Table (FAT) and reconstructs them into a continuous byte array.
+ * This handles the fragmentation inherent in OLE Compound Documents, where a single file stream
+ * may be split across multiple non-contiguous sectors in the physical file.
+ *
+ * @param {number} startSector - The index of the first sector in the chain.
+ * @param {number} sectorSize - The size of each sector in bytes (typically 512 for FAT or 64 for MiniFAT).
+ * @param {number[]} fatArray - The FAT array containing sector links (next sector indices).
+ * @param {number} totalSize - The expected total size of the unfragmented stream in bytes.
+ * @returns {Uint8Array} The reconstructed, continuous stream of bytes.
+ */
 MsgReaderParser.prototype._readSectorChain = function(startSector, sectorSize, fatArray, totalSize) {
     let data = new Uint8Array(totalSize);
     let dataOffset = 0;
@@ -649,6 +660,16 @@ MsgReaderParser.prototype.extractProperties = function() {
     this.extractRecipients();
 };
 
+/**
+ * Converts raw OLE property data into a JavaScript-friendly format (String, Number, Date, Boolean, etc).
+ * Handling text encoding in .msg files is notoriously difficult because standard MAPI properties
+ * don't reliably indicate their charset. We use a heuristic approach to guess the correct encoding.
+ *
+ * @param {Uint8Array} data - The raw property data extracted from the FAT stream.
+ * @param {number} type - The MAPI property type (e.g., PROP_TYPE_STRING, PROP_TYPE_INTEGER32).
+ * @param {number} propId - The MAPI property ID (e.g., PROP_ID_SUBJECT, PROP_ID_BODY).
+ * @returns {any} The converted JavaScript value (string, number, Date, boolean, or raw Uint8Array).
+ */
 MsgReaderParser.prototype.convertPropertyValue = function(data, type, propId) {
     if (!data || data.length === 0) return null;
     let view = new DataView(data.buffer, data.byteOffset, data.byteLength);
@@ -660,6 +681,9 @@ MsgReaderParser.prototype.convertPropertyValue = function(data, type, propId) {
         try { u16 = dataViewToString(view, 'utf16le'); } catch { /* fallback to empty string */ }
         try { u8 = dataViewToString(view, 'utf-8'); } catch { /* fallback to empty string */ }
 
+        // WARN: We use a 70% printable character heuristic to guess whether the raw data is UTF-8 or UTF-16LE.
+        // OLE properties often lack explicit encoding markers. If a string decodes as garbage in UTF-8
+        // (lots of non-printable bytes like `\x00`), it's likely UTF-16LE. We check both decodings and score them.
         let isPrintable = (s) => {
             if (!s || s.length === 0) return false;
             let printableCount = s.replace(/[^\x20-\x7E\n\r\t\u00A0-\u00FF]/g, '').length;
@@ -669,14 +693,20 @@ MsgReaderParser.prototype.convertPropertyValue = function(data, type, propId) {
         let u16IsBetter = isPrintable(u16);
         let u8IsBetter = isPrintable(u8);
 
+        // Mitigation for short string false-positives: Short UTF-8 strings (like "test") can sometimes
+        // technically decode cleanly as short UTF-16 strings because of accidental alignment.
+        // If both decode well, but u8 is very short, we assume u8 is a false positive and prefer u16.
         if (u8IsBetter && u16IsBetter && u8.length < u16.length && u8.length < 5) {
              u8IsBetter = false;
         }
 
         let useU16;
         if (type === PROP_TYPE_STRING8) {
+            // PROP_TYPE_STRING8 (0x001F) technically means 8-bit character string (ASCII/ANSI),
+            // but we still prefer u16 if it scored high and u8 scored poorly (e.g. corrupted header).
             useU16 = u16IsBetter && !u8IsBetter;
         } else {
+            // Default to u16 if it's printable, as MAPI favors UTF-16 (Unicode).
             useU16 = u16IsBetter;
         }
 
