@@ -9,3 +9,6 @@
 ## Prompt Engineer — The Context Alchemist
 **Learning:** Vague analytical prompts for "Fix & Flip" allowed the LLM to output long multi-paragraph narratives and generic real-estate terms when auditing photos or summarizing risk.
 **Action:** Transmuted `bookmarklets/prompts/flip-objective.md` to inject strict negative boundaries (e.g., banning "nestled", "boasts", "gem", "charming", "delve").
+## Prompt Engineer — The Context Alchemist
+**Learning:** Evaluated `flip-objective.md` and recognized LLMs often hallucinate CapEx and verbosely drift from tabular executive formatting. Without explicit negative constraints, the LLM generates prose when structured tables are required, and invents numerical estimates when they aren't evident from the data.
+**Action:** Re-wrote the objective header for `flip-objective.md` and anchored the system into an "Expert Fix-and-Flip Project Manager and Risk Analyst" persona. Appended strict "CRITICAL NEGATIVE CONSTRAINT" bounds to completely ban multi-paragraph narratives and forbid hallucinating unobserved CapEx. Injected a `<thinking>` phase immediately preceding output generation to ensure step-by-step reasoning. Variables correctly maintained.
