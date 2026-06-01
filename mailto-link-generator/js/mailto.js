@@ -391,7 +391,7 @@ const State = {
             localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(State.data));
         } catch (err) {
             console.error('State save failed:', err);
-            UI.showToast('Unable to save data');
+            UI.showToast('We could not save your data. Please try again.');
         }
     },
 
@@ -577,7 +577,7 @@ const App = {
             window.MsgReader = module.MsgReader;
         } catch (err) {
             console.error('MsgReader module unavailable:', err);
-            UI.showToast('Email file import is disabled');
+            UI.showToast('Email file imports are currently unavailable.');
         }
 
         State.load();
@@ -620,7 +620,7 @@ const App = {
 
     handleFileUpload: (file) => {
         if (!window.MsgReader) {
-            UI.showToast('Unable to load parser module');
+            UI.showToast('We could not load the parser module. Please refresh the page.');
             return;
         }
         const reader = new FileReader();
@@ -639,7 +639,7 @@ const App = {
                 App.elements.resultBcc.value = recipientMap[3].join(', ');
 
                 App.updatePreview();
-                UI.showToast('Email file imported successfully');
+                UI.showToast('Your email file is ready to edit.');
             } catch (err) {
                 UI.showModal('Import Failed', `<p>${Utils.escapeHTML(err.message)}</p>`, [{ label: 'OK' }]);
             }
@@ -727,7 +727,7 @@ const App = {
         const folderId = folderInput.value;
 
         if (!name) {
-            UI.showToast('Please provide a template name');
+            UI.showToast('Please enter a name to save this template.');
             return false; // Keep modal open
         }
 
@@ -752,7 +752,7 @@ const App = {
 
         if (existingIndex >= 0) {
             targetFolder.children[existingIndex].mailto = freshMailto;
-            UI.showToast(`Template "${name}" updated successfully`);
+            UI.showToast(`We updated your template "${name}".`);
         } else {
             targetFolder.children.push({
                 id: Utils.generateId(),
@@ -760,7 +760,7 @@ const App = {
                 name: name,
                 mailto: freshMailto
             });
-            UI.showToast('Template saved successfully');
+            UI.showToast(`We saved your template "${name}".`);
         }
 
         State.save();
@@ -780,7 +780,7 @@ const App = {
                 const input = document.getElementById('folder-name');
                 const name = input.value.trim();
                 if (!name) {
-                    UI.showToast('Please provide a folder name');
+                    UI.showToast('Please enter a name for your new folder.');
                     return false;
                 }
                 const result = State.findItem(State.currentFolderId);
@@ -802,7 +802,7 @@ const App = {
         ['resultTo', 'resultCc', 'resultBcc', 'resultSubject', 'resultBody'].forEach(k => App.elements[k].value = '');
         if (App.elements.fileInput) App.elements.fileInput.value = '';
         App.updatePreview();
-        UI.showToast('Editor cleared');
+        UI.showToast('We cleared the editor. You can start a new template.');
     },
 
     copyLink: () => {
@@ -810,7 +810,7 @@ const App = {
         if (link) {
             Utils.copyToClipboard(link).then(success => {
                 if (success) {
-                    UI.showToast('Link copied to clipboard');
+                    UI.showToast('We copied the link to your clipboard.');
 
                     // Micro-interaction
                     const btn = App.elements.btnCopy;
@@ -830,7 +830,7 @@ const App = {
                         delete btn.dataset.originalText;
                     }, 2000);
                 } else {
-                    UI.showToast('Unable to copy link');
+                    UI.showToast('We could not copy the link. Please try selecting the text and copying it manually.');
                 }
             });
         }
@@ -838,7 +838,7 @@ const App = {
 
     exportCSV: () => {
         const data = State.flattenLibrary();
-        if (data.length === 0) { UI.showToast('The library is currently empty'); return; }
+        if (data.length === 0) { UI.showToast('Your library is empty. Add a template before exporting.'); return; }
         const csvContent = Utils.toCSV(data, CONFIG.CSV_HEADERS);
         Utils.downloadFile(csvContent, `mailto-export-${new Date().toISOString().slice(0,10)}.csv`, 'text/csv');
     },
@@ -851,11 +851,11 @@ const App = {
                     UI.showModal('Import Failed', `<ul style="color: var(--danger); padding-left: 1rem;">${errors.map(e => `<li>${Utils.escapeHTML(e)}</li>`).join('')}</ul>`, [{ label: 'OK' }]);
                     return;
                 }
-                if (data.length === 0) { UI.showToast('No valid templates found in the file'); return; }
+                if (data.length === 0) { UI.showToast('We could not find any valid templates in this file.'); return; }
                 State.importFromCSV(data);
                 State.save();
                 App.renderLibrary();
-                UI.showToast(`Successfully imported ${data.length} templates`);
+                UI.showToast(`We imported ${data.length} templates to your library.`);
             });
         }, '.csv');
     },
@@ -967,7 +967,7 @@ const App = {
             App.elements.resultBody.value = parsed.body || '';
             State.currentEditingId = item.id;
             App.updatePreview();
-            UI.showToast('Template ready for editing');
+            UI.showToast('Your template is ready to edit.');
         }
     },
 
