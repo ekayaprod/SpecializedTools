@@ -1401,7 +1401,7 @@
             @keyframes pa-spin { to { transform: rotate(360deg); } }
             .pa-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 99999; animation: pa-fade-in 0.2s ease-out; backdrop-filter: blur(2px); }
             .pa-card { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); width: 320px; font-family: system-ui, -apple-system, sans-serif; animation: pa-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-width: 90vw; display: flex; flex-direction: column; gap: 12px; }
-            .pa-btn { width: 100%; padding: 10px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+            .pa-btn { width: 100%; padding: 10px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; transition: transform 0.2s, background-color 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
             .pa-btn:active { transform: scale(0.98); }
             .pa-btn:disabled { opacity: 0.7; cursor: not-allowed; }
             .pa-btn-primary { background: #2563eb; color: white; }
@@ -1417,7 +1417,7 @@
             .pa-result-card { background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0; animation: pa-fade-in 0.3s ease-out; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
             .pa-result-text { font-size: 14px; color: #1e293b; line-height: 1.5; flex: 1; }
             .pa-result-error { background: #fee2e2; border-color: #fecaca; color: #991b1b; }
-            .pa-copy-btn { background: white; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px; cursor: pointer; color: #64748b; transition: all 0.2s; min-width: 32px; display: flex; align-items: center; justify-content: center; }
+            .pa-copy-btn { background: white; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px; cursor: pointer; color: #64748b; transition: transform 0.2s, background-color 0.2s, color 0.2s; min-width: 32px; display: flex; align-items: center; justify-content: center; }
             .pa-copy-btn:hover { background: #f1f5f9; color: #334155; }
             .pa-copy-success { color: #166534; border-color: #bbf7d0; background: #dcfce7; }
             .pa-spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: pa-spin 0.8s linear infinite; }

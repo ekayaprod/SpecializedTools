@@ -33,7 +33,7 @@
                 '.box{background:#451a03;color:#e2e8f0;width:240px;padding:16px;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,0.7);border:1px solid #d97706;font-size:13px;box-sizing:border-box}' +
                 '.row{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;cursor:move;user-select:none}' +
                 'h3{margin:0;color:#fcd34d;font-size:14px;font-weight:700}' +
-                'button{width:100%;background:#f59e0b;color:#fff;border:none;padding:10px;border-radius:6px;cursor:pointer;font-weight:600;margin-top:8px;transition:0.2s;border:1px solid #d97706}' +
+                'button{width:100%;background:#f59e0b;color:#fff;border:none;padding:10px;border-radius:6px;cursor:pointer;font-weight:600;margin-top:8px;transition:transform 0.2s, background-color 0.2s;border:1px solid #d97706}' +
                 'button:hover{background:#d97706}' +
                 'button.stop{background:#ef4444;border-color:#b91c1c}' +
                 'button.stop:hover{background:#b91c1c}' +
