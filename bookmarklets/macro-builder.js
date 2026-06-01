@@ -72,8 +72,19 @@
                 '<div style="font-weight:bold;margin-bottom:10px">Confirm Selection</div>' +
                 '<div id="prev_tag" style="color:#94a3b8;font-size:12px;margin-bottom:5px"></div>' +
                 '<div id="prev_sel" style="color:#c7d2fe;font-size:11px;margin-bottom:15px;word-break:break-all"></div>' +
-                '<button id="prev_yes" aria-label="Confirm Selection" style="background:#059669;margin-right:10px;width:auto;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;color:white;">Confirm</button>' +
-                '<button id="prev_no" aria-label="Retry Selection" style="background:#ef4444;width:auto;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;color:white;">Retry</button>' +
+                '<div id="prev_input_opts" class="hidden" style="margin-bottom:15px;text-align:left;background:#0f172a;padding:10px;border-radius:6px;border:1px solid #334155">' +
+                '<label style="display:block;margin-bottom:5px;font-size:11px;color:#cbd5e1">Value (Empty to click):</label>' +
+                '<input id="prev_val" type="text" style="width:100%;margin-bottom:10px" placeholder="Enter value...">' +
+                '<div style="display:flex;gap:10px;font-size:11px;color:#cbd5e1">' +
+                '<label><input id="prev_ask" type="checkbox"> Prompt on Run?</label>' +
+                '<label><input id="prev_enter" type="checkbox"> Press Enter?</label>' +
+                '</div>' +
+                '</div>' +
+                '<div style="display:flex;gap:5px;justify-content:center">' +
+                '<button id="prev_yes_next" aria-label="Confirm & Next" style="background:#0ea5e9;width:auto;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;color:white;font-size:12px">Confirm & Next</button>' +
+                '<button id="prev_yes_finish" aria-label="Confirm & Finish" style="background:#059669;width:auto;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;color:white;font-size:12px">Confirm & Finish</button>' +
+                '<button id="prev_no" aria-label="Retry Selection" style="background:#ef4444;width:auto;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;color:white;font-size:12px">Retry</button>' +
+                '</div>' +
                 '</div>' +
                 '</div>';
 
@@ -130,7 +141,6 @@
         startSequence() {
             this._log('Sequence picking started');
             this.currentSequence = [];
-            if (!confirm('Start picking elements? Click Cancel when done.')) return;
             this.pick('sequence');
         }
 
@@ -192,7 +202,27 @@
                 this.q('#prev_sel').innerText = sel;
                 this.q('#preview').classList.remove('hidden');
 
-                this.q('#prev_yes').onclick = () => {
+                const tag = targetEl.tagName;
+                const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+                const isPwd = isInput && /** @type {HTMLInputElement} */ (targetEl).type === 'password';
+
+                const optsDiv = this.q('#prev_input_opts');
+                const valInput = this.q('#prev_val');
+                const askCheck = this.q('#prev_ask');
+                const enterCheck = this.q('#prev_enter');
+
+                if (isInput) {
+                    optsDiv.classList.remove('hidden');
+                    valInput.value = '';
+                    valInput.placeholder = isPwd ? 'Value (Not Stored)' : 'Type text (Empty to click)';
+                    askCheck.checked = isPwd;
+                    enterCheck.checked = false;
+                    setTimeout(() => valInput.focus(), 50);
+                } else {
+                    optsDiv.classList.add('hidden');
+                }
+
+                const handleConfirm = (nextAction) => {
                     this._log('Element picked', { tag: targetEl.tagName, sel: sel });
                     this.q('#preview').classList.add('hidden');
                     this.clearListeners();
@@ -200,36 +230,36 @@
                     if (mode === 'sequence') {
                         let val = null;
                         let enter = false;
-                        const tag = targetEl.tagName;
                         let ask = false;
-                        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
-                            const isPwd = /** @type {HTMLInputElement} */ (targetEl).type === 'password';
-                            val = prompt(isPwd ? 'Value (Not Stored):' : 'Type text (Empty to click):');
-                            ask = isPwd;
-                            if (val && !isPwd) {
-                                ask = confirm('Sensitive? (Prompt on run)');
-                            }
-                            if (val) enter = confirm('Press Enter?');
+
+                        if (isInput) {
+                            val = valInput.value || null;
+                            ask = askCheck.checked;
+                            enter = enterCheck.checked;
+                            if (ask) val = null;
                         }
 
                         this.currentSequence.push({
                             sel: sel,
                             txt: txt,
-                            val: ask ? null : val,
+                            val: val,
                             enter: enter,
                             ask: ask,
                         });
 
-                        setTimeout(() => {
-                            if (!confirm('Pick another? Cancel to finish.')) {
-                                this.steps.push({ actions: this.currentSequence, delay: 1 });
-                                this.refreshList();
-                            } else {
+                        if (nextAction === 'finish') {
+                            this.steps.push({ actions: this.currentSequence, delay: 1 });
+                            this.refreshList();
+                        } else {
+                            setTimeout(() => {
                                 this.pick('sequence');
-                            }
-                        }, 100);
+                            }, 50);
+                        }
                     }
                 };
+
+                this.q('#prev_yes_next').onclick = () => handleConfirm('next');
+                this.q('#prev_yes_finish').onclick = () => handleConfirm('finish');
 
                 this.q('#prev_no').onclick = () => {
                     this.q('#preview').classList.add('hidden');

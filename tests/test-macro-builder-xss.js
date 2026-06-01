@@ -82,7 +82,7 @@ async function runTest() {
     targetBtn.dispatchEvent(clickEvent);
 
     // Confirm in preview
-    const confirmBtn = shadow.querySelector('#prev_yes');
+    const confirmBtn = shadow.querySelector('#prev_yes_finish') || shadow.querySelector('#prev_yes');
     confirmBtn.click();
 
     await new Promise(resolve => setTimeout(resolve, 200));
