@@ -34,7 +34,7 @@ This document tracks the status of features and tools within the Browser Toolkit
 
 ## In Progress
 
-- [ ] **MailTo Link Generator Improvements**: Unit tests for MsgReader.
+- [x] **MailTo Link Generator Improvements**: Unit tests for MsgReader.
 
 ## Planned
 
