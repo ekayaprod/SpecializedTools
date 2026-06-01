@@ -9,6 +9,6 @@
 - [x] Documentation improvements (JSDoc for complex parsers).
 
 ## In Progress
-- [ ] Unit tests for `MsgReader`.
+- [x] Unit tests for `MsgReader`.
 
 ## Planned
