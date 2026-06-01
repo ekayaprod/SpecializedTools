@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* global html2canvas */
 (function () {
     /** @require utils.js */

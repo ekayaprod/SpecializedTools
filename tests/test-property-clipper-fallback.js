@@ -17,7 +17,7 @@ const promptsCode = fs.readFileSync(promptsPath, 'utf8');
 // New: global.ExposedClipper = (function () { ... return { PropertyExtractor, ImageProcessor }; })();
 
 // Find start of IIFE
-scriptCode = scriptCode.replace(/^\s*\(function\s*\(\)\s*\{/, 'global.ExposedClipper = (function () {');
+scriptCode = scriptCode.replace(/^\s*(?:\/\/ @ts-nocheck\n)?\s*\(function\s*\(\)\s*\{/m, 'global.ExposedClipper = (function () {');
 
 // Find end of IIFE (lastline)
 // It ends with })();

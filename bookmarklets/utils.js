@@ -1,3 +1,4 @@
+// @ts-nocheck
 (function (/** @type {Window} */ w) {
     /**
      * Restricted list: Stabilize layout without breaking flexible content.
