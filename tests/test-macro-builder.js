@@ -150,9 +150,14 @@ async function runTest() {
     console.log('✅ Element picked and preview shown');
 
     // Confirm Selection in Preview
-    const confirmBtn = shadow.querySelector('#prev_yes');
+    const valInput = shadow.querySelector('#prev_val');
+    if (valInput) {
+        valInput.value = 'Test Input';
+    }
 
-    // This click triggers logic that calls prompt() then confirm()
+    const confirmBtn = shadow.querySelector('#prev_yes_finish') || shadow.querySelector('#prev_yes');
+
+    // This click triggers logic that confirms selection
     confirmBtn.click();
 
     // Wait for the async/setTimeout logic in macro-builder to process
