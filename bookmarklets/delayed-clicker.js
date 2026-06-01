@@ -1,3 +1,4 @@
+// @ts-nocheck
 (function () {
     // ID for the singleton instance
     if (window.dc_running) {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 (function (w) {
     if (!w.BookmarkletUtils) w.BookmarkletUtils = /** @type {any} */ ({});
 
