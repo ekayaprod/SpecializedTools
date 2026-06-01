@@ -57,7 +57,7 @@
             .jc-btn {
                 display: inline-flex; align-items: center; justify-content: center; gap: 8px;
                 padding: 10px 16px; border-radius: 6px; font-weight: 500; font-size: 14px;
-                cursor: pointer; transition: all 0.2s; border: 1px solid transparent;
+                cursor: pointer; transition: transform 0.2s, background-color 0.2s, color 0.2s, border-color 0.2s; border: 1px solid transparent;
                 text-decoration: none; line-height: 1.2;
             }
             .jc-btn:active { transform: scale(0.98); }

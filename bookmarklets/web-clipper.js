@@ -482,7 +482,7 @@
                 '.wc-footer{padding:16px 24px;border-top:1px solid #eee;background:#fff;display:flex;justify-content:flex-end;align-items:center;gap:10px;}' +
                 '#' +
                 this.config.modalId +
-                ' button{padding:8px 16px;border:1px solid #d1d5db;background:white;border-radius:6px;cursor:pointer;font-size:14px;color:#374151;transition:all 0.2s;}' +
+                ' button{padding:8px 16px;border:1px solid #d1d5db;background:white;border-radius:6px;cursor:pointer;font-size:14px;color:#374151;transition:transform 0.2s, background-color 0.2s, border-color 0.2s;}' +
                 '#' +
                 this.config.modalId +
                 ' button:hover{background:#f3f4f6;}' +
