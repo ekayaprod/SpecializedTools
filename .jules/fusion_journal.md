@@ -12,3 +12,7 @@
 ## Prompt Engineer — The Context Alchemist
 **Learning:** Evaluated `flip-objective.md` and recognized LLMs often hallucinate CapEx and verbosely drift from tabular executive formatting. Without explicit negative constraints, the LLM generates prose when structured tables are required, and invents numerical estimates when they aren't evident from the data.
 **Action:** Re-wrote the objective header for `flip-objective.md` and anchored the system into an "Expert Fix-and-Flip Project Manager and Risk Analyst" persona. Appended strict "CRITICAL NEGATIVE CONSTRAINT" bounds to completely ban multi-paragraph narratives and forbid hallucinating unobserved CapEx. Injected a `<thinking>` phase immediately preceding output generation to ensure step-by-step reasoning. Variables correctly maintained.
+
+## Prompt Engineer — The Context Alchemist
+**Learning:** Found that `appraisal-objective.md`, `househack-objective.md`, and `ltr-objective.md` lacked specific cognitive constraints to guide the LLM, leaving them susceptible to hallucinations and verbosity.
+**Action:** Injected the "Senior Real Estate Appraiser", "House Hacking Investment Strategist", and "Long-Term Rental Investment Analyst" personas respectively. Added `<thinking>` blocks and `CRITICAL NEGATIVE CONSTRAINT`s forbidding multi-paragraph narratives and unsupported hallucination to fortify the cognitive boundaries while preserving variables and formatting rules.
