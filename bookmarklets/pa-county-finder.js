@@ -1397,32 +1397,51 @@
         const style = document.createElement('style');
         style.id = styleId;
         style.textContent = `
+            :root {
+                --pa-primary: #2563eb;
+                --pa-primary-hover: #1d4ed8;
+                --pa-sec-bg: #f1f5f9;
+                --pa-sec-text: #475569;
+                --pa-sec-hover: #e2e8f0;
+                --pa-border: #cbd5e1;
+                --pa-clear-text: #94a3b8;
+                --pa-result-bg: #f8fafc;
+                --pa-result-text: #1e293b;
+                --pa-err-bg: #fee2e2;
+                --pa-err-border: #fecaca;
+                --pa-err-text: #991b1b;
+                --pa-copy-text: #64748b;
+                --pa-copy-hover: #334155;
+                --pa-copy-succ-text: #166534;
+                --pa-copy-succ-border: #bbf7d0;
+                --pa-copy-succ-bg: #dcfce7;
+            }
             @keyframes pa-fade-in { from { opacity: 0; } to { opacity: 1; } }
             @keyframes pa-slide-up { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
             @keyframes pa-spin { to { transform: rotate(360deg); } }
             .pa-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 99999; animation: pa-fade-in 0.2s ease-out; backdrop-filter: blur(2px); }
             .pa-card { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); width: 320px; font-family: system-ui, -apple-system, sans-serif; animation: pa-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-width: 90vw; display: flex; flex-direction: column; gap: 12px; }
-            .pa-btn { width: 100%; padding: 10px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; transition: transform 0.2s, background-color 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+            .pa-btn { width: 100%; padding: 10px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; transition: all 0.3s ease-in-out; display: flex; align-items: center; justify-content: center; gap: 8px; }
             .pa-btn:active { transform: scale(0.98); }
             .pa-btn:disabled { opacity: 0.7; cursor: not-allowed; }
-            .pa-btn-primary { background: #2563eb; color: white; }
-            .pa-btn-primary:hover:not(:disabled) { background: #1d4ed8; }
-            .pa-btn-sec { background: #f1f5f9; color: #475569; }
-            .pa-btn-sec:hover { background: #e2e8f0; }
+            .pa-btn-primary { background: var(--pa-primary); color: white; }
+            .pa-btn-primary:hover:not(:disabled) { background: var(--pa-primary-hover); }
+            .pa-btn-sec { background: var(--pa-sec-bg); color: var(--pa-sec-text); }
+            .pa-btn-sec:hover { background: var(--pa-sec-hover); }
             .pa-input-wrapper { position: relative; width: 100%; }
-            .pa-input { width: 100%; padding: 12px; padding-right: 36px; margin: 0; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; transition: border-color 0.2s; font-size: 14px; }
-            .pa-input:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.2); }
-            .pa-clear-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px; border-radius: 50%; display: none; }
-            .pa-clear-btn:hover { background: #f1f5f9; color: #475569; }
+            .pa-input { width: 100%; padding: 12px; padding-right: 36px; margin: 0; box-sizing: border-box; border: 1px solid var(--pa-border); border-radius: 6px; outline: none; transition: all 0.3s ease-in-out; font-size: 14px; }
+            .pa-input:focus { border-color: var(--pa-primary); box-shadow: 0 0 0 2px rgba(37,99,235,0.2); }
+            .pa-clear-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--pa-clear-text); cursor: pointer; padding: 4px; border-radius: 50%; display: none; }
+            .pa-clear-btn:hover { background: var(--pa-sec-bg); color: var(--pa-sec-text); }
             .pa-input:not(:placeholder-shown) + .pa-clear-btn { display: block; }
-            .pa-result-card { background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0; animation: pa-fade-in 0.3s ease-out; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-            .pa-result-text { font-size: 14px; color: #1e293b; line-height: 1.5; flex: 1; }
-            .pa-result-error { background: #fee2e2; border-color: #fecaca; color: #991b1b; }
-            .pa-copy-btn { background: white; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px; cursor: pointer; color: #64748b; transition: transform 0.2s, background-color 0.2s, color 0.2s; min-width: 32px; display: flex; align-items: center; justify-content: center; }
-            .pa-copy-btn:hover { background: #f1f5f9; color: #334155; }
-            .pa-copy-success { color: #166534; border-color: #bbf7d0; background: #dcfce7; }
+            .pa-result-card { background: var(--pa-result-bg); padding: 16px; border-radius: 8px; border: 1px solid var(--pa-sec-hover); animation: pa-fade-in 0.3s ease-out; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+            .pa-result-text { font-size: 14px; color: var(--pa-result-text); line-height: 1.5; flex: 1; }
+            .pa-result-error { background: var(--pa-err-bg); border-color: var(--pa-err-border); color: var(--pa-err-text); }
+            .pa-copy-btn { background: white; border: 1px solid var(--pa-border); border-radius: 4px; padding: 6px; cursor: pointer; color: var(--pa-copy-text); transition: all 0.3s ease-in-out; min-width: 32px; display: flex; align-items: center; justify-content: center; }
+            .pa-copy-btn:hover { background: var(--pa-sec-bg); color: var(--pa-copy-hover); }
+            .pa-copy-success { color: var(--pa-copy-succ-text); border-color: var(--pa-copy-succ-border); background: var(--pa-copy-succ-bg); }
             .pa-spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: pa-spin 0.8s linear infinite; }
-            .pa-title { margin: 0; font-size: 18px; font-weight: 700; color: #1e293b; }
+            .pa-title { margin: 0; font-size: 18px; font-weight: 700; color: var(--pa-result-text); }
         `;
         document.head.appendChild(style);
     }

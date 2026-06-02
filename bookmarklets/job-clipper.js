@@ -28,6 +28,12 @@
                 --jc-border: #e5e7eb;
                 --jc-radius: 12px;
                 --jc-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+                --jc-label: #4b5563;
+                --jc-ghost: #6b7280;
+                --jc-ghost-hover-bg: #f9fafb;
+                --jc-ghost-hover-text: #374151;
+                --jc-success: #10b981;
+                --jc-success-hover: #059669;
             }
             @keyframes jc-fade-in { from { opacity: 0; } to { opacity: 1; } }
             @keyframes jc-slide-up { from { transform: translate(-50%, -45%); opacity: 0; } to { transform: translate(-50%, -50%); opacity: 1; } }
@@ -46,10 +52,10 @@
             }
             .jc-header { margin: 0; font-size: 20px; font-weight: 700; text-align: center; color: var(--jc-primary); }
             .jc-col { display: flex; flex-direction: column; gap: 6px; flex: 1; }
-            .jc-label { font-size: 13px; font-weight: 600; color: #4b5563; }
+            .jc-label { font-size: 13px; font-weight: 600; color: var(--jc-label); }
             .jc-textarea {
                 width: 100%; padding: 10px; border: 1px solid var(--jc-border); border-radius: 6px;
-                font-size: 14px; transition: border-color 0.2s; box-sizing: border-box;
+                font-size: 14px; transition: all 0.3s ease-in-out; box-sizing: border-box;
                 resize: vertical; min-height: 250px; font-family: monospace; white-space: pre-wrap;
             }
             .jc-textarea:focus {
@@ -58,7 +64,7 @@
             .jc-btn {
                 display: inline-flex; align-items: center; justify-content: center; gap: 8px;
                 padding: 10px 16px; border-radius: 6px; font-weight: 500; font-size: 14px;
-                cursor: pointer; transition: transform 0.2s, background-color 0.2s, color 0.2s, border-color 0.2s; border: 1px solid transparent;
+                cursor: pointer; transition: all 0.3s ease-in-out; border: 1px solid transparent; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
                 text-decoration: none; line-height: 1.2;
             }
             .jc-btn:active { transform: scale(0.98); }
@@ -67,11 +73,11 @@
             .jc-btn-primary { background: var(--jc-primary); color: white; border: 1px solid var(--jc-primary); }
             .jc-btn-primary:hover:not(:disabled) { background: var(--jc-primary-hover); border-color: var(--jc-primary-hover); }
 
-            .jc-btn-ghost { background: transparent; color: #6b7280; }
-            .jc-btn-ghost:hover:not(:disabled) { background: #f9fafb; color: #374151; }
+            .jc-btn-ghost { background: transparent; color: var(--jc-ghost); }
+            .jc-btn-ghost:hover:not(:disabled) { background: var(--jc-ghost-hover-bg); color: var(--jc-ghost-hover-text); }
 
-            .jc-btn-success { background: #10b981; color: white; border-color: #10b981; }
-            .jc-btn-success:hover:not(:disabled) { background: #059669; border-color: #059669; }
+            .jc-btn-success { background: var(--jc-success); color: white; border-color: var(--jc-success); }
+            .jc-btn-success:hover:not(:disabled) { background: var(--jc-success-hover); border-color: var(--jc-success-hover); }
 
             .jc-icon { width: 16px; height: 16px; stroke-width: 2px; flex-shrink: 0; }
 
