@@ -18,3 +18,4 @@ build/
 *.tsbuildinfo
 .report.json
 venv/
+__pycache__/

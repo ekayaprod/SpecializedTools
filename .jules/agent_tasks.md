@@ -6,7 +6,9 @@
 > 3. Do not delete this file. Sweep resolved `[x]` items on execution.
 
 ## The [INSTRUMENTER] Queue
-* 📦 `package.json`: Package manifest vs. lockfile drift detected (npm ls failed). Requesting sync.
+
+## The [OPERATOR] Queue
+* 📦 `package-lock.json`: Lockfile mismatch detected against package.json. Sync required.
 
 ## 🧱 Structural Monoliths ([Refactorer / UNKNOT])
 - [ ] 🏗️ `bookmarklets/pa-county-finder.js`: 1622 lines. Requires domain splitting and colocation.
