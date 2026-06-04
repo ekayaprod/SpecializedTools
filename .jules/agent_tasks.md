@@ -8,7 +8,7 @@
 ## The [INSTRUMENTER] Queue
 
 ## The [OPERATOR] Queue
-* 📦 `package-lock.json`: Lockfile mismatch detected against package.json. Sync required.
+* 📦 `package-lock.json`: [Recurring Entropy Escalation] Lockfile mismatch detected against package.json. Sync required.
 
 ## 🧱 Structural Monoliths ([Refactorer / UNKNOT])
 - [ ] 🏗️ `bookmarklets/pa-county-finder.js`: 1622 lines. Requires domain splitting and colocation.
