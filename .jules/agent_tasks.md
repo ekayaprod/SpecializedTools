@@ -19,5 +19,3 @@
 - [ ] 🏗️ `bookmarklets/web-clipper.js`: 689 lines. Requires domain splitting and colocation.
 
 ## 🎨 Rigid Presentation States ([UI / STYLIZE])
-- [x] 🎨 `bookmarklets/job-clipper.js`: Hardcoded hex codes detected. Requires CSS variable migration and fluid token injection.
-- [x] 🎨 `bookmarklets/pa-county-finder.js`: Hardcoded hex codes detected. Requires CSS variable migration and fluid token injection.

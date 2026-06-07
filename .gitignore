@@ -19,3 +19,5 @@ build/
 .report.json
 venv/
 __pycache__/
+*.swp
+*.swo
