@@ -4,3 +4,7 @@
 * Generated a baseline `* text=auto` in `.gitattributes`.
 * Scoured global `__pycache__` artifacts, appending its signature to `.gitignore` to permanently bar reentry.
 * Tagged a lockfile mismatch, elevating its severity on the task board to the `[OPERATOR]` queue.
+## Superintendent - The Facility Maintenance
+**Sweep Report:**
+* Injected missing POSIX-compliant EOF newline to `.env.example`.
+* Executed `git clean -fd -e .jules/` to purge any remaining temporary test/cache files.
