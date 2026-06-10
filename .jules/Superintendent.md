@@ -8,3 +8,4 @@
 **Sweep Report:**
 * Injected missing POSIX-compliant EOF newline to `.env.example`.
 * Executed `git clean -fd -e .jules/` to purge any remaining temporary test/cache files.
+* Appended Vim swap file patterns (*.swp, *.swo) to .gitignore.
