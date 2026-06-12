@@ -12,4 +12,3 @@ const newEntry = `
 `;
 
 fs.writeFileSync(filePath, content + newEntry);
-console.log('Scribe journal updated.');

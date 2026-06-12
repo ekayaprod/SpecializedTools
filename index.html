@@ -490,9 +490,7 @@
                             if (!depRes.ok) throw new Error('Failed dependency: ' + depUrl);
                             const depCode = await depRes.text();
                             code = depCode + '\n' + code;
-                            console.log(`[${name}] Injected dependency: ${dep}`);
                         } catch (depErr) {
-                            console.error(depErr);
                             throw depErr;
                         }
                     }
@@ -546,9 +544,7 @@
 
                             // Use global replacement for this specific match string to handle duplicates if any
                             code = code.replace(rep.fullMatch, incText);
-                            console.log(`[${name}] Included text: ${rep.path}`);
                         } catch (incErr) {
-                            console.error(incErr);
                             throw incErr;
                         }
                     }
@@ -588,7 +584,6 @@
                         copyBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                     }
                 } catch (e) {
-                    console.error(e);
                     el.innerHTML = 'Unavailable';
                     el.classList.add('bg-red-500', 'hover:bg-red-600');
                     if (copyBtn) {
