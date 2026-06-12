@@ -104,7 +104,7 @@
                     if (el && el.textContent) {
                         return el.textContent.trim().replace(/\s+/g, ' ');
                     }
-                } catch (e) {
+                } catch {
                     /* ignore invalid selectors */
                 }
             }
@@ -259,7 +259,7 @@ ${data.description.substring(0, 3000)}${data.description.length > 3000 ? '...[Tr
         injectStyles();
         if (document.getElementById(CONFIG.modalId)) return;
 
-        const ov = buildElement('div', {}, '', document.body, { id: CONFIG.overlayId, class: 'jc-overlay' });
+        buildElement('div', {}, '', document.body, { id: CONFIG.overlayId, class: 'jc-overlay' });
         const mo = buildElement('div', {}, '', document.body, { id: CONFIG.modalId, class: 'jc-modal' });
 
         buildElement('h2', { class: 'jc-header' }, 'Resume Tailoring Prompt', mo);
