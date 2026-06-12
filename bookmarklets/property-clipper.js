@@ -875,7 +875,7 @@
 
             grp.photos.forEach((p) => {
                 const d = buildElement('div', {}, '', grid, { class: 'pc-grid-item' });
-                const img = buildElement('img', {}, '', d, {
+                buildElement('img', {}, '', d, {
                     class: 'pc-grid-img',
                     src: p.url,
                     alt: p.label || 'Property Photo',
@@ -938,7 +938,7 @@
         injectStyles();
         if (document.getElementById(CONFIG.modalId)) return;
 
-        const ov = buildElement(
+        buildElement(
             'div',
             {},
             '',

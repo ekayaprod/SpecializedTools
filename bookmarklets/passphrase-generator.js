@@ -115,7 +115,6 @@
     function Cap(s) { return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase(); }
 
     function getSeason(d) {
-        const y = d.getFullYear();
         const m = d.getMonth();
         const day = d.getDate();
 

@@ -152,11 +152,6 @@
                 'position:absolute;border:2px solid #a855f7;background:rgba(168,85,247,0.2);pointer-events:none;z-index:999999';
             document.body.appendChild(hl);
 
-            const stopPicking = () => {
-                hl.remove();
-                this.h.style.display = 'block';
-                this.clearListeners();
-            };
 
             const mv = (e) => {
                 if (e.shiftKey) {
@@ -288,7 +283,7 @@
                 d.className = 'step';
 
                 let actionHtml = '';
-                s.actions.forEach((act, ai) => {
+                s.actions.forEach((act) => {
                     let desc = act.val
                         ? 'Type "' + BookmarkletUtils.escapeHtml(act.val) + '"'
                         : act.txt
