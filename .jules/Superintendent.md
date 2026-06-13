@@ -19,3 +19,14 @@
 
 **Escalation History:**
 * `package-lock.json` lockfile mismatch was already present in `[OPERATOR]` queue.
+
+## Superintendent — Clean up run
+**Resolved Entropy:**
+* Injected missing POSIX-compliant EOF newline to `.env.example`.
+* Executed `git clean -fd -e .jules/` to purge any remaining temporary test/cache files.
+
+**Persistent Entropy:**
+* N/A
+
+**Escalation History:**
+* N/A
