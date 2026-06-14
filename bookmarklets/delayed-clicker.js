@@ -8,7 +8,6 @@
 
     /* Check if we can run here */
     if (window.location.protocol === 'about:' || window.location.protocol === 'chrome:') {
-        console.warn('Delayed Clicker: Cannot run on internal browser pages.', { url: window.location.href });
         return;
     }
 
