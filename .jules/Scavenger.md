@@ -1,1 +1,2 @@
 ## Scavenger — Cruft Consumer\n**Category:** Orphaned Entities\n**Targets Removed:**\n- `e` (unused catch parameter) in `bookmarklets/job-clipper.js`\n- `ov` (assigned but unread) in `bookmarklets/job-clipper.js`\n- `img` (assigned but unread) in `bookmarklets/property-clipper.js`\n- `ov` (assigned but unread) in `bookmarklets/property-clipper.js`\n- `stopPicking` and `ai` (unused variables) in `bookmarklets/macro-builder.js`\n- `y` (assigned but unread) in `bookmarklets/passphrase-generator.js`
+Zero Targets — Clean Codebase
