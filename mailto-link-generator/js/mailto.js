@@ -337,7 +337,7 @@ const UI = {
         container.innerHTML = '';
 
         if (!items || items.length === 0) {
-            container.innerHTML = `<div class="empty-state-message" style="display:flex;flex-direction:column;align-items:center;padding:2rem;color:var(--text-secondary);text-align:center;"><svg width="32" height="32" fill="currentColor" viewBox="0 0 16 16" style="margin-bottom:0.5rem;opacity:0.5;"><path d="M.5 3l.5.5V11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H3.5L2.5 2H1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h.5V3zM1 4v7h13V4H1z"/></svg><span>${emptyMessage}</span></div>`;
+            container.innerHTML = `<div class="empty-state-message" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 2rem;color:var(--text-secondary);text-align:center;animation:staggeredFadeIn 0.5s ease-out forwards;height:100%;"><div style="background:var(--input-bg);border-radius:50%;width:64px;height:64px;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);"><svg width="32" height="32" fill="currentColor" viewBox="0 0 16 16" style="color:var(--primary);opacity:0.8;"><path d="M.5 3l.5.5V11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H3.5L2.5 2H1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h.5V3zM1 4v7h13V4H1z"/></svg></div><h3 style="margin:0 0 0.5rem 0;color:var(--text-primary);font-size:1.1rem;font-weight:600;">Nothing here yet</h3><p style="margin:0;font-size:0.9rem;max-width:200px;line-height:1.5;">${emptyMessage}</p></div>`;
             return;
         }
 

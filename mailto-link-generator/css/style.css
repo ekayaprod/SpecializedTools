@@ -24,9 +24,9 @@
     --spacing-lg: 1rem;
 
     /* Dimensions */
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --header-height: 50px;
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --header-height: 60px;
     --library-width: 280px;
 }
 
@@ -128,6 +128,7 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
 .library-panel {
@@ -148,7 +149,7 @@ body {
     justify-content: space-between;
     align-items: center;
     background: var(--input-bg);
-    height: 40px;
+    min-height: 48px;
     flex-shrink: 0;
 }
 
@@ -175,22 +176,24 @@ body {
 .upload-zone {
     border: 2px dashed var(--border-color);
     border-radius: var(--radius-md);
-    padding: 0.5rem;
+    padding: 1rem;
     text-align: center;
     cursor: pointer;
-    transition: border-color 0.2s;
+    transition: border-color 0.3s ease, background-color 0.3s ease, transform 0.2s ease-in-out;
     background: var(--input-bg);
     color: var(--text-secondary);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--spacing-sm);
-    height: 40px; /* Fixed compact height */
+    gap: var(--spacing-md);
+    min-height: 60px; /* Increased interactive height */
     flex-shrink: 0;
 }
-.upload-zone svg { width: 18px; height: 18px; }
-.upload-zone p { margin: 0; font-size: 0.8rem; font-weight: 500; }
-.upload-zone:hover { border-color: var(--primary); color: var(--primary); }
+.upload-zone svg { width: 24px; height: 24px; transition: transform 0.3s ease; }
+.upload-zone p { margin: 0; font-size: 0.9rem; font-weight: 500; }
+.upload-zone:hover { border-color: var(--primary); color: var(--primary); background-color: var(--bg-panel); transform: translateY(-2px); }
+.upload-zone:hover svg { transform: translateY(-2px); }
+.upload-zone:active { transform: translateY(0) scale(0.98); }
 .upload-hint { display: none; } /* Hidden to save space */
 
 /* Inputs */
@@ -284,14 +287,19 @@ label { display: block; font-size: 0.75rem; font-weight: 600; margin-bottom: 2px
 /* Buttons */
 .icon-btn, .action-btn {
     background: none; border: none; cursor: pointer;
-    color: var(--text-secondary); padding: 4px; border-radius: 4px;
+    color: var(--text-secondary); padding: 8px; border-radius: 6px;
+    min-width: 44px; min-height: 44px;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
-.icon-btn:hover, .action-btn:hover { background-color: var(--border-color); color: var(--text-primary); }
+.icon-btn:hover, .action-btn:hover { background-color: var(--border-color); color: var(--text-primary); transform: scale(1.05); }
+.icon-btn:active, .action-btn:active { transform: scale(0.95); }
 
 .btn-primary, .btn-secondary, .btn-success, .btn-danger {
-    padding: 0.4rem 1rem; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 500;
-    border: 1px solid transparent; cursor: pointer; transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 0.5rem 1.2rem; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 500;
+    border: 1px solid transparent; cursor: pointer; transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    min-height: 44px;
 }
 
 .btn-primary:focus-visible, .btn-secondary:focus-visible, .btn-success:focus-visible, .btn-danger:focus-visible {
@@ -300,7 +308,11 @@ label { display: block; font-size: 0.75rem; font-weight: 600; margin-bottom: 2px
 
 .btn-primary:hover, .btn-secondary:hover, .btn-success:hover, .btn-danger:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.btn-primary:active, .btn-secondary:active, .btn-success:active, .btn-danger:active {
+    transform: scale(0.98);
 }
 
 .btn-primary { background: var(--primary); color: white; }
