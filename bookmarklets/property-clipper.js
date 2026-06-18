@@ -304,7 +304,6 @@
                         this.parseDetails(pd, data);
                         return; // Prioritize Next.js data
                     } catch (e) {
-                        console.warn('Property Details Extraction Failed (NextData):', e);
                     }
                 }
             }
@@ -315,7 +314,6 @@
                     try {
                         this.parseDetails(pd, data);
                     } catch (e) {
-                        console.warn('Property Details Extraction Failed (RawPre):', e);
                     }
                 }
             }
@@ -432,7 +430,6 @@
                     }
                 };
                 img.onerror = (e) => {
-                    console.warn('Image load failed:', { url, error: e });
                     resolve(null);
                 };
                 img.src = url;
