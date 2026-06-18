@@ -303,7 +303,8 @@
                     try {
                         this.parseDetails(pd, data);
                         return; // Prioritize Next.js data
-                    } catch (e) {
+                    } catch {
+                        // Suppressed due to Diagnostic Dropping extraction
                     }
                 }
             }
@@ -313,7 +314,8 @@
                 if (pd) {
                     try {
                         this.parseDetails(pd, data);
-                    } catch (e) {
+                    } catch {
+                        // Suppressed due to Diagnostic Dropping extraction
                     }
                 }
             }
@@ -429,7 +431,7 @@
                         resolve(null);
                     }
                 };
-                img.onerror = (e) => {
+                img.onerror = () => {
                     resolve(null);
                 };
                 img.src = url;
