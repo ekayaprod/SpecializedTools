@@ -5,3 +5,4 @@
 - `console.warn('Property Details Extraction Failed (NextData):', e);` in `bookmarklets/property-clipper.js`
 - `console.warn('Property Details Extraction Failed (RawPre):', e);` in `bookmarklets/property-clipper.js`
 - `console.warn('Image load failed:', { url, error: e });` in `bookmarklets/property-clipper.js`
+Zero Targets — Clean Codebase
