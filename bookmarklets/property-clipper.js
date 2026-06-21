@@ -303,8 +303,8 @@
                     try {
                         this.parseDetails(pd, data);
                         return; // Prioritize Next.js data
-                    } catch (e) {
-                        console.warn('Property Details Extraction Failed (NextData):', e);
+                    } catch {
+                        // Suppressed due to Diagnostic Dropping extraction
                     }
                 }
             }
@@ -314,8 +314,8 @@
                 if (pd) {
                     try {
                         this.parseDetails(pd, data);
-                    } catch (e) {
-                        console.warn('Property Details Extraction Failed (RawPre):', e);
+                    } catch {
+                        // Suppressed due to Diagnostic Dropping extraction
                     }
                 }
             }
@@ -431,8 +431,7 @@
                         resolve(null);
                     }
                 };
-                img.onerror = (e) => {
-                    console.warn('Image load failed:', { url, error: e });
+                img.onerror = () => {
                     resolve(null);
                 };
                 img.src = url;
