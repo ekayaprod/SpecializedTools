@@ -232,19 +232,22 @@
     /* PROMPT GENERATOR */
     const PromptGenerator = {
         generate(data) {
-            return `**Role:** Expert ATS Optimizer and Senior Technical Recruiter at ${data.company} drafting ATS-optimized resume bullet points.
+            return `// ⚙️ CORTEX x AUTHOR: Strict heuristics, expert persona, explicit constraints, and perfect variable retention.
+**Role:** Expert ATS Optimizer and Senior Technical Recruiter at ${data.company} drafting ATS-optimized resume bullet points.
 
 **Context:** I am applying for the "${data.title}" position.
 ${data.salary !== '[Salary Range]' ? '**Expected Salary Range:** ' + data.salary + '\n' : ''}
 **Task:** Analyze the provided job description to extract the core technical requirements and key competencies. Pay special attention to these detected soft skills/cultural cues: ${data.keywords.length > 0 ? data.keywords.join(', ') : 'Not clearly defined'}.
+Before rewriting the bullets, reason through the ATS keyword mapping and impact metrics step-by-step in a \`<thinking>\` block.
 
 Then, rewrite my existing resume bullet points (pasted below) to aggressively align with this specific role.
 
 **Tone & Style Rules (CRITICAL):**
+- **CRITICAL NEGATIVE CONSTRAINT:** Never output conversational filler, introductory remarks, or concluding summaries.
 - **ATS Optimization:** Maximize exact-match keyword density from the job description without keyword stuffing. Use the exact terminology the company uses.
 - **STAR Method:** Enforce the Situation, Task, Action, Result framework. EVERY bullet must start with a strong action verb and end with a quantifiable metric or concrete business impact.
 - **Banned Words:** Eliminate passive or cliché phrases (e.g., "Responsible for," "Helped with," "Worked on," "Synergy," "Thought leader").
-- **Format:** Output strictly as a Markdown list of bullet points. No conversational filler, introductory remarks, or concluding summaries.
+- **Format:** Output strictly as a Markdown list of bullet points.
 
 --- JOB DESCRIPTION ---
 ${data.description.substring(0, 3000)}${data.description.length > 3000 ? '...[Truncated]' : ''}

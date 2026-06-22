@@ -20,3 +20,7 @@
 ## Prompt Engineer — The Context Alchemist
 **Learning:** Foundational AI instruction payloads (STR, Janitor, Librarian) lacked explicit cognitive boundaries and domain-grounded personas, which increases the likelihood of hallucination or non-deterministic behavior during execution. Generic personas often result in generic logic output.
 **Action:** Injected strict CORTEX directives, domain-specific expert personas, explicit negative constraints (e.g., forbidding modification of test files, prohibiting hallucinated CapEx metrics), and mandatory `<thinking>` blocks into `str-objective.md`, `janitor.md`, and `librarian.md`. This locks execution logic into highly deterministic cognitive pathways.
+
+## Prompt Engineer — The Context Alchemist
+**Learning:** Evaluated `bookmarklets/job-clipper.js` prompt generator and `.jules/` agent protocols (`scavenger.md`, `palette.md`). Found they were missing strict cognitive heuristics, which leads to LLM verbosity, hallucination of generic conversational filler, and potentially unsafe modifications outside their domains.
+**Action:** Injected strict CORTEX directives, domain-specific expert personas, explicit negative constraints (e.g., forbidding conversational filler, protecting immutable test files, and preventing business logic modifications), and mandatory `<thinking>` blocks into `job-clipper.js`, `.jules/scavenger.md`, and `.jules/palette.md`. This forces the LLM to reason step-by-step and strictly conform to output heuristics while preserving existing code architecture.
