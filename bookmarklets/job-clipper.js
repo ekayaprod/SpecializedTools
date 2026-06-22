@@ -255,6 +255,14 @@ ${data.description.substring(0, 3000)}${data.description.length > 3000 ? '...[Tr
     };
 
     /* MAIN UI */
+
+    // 🕯️ CHRONICLE: AST reasoning explains the logic; Git history explains the business intent.
+
+    /**
+     * Initializes the Resume Tailoring Prompt modal UI.
+     * Evaluates extracted job data to ensure minimum length requirements are met before allowing progression, falling back to a manual paste state if data is inadequate.
+     * * Historical Intent: Extracted via PR #451 (Jun 2026) to manage the presentation logic for tailored resume generation based on scraped job data.
+     */
     function createJobModal() {
         injectStyles();
         if (document.getElementById(CONFIG.modalId)) return;
