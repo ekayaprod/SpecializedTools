@@ -62,7 +62,7 @@
         </style>
     </head>
     <body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
-        <a href="#tools-grid" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-white focus:text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600 font-bold transition-all">Skip to Content</a>
+        <a href="#tools-grid" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-white focus:text-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 font-bold transition-all duration-300 ease-in-out">Skip to Content</a>
         <div class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <!-- HEADER -->
             <header class="mb-12 text-center border-b border-slate-200 pb-8">
@@ -88,7 +88,7 @@
                         data-filter="all"
                         aria-label="Filter all"
                         aria-pressed="true"
-                        class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-indigo-600 text-white shadow-md transition-all"
+                        class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-indigo-600 text-white shadow-md transition-all duration-300 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 active:scale-95"
                     >
                         All
                     </button>
@@ -96,7 +96,7 @@
                         data-filter="content"
                         aria-label="Filter by content"
                         aria-pressed="false"
-                        class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all"
+                        class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all duration-300 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 active:scale-95"
                     >
                         Content
                     </button>
@@ -104,7 +104,7 @@
                         data-filter="automation"
                         aria-label="Filter by automation"
                         aria-pressed="false"
-                        class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all"
+                        class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all duration-300 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 active:scale-95"
                     >
                         Automation
                     </button>
@@ -112,7 +112,7 @@
                         data-filter="security"
                         aria-label="Filter by security"
                         aria-pressed="false"
-                        class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all"
+                        class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all duration-300 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 active:scale-95"
                     >
                         Security
                     </button>
@@ -138,7 +138,7 @@
                         id="search-input"
                         aria-label="Search tools"
                         placeholder="Search tools..."
-                        class="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-500 focus:outline-none focus:placeholder-slate-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm shadow-sm transition-shadow"
+                        class="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-500 focus:outline-none focus:placeholder-slate-400 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus:border-indigo-500 sm:text-sm shadow-sm transition-shadow duration-300 ease-in-out"
                     />
                 </div>
             </div>
@@ -154,7 +154,7 @@
                 </svg>
                 <p class="text-slate-500 text-lg font-medium mb-2">We could not find any matching tools.</p>
                 <p class="text-slate-400 text-sm mb-6">Adjust your search or category filters to find what you need.</p>
-                <button id="clear-search" aria-label="Reset all search filters" class="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg font-medium hover:bg-indigo-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Clear Filters</button>
+                <button id="clear-search" aria-label="Reset all search filters" class="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg font-medium hover:bg-indigo-100 transition-all duration-300 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 active:scale-95">Clear Filters</button>
             </div>
         </div>
 
@@ -303,7 +303,7 @@
                     // Card HTML
                     const card = document.createElement('div');
                     card.className =
-                        'bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col h-full card-enter transition-all hover:shadow-md motion-safe:hover:-translate-y-1';
+                        'bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col h-full card-enter transition-all duration-300 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 hover:shadow-md motion-safe:hover:-translate-y-1';
                     card.style.animationDelay = `${index * 50}ms`; // Stagger animation
 
                     card.innerHTML = `
@@ -391,10 +391,10 @@
                     btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
                     if (isActive) {
                         btn.className =
-                            'filter-btn px-4 py-2 rounded-full text-sm font-medium bg-indigo-600 text-white shadow-md transition-all scale-105';
+                            'filter-btn px-4 py-2 rounded-full text-sm font-medium bg-indigo-600 text-white shadow-md transition-all duration-300 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 active:scale-95 scale-105';
                     } else {
                         btn.className =
-                            'filter-btn px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all';
+                            'filter-btn px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all duration-300 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 active:scale-95';
                     }
                 });
             }
