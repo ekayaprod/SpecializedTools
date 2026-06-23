@@ -2,6 +2,12 @@
 (function () {
     /** @require utils.js */
 
+    if (typeof BookmarkletUtils === 'undefined') {
+        console.error('BookmarkletUtils is not defined in the current scope.');
+        alert('Required utility module missing. Execution aborted.');
+        return;
+    }
+
     /* CONFIGURATION */
     const CONFIG = {
         modalId: 'jc-job-modal',
@@ -21,8 +27,8 @@
         style.id = styleId;
         style.textContent = `
             :root {
-                --jc-primary: #d946ef; /* fuchsia-500 */
-                --jc-primary-hover: #c026d3; /* fuchsia-600 */
+                --jc-primary: #d946ef;
+                --jc-primary-hover: #c026d3;
                 --jc-bg: #ffffff;
                 --jc-text: #1f2937;
                 --jc-border: #e5e7eb;
@@ -59,7 +65,7 @@
                 resize: vertical; min-height: 250px; font-family: monospace; white-space: pre-wrap;
             }
             .jc-textarea:focus {
-                outline: none; border-color: var(--jc-primary); ring: 2px solid rgba(217,70,239,0.1);
+                outline: none; border-color: var(--jc-primary); box-shadow: 0 0 0 2px rgba(217,70,239,0.1);
             }
             .jc-btn {
                 display: inline-flex; align-items: center; justify-content: center; gap: 8px;
@@ -90,9 +96,9 @@
 
     /* ICONS (Feather) */
     const ICONS = {
-        copy: '<svg aria-hidden="true" class="jc-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>',
-        check: '<svg aria-hidden="true" class="jc-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>',
-        x: '<svg aria-hidden="true" class="jc-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
+        copy: '<svg aria-hidden="true" class="jc-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>',
+        check: '<svg aria-hidden="true" class="jc-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>',
+        x: '<svg aria-hidden="true" class="jc-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
     };
 
     /* EXTRACTOR */
@@ -104,7 +110,7 @@
                     if (el && el.textContent) {
                         return el.textContent.trim().replace(/\s+/g, ' ');
                     }
-                } catch {
+                } catch (e) {
                     /* ignore invalid selectors */
                 }
             }
@@ -120,93 +126,78 @@
                 keywords: [],
             };
 
-            // 1. Title Extraction
-            const titleSelectors = [
-                'h1.t-24', // LinkedIn
-                'h1.jobsearch-JobInfoHeader-title', // Indeed
-                'div[data-test="job-title"]', // Glassdoor
-                'h1.job-title',
-                'h1.title',
-                'h1',
-            ];
-            const title = this._getText(titleSelectors);
-            if (title) data.title = title;
+            // 1. JSON-LD Priority Extraction
+            try {
+                const scripts = document.querySelectorAll('script[type="application/ld+json"]');
+                for (const script of scripts) {
+                    const parsed = JSON.parse(script.textContent || script.innerText);
+                    const items = Array.isArray(parsed) ? parsed : [parsed];
+                    const jobPosting = items.find(item => item['@type'] === 'JobPosting');
+                    
+                    if (jobPosting) {
+                        if (jobPosting.title) data.title = jobPosting.title;
+                        if (jobPosting.hiringOrganization && jobPosting.hiringOrganization.name) {
+                            data.company = jobPosting.hiringOrganization.name;
+                        }
+                        if (jobPosting.description) {
+                            const decoder = document.createElement('textarea');
+                            decoder.innerHTML = jobPosting.description;
+                            const decodedHTML = decoder.value;
+                            
+                            const stripper = document.createElement('div');
+                            stripper.innerHTML = decodedHTML;
+                            data.description = stripper.textContent || stripper.innerText || '';
+                        }
+                        break;
+                    }
+                }
+            } catch (e) {}
 
-            // 2. Company Extraction
-            const companySelectors = [
-                '.job-details-jobs-unified-top-card__company-name', // LinkedIn
-                'div[data-company-name="true"]', // Indeed
-                'div[data-test="employer-name"]', // Glassdoor
-                '.company-name',
-                '.employer',
-                'a.company',
-            ];
-            const company = this._getText(companySelectors);
-            if (company) {
-                // Remove ratings often appended to company names (e.g. "Google 4.5")
-                data.company = company.replace(/\s*\d+(\.\d+)?\s*★*$/, '');
+            // 2. DOM Fallbacks
+            if (data.title === '[Job Title]') {
+                data.title = this._getText(['h1.t-24', 'h1.jobsearch-JobInfoHeader-title', 'div[data-test="job-title"]', 'h1.job-title', 'h1.title', 'h1']) || data.title;
             }
 
-            // 3. Salary Extraction
-            const salarySelectors = [
-                '.job-details-jobs-unified-top-card__job-insight:contains("$")', // LinkedIn
-                '#salaryInfoAndJobType', // Indeed
-                'span[data-test="detailSalary"]', // Glassdoor
-                '.salary',
-                '.pay-range',
-                '.compensation',
-            ];
+            if (data.company === '[Company]') {
+                data.company = this._getText(['.job-details-jobs-unified-top-card__company-name', 'div[data-company-name="true"]', 'div[data-test="employer-name"]', '.agency-name dd', '.company-name', '.employer', 'a.company']) || data.company;
+                data.company = data.company.replace(/\s*\d+(\.\d+)?\s*★*$/, '');
+            }
 
-            // Custom approach for Salary since it might not be a direct query selector match
+            // 3. Salary Extraction (Regex + DOM)
+            const salarySelectors = ['.job-details-jobs-unified-top-card__job-insight:contains("$")', '#salaryInfoAndJobType', 'span[data-test="detailSalary"]', '.salary', '.pay-range', '.compensation'];
             let salaryStr = '';
             for (const selector of salarySelectors) {
-                if (selector.includes(':contains')) continue; // skip complex jquery-like selectors for now
+                if (selector.includes(':contains')) continue; 
                 salaryStr = this._getText([selector]);
                 if (salaryStr) break;
             }
 
-            // Fallback for salary: regex match in body text
             if (!salaryStr) {
                 const bodyText = document.body ? document.body.innerText || document.body.textContent || '' : '';
-                const salaryMatch = bodyText.match(/\$[0-9,]+(\.[0-9]{2})?(\s*[-to]+\s*\$[0-9,]+(\.[0-9]{2})?)?/);
-                if (salaryMatch) salaryStr = salaryMatch[0];
+                const salaryMatch = bodyText.match(/\$[0-9,]+(\.[0-9]{2})?(\s*[-to]+\s*\$[0-9,]+(\.[0-9]{2})?)?\s*(Annually|per year|\/yr|\/hour|per hour)?/i);
+                if (salaryMatch) salaryStr = salaryMatch[0].trim();
             }
-
             if (salaryStr) data.salary = salaryStr;
 
-            // 4. Description Extraction
-            const descSelectors = [
-                '#job-details', // LinkedIn
-                '#jobDescriptionText', // Indeed
-                'div[data-test="jobDescriptionContent"]', // Glassdoor
-                '.job-description',
-                '.description',
-                'article',
-                'main',
-            ];
-            let descNode = null;
-            for (const s of descSelectors) {
-                const el = document.querySelector(s);
-                if (el) {
-                    descNode = el;
-                    break;
+            // 4. Description DOM Fallback
+            if (!data.description || data.description.length < 50) {
+                const descSelectors = ['#job-details', '#jobDescriptionText', 'div[data-test="jobDescriptionContent"]', '#details-info', '.job-description', 'article', 'main'];
+                let descNode = null;
+                for (const s of descSelectors) {
+                    const el = document.querySelector(s);
+                    if (el) { descNode = el; break; }
+                }
+                if (!descNode) descNode = document.querySelector('body');
+
+                if (descNode) {
+                    const clone = descNode.cloneNode(true);
+                    const scripts = clone.querySelectorAll('script, noscript, style, img, iframe, header, footer, nav');
+                    scripts.forEach(s => s.remove());
+                    data.description = clone.innerText || clone.textContent || '';
                 }
             }
-            if (!descNode) descNode = document.querySelector('body');
 
-            if (descNode) {
-                // Deep clone to not affect actual page
-                const clone = descNode.cloneNode(true);
-                // Remove tracking pixels / script tags
-                const scripts = /** @type {HTMLElement} */ (clone).querySelectorAll(
-                    'script, noscript, style, img, iframe'
-                );
-                for (let i = 0; i < scripts.length; i++) {
-                    scripts[i].remove();
-                }
-
-                data.description = /** @type {HTMLElement} */ (clone).innerText || clone.textContent || '';
-            }
+            data.description = data.description.replace(/\s+/g, ' ').trim();
 
             // 5. Keyword analysis (Soft skills / Cultural cues)
             const softSkills = [
@@ -247,7 +238,7 @@ Then, rewrite my existing resume bullet points (pasted below) to aggressively al
 - **Format:** Output strictly as a Markdown list of bullet points. No conversational filler, introductory remarks, or concluding summaries.
 
 --- JOB DESCRIPTION ---
-${data.description.substring(0, 3000)}${data.description.length > 3000 ? '...[Truncated]' : ''}
+${data.description}
 
 --- MY RESUME BULLETS ---
 [PASTE YOUR RESUME BULLETS HERE]`;
@@ -274,7 +265,9 @@ ${data.description.substring(0, 3000)}${data.description.length > 3000 ? '...[Tr
 
         const data = JobExtractor.extract();
         if (!data.description || data.description.length < 50) {
-            BookmarkletUtils.showToast('Warning: Could not extract full job description.', 'error');
+            if (typeof BookmarkletUtils.showToast === 'function') {
+                BookmarkletUtils.showToast('Warning: Could not extract full job description.', 'error');
+            }
         }
 
         const row2 = buildElement('div', { class: 'jc-col', flex: '1' }, '', mo);
