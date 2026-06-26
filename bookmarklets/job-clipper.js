@@ -110,7 +110,7 @@
                     if (el && el.textContent) {
                         return el.textContent.trim().replace(/\s+/g, ' ');
                     }
-                } catch (e) {
+                } catch (e) { void e;
                     /* ignore invalid selectors */
                 }
             }
@@ -151,7 +151,7 @@
                         break;
                     }
                 }
-            } catch (e) {}
+            } catch (e) { void e; void e; }
 
             // 2. DOM Fallbacks
             if (data.title === '[Job Title]') {

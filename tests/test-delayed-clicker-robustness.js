@@ -178,7 +178,7 @@ describe('Delayed Clicker Robustness', () => {
 
     it('should toggle visibility when called again', () => {
         const host = document.querySelector('div[id^="dc-"]');
-        const initialDisplay = host.style.display;
+        host.style.display;
 
         // Call the IIFE logic again? No, we can just call window.dc_running.toggle() directly
         // because the IIFE checks window.dc_running and calls toggle if exists.

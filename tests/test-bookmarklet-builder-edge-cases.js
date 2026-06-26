@@ -76,7 +76,7 @@ tests.forEach((test) => {
         const actual = compile(test.input);
         assert.strictEqual(actual, test.expected);
         console.log(`✅ ${test.name}`);
-    } catch (e) {
+    } catch (e) { void e;
         console.error(`❌ ${test.name}`);
         console.error(`   Input:    ${JSON.stringify(test.input)}`);
         console.error(`   Expected: ${JSON.stringify(test.expected)}`);
