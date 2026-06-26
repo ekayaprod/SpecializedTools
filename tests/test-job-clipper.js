@@ -19,7 +19,7 @@ const testableScript = `
     window.requestAnimationFrame = window.requestAnimationFrame || function(cb) { return setTimeout(cb, 0); };
 
     // Strip IIFE to execute in our dom
-    ${scriptContent.replace('(function () {', '').replace(regexToReplace, '')}
+    ${scriptContent.replace('(function () {', '').replace(regexToReplace, '').replace(/return;\s*}\s*\/\*/, '}\n    /*')}
 
     window.JobExtractor = JobExtractor;
     window.PromptGenerator = PromptGenerator;
