@@ -7,12 +7,12 @@ const mockDocument = {
     body: {
         style: { cursor: '' },
         appendChild: () => {},
-        removeChild: (el) => {},
+        removeChild: () => {},
     },
-    addEventListener: (type, listener, options) => {
+    addEventListener: (type, listener) => {
         mockDocument.listeners[type] = listener;
     },
-    removeEventListener: (type, listener, options) => {
+    removeEventListener: (type, listener) => {
         if (mockDocument.listeners[type] === listener) {
             delete mockDocument.listeners[type];
         }

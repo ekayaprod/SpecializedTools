@@ -87,7 +87,7 @@ tests.forEach((test) => {
     } catch (e) {
         console.error(`❌ ${test.name}`);
         console.error(`   Expected: ${JSON.stringify(test.expected)}`);
-        console.error(`   Actual:   ${JSON.stringify(compile(test.input))}`);
+        console.error(`   Error:    ${e}`);
         failed++;
     }
 });
@@ -103,7 +103,7 @@ dependencyTests.forEach((test) => {
     } catch (e) {
         console.error(`❌ ${test.name}`);
         console.error(`   Expected: ${JSON.stringify(test.expected)}`);
-        console.error(`   Actual:   ${JSON.stringify(extractDependencies(test.input))}`);
+        console.error(`   Error:    ${e}`);
         failed++;
     }
 });

@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const { JSDOM } = require('jsdom');
-const assert = require('assert');
 
 // Setup JSDOM
 const dom = new JSDOM(`<!DOCTYPE html><body><button id="trigger">Trigger</button></body>`, {

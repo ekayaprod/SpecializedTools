@@ -158,7 +158,7 @@ async function runTest() {
     // So `getDeepTarget` loop will likely fail or just return the host.
 
     // We can mock `shadowRoot.elementFromPoint` on our host.
-    host.shadowRoot.elementFromPoint = (x, y) => shadowBtn;
+    host.shadowRoot.elementFromPoint = () => shadowBtn;
 
     // Dispatch click on HOST (simulating the bubble up, since we can't easily click inside shadow in a way that triggers document listener with correct coordinates in JSDOM without full layout)
     // Actually, dispatching on shadowBtn *should* bubble to document.

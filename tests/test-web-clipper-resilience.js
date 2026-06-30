@@ -70,12 +70,12 @@ console.error = (...args) => {
 // Mock BookmarkletUtils
 let showToastCalls = [];
 global.window.BookmarkletUtils = {
-    normalizeImages: async (el) => {},
+    normalizeImages: async () => {},
     inlineStylesAsync: async (src, tgt, cb) => {
         if (src.getAttribute('style')) tgt.setAttribute('style', src.getAttribute('style'));
         if (cb) cb(1);
     },
-    sanitizeAttributes: (el) => {},
+    sanitizeAttributes: () => {},
     sanitizeFilename: (s) => (s || 'export').replace(/[^a-z0-9]/gi, '_'),
     generateFilename: (s) => (s || 'export').replace(/[^a-z0-9]/gi, '_') + '_20230101-0000',
     loadLibrary: async (name) => {
@@ -84,7 +84,7 @@ global.window.BookmarkletUtils = {
         }
         return Promise.resolve();
     },
-    downloadFile: (name, content) => {},
+    downloadFile: () => {},
     htmlToMarkdown: (html) => html,
     showToast: (msg, type) => {
         showToastCalls.push({ msg, type });

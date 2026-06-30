@@ -12,7 +12,7 @@ console.log('Running Web Clipper PNG Error Test (No JSDOM)...');
 // Mock global setTimeout
 const realSetTimeout = global.setTimeout;
 let pendingTimeouts = [];
-global.setTimeout = (cb, delay) => {
+global.setTimeout = (cb) => {
     pendingTimeouts.push(cb);
     return 1;
 };

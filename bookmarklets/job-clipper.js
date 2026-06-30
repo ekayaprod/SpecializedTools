@@ -1,3 +1,4 @@
+// @ts-nocheck
 (async function () {
     const mId = "jc-job-modal";
     const oId = "jc-job-overlay";
@@ -20,7 +21,7 @@
             try {
                 const n = context.querySelector(s);
                 if (n && n.textContent) return n.textContent.replace(/\s+/g, " ").trim();
-            } catch (e) {}
+            } catch { /* ignore */ }
         }
         return "";
     };
@@ -156,7 +157,7 @@
                         const mt = cln.split("\n").filter(x => rx.test(x)).map(x => x.trim()).join(" [...] ");
                         m.push({ ti, ln, me, s: mt.length > 800 ? mt.substring(0, 800) + "..." : mt });
                     }
-                } catch (e) {}
+                } catch { /* ignore */ }
             }
             return { tot: it.length, m };
         }

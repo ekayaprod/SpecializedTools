@@ -24,7 +24,7 @@ global.URL = {
         lastBlob = blob;
         return 'blob:http://localhost/12345';
     },
-    revokeObjectURL: (url) => {
+    revokeObjectURL: () => {
         // no-op
     },
 };
