@@ -19,7 +19,7 @@ async function runTest() {
     // We use a promise to wait for the test completion inside JSDOM context if needed,
     // but since we are observing side effects (fetchCalls), we can just wait.
 
-    new JSDOM(htmlContent, {
+    const _dom = new JSDOM(htmlContent, {
         runScripts: 'dangerously',
         resources: 'usable',
         virtualConsole,

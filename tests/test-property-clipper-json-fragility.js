@@ -3,6 +3,7 @@ const path = require('path');
 const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
 
+
 const scriptPath = path.join(__dirname, '../bookmarklets/property-clipper.js');
 const scriptCode = fs.readFileSync(scriptPath, 'utf8');
 
@@ -53,7 +54,7 @@ async function runTests() {
 
         // Spy on console.warn
         let warnings = [];
-        const originalWarn = console.warn;
+        const _originalWarn = console.warn;
         console.warn = (...args) => warnings.push(args);
 
         // Run script
@@ -71,7 +72,7 @@ async function runTests() {
         }
 
         console.warn = originalWarn; // Restore
-    } catch (e) {
+    } catch (_e) {
         console.error('Test 1 Unexpected Error:', e);
         testsFailed++;
     }
@@ -80,7 +81,7 @@ async function runTests() {
     try {
         console.log('\nTest 2: Invalid JSON in .raw-data pre');
         const html = `<!DOCTYPE html><body><div class="raw-data"><pre>{ "bar": </pre></div></body>`;
-        const dom = new JSDOM(html, {
+        const _dom = new JSDOM(html, {
             url: 'https://example.com',
             runScripts: 'dangerously',
             beforeParse(window) {
@@ -90,7 +91,7 @@ async function runTests() {
         });
 
         let warnings = [];
-        const originalWarn = console.warn;
+        const _originalWarn = console.warn;
         console.warn = (...args) => warnings.push(args);
 
         dom.window.eval(scriptCode);
@@ -105,7 +106,7 @@ async function runTests() {
             testsFailed++;
         }
         console.warn = originalWarn;
-    } catch (e) {
+    } catch (_e) {
         console.error('Test 2 Unexpected Error:', e);
         testsFailed++;
     }
@@ -150,7 +151,7 @@ async function runTests() {
             else console.log('Textarea content:', txtArea.value);
             testsFailed++;
         }
-    } catch (e) {
+    } catch (_e) {
         console.error('Test 3 Unexpected Error:', e);
         testsFailed++;
     }

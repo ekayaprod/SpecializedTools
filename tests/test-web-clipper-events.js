@@ -1,18 +1,18 @@
 const fs = require('fs');
 const path = require('path');
-const assert = require('assert');
+
 
 // 1. Mock DOM Environment
 const mockDocument = {
     body: {
         style: { cursor: '' },
         appendChild: () => {},
-        removeChild: () => {},
+        removeChild: (_el) => {},
     },
-    addEventListener: (type, listener) => {
+    addEventListener: (type, listener, _options) => {
         mockDocument.listeners[type] = listener;
     },
-    removeEventListener: (type, listener) => {
+    removeEventListener: (type, listener, _options) => {
         if (mockDocument.listeners[type] === listener) {
             delete mockDocument.listeners[type];
         }
@@ -95,7 +95,7 @@ console.log('Running Web Clipper Event Tests...');
 try {
     eval(constantsCode);
     eval(scriptCode);
-} catch (e) {
+} catch (_e) {
     console.error('Failed to evaluate web-clipper.js:', e);
     process.exit(1);
 }

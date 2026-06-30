@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { JSDOM } = require('jsdom');
-const assert = require('assert');
+
 
 const scriptPath = path.join(__dirname, '../bookmarklets/passphrase-generator.js');
 const scriptContent = fs.readFileSync(scriptPath, 'utf8');
@@ -22,7 +22,7 @@ class MockDate extends OriginalDate {
 }
 
 // Setup environment
-const dom = new JSDOM(`<!DOCTYPE html><body></body>`);
+const _dom = new JSDOM(`<!DOCTYPE html><body></body>`);
 global.window = dom.window;
 global.document = dom.window.document;
 global.navigator = dom.window.navigator;
@@ -31,13 +31,13 @@ global.Date = MockDate; // Override global Date
 
 // Mock clipboard
 global.navigator.clipboard = {
-    writeText: () => Promise.resolve(),
+    writeText: (_text) => Promise.resolve(),
 };
 
 function runScript() {
     try {
         eval(scriptContent);
-    } catch (e) {
+    } catch (_e) {
         console.error('Script execution failed:', e);
         throw e;
     }
@@ -227,7 +227,7 @@ async function runTests() {
             test.run();
             console.log(`✅ Passed`);
             passed++;
-        } catch (e) {
+        } catch (_e) {
             console.error(`❌ Failed`);
             console.error(e);
             failed++;

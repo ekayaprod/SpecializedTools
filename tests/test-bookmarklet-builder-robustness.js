@@ -1,4 +1,4 @@
-const assert = require('assert');
+
 const { compile, extractDependencies } = require('../scripts/bookmarklet-builder.js');
 
 console.log('Running tests for bookmarklet robustness...');
@@ -84,10 +84,10 @@ tests.forEach((test) => {
         assert.strictEqual(actual, test.expected);
         console.log(`✅ ${test.name}`);
         passed++;
-    } catch (e) {
+    } catch (_e) {
         console.error(`❌ ${test.name}`);
         console.error(`   Expected: ${JSON.stringify(test.expected)}`);
-        console.error(`   Error:    ${e}`);
+        console.error(`   Actual:   ${JSON.stringify(compile(test.input))}`);
         failed++;
     }
 });
@@ -100,10 +100,10 @@ dependencyTests.forEach((test) => {
         assert.deepStrictEqual(actual, test.expected);
         console.log(`✅ ${test.name}`);
         passed++;
-    } catch (e) {
+    } catch (_e) {
         console.error(`❌ ${test.name}`);
         console.error(`   Expected: ${JSON.stringify(test.expected)}`);
-        console.error(`   Error:    ${e}`);
+        console.error(`   Actual:   ${JSON.stringify(extractDependencies(test.input))}`);
         failed++;
     }
 });

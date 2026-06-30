@@ -2,13 +2,13 @@ const fs = require('fs');
 const path = require('path');
 const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
-const assert = require('assert');
+
 
 const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
 const utilsCode = fs.readFileSync(utilsPath, 'utf8');
 
 // Create a JSDOM instance
-const dom = new JSDOM(`<!DOCTYPE html><body></body>`, { url: 'http://localhost/' });
+const _dom = new JSDOM(`<!DOCTYPE html><body></body>`, { url: 'http://localhost/' });
 
 global.window = dom.window;
 global.document = dom.window.document;
@@ -23,11 +23,11 @@ let createdUrl = '';
 let revokedUrl = '';
 
 global.URL = {
-    createObjectURL: () => {
+    createObjectURL: (_blob) => {
         createdUrl = 'blob:mock-url';
         return createdUrl;
     },
-    revokeObjectURL: (url) => {
+    revokeObjectURL: (_url) => {
         revokedUrl = url;
     },
 };
@@ -47,7 +47,7 @@ global.window.crypto = {
 // Execute utils.js
 try {
     eval(utilsCode);
-} catch (e) {
+} catch (_e) {
     console.error('Error evaluating utils.js:', e);
     process.exit(1);
 }

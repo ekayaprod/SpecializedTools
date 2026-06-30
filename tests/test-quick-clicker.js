@@ -3,7 +3,7 @@ const path = require('path');
 const { JSDOM } = require('jsdom');
 
 // Setup JSDOM
-const dom = new JSDOM(`<!DOCTYPE html><body></body>`, {
+const _dom = new JSDOM(`<!DOCTYPE html><body></body>`, {
     url: 'http://localhost/',
     pretendToBeVisual: true,
 });
@@ -21,6 +21,7 @@ global.navigator.wakeLock = {
 
 // Mock console.warn
 const warns = [];
+const _originalWarn = console.warn;
 console.warn = (...args) => {
     warns.push(args);
 };
@@ -43,7 +44,7 @@ async function runTest() {
         // Execute the bookmarklet code
         // It's an IIFE that assigns window.__dc_v27
         eval(scriptContent);
-    } catch (e) {
+    } catch (_e) {
         console.error('Script execution failed:', e);
         process.exit(1);
     }
@@ -59,7 +60,7 @@ async function runTest() {
         // Simulate start action
         // This triggers the async wakeLock request
         await app.start();
-    } catch (e) {
+    } catch (_e) {
         console.error('start() threw an error (should be caught internally):', e);
     }
 

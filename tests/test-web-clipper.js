@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
-const assert = require('assert');
+
 
 const scriptPath = path.join(__dirname, '../bookmarklets/web-clipper.js');
 const scriptCode = fs.readFileSync(scriptPath, 'utf8');
@@ -10,7 +10,7 @@ const constantsPath = path.join(__dirname, '../bookmarklets/i18n/web-clipper-en.
 const constantsCode = fs.readFileSync(constantsPath, 'utf8');
 
 // Create JSDOM
-const dom = new JSDOM(
+const _dom = new JSDOM(
     `<!DOCTYPE html>
 <body>
     <div id="content" style="width:100px; height:100px; padding:10px;">
@@ -63,7 +63,7 @@ global.window.matchMedia = (query) => {
 
 // Mock BookmarkletUtils
 global.window.BookmarkletUtils = {
-    normalizeImages: async () => {
+    normalizeImages: async (_el) => {
         console.log('Mock: normalizeImages');
     },
     inlineStylesAsync: async (src, tgt, cb) => {
@@ -72,7 +72,7 @@ global.window.BookmarkletUtils = {
         if (src.getAttribute('style')) tgt.setAttribute('style', src.getAttribute('style'));
         if (cb) cb(1);
     },
-    sanitizeAttributes: () => {
+    sanitizeAttributes: (_el) => {
         console.log('Mock: sanitizeAttributes');
     },
     sanitizeFilename: (s) => (s || 'export').replace(/[^a-z0-9]/gi, '_'),
@@ -80,7 +80,7 @@ global.window.BookmarkletUtils = {
     loadLibrary: async (name) => {
         console.log('Mock: loadLibrary', name);
     },
-    downloadFile: (name) => {
+    downloadFile: (_name, _content) => {
         console.log('Mock: downloadFile', name);
     },
     htmlToMarkdown: (html) => html,
@@ -102,7 +102,7 @@ async function runTest() {
         eval(constantsCode);
         eval(scriptCode);
         console.log('Script loaded and executed.');
-    } catch (e) {
+    } catch (_e) {
         console.error('Script evaluation failed:', e);
         process.exit(1);
     }

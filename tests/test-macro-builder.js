@@ -6,7 +6,7 @@ async function runTest() {
     console.log('🚀 Starting test for Macro Builder...');
 
     // Setup JSDOM
-    const dom = new JSDOM(
+    const _dom = new JSDOM(
         `<!DOCTYPE html><body>
         <div id="test-container">
             <button id="target-btn">Click Me</button>
@@ -46,7 +46,8 @@ async function runTest() {
         return true;
     };
 
-    global.prompt = () => {
+    global.prompt = (_msg) => {
+        // console.log("Prompt:", msg);
         return 'Test Input';
     };
 
@@ -62,7 +63,7 @@ async function runTest() {
             global.BookmarkletUtils = window.BookmarkletUtils;
         }
         eval(scriptContent);
-    } catch (e) {
+    } catch (_e) {
         console.error('Script execution failed:', e);
         process.exit(1);
     }

@@ -1,4 +1,4 @@
-const assert = require('assert');
+
 const { find } = require('../bookmarklets/pa-county-finder.js');
 
 console.log('Running PA County Finder Edge Cases...');
@@ -45,10 +45,10 @@ function runTest(testCase) {
         assert.deepStrictEqual(counties, expected);
         console.log(`✅ ${input}: ${result}`);
         passed++;
-    } catch (e) {
+    } catch (_e) {
         console.error(`❌ ${input}`);
         console.error(`   Expected: ${expected.join(', ')}`);
-        console.error(`   Error:    ${e}`);
+        console.error(`   Actual:   ${counties.join(', ')}`);
         failed++;
     }
 }

@@ -5,7 +5,7 @@ const { JSDOM } = require('jsdom');
 async function runTest() {
     console.log('🚀 Starting XSS reproduction test for Macro Builder...');
 
-    const dom = new JSDOM(
+    const _dom = new JSDOM(
         `<!DOCTYPE html><body>
         <div id="test-container">
             <button id="target-btn">Click Me</button>
@@ -38,7 +38,7 @@ async function runTest() {
         return true;
     };
 
-    global.prompt = () => {
+    global.prompt = (_msg) => {
         return maliciousInput;
     };
 
@@ -54,7 +54,7 @@ async function runTest() {
             global.BookmarkletUtils = window.BookmarkletUtils;
         }
         eval(scriptContent);
-    } catch (e) {
+    } catch (_e) {
         console.error('Script execution failed:', e);
         process.exit(1);
     }

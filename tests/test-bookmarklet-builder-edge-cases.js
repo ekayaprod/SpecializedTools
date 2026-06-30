@@ -1,4 +1,4 @@
-const assert = require('assert');
+
 const { compile } = require('../scripts/bookmarklet-builder.js');
 
 console.log('🕵️ Inspector: Running edge case tests for bookmarklet builder...');
@@ -76,11 +76,11 @@ tests.forEach((test) => {
         const actual = compile(test.input);
         assert.strictEqual(actual, test.expected);
         console.log(`✅ ${test.name}`);
-    } catch (e) {
+    } catch (_e) {
         console.error(`❌ ${test.name}`);
         console.error(`   Input:    ${JSON.stringify(test.input)}`);
         console.error(`   Expected: ${JSON.stringify(test.expected)}`);
-        console.error(`   Error:    ${e}`);
+        console.error(`   Actual:   ${JSON.stringify(compile(test.input))}`);
         failed++;
     }
 });

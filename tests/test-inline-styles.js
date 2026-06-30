@@ -2,13 +2,13 @@ const fs = require('fs');
 const path = require('path');
 const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
-const assert = require('assert');
+
 
 const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
 const utilsCode = fs.readFileSync(utilsPath, 'utf8');
 
 // JSDOM Setup
-const dom = new JSDOM(
+const _dom = new JSDOM(
     `<!DOCTYPE html>
 <body>
     <div id="test-root"></div>
@@ -36,7 +36,7 @@ global.window.crypto = {
 // Evaluate Utils
 try {
     eval(utilsCode);
-} catch (e) {
+} catch (_e) {
     console.error('Error evaluating utils.js:', e);
     process.exit(1);
 }
@@ -136,7 +136,7 @@ async function runTests() {
         }
 
         let progressUpdates = 0;
-        await window.BookmarkletUtils.inlineStylesAsync(source, target, () => {
+        await window.BookmarkletUtils.inlineStylesAsync(source, target, (_count) => {
             progressUpdates++;
         });
 

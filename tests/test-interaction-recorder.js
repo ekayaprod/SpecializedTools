@@ -3,7 +3,7 @@ const path = require('path');
 const { JSDOM } = require('jsdom');
 
 // Setup JSDOM
-const dom = new JSDOM(
+const _dom = new JSDOM(
     `<!DOCTYPE html><body><div id="test-container"><button id="target-btn" class="test-class">Click Me</button></div></body>`,
     {
         url: 'http://localhost/',
@@ -20,11 +20,11 @@ global.Node = dom.window.Node;
 // Mock URL.createObjectURL and revokeObjectURL
 let lastBlob = null;
 global.URL = {
-    createObjectURL: (blob) => {
+    createObjectURL: (_blob) => {
         lastBlob = blob;
         return 'blob:http://localhost/12345';
     },
-    revokeObjectURL: () => {
+    revokeObjectURL: (_url) => {
         // no-op
     },
 };
@@ -65,7 +65,7 @@ async function runTest() {
         }
         // Execute the bookmarklet code
         eval(scriptContent);
-    } catch (e) {
+    } catch (_e) {
         console.error('Script execution failed:', e);
         process.exit(1);
     }

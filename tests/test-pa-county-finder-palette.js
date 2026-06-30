@@ -2,8 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const { JSDOM } = require('jsdom');
 
+
 // Setup JSDOM
-const dom = new JSDOM(`<!DOCTYPE html><body><button id="trigger">Trigger</button></body>`, {
+const _dom = new JSDOM(`<!DOCTYPE html><body><button id="trigger">Trigger</button></body>`, {
     url: 'http://localhost/',
     runScripts: 'dangerously',
     resources: 'usable',
@@ -92,7 +93,7 @@ async function runPaletteTest() {
         let capturedCallback = null;
 
         // Override global setTimeout
-        global.setTimeout = (cb, delay) => {
+        global.setTimeout = (cb, _delay) => {
             console.log(`setTimeout called with delay: ${delay}`);
             if (delay === 300) { // Assuming 300ms delay for loading
                 capturedCallback = cb;
@@ -155,7 +156,7 @@ async function runPaletteTest() {
         // Clean up
         overlay.remove();
 
-    } catch (e) {
+    } catch (_e) {
         console.error('❌ Test Failed:', e.message);
         // We expect failures initially because features aren't implemented yet
         if (process.env.EXPECT_FAILURE) {

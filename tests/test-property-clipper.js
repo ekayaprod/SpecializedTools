@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
-const assert = require('assert');
+
 
 const scriptPath = path.join(__dirname, '../bookmarklets/property-clipper.js');
 const scriptCode = fs.readFileSync(scriptPath, 'utf8');
@@ -12,7 +12,7 @@ const promptsPath = path.join(__dirname, '../bookmarklets/prompts/loader.js');
 const promptsCode = fs.readFileSync(promptsPath, 'utf8');
 
 // Create JSDOM
-const dom = new JSDOM(
+const _dom = new JSDOM(
     `<!DOCTYPE html>
 <body>
     <script id="__NEXT_DATA__" type="application/json">
@@ -163,10 +163,10 @@ const MockJsPDF = class {
     text(txt) {
         pdfContent.push(txt);
     }
-    splitTextToSize(txt) {
+    splitTextToSize(_txt) {
         return [txt];
     }
-    getTextDimensions() {
+    getTextDimensions(_txt) {
         return { w: 100, h: 10 };
     }
     addImage(dataUrl) {
@@ -188,7 +188,7 @@ const MockJsPDF = class {
 global.window.jspdf = { jsPDF: MockJsPDF };
 
 // Mock fetch for random requests
-global.fetch = async () => {
+global.fetch = async (_url) => {
     return {
         ok: true,
         blob: async () => new Blob(['image-content'], { type: 'image/jpeg' }),
@@ -225,7 +225,7 @@ try {
 
     console.log('Executing property-clipper.js...');
     eval(scriptCode);
-} catch (e) {
+} catch (_e) {
     console.error('Script evaluation failed', e);
     process.exit(1);
 }

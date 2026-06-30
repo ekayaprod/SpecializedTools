@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
-const assert = require('assert');
+
 
 const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
 const utilsCode = fs.readFileSync(utilsPath, 'utf8');
@@ -26,7 +26,7 @@ async function runTests() {
         try {
             await test.fn();
             console.log(`  ✅ ${test.name}`);
-        } catch (e) {
+        } catch (_e) {
             console.error(`  ❌ ${test.name}:`);
             console.error(`     ${e.message.replace(/\n/g, '\n     ')}`);
             process.exitCode = 1;
@@ -35,7 +35,7 @@ async function runTests() {
 }
 
 // Create JSDOM
-const dom = new JSDOM(
+const _dom = new JSDOM(
     `<!DOCTYPE html>
 <body>
     <button id="target-btn">Click Me!</button>
@@ -178,6 +178,7 @@ describe('Delayed Clicker Robustness', () => {
 
     it('should toggle visibility when called again', () => {
         const host = document.querySelector('div[id^="dc-"]');
+        const _initialDisplay = host.style.display;
 
         // Call the IIFE logic again? No, we can just call window.dc_running.toggle() directly
         // because the IIFE checks window.dc_running and calls toggle if exists.

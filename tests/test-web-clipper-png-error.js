@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const assert = require('assert');
+
 
 const scriptPath = path.join(__dirname, '../bookmarklets/web-clipper.js');
 const scriptCode = fs.readFileSync(scriptPath, 'utf8');
@@ -12,7 +12,7 @@ console.log('Running Web Clipper PNG Error Test (No JSDOM)...');
 // Mock global setTimeout
 const realSetTimeout = global.setTimeout;
 let pendingTimeouts = [];
-global.setTimeout = (cb) => {
+global.setTimeout = (cb, _delay) => {
     pendingTimeouts.push(cb);
     return 1;
 };

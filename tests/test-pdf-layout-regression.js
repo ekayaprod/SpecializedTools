@@ -3,6 +3,7 @@ const path = require('path');
 const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
 
+
 const scriptPath = path.join(__dirname, '../bookmarklets/property-clipper.js');
 const scriptCode = fs.readFileSync(scriptPath, 'utf8');
 const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
@@ -11,7 +12,7 @@ const promptsPath = path.join(__dirname, '../bookmarklets/prompts/loader.js');
 const promptsCode = fs.readFileSync(promptsPath, 'utf8');
 
 // Create JSDOM with initial data
-const dom = new JSDOM(
+const _dom = new JSDOM(
     `<!DOCTYPE html>
 <body>
     <script id="__NEXT_DATA__" type="application/json">
@@ -81,7 +82,7 @@ let pageCount = 1;
 let imagesOnPage = { 1: 0 };
 
 const MockJsPDF = class {
-    constructor() {
+    constructor(opts) {
         pageCount = 1;
         imagesOnPage = { 1: 0 };
     }
@@ -95,7 +96,7 @@ const MockJsPDF = class {
     splitTextToSize() {
         return [];
     }
-    addImage() {
+    addImage(_dataUrl, _format, _x, _y, _w, _h) {
         imagesOnPage[pageCount] = (imagesOnPage[pageCount] || 0) + 1;
     }
     addPage() {
@@ -163,7 +164,7 @@ global.window.jspdf = { jsPDF: MockJsPDF };
         if (imagesOnPage[2] !== 2) throw new Error(`Page 2 should have 2 images (Photos), found ${imagesOnPage[2]}`);
 
         console.log('✅ Regression Test Passed: 2 images found on Page 2.');
-    } catch (e) {
+    } catch (_e) {
         console.error('❌ Test Failed:', e);
         process.exit(1);
     }

@@ -1,4 +1,4 @@
-const assert = require('assert');
+
 const { compile } = require('../scripts/bookmarklet-builder.js');
 
 console.log('Running tests for bookmarklet regex handling...');
@@ -88,11 +88,11 @@ tests.forEach((test) => {
         assert.strictEqual(actual, test.expected);
         console.log(`✅ ${test.name}`);
         passed++;
-    } catch (e) {
+    } catch (_e) {
         console.error(`❌ ${test.name}`);
         console.error(`   Input:    ${JSON.stringify(test.input)}`);
         console.error(`   Expected: ${JSON.stringify(test.expected)}`);
-        console.error(`   Error:    ${e}`);
+        console.error(`   Actual:   ${JSON.stringify(compile(test.input))}`);
         failed++;
     }
 });

@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const assert = require('assert');
+
 
 const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
 let utilsCode = fs.readFileSync(utilsPath, 'utf8');
@@ -120,9 +120,9 @@ try {
 
         let setPropertyCalled = false;
         const originalSetProperty = target.style.setProperty;
-        target.style.setProperty = function(prop, ...args) {
+        target.style.setProperty = function(prop, _val) {
             if (prop === 'color') setPropertyCalled = true;
-            return originalSetProperty.apply(this, [prop, ...args]);
+            return originalSetProperty.apply(this, arguments);
         };
 
         copySafeStyles(source, target);

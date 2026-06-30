@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
+
 // Simple DOM Mocks (Minimum for testing logic)
 const mockDocument = {
     body: {
@@ -78,6 +79,7 @@ const scriptPath = path.join(__dirname, '../bookmarklets/pa-county-finder.js');
 const scriptCode = fs.readFileSync(scriptPath, 'utf8');
 const moduleExport = {};
 new Function('module', 'window', 'document', scriptCode)({ exports: moduleExport }, global.window, mockDocument);
+const { find: _find } = moduleExport;
 
 console.log('🚀 Running manual security verification check...');
 

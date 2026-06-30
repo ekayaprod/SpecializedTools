@@ -2,13 +2,13 @@ const fs = require('fs');
 const path = require('path');
 const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
-const assert = require('assert');
+
 
 const utilsPath = path.join(__dirname, '../bookmarklets/utils.js');
 const utilsCode = fs.readFileSync(utilsPath, 'utf8');
 
 // Mock JSDOM
-const dom = new JSDOM('<!DOCTYPE html><body></body>', { url: 'http://localhost/' });
+const _dom = new JSDOM('<!DOCTYPE html><body></body>', { url: 'http://localhost/' });
 global.window = dom.window;
 global.document = dom.window.document;
 global.Node = dom.window.Node;
@@ -22,7 +22,7 @@ global.performance = { now: () => Date.now() };
 // Evaluated code puts BookmarkletUtils on window
 try {
     eval(utilsCode);
-} catch (e) {
+} catch (_e) {
     console.error('Error evaluating utils.js:', e);
     process.exit(1);
 }
@@ -38,7 +38,7 @@ async function runTests() {
             await fn();
             console.log(`✅ ${name}`);
             passed++;
-        } catch (e) {
+        } catch (_e) {
             console.error(`❌ ${name}: ${e.message}`);
             failed++;
         }
@@ -53,7 +53,7 @@ async function runTests() {
         // Mock setTimeout
         const originalSetTimeout = global.setTimeout;
         const delays = [];
-        global.setTimeout = (fn, delay) => {
+        global.setTimeout = (fn, _delay) => {
             delays.push(delay);
             // Execute immediately for test speed
             fn();
@@ -116,7 +116,7 @@ async function runTests() {
 
         // Mock setTimeout
         const originalSetTimeout = global.setTimeout;
-        global.setTimeout = (fn) => {
+        global.setTimeout = (fn, _delay) => {
             fn();
             return 123;
         };
@@ -147,7 +147,7 @@ async function runTests() {
         try {
             await window.BookmarkletUtils.loadLibrary(globalVar, url, null, maxRetries, 100);
             throw new Error('Should have thrown an error');
-        } catch (e) {
+        } catch (_e) {
             assert.strictEqual(attempts, 3, 'Should have attempted 3 times (initial + 2 retries)');
             assert.ok(e.message.includes('Failed to load FailLib'), 'Error message should match');
         } finally {

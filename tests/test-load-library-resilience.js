@@ -1,5 +1,5 @@
 const fs = require('fs');
-const assert = require('assert');
+
 
 // Mock Browser Environment
 const mockWindow = {
@@ -20,7 +20,7 @@ global.document = mockWindow.document;
 const utilsCode = fs.readFileSync('bookmarklets/utils.js', 'utf8');
 try {
     eval(utilsCode);
-} catch (e) {
+} catch (_e) {
     console.error('Error loading utils.js:', e);
     process.exit(1);
 }
@@ -69,6 +69,7 @@ async function testLoadLibraryResilience() {
             return el;
         };
 
+        const _startTime = Date.now();
         // Use shorter delay for test speed
         await utils.loadLibrary('retryLib', 'http://example.com/retry.js', null, 3, 50);
 
@@ -92,7 +93,7 @@ async function testLoadLibraryResilience() {
         try {
             await utils.loadLibrary('failLib', 'http://example.com/fail.js', null, 2, 50);
             assert.fail('Should have thrown error after retries exhausted');
-        } catch (e) {
+        } catch (_e) {
             assert.ok(e.message.includes('Failed to load failLib'), 'Error message mismatch: ' + e.message);
             // Expected 1 initial attempt + 2 retries = 3 total
             // Or if retries means *retry attempts* (additional attempts), then 1 + 2 = 3.

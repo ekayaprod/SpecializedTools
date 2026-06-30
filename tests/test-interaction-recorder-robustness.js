@@ -3,7 +3,7 @@ const path = require('path');
 const { JSDOM } = require('jsdom');
 
 // Setup JSDOM with various elements
-const dom = new JSDOM(
+const _dom = new JSDOM(
     `<!DOCTYPE html><body>
         <div id="container">
             <ul id="list">
@@ -64,7 +64,7 @@ async function runTest() {
         eval(utilsContent);
         if (window.BookmarkletUtils) global.BookmarkletUtils = window.BookmarkletUtils;
         eval(scriptContent);
-    } catch (e) {
+    } catch (_e) {
         console.error('Script execution failed:', e);
         process.exit(1);
     }
@@ -113,7 +113,7 @@ async function runTest() {
         lastLog = app.log[app.log.length - 1];
         console.log('  Path:', lastLog.path);
         console.log('  ✅ Click on SVG processed without crash');
-    } catch (e) {
+    } catch (_e) {
         console.error('  ❌ Crash on SVG click:', e);
     }
 
@@ -133,7 +133,7 @@ async function runTest() {
         } else {
             console.error('  ❌ Failed to target element with special ID');
         }
-    } catch (e) {
+    } catch (_e) {
         console.error('  ❌ Crash/Error on Special ID click:', e);
     }
 
@@ -158,7 +158,7 @@ async function runTest() {
     // So `getDeepTarget` loop will likely fail or just return the host.
 
     // We can mock `shadowRoot.elementFromPoint` on our host.
-    host.shadowRoot.elementFromPoint = () => shadowBtn;
+    host.shadowRoot.elementFromPoint = (_x, _y) => shadowBtn;
 
     // Dispatch click on HOST (simulating the bubble up, since we can't easily click inside shadow in a way that triggers document listener with correct coordinates in JSDOM without full layout)
     // Actually, dispatching on shadowBtn *should* bubble to document.

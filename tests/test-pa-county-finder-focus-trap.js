@@ -2,8 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const { JSDOM } = require('jsdom');
 
+
 // Setup JSDOM
-const dom = new JSDOM(`<!DOCTYPE html><body><button id="trigger">Trigger</button></body>`, {
+const _dom = new JSDOM(`<!DOCTYPE html><body><button id="trigger">Trigger</button></body>`, {
     url: 'http://localhost/',
     runScripts: 'dangerously',
     resources: 'usable',
@@ -132,7 +133,7 @@ async function runFocusTrapTest() {
         // Clean up
         overlay.remove();
 
-    } catch (e) {
+    } catch (_e) {
         console.error('❌ Test Failed:', e);
         passed = false;
         process.exit(1);
