@@ -2,7 +2,6 @@ const fs = require('fs');
 const path = require('path');
 const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
-const assert = require('assert');
 
 const scriptPath = path.join(__dirname, '../bookmarklets/property-clipper.js');
 const scriptCode = fs.readFileSync(scriptPath, 'utf8');
@@ -82,7 +81,7 @@ let pageCount = 1;
 let imagesOnPage = { 1: 0 };
 
 const MockJsPDF = class {
-    constructor(opts) {
+    constructor() {
         pageCount = 1;
         imagesOnPage = { 1: 0 };
     }
@@ -96,7 +95,7 @@ const MockJsPDF = class {
     splitTextToSize() {
         return [];
     }
-    addImage(dataUrl, format, x, y, w, h) {
+    addImage() {
         imagesOnPage[pageCount] = (imagesOnPage[pageCount] || 0) + 1;
     }
     addPage() {

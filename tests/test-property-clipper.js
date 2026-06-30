@@ -166,7 +166,7 @@ const MockJsPDF = class {
     splitTextToSize(txt) {
         return [txt];
     }
-    getTextDimensions(txt) {
+    getTextDimensions() {
         return { w: 100, h: 10 };
     }
     addImage(dataUrl) {
@@ -188,7 +188,7 @@ const MockJsPDF = class {
 global.window.jspdf = { jsPDF: MockJsPDF };
 
 // Mock fetch for random requests
-global.fetch = async (url) => {
+global.fetch = async () => {
     return {
         ok: true,
         blob: async () => new Blob(['image-content'], { type: 'image/jpeg' }),

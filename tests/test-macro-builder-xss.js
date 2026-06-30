@@ -38,7 +38,7 @@ async function runTest() {
         return true;
     };
 
-    global.prompt = (msg) => {
+    global.prompt = () => {
         return maliciousInput;
     };
 

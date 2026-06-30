@@ -116,7 +116,7 @@ async function runTests() {
 
         // Mock setTimeout
         const originalSetTimeout = global.setTimeout;
-        global.setTimeout = (fn, delay) => {
+        global.setTimeout = (fn) => {
             fn();
             return 123;
         };

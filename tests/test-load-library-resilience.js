@@ -69,7 +69,6 @@ async function testLoadLibraryResilience() {
             return el;
         };
 
-        const startTime = Date.now();
         // Use shorter delay for test speed
         await utils.loadLibrary('retryLib', 'http://example.com/retry.js', null, 3, 50);
 

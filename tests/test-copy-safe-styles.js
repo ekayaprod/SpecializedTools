@@ -120,9 +120,9 @@ try {
 
         let setPropertyCalled = false;
         const originalSetProperty = target.style.setProperty;
-        target.style.setProperty = function(prop, val) {
+        target.style.setProperty = function(prop, ...args) {
             if (prop === 'color') setPropertyCalled = true;
-            return originalSetProperty.apply(this, arguments);
+            return originalSetProperty.apply(this, [prop, ...args]);
         };
 
         copySafeStyles(source, target);

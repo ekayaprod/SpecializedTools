@@ -2,7 +2,6 @@ const fs = require('fs');
 const path = require('path');
 const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
-const assert = require('assert');
 
 const scriptPath = path.join(__dirname, '../bookmarklets/property-clipper.js');
 const scriptCode = fs.readFileSync(scriptPath, 'utf8');
