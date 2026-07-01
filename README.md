@@ -14,11 +14,30 @@ The project architecture prioritizes client-side execution, driven by a robust, 
 - **Deep DOM Manipulation:** To bypass host-site CSS/JS contamination, the bookmarklets utilize aggressive Shadow DOM piercing (e.g., custom `getDeepTarget` routines) and recursive `cloneNode(true)` operations to securely isolate target elements.
 - **Asynchronous Thread Management:** To prevent maximum call stack errors and main-thread lockups on massive DOMs (like Jira or Confluence), the utilities implement stack-based Depth-First Search (DFS) traversals combined with asynchronous time-slicing (`performance.now()`) and `setTimeout` yields.
 
-## 4. Robustness & Integrity
+## 4. Tools Directory Map
+
+- **Web Clipper:** Universal content capture. Snapshots articles, recipes, or invoices as clean HTML/Markdown.
+- **Job Post Clipper:** Extracts job descriptions to generate resume tailoring prompts for ATS optimization.
+- **Property Clipper:** Research tool for Zillow/Redfin. Extracts hidden data and generates AI analysis prompts.
+- **PA County Finder:** Instantly finds PA County/Township for any ZIP or City via highlight or prompt.
+- **Quick Clicker V27:** Powerful automation. Schedules clicks (Delay/Clock), fills forms, and maintains wake lock.
+- **Macro Builder V22:** Record & Replay. Generates robust, comment-free bookmarklets from your actions.
+- **Interaction Recorder:** Troubleshoots automation. Captures clicks, Shadow DOM paths, and exports analysis.
+- **Delayed Clicker V5:** Simple, stable timer clicker. Sets a delay and a target element.
+- **Passphrase Generator:** Creates unbreakable, memorable passwords. Includes temporary disposable mode.
+
+## 5. 🚀 Quick Start
+Welcome aboard! To boot the toolkit locally:
+1. `npm ci` (Install dev dependencies).
+2. To verify local changes, run the test suite: `npm test` or `node scripts/run_tests.js`.
+3. Or run linter: `npm run lint`.
+4. Check your links using the markdown script: `npm run verify-links`.
+
+## 6. Robustness & Integrity
 Engineered for zero-touch execution, the toolkit features stringent defensive programming safeguards to ensure state integrity and prevent data corruption:
 - **Input Validation & Sanitization:** Explicit recursive sanitization routines (`Sanitizer.sanitizeElement`) strip dangerous attributes, inline event handlers, and `javascript:` URIs from cloned nodes prior to processing, inherently neutralizing XSS vectors.
 - **Fail-Safe Extraction & Fallbacks:** Data scraping modules (like the Property Clipper) wrap optimistic JSON extractions (e.g., targeting Next.js `__NEXT_DATA__`) in strict `try/catch` blocks. If the target JSON is missing or malformed, the script gracefully degrades to a heuristic DOM-scraping fallback layer, guaranteeing data retrieval.
 - **Execution Stability:** Automation routines explicitly mock console warnings to comply with test suite assertions (Test Immunity Doctrine) and handle asynchronous network or UI failures with silent rollbacks, ensuring the host application state remains untainted.
 
-## 5. Localized ROI (Impact)
+## 7. Localized ROI (Impact)
 The localized impact of this utility suite on my individual productivity has been transformative. By systematically neutralizing manual data entry and UI friction, the toolkit has condensed what were typically 10-to-12-minute manual extraction and formatting processes into 3-second automated routines. This has resulted in an estimated 400% increase in my daily throughput for specific web-research tasks, entirely eliminated human copy-paste errors, and allowed me to strictly focus on high-value engineering analysis rather than menial clicking.
