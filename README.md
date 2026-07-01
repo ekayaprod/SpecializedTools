@@ -5,15 +5,15 @@ Browser Toolkit is a high-velocity, zero-config utility suite designed to accele
 
 ## 🧰 Included Tools
 
-- **Web Clipper**: Universal content capture. Snapshot articles, recipes, or invoices as clean HTML/Markdown.
+- **Web Clipper**: Advanced content capture. Select any element on a webpage, clean it up, and save it as a high-fidelity HTML snapshot, Markdown, Text file, or Image (.png). Perfect for clipping articles, recipes, or invoices without the ads.
 - **Job Post Clipper**: Extract job descriptions to generate resume tailoring prompts for ATS optimization.
-- **Property Clipper**: Research tool for Zillow/Redfin. Extracts hidden data and generates AI analysis prompts.
-- **PA County Finder**: Instantly find PA County/Township for any ZIP or City via highlight or prompt.
-- **Quick Clicker V27**: Powerful automation. Schedule clicks (Delay/Clock), fill forms, and maintain wake lock.
-- **Macro Builder V22**: Record & Replay. Generate robust, comment-free bookmarklets from your actions.
-- **Interaction Recorder**: Troubleshoot automation. Captures clicks, Shadow DOM paths, and exports analysis.
+- **Property Clipper**: A specialized research tool for Realtor.com, Zillow, and Redfin. Cleans listing pages (removing ads/popups) to capture raw property data. Generates sophisticated "Investment Analysis" prompts for Gemini, including a "Deep Research Verification Protocol" to audit regulatory risks (Septic vs. Sewer, HOA limits) and estimate CapEx from photos. Output downloads as a clean HTML file ready for LLM ingestion.
+- **PA County Finder**: Look up Pennsylvania county information by ZIP code or city. Instantly find PA County/Township for any ZIP or City via highlight or prompt.
+- **Quick Clicker V27**: Powerful automation. Single-target auto-clicker with support for delayed start, specific clock time (e.g., 3:00 PM), text input, and maintaining wake lock.
+- **Macro Builder V22**: Record & Replay. Record complex sequences of clicks and text inputs to create a custom bookmarklet that replays them automatically. Generates robust, comment-free bookmarklets from your actions.
+- **Interaction Recorder**: A debugging tool that logs click targets, Shadow DOM paths, and exports analysis to help troubleshoot automation scripts.
 - **Delayed Clicker V5**: Simple, stable timer clicker. Set a delay and a target element.
-- **Passphrase Generator**: Create unbreakable, memorable passwords. Includes temporary disposable mode.
+- **Passphrase Generator**: Creates strong, memorable passwords using seasonal themes (e.g., "ArcticBlueWolf"). Includes a "Temp Password" mode for generating simple, disposable credentials (e.g., "Sunlight1!").
 
 ## 🚀 Installation
 1. Visit the GitHub Pages deployment of this repository.
