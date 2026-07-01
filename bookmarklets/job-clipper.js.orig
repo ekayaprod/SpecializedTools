@@ -21,7 +21,7 @@
             try {
                 const n = context.querySelector(s);
                 if (n && n.textContent) return n.textContent.replace(/\s+/g, " ").trim();
-            } catch (e) { /* eslint-disable-line no-unused-vars */ }
+            } catch (e) { console.error(e); }
         }
         return "";
     };
@@ -36,30 +36,30 @@
         }
         document.getElementById(mId)?.remove();
         document.getElementById(oId)?.remove();
-        
+
         el("div", "", document.body, { id: oId, class: "jc-overlay" });
         const mo = el("div", "", document.body, { id: mId, class: "jc-modal" });
-        
+
         el("h2", title, mo, { class: "jc-header" });
         if (headerText) el("div", headerText, mo, { style: "font-size:13px;text-align:center;color:#4b5563;font-weight:600" });
-        
+
         mo.appendChild(contentNode);
-        
+
         const act = el("div", "", mo, { class: "jc-actions" });
         const cp = el("button", "Copy Payload", act, { class: "jc-btn jc-btn-primary" });
-        
+
         cp.onclick = () => {
             navigator.clipboard.writeText(getCopyPayload());
             cp.innerHTML = "Copied!";
             cp.classList.add("jc-btn-success");
             setTimeout(() => (cp.innerHTML = "Copy Payload"), 1500);
         };
-        
+
         el("button", "Close", act, { class: "jc-btn jc-btn-ghost" }).onclick = () => {
             mo.remove();
             document.getElementById(oId)?.remove();
         };
-        
+
         return mo;
     };
 
@@ -71,41 +71,41 @@
             t.innerHTML = c;
             return (t.textContent || "").replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
         },
-        
+
         q() {
             const a = [];
             // This selector accurately targets both static job postings and the SPA application wizard
             document.querySelectorAll(".question-item").forEach(q => {
                 const nEl = q.querySelector(".question-index, .span2");
                 const n = nEl ? nEl.textContent.replace(/\s+/g, " ").trim() : "";
-                
+
                 const tEl = q.querySelector(".question-container > span, .question-text span, .question-text label");
                 const t = tEl ? tEl.textContent.replace(/\s+/g, " ").trim() : "";
-                
+
                 if (!t) return;
-                
+
                 const ops = [...q.querySelectorAll("ul > li, .radio-set label, .checkbox-set label, select option")]
                     .map(l => l.textContent.replace(/\s+/g, " ").trim())
                     .filter(x => x && !x.includes("Select one"));
-                    
+
                 a.push(`Q${n ? n : ''}: ${t}` + (ops.length ? `\n  - ${ops.join("\n  - ")}` : ""));
             });
             return a.join("\n\n");
         },
-        
+
         d() {
             let t = getT(["h1.t-24", ".jobsearch-JobInfoHeader-title", ".entity-title", "h1.title", "h1"]) || "[Title]";
             let c = getT([".job-details-jobs-unified-top-card__company-name", ".agency-name dd", ".company-name"]) || "[Company]";
             let s = getT([".job-details-jobs-unified-top-card__job-insight:contains('$')", ".salary", ".pay-range"]);
-            
+
             if (!s) {
                 const m = (document.body.textContent || "").match(/\$[0-9,]+(\.[0-9]{2})?(\s*[-to]+\s*\$[0-9,]+(\.[0-9]{2})?)?\s*(Annually|per year|\/yr|\/hour|per hour)?/i);
                 if (m) s = m[0].trim();
             }
-            
+
             let ds = document.querySelector("#details-info");
             ds = ds ? this.cln(ds.innerHTML) : "";
-            
+
             let pr = "";
             const wx = [...document.querySelectorAll(".box-container dl")];
             if (wx.length) {
@@ -127,29 +127,29 @@
             }
             return { t, c, s, ds, q: this.q(), pr };
         },
-        
+
         async l(cb) {
             const it = [...document.querySelectorAll(".list-item")];
             const rx = /telework|remote|hybrid|work from home|wfh/i;
             const m = [];
-            
+
             for (let i = 0; i < it.length; i++) {
                 const lA = it[i].querySelector(".item-details-link");
                 const ti = lA?.textContent.replace(/\s+/g, " ").trim() || "Unknown";
                 const hr = lA?.getAttribute("href") || "";
                 const ln = hr.startsWith("http") ? hr : window.location.origin + hr;
                 const me = it[i].querySelector(".list-meta")?.textContent.replace(/\s+/g, " ").trim() || "";
-                
+
                 cb(i + 1, it.length, ti);
-                
+
                 try {
                     const rs = await fetch(ln);
                     const ht = await rs.text();
                     const dc = new DOMParser().parseFromString(ht, "text/html");
                     let tp = "";
-                    dc.querySelectorAll(".tab-pane").forEach(p => { 
+                    dc.querySelectorAll(".tab-pane").forEach(p => {
                         if (p.id !== "details-questions" && p.id !== "details-benefits") {
-                            tp += p.innerHTML + "<br><br>"; 
+                            tp += p.innerHTML + "<br><br>";
                         }
                     });
                     const cln = this.cln(tp);
@@ -157,7 +157,7 @@
                         const mt = cln.split("\n").filter(x => rx.test(x)).map(x => x.trim()).join(" [...] ");
                         m.push({ ti, ln, me, s: mt.length > 800 ? mt.substring(0, 800) + "..." : mt });
                     }
-                } catch (e) { /* eslint-disable-line no-unused-vars */ }
+                } catch (e) { console.error(e); }
             }
             return { tot: it.length, m };
         }
@@ -170,28 +170,28 @@
     if (u.includes("/apply/questions")) {
         const q = Ext.q();
         if (!q) return alert("No application questions detected on this page.");
-        
+
         const c = el("div");
         const ta = el("textarea", "", c, { class: "jc-textarea", readonly: true });
         ta.value = `### APPLICATION QUESTIONS\n\n${q}`;
-        
+
         initUI("Questionnaire Extractor", "Paste these into the Gem for Phase 3 Triage.", c, () => ta.value);
 
     } else if (document.querySelector("#details-info") || document.querySelector(".box-container dl") || u.includes("/apply/work")) {
         const d = Ext.d();
-        const st = { 
-            m: !!d.t && d.t !== "[Title]", 
-            d: !!d.ds, 
-            q: !!d.q, 
-            p: !!d.pr 
+        const st = {
+            m: !!d.t && d.t !== "[Title]",
+            d: !!d.ds,
+            q: !!d.q,
+            p: !!d.pr
         };
-        
+
         if (!st.m && !st.d && !st.q && !st.p) return alert("Operation aborted: No job data detected.");
-        
+
         const c = el("div");
         const rw = el("div", "", c, { class: "jc-toggles" });
         const ta = el("textarea", "", c, { class: "jc-textarea", readonly: true });
-        
+
         const gTxt = () => {
             let p = [];
             if (st.m) p.push(`### JOB METADATA\n**Title:** ${d.t}\n**Company:** ${d.c}\n**Salary:** ${d.s}`);
@@ -200,22 +200,22 @@
             if (st.p) p.push(`### MY WORK EXPERIENCE\n${d.pr}`);
             return p.join("\n\n---\n\n");
         };
-        
+
         const mkP = (k, l) => {
             if (!st[k]) return;
             const p = el("div", l, rw, { class: "jc-pill", "data-active": !0 });
-            p.onclick = () => { 
-                st[k] = !st[k]; 
-                p.setAttribute("data-active", st[k]); 
-                ta.value = gTxt(); 
+            p.onclick = () => {
+                st[k] = !st[k];
+                p.setAttribute("data-active", st[k]);
+                ta.value = gTxt();
             };
         };
-        
-        mkP("m", "Metadata"); 
-        mkP("d", "Description"); 
-        mkP("q", "Questions"); 
+
+        mkP("m", "Metadata");
+        mkP("d", "Description");
+        mkP("q", "Questions");
         mkP("p", "Profile");
-        
+
         ta.value = gTxt();
         initUI("Data Extractor", null, c, gTxt);
 
@@ -224,14 +224,14 @@
         el("div", "", document.body, { id: oId, class: "jc-overlay" });
         const mo = el("div", "", document.body, { id: mId, class: "jc-modal" });
         el("h2", "Telework Scanner", mo, { class: "jc-header" });
-        
+
         const pe = el("div", "Initializing scan...", mo, { class: "jc-progress" });
-        const dt = await Ext.l((c, t, n) => { 
-            pe.innerHTML = `Fetching Job ${c} of ${t}...<br><span style="font-size:12px">${n}</span>`; 
+        const dt = await Ext.l((c, t, n) => {
+            pe.innerHTML = `Fetching Job ${c} of ${t}...<br><span style="font-size:12px">${n}</span>`;
         });
-        
+
         mo.remove();
-        
+
         const c = el("div", "", null, { class: "jc-scroll-list" });
         if (!dt.m.length) {
             c.innerHTML = "<div style=\"text-align:center;padding:40px\">No matches detected.</div>";
@@ -244,10 +244,10 @@
                 el("div", `"...${hs}..."`, i, { class: "jc-item-snippet" });
             });
         }
-        
+
         const hd = dt.m.length ? `Found ${dt.m.length} Remote/Hybrid jobs (out of ${dt.tot})` : `No Telework/Hybrid jobs found (out of ${dt.tot}).`;
         initUI("Telework Scanner", hd, c, () => {
-            return "### TELEWORK / HYBRID SCAN\nFound " + dt.m.length + " matching jobs out of " + dt.tot + " scanned.\n\n" + 
+            return "### TELEWORK / HYBRID SCAN\nFound " + dt.m.length + " matching jobs out of " + dt.tot + " scanned.\n\n" +
             dt.m.map((m, i) => `**${i + 1}. ${m.ti}**\n**Link:** ${m.ln}\n**Details:** ${m.me}\n**Policy:**\n> "...${m.s}..."`).join("\n\n---\n\n");
         });
     } else {
