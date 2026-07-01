@@ -5,7 +5,7 @@
                  const n = context.querySelector(s);
                  if (n && n.textContent) return n.textContent.replace(/\s+/g, " ").trim();
 -            } catch { /* ignore */ }
-+            } catch (e) { /* eslint-disable-line no-unused-vars */ }
++            } catch (e) { void e; /* ignore */ }
          }
          return "";
      };
@@ -14,7 +14,7 @@
                          m.push({ ti, ln, me, s: mt.length > 800 ? mt.substring(0, 800) + "..." : mt });
                      }
 -                } catch { /* ignore */ }
-+                } catch (e) { /* eslint-disable-line no-unused-vars */ }
++                } catch (e) { void e; /* ignore */ }
              }
              return { tot: it.length, m };
          }

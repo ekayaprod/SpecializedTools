@@ -21,7 +21,7 @@
             try {
                 const n = context.querySelector(s);
                 if (n && n.textContent) return n.textContent.replace(/\s+/g, " ").trim();
-            } catch (e) { /* eslint-disable-line no-unused-vars */ }
+            } catch (e) { void e; /* ignore */ }
         }
         return "";
     };
@@ -157,7 +157,7 @@
                         const mt = cln.split("\n").filter(x => rx.test(x)).map(x => x.trim()).join(" [...] ");
                         m.push({ ti, ln, me, s: mt.length > 800 ? mt.substring(0, 800) + "..." : mt });
                     }
-                } catch (e) { /* eslint-disable-line no-unused-vars */ }
+                } catch (e) { void e; /* ignore */ }
             }
             return { tot: it.length, m };
         }
