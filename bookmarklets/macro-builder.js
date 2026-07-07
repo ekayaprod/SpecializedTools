@@ -58,34 +58,60 @@
                 'input.delay{width:40px;background:#0f172a;border:1px solid #334155;color:#fff;border-radius:4px;padding:2px;font-size:11px;text-align:center}' +
                 '.empty-msg{text-align:center;color:#64748b;padding:30px 20px;display:flex;flex-direction:column;align-items:center;gap:10px}' +
                 '.cfg-grp{margin-bottom:10px;padding:10px;background:#0f172a;border-radius:6px;border:1px solid #334155}' +
-                '</style>' +
+                '.btn-close{background:transparent;border:none;color:#e2e8f0;font-size:14px;cursor:pointer;padding:0;width:auto;margin:0;transition:all 0.3s ease;}' +
+                '.btn-close:hover{color:#fff;transform:scale(1.1);}' +
+                '.btn-close:focus-visible{outline:none;box-shadow:0 0 0 2px #3b82f6;border-radius:2px;}' +
+                '.btn-export{background:#db2777;}' +
+                '.btn-export:hover{background:#be185d;}' +
+                '.preview-modal{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#1e293b;padding:20px;border-radius:12px;border:2px solid #a855f7;box-shadow:0 25px 50px rgba(0,0,0,0.8);width:80%;text-align:center;z-index:9999;}' +
+                '.preview-title{font-weight:bold;margin-bottom:10px;}' +
+                '.preview-tag{color:#94a3b8;font-size:12px;margin-bottom:5px;}' +
+                '.preview-sel{color:#c7d2fe;font-size:11px;margin-bottom:15px;word-break:break-all;}' +
+                '.opts-div{margin-bottom:15px;text-align:left;background:#0f172a;padding:10px;border-radius:6px;border:1px solid #334155;}' +
+                '.opts-label{display:block;margin-bottom:5px;font-size:11px;color:#cbd5e1;}' +
+                '.opts-input{width:100%;margin-bottom:10px;}' +
+                '.opts-checks{display:flex;gap:10px;font-size:11px;color:#cbd5e1;}' +
+                '.action-btns{display:flex;gap:5px;justify-content:center;}' +
+                '.btn-sm{width:auto;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;color:white;font-size:12px;transition:all 0.3s ease-in-out;}' +
+                '.btn-sm:hover{transform:translateY(-1px);box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);}' +
+                '.btn-sm:active{transform:scale(0.95);}' +
+                '.btn-sm:focus-visible{outline:none;box-shadow:0 0 0 2px #fff, 0 0 0 4px #3b82f6;}' +
+                '.btn-blue{background:#0ea5e9;}' +
+                '.btn-blue:hover{background:#0284c7;}' +
+                '.btn-green{background:#059669;}' +
+                '.btn-green:hover{background:#047857;}' +
+                '.btn-red{background:#ef4444;}' +
+                '.btn-red:hover{background:#dc2626;}' +
+                'button:focus-visible{outline:none;box-shadow:0 0 0 2px #1e293b, 0 0 0 4px #4f46e5;}' +
+                'input:focus-visible{outline:none;border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,0.3);}' +
+'</style>' +
                 '<div class="box">' +
-                '<div class="row" id="drag"><h3>Macro Builder</h3><button id="x" aria-label="Close Macro Builder" style="background:transparent;border:none;color:#e2e8f0;font-size:14px;cursor:pointer;padding:0;width:auto;margin:0;">✕</button></div>' +
+                '<div class="row" id="drag"><h3>Macro Builder</h3><button id="x" aria-label="Close Macro Builder" class="btn-close">✕</button></div>' +
                 '<div id="view_steps">' +
                 '<div id="list" class="list"><div class="empty-msg"><div style="font-size:24px;margin-bottom:8px">🤖</div><div style="font-weight:500;color:#94a3b8">No steps yet.</div><div style="font-size:11px;opacity:0.7">Click "Add Sequence" to start recording actions.</div></div></div>' +
                 '<button id="add" aria-label="Add Macro Sequence">➕ Add Sequence</button>' +
-                '<button id="exp" aria-label="Export Macro" style="background:#db2777">⚡ Export</button>' +
+                '<button id="exp" aria-label="Export Macro" class="btn-export">⚡ Export</button>' +
                 '<div id="out" class="export-area" style="display:none">' +
                 '<p style="text-align:center;color:#e2e8f0;margin:0 0 10px 0">Drag to toolbar:</p>' +
                 '<a id="lnk" href="#" class="bm-btn">🤖 Macro</a>' +
                 '</div>' +
                 '</div>' +
-                '<div id="preview" class="hidden" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#1e293b;padding:20px;border-radius:12px;border:2px solid #a855f7;box-shadow:0 25px 50px rgba(0,0,0,0.8);width:80%;text-align:center;z-index:9999">' +
-                '<div style="font-weight:bold;margin-bottom:10px">Confirm Selection</div>' +
-                '<div id="prev_tag" style="color:#94a3b8;font-size:12px;margin-bottom:5px"></div>' +
-                '<div id="prev_sel" style="color:#c7d2fe;font-size:11px;margin-bottom:15px;word-break:break-all"></div>' +
-                '<div id="prev_input_opts" class="hidden" style="margin-bottom:15px;text-align:left;background:#0f172a;padding:10px;border-radius:6px;border:1px solid #334155">' +
-                '<label style="display:block;margin-bottom:5px;font-size:11px;color:#cbd5e1">Value (Empty to click):</label>' +
-                '<input id="prev_val" type="text" style="width:100%;margin-bottom:10px" placeholder="Enter value...">' +
-                '<div style="display:flex;gap:10px;font-size:11px;color:#cbd5e1">' +
+                '<div id="preview" class="hidden preview-modal">' +
+                '<div class="preview-title">Confirm Selection</div>' +
+                '<div id="prev_tag" class="preview-tag"></div>' +
+                '<div id="prev_sel" class="preview-sel"></div>' +
+                '<div id="prev_input_opts" class="hidden opts-div">' +
+                '<label class="opts-label">Value (Empty to click):</label>' +
+                '<input id="prev_val" type="text" class="opts-input" placeholder="Enter value...">' +
+                '<div class="opts-checks">' +
                 '<label><input id="prev_ask" type="checkbox"> Prompt on Run?</label>' +
                 '<label><input id="prev_enter" type="checkbox"> Press Enter?</label>' +
                 '</div>' +
                 '</div>' +
-                '<div style="display:flex;gap:5px;justify-content:center">' +
-                '<button id="prev_yes_next" aria-label="Confirm & Next" style="background:#0ea5e9;width:auto;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;color:white;font-size:12px">Confirm & Next</button>' +
-                '<button id="prev_yes_finish" aria-label="Confirm & Finish" style="background:#059669;width:auto;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;color:white;font-size:12px">Confirm & Finish</button>' +
-                '<button id="prev_no" aria-label="Retry Selection" style="background:#ef4444;width:auto;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;color:white;font-size:12px">Retry</button>' +
+                '<div class="action-btns">' +
+                '<button id="prev_yes_next" aria-label="Confirm & Next" class="btn-sm btn-blue">Confirm & Next</button>' +
+                '<button id="prev_yes_finish" aria-label="Confirm & Finish" class="btn-sm btn-green">Confirm & Finish</button>' +
+                '<button id="prev_no" aria-label="Retry Selection" class="btn-sm btn-red">Retry</button>' +
                 '</div>' +
                 '</div>' +
                 '</div>';
