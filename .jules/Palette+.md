@@ -50,3 +50,14 @@
 *   All UI and snapshot tests passed successfully natively.
 *   Cross-browser structural integrity verified via Playwright screenshot.
 *   Interactions recorded in Playwright video trace.
+
+## Design Manifest: Job Clipper, Macro Builder & PA County Finder
+**Date:** 2024-04-12
+**Target:** \`bookmarklets/job-clipper.js\`, \`bookmarklets/macro-builder.js\`, \`bookmarklets/pa-county-finder.js\`
+**Pattern Injections:**
+- Elevated \`focus-visible\` states replacing default browser outlines for WCAG keyboard accessibility.
+- Integrated fluid \`transition: all 0.3s ease-in-out\` on interactive hover states.
+- Injected \`transform: scale(0.95)\` active states for a tactile click feel.
+- Cleaned up inline CSS in \`macro-builder.js\` by replacing them with utility classes (e.g. \`.btn-close\`, \`.preview-modal\`).
+- Softened border-radius in \`pa-county-finder.js\` (from 6px to 8px for buttons, and 12px to 16px for card borders).
+- Enhanced empty state visualization in \`job-clipper.js\` by adding an icon, descriptive subcopy, and flex alignments.
