@@ -219,8 +219,11 @@
         },
     };
 
+    // 🕯️ CHRONICLE: AST reasoning explains the logic; Git history explains the business intent.
     /**
-     * Processes a <picture> element to ensure the fallback <img> has a valid src.
+     * Processes a `<picture>` element to ensure the fallback `<img>` has a valid `src`.
+     * Inspects `<source>` elements to correctly fall back when lazy loaded sources are active.
+     * * Historical Intent: Enhanced via PR #473 (Jul 2026) to handle complex `<picture>` tags where standard `src` attributes are hidden.
      * @param {HTMLElement} pic - The picture element.
      */
     function processPictureElement(pic) {
@@ -237,8 +240,11 @@
         }
     }
 
+    // 🕯️ CHRONICLE: AST reasoning explains the logic; Git history explains the business intent.
     /**
      * Processes an <img> element to resolve lazy loading and stabilize dimensions.
+     * Evaluates data attributes (`data-src`, `data-lazy-src`) and sets the `src` attribute.
+     * * Historical Intent: Enhanced via PR #473 (Jul 2026) to improve structural UI boundaries and guarantee valid images are passed to extraction tasks.
      * @param {HTMLImageElement} img - The image element.
      */
     function processImageElement(img) {
