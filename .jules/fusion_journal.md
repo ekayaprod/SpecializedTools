@@ -20,3 +20,7 @@
 ## Prompt Engineer — The Context Alchemist
 **Learning:** Foundational AI instruction payloads (STR, Janitor, Librarian) lacked explicit cognitive boundaries and domain-grounded personas, which increases the likelihood of hallucination or non-deterministic behavior during execution. Generic personas often result in generic logic output.
 **Action:** Injected strict CORTEX directives, domain-specific expert personas, explicit negative constraints (e.g., forbidding modification of test files, prohibiting hallucinated CapEx metrics), and mandatory `<thinking>` blocks into `str-objective.md`, `janitor.md`, and `librarian.md`. This locks execution logic into highly deterministic cognitive pathways.
+
+## Prompt Engineer — The Context Alchemist
+**Learning:** Core infrastructure agents (Scavenger, Steward, Navigator) lacked explicit CORTEX headers and domain-grounded expert personas, allowing them to potentially hallucinate destructive tasks, modify test logic, or lose track of system architecture.
+**Action:** Transmuted `.jules/scavenger.md`, `.jules/steward.md`, and `.jules/navigator.md` to inject strict CORTEX directives, upgrade their personas to explicit senior technical titles (e.g., 'The Senior Forensic Code Analyst'), enforce explicit negative constraints against modifying tests or hallucinating roadmap targets, and injected `<thinking>` block requirements before mutating state.
