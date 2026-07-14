@@ -84,15 +84,21 @@
                 '.btn-red:hover{background:#dc2626;}' +
                 'button:focus-visible{outline:none;box-shadow:0 0 0 2px #1e293b, 0 0 0 4px #4f46e5;}' +
                 'input:focus-visible{outline:none;border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,0.3);}' +
+                '.empty-msg-icon{font-size:24px;margin-bottom:8px}' +
+                '.empty-msg-text{font-weight:500;color:#94a3b8}' +
+                '.empty-msg-sub{font-size:11px;opacity:0.7}' +
+                '.export-msg{text-align:center;color:#e2e8f0;margin:0 0 10px 0}' +
+                '.seq-title{font-weight:bold;font-size:11px}' +
+                '.wait-label{font-size:10px;color:#a5b4fc}' +
 '</style>' +
                 '<div class="box">' +
                 '<div class="row" id="drag"><h3>Macro Builder</h3><button id="x" aria-label="Close Macro Builder" class="btn-close">✕</button></div>' +
                 '<div id="view_steps">' +
-                '<div id="list" class="list"><div class="empty-msg"><div style="font-size:24px;margin-bottom:8px">🤖</div><div style="font-weight:500;color:#94a3b8">No steps yet.</div><div style="font-size:11px;opacity:0.7">Click "Add Sequence" to start recording actions.</div></div></div>' +
+                '<div id="list" class="list"><div class="empty-msg"><div class="empty-msg-icon">🤖</div><div class="empty-msg-text">No steps yet.</div><div class="empty-msg-sub">Click "Add Sequence" to start recording actions.</div></div></div>' +
                 '<button id="add" aria-label="Add Macro Sequence">➕ Add Sequence</button>' +
                 '<button id="exp" aria-label="Export Macro" class="btn-export">⚡ Export</button>' +
-                '<div id="out" class="export-area" style="display:none">' +
-                '<p style="text-align:center;color:#e2e8f0;margin:0 0 10px 0">Drag to toolbar:</p>' +
+                '<div id="out" class="export-area hidden">' +
+                '<p class="export-msg">Drag to toolbar:</p>' +
                 '<a id="lnk" href="#" class="bm-btn">🤖 Macro</a>' +
                 '</div>' +
                 '</div>' +
@@ -300,7 +306,7 @@
         refreshList() {
             const l = this.q('#list');
             if (this.steps.length === 0) {
-                l.innerHTML = '<div class="empty-msg"><div style="font-size:24px;margin-bottom:8px">🤖</div><div style="font-weight:500;color:#94a3b8">No steps yet.</div><div style="font-size:11px;opacity:0.7">Click "Add Sequence" to start recording actions.</div></div>';
+                l.innerHTML = '<div class="empty-msg"><div class="empty-msg-icon">🤖</div><div class="empty-msg-text">No steps yet.</div><div class="empty-msg-sub">Click "Add Sequence" to start recording actions.</div></div>';
                 return;
             }
             l.innerHTML = '';
@@ -323,9 +329,9 @@
                     <div class="step-row">
                         <div class="step-idx">${i + 1}</div>
                         <div class="step-info">
-                            <div style="font-weight:bold;font-size:11px">Sequence ${i + 1}</div>
+                            <div class="seq-title">Sequence ${i + 1}</div>
                         </div>
-                        <div style="font-size:10px;color:#a5b4fc">Wait(s)</div>
+                        <div class="wait-label">Wait(s)</div>
                         <input type="number" class="delay" value="${s.delay}" data-idx="${i}">
                         <div class="step-del" data-idx="${i}">✕</div>
                     </div>
@@ -394,7 +400,7 @@
                         this.h.id = this.id;
                         this.h.style.cssText = 'position:fixed;top:15px;right:15px;z-index:2147483647;font-family:system-ui,sans-serif';
                         this.s = this.h.attachShadow({mode:'open'});
-                        this.s.innerHTML = '<style>:host{all:initial;font-family:system-ui,sans-serif}.box{background:var(--mb-bg, #1e293b);color:var(--mb-text, #f8fafc);width:240px;padding:16px;border-radius:16px;box-shadow:0 25px 50px -12px rgba(0, 0, 0, 0.5);border:1px solid #4338ca;font-size:13px}.row{display:flex;justify-content:space-between;align-items:center;cursor:move;user-select:none;padding-bottom:5px;border-bottom:1px solid #334155;margin-bottom:10px}.timer{font-size:32px;text-align:center;color:#a5b4fc;margin:10px 0;font-family:monospace}button{width:100%;background:#ef4444;color:#fff;border:none;padding:8px;border-radius:8px;cursor:pointer;transition:all 0.3s ease-in-out}button:hover{transform:translateY(-1px);box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1)}button:active{transform:scale(0.95)}</style><div class="box"><div class="row" id="drag"><b>RUNNING</b><button id="x" aria-label="Close Macro Runtime" style="background:transparent;border:none;color:#e2e8f0;font-size:14px;cursor:pointer;padding:0;width:auto;margin:0;box-shadow:none;transform:none">✕</button></div><div style="text-align:center;color:#c7d2fe;font-size:11px" id="st">Initializing...</div><div class="timer" id="tm">00:00</div><button id="cn" aria-label="Stop Macro">Stop</button></div>';
+                        this.s.innerHTML = '<style>:host{all:initial;font-family:system-ui,sans-serif}.box{background:var(--mb-bg, #1e293b);color:var(--mb-text, #f8fafc);width:240px;padding:16px;border-radius:16px;box-shadow:0 25px 50px -12px rgba(0, 0, 0, 0.5);border:1px solid #4338ca;font-size:13px}.row{display:flex;justify-content:space-between;align-items:center;cursor:move;user-select:none;padding-bottom:5px;border-bottom:1px solid #334155;margin-bottom:10px}.timer{font-size:32px;text-align:center;color:#a5b4fc;margin:10px 0;font-family:monospace}button{width:100%;background:#ef4444;color:#fff;border:none;padding:8px;border-radius:8px;cursor:pointer;transition:all 0.3s ease-in-out}button:hover{transform:translateY(-1px);box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1)}button:active{transform:scale(0.95)}.btn-close{background:transparent;border:none;color:#e2e8f0;font-size:14px;cursor:pointer;padding:0;width:auto;margin:0;box-shadow:none;transform:none}.status-text{text-align:center;color:#c7d2fe;font-size:11px}</style><div class="box"><div class="row" id="drag"><b>RUNNING</b><button id="x" aria-label="Close Macro Runtime" class="btn-close">✕</button></div><div class="status-text" id="st">Initializing...</div><div class="timer" id="tm">00:00</div><button id="cn" aria-label="Stop Macro">Stop</button></div>';
                         this.q = s => this.s.querySelector(s);
                         this.q('#x').onclick = () => this.destroy();
                         this.q('#cn').onclick = () => this.destroy();
