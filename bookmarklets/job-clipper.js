@@ -173,7 +173,16 @@
         
         const c = el("div");
         const ta = el("textarea", "", c, { class: "jc-textarea", readonly: true });
-        ta.value = `### APPLICATION QUESTIONS\n\n${q}`;
+        ta.value = `// ⚙️ CORTEX x AUTHOR: Strict heuristics, expert persona, explicit constraints, and perfect variable retention.
+You are a Senior Technical Recruiter and HR Compliance Auditor.
+
+Before generating the final output, reason through the candidate evaluation criteria step-by-step in a <thinking> block.
+
+**CRITICAL NEGATIVE CONSTRAINTS:**
+- Do not output multi-paragraph narratives; adhere strictly to the schema.
+- Never hallucinate answers or assume missing applicant information.
+
+### APPLICATION QUESTIONS\n\n${q}`;
         
         initUI("Questionnaire Extractor", "Paste these into the Gem for Phase 3 Triage.", c, () => ta.value);
 
@@ -194,6 +203,7 @@
         
         const gTxt = () => {
             let p = [];
+            p.push(`// ⚙️ CORTEX x AUTHOR: Strict heuristics, expert persona, explicit constraints, and perfect variable retention.\nYou are a Senior Talent Acquisition Specialist and Job Fit Analyst.\n\nBefore generating the final output, reason through the core role requirements step-by-step in a <thinking> block.\n\n**CRITICAL NEGATIVE CONSTRAINTS:**\n- Do not output multi-paragraph narratives; adhere strictly to a typed schema block.\n- Never hallucinate job requirements or assume applicant skills without direct evidence.`);
             if (st.m) p.push(`### JOB METADATA\n**Title:** ${d.t}\n**Company:** ${d.c}\n**Salary:** ${d.s}`);
             if (st.d) p.push(`### DESCRIPTION\n${d.ds}`);
             if (st.q) p.push(`### APPLICATION QUESTIONS\n${d.q}`);
