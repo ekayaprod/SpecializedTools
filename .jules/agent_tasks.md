@@ -24,8 +24,8 @@
 - [ ] 🎨 `bookmarklets/macro-builder.js`: Extensive inline style attributes polluting structural HTML strings. Needs decoupled CSS classes.
 
 ## 🧹 Semantic Dust & Hygiene ([AST / REMOVE])
-- [ ] 🧹 `bookmarklets/macro-builder.js`: Unreferenced diagnostic droppings and dynamic console wrappers. Requires excision.
-- [ ] 🧹 `bookmarklets/utils.js`: Diagnostic droppings and console examples inside code. Requires excision or documentation cleanup.
+- [x] 🧹 `bookmarklets/macro-builder.js`: Unreferenced diagnostic droppings and dynamic console wrappers. Requires excision.
+- [x] 🧹 `bookmarklets/utils.js`: Diagnostic droppings and console examples inside code. Requires excision or documentation cleanup.
 
 ## 🛡️ Resilience & Security Boundaries ([Security / HARDEN])
 - [ ] 🛡️ `mailto-link-generator/js/msgreader.js`: Bare catch blocks (`catch {`) discarding error context. Requires explicit error handling.

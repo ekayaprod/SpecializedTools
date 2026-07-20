@@ -16,12 +16,7 @@
             this.init();
         }
 
-        _log(msg, data) {
-            BookmarkletUtils.log('MacroBuilder', msg, data);
-        }
-
         init() {
-            this._log('Initialized', { id: this.id });
             const cssText =
                 'position:fixed;top:15px;right:15px;z-index:2147483647;font-family:system-ui,sans-serif';
             const { h, s } = BookmarkletUtils.createShadowRoot(null, cssText);
@@ -173,7 +168,6 @@
         }
 
         startSequence() {
-            this._log('Sequence picking started');
             this.currentSequence = [];
             this.pick('sequence');
         }
@@ -252,7 +246,6 @@
                 }
 
                 const handleConfirm = (nextAction) => {
-                    this._log('Element picked', { tag: targetEl.tagName, sel: sel });
                     this.q('#preview').classList.add('hidden');
                     this.clearListeners();
 
@@ -349,11 +342,9 @@
                     this.refreshList();
                 };
             });
-            this._log('Step list refreshed', { steps: this.steps.length });
         }
 
         compile() {
-            this._log('Compiling macro', { steps: this.steps.length });
             if (this.steps.length === 0) return BookmarkletUtils.showToast('Add steps first', 'error');
 
             this.steps.forEach((step) => {
@@ -379,23 +370,7 @@
                         this.id = 'run-'+Math.random().toString(36).slice(2);
                         this.init();
                     }
-                    _log(msg, data, level) {
-                        data = data || {};
-                        level = level || 'info';
-                        const safeData = {};
-                        for (const k in data) {
-                             if (/password|token|secret|key|auth|email|phone/i.test(k)) safeData[k] = '***REDACTED***';
-                             else safeData[k] = data[k];
-                        }
-                        (console[level] || console.log)('[MacroRuntime] ' + msg, safeData);
-                    }
                     init(){
-                        this._log('Initialized', {
-                            id: this.id,
-                            stepCount: steps.length,
-                            userAgent: navigator.userAgent,
-                            windowSize: window.innerWidth + 'x' + window.innerHeight
-                        });
                         this.h = document.createElement('div');
                         this.h.id = this.id;
                         this.h.style.cssText = 'position:fixed;top:15px;right:15px;z-index:2147483647;font-family:system-ui,sans-serif';
@@ -416,8 +391,7 @@
                         head.onmousedown = dragMouseDown;
                     }
                     async run(){
-                        this._log('Execution started');
-                        try { if('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch(e){ this._log('Wake Lock failed', { error: e.message, type: e.name }, 'warn'); }
+                        try { if('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch(e){ console.warn('Wake Lock failed:', e); }
                         const wait = ms => new Promise(r => setTimeout(r, ms));
 
                         const queryDeep = (selector, root = document) => {
@@ -468,7 +442,6 @@
 
                         for(let i=0; i<steps.length; i++){
                             const group = steps[i];
-                            this._log('Starting step', { index: i + 1, total: steps.length, delay: group.delay });
                             this.q('#st').innerText = 'Step '+(i+1)+'/'+steps.length;
 
                             let rem = group.delay * 1000;
@@ -485,7 +458,6 @@
                             this.q('#tm').innerText = 'Running...';
                             for(let j=0; j<group.actions.length; j++) {
                                 const action = group.actions[j];
-                                this._log('Executing action', { index: j + 1, sel: action.sel });
 
                                 if(j === 1) {
                                    await ensureTopLevel();
@@ -495,12 +467,10 @@
 
                                 if(!el) {
                                     const err = { step: i+1, action: j+1, sel: action.sel, url: window.location.href };
-                                    this._log('Element not found', err, 'error');
                                     this.q('#st').innerText = 'Error: Step '+(i+1)+' Sub-action '+(j+1)+' Failed';
                                     this.q('#st').style.color = '#ef4444';
                                     return;
                                 }
-                                this._log('Element found', { sel: action.sel });
 
                                 if(action.val !== null || action.ask){
                                     let v = action.val;
@@ -524,7 +494,6 @@
                         }
                         this.q('#tm').innerText = 'Done';
                         this.q('#st').innerText = 'Finished';
-                        this._log('Execution finished');
                         setTimeout(()=>this.destroy(), 3000);
                     }
                     destroy(){ this.h.remove(); delete window.__mb_run; }

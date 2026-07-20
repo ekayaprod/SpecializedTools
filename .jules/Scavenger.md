@@ -5,3 +5,7 @@
 - `console.warn('Property Details Extraction Failed (NextData):', e);` in `bookmarklets/property-clipper.js`
 - `console.warn('Property Details Extraction Failed (RawPre):', e);` in `bookmarklets/property-clipper.js`
 - `console.warn('Image load failed:', { url, error: e });` in `bookmarklets/property-clipper.js`
+
+**Category:** Diagnostic Droppings
+**Targets Removed:**
+- Excision of `_log` helper and native `console.log` wrappers in `bookmarklets/macro-builder.js` and `bookmarklets/utils.js` (including docstring examples).
