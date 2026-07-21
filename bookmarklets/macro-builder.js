@@ -16,12 +16,7 @@
             this.init();
         }
 
-        _log(msg, data) {
-            BookmarkletUtils.log('MacroBuilder', msg, data);
-        }
-
         init() {
-            this._log('Initialized', { id: this.id });
             const cssText =
                 'position:fixed;top:15px;right:15px;z-index:2147483647;font-family:system-ui,sans-serif';
             const { h, s } = BookmarkletUtils.createShadowRoot(null, cssText);
@@ -33,66 +28,75 @@
         render() {
             this.s.innerHTML =
                 '<style>' +
-                ':host{all:initial;font-family:system-ui,sans-serif}' +
-                '.box{background:var(--mb-bg, #1e293b);color:var(--mb-text, #f8fafc);width:320px;padding:16px;border-radius:16px;box-shadow:0 25px 50px -12px rgba(0, 0, 0, 0.5);border:1px solid #4338ca;font-size:13px;box-sizing:border-box}' +
-                '.row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;cursor:move;user-select:none;padding-bottom:5px;border-bottom:1px solid #334155}' +
-                'h3,b{margin:0;color:#f8fafc;font-size:14px;font-weight:700}' +
-                'button{width:100%;background:#4f46e5;color:#fff;border:none;padding:10px;border-radius:8px;cursor:pointer;font-weight:600;margin-top:8px;transition:all 0.3s ease-in-out}' +
-                'button:hover{background:#4338ca;transform:translateY(-1px);box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1)}' +
+                ':host{all:initial;font-family:system-ui,sans-serif;--mb-bg:#1e293b;--mb-bg-alt:#0f172a;--mb-border:#334155;--mb-primary:#4f46e5;--mb-primary-hover:#4338ca;--mb-text:#f8fafc;--mb-text-muted:#64748b;--mb-text-sub:#cbd5e1;--mb-success:#059669;--mb-success-hover:#047857;--mb-danger:#ef4444;--mb-danger-hover:#dc2626;--mb-highlight:#3b82f6;--mb-ring:rgba(59,130,246,0.4);--mb-shadow:0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2);--mb-radius-xl:16px;--mb-radius-md:8px;}' +
+                '.box{background:var(--mb-bg);color:var(--mb-text);width:320px;padding:20px;border-radius:var(--mb-radius-xl);box-shadow:var(--mb-shadow);border:1px solid var(--mb-border);font-size:13px;box-sizing:border-box}' +
+                '.row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;cursor:move;user-select:none;padding-bottom:8px;border-bottom:1px solid var(--mb-border)}' +
+                'h3,b{margin:0;color:var(--mb-text);font-size:15px;font-weight:700}' +
+                'button{width:100%;background:var(--mb-primary);color:#fff;border:none;padding:10px;border-radius:var(--mb-radius-md);cursor:pointer;font-weight:600;margin-top:8px;transition:all 0.3s ease-in-out}' +
+                'button:hover{background:var(--mb-primary-hover);transform:translateY(-1px);box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1)}' +
                 'button:active{transform:scale(0.95)}' +
-                'button:disabled{background:#334155;color:#64748b;cursor:not-allowed}' +
-                'button.alt{background:#1e293b;border:1px solid #4f46e5}' +
-                'input{width:100%;background:#1e293b;color:#fff;border:1px solid #334155;padding:8px;border-radius:6px;box-sizing:border-box;margin-top:5px;outline:none}' +
-                'input:focus{border-color:#3b82f6}' +
+                'button:disabled{background:var(--mb-border);color:var(--mb-text-muted);cursor:not-allowed}' +
+                'button.alt{background:var(--mb-bg);border:1px solid var(--mb-primary)}' +
+                'input{width:100%;background:var(--mb-bg);color:var(--mb-text);border:1px solid var(--mb-border);padding:10px;border-radius:6px;box-sizing:border-box;margin-top:5px;outline:none;transition:all 0.3s ease}' +
+                'input:focus{border-color:var(--mb-highlight)}' +
                 '.hidden{display:none!important}' +
-                '.list{max-height:200px;overflow-y:auto;margin:15px 0;background:#1e293b;border-radius:6px;padding:5px;border:1px solid #334155}' +
-                '.step{background:#0f172a;padding:8px;margin-bottom:5px;border-radius:4px;border:1px solid #334155;display:flex;flex-direction:column;gap:5px}' +
-                '.step-row{display:flex;align-items:center;gap:8px}' +
-                '.step-idx{background:#4f46e5;color:#fff;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}' +
+                '.list{max-height:220px;overflow-y:auto;margin:15px 0;background:var(--mb-bg);border-radius:6px;padding:8px;border:1px solid var(--mb-border);display:flex;flex-direction:column;gap:8px}' +
+                '.step{background:var(--mb-bg-alt);padding:10px;border-radius:6px;border:1px solid var(--mb-border);display:flex;flex-direction:column;gap:8px;transition:all 0.3s ease}' +
+                '.step:hover{border-color:var(--mb-primary)}' +
+                '.step-row{display:flex;align-items:center;gap:10px}' +
+                '.step-idx{background:var(--mb-primary);color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;flex-shrink:0}' +
                 '.step-info{flex-grow:1;overflow:hidden}' +
-                '.step-sel{font-family:monospace;color:#64748b;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
-                '.step-del{cursor:pointer;color:#ef4444;font-size:14px}' +
-                '.export-area{margin-top:15px;border-top:1px solid #334155;padding-top:10px}' +
-                '.bm-btn{display:block;background:#059669;color:#fff;text-align:center;padding:10px;border-radius:6px;text-decoration:none;font-weight:bold;border:2px dashed #34d399}' +
-                '.bm-btn:hover{background:#047857}' +
-                'input.delay{width:40px;background:#0f172a;border:1px solid #334155;color:#fff;border-radius:4px;padding:2px;font-size:11px;text-align:center}' +
-                '.empty-msg{text-align:center;color:#64748b;padding:30px 20px;display:flex;flex-direction:column;align-items:center;gap:10px}' +
-                '.cfg-grp{margin-bottom:10px;padding:10px;background:#0f172a;border-radius:6px;border:1px solid #334155}' +
-                '.btn-close{background:transparent;border:none;color:#e2e8f0;font-size:14px;cursor:pointer;padding:0;width:auto;margin:0;transition:all 0.3s ease;}' +
+                '.step-sel{font-family:monospace;color:var(--mb-text-muted);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+                '.step-del{cursor:pointer;color:var(--mb-danger);font-size:16px;transition:color 0.2s}' +
+                '.step-del:hover{color:var(--mb-danger-hover)}' +
+                '.export-area{margin-top:20px;border-top:1px solid var(--mb-border);padding-top:16px}' +
+                '.bm-btn{display:block;background:var(--mb-success);color:#fff;text-align:center;padding:12px;border-radius:8px;text-decoration:none;font-weight:bold;border:2px dashed #34d399;transition:all 0.3s ease}' +
+                '.bm-btn:hover{background:var(--mb-success-hover);transform:scale(1.02)}' +
+                'input.delay{width:48px;background:var(--mb-bg-alt);border:1px solid var(--mb-border);color:#fff;border-radius:4px;padding:4px;font-size:12px;text-align:center}' +
+                '.empty-msg{text-align:center;color:var(--mb-text-muted);padding:40px 20px;display:flex;flex-direction:column;align-items:center;gap:12px}' +
+                '.cfg-grp{margin-bottom:12px;padding:12px;background:var(--mb-bg-alt);border-radius:6px;border:1px solid var(--mb-border)}' +
+                '.btn-close{background:transparent;border:none;color:var(--mb-text-sub);font-size:16px;cursor:pointer;padding:4px;width:auto;margin:0;transition:all 0.3s ease;}' +
                 '.btn-close:hover{color:#fff;transform:scale(1.1);}' +
-                '.btn-close:focus-visible{outline:none;box-shadow:0 0 0 2px #3b82f6;border-radius:2px;}' +
+                '.btn-close:focus-visible{outline:none;box-shadow:0 0 0 2px var(--mb-highlight);border-radius:4px;}' +
                 '.btn-export{background:#db2777;}' +
                 '.btn-export:hover{background:#be185d;}' +
-                '.preview-modal{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#1e293b;padding:20px;border-radius:12px;border:2px solid #a855f7;box-shadow:0 25px 50px rgba(0,0,0,0.8);width:80%;text-align:center;z-index:9999;}' +
-                '.preview-title{font-weight:bold;margin-bottom:10px;}' +
-                '.preview-tag{color:#94a3b8;font-size:12px;margin-bottom:5px;}' +
-                '.preview-sel{color:#c7d2fe;font-size:11px;margin-bottom:15px;word-break:break-all;}' +
-                '.opts-div{margin-bottom:15px;text-align:left;background:#0f172a;padding:10px;border-radius:6px;border:1px solid #334155;}' +
-                '.opts-label{display:block;margin-bottom:5px;font-size:11px;color:#cbd5e1;}' +
-                '.opts-input{width:100%;margin-bottom:10px;}' +
-                '.opts-checks{display:flex;gap:10px;font-size:11px;color:#cbd5e1;}' +
-                '.action-btns{display:flex;gap:5px;justify-content:center;}' +
-                '.btn-sm{width:auto;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;color:white;font-size:12px;transition:all 0.3s ease-in-out;}' +
+                '.preview-modal{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--mb-bg);padding:24px;border-radius:var(--mb-radius-xl);border:1px solid var(--mb-border);box-shadow:var(--mb-shadow);width:85%;text-align:center;z-index:9999;animation:pa-fade-in 0.2s ease-out}' +
+                '.preview-title{font-weight:bold;font-size:16px;margin-bottom:12px;}' +
+                '.preview-tag{color:var(--mb-text-muted);font-size:12px;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}' +
+                '.preview-sel{color:#c7d2fe;font-size:12px;margin-bottom:20px;word-break:break-all;padding:8px;background:var(--mb-bg-alt);border-radius:4px}' +
+                '.opts-div{margin-bottom:20px;text-align:left;background:var(--mb-bg-alt);padding:12px;border-radius:8px;border:1px solid var(--mb-border);}' +
+                '.opts-label{display:block;margin-bottom:8px;font-size:12px;color:var(--mb-text-sub);font-weight:600}' +
+                '.opts-input{width:100%;margin-bottom:12px;}' +
+                '.opts-checks{display:flex;gap:12px;font-size:12px;color:var(--mb-text-sub);}' +
+                '.action-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}' +
+                '.btn-sm{width:auto;flex:1;min-width:100px;border:none;padding:10px 12px;border-radius:6px;cursor:pointer;color:white;font-size:12px;transition:all 0.3s ease-in-out;}' +
                 '.btn-sm:hover{transform:translateY(-1px);box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);}' +
                 '.btn-sm:active{transform:scale(0.95);}' +
-                '.btn-sm:focus-visible{outline:none;box-shadow:0 0 0 2px #fff, 0 0 0 4px #3b82f6;}' +
-                '.btn-blue{background:#0ea5e9;}' +
+                '.btn-sm:focus-visible{outline:none;box-shadow:0 0 0 2px var(--mb-bg), 0 0 0 4px var(--mb-highlight);}' +
+                '.btn-blue{background:var(--mb-highlight);}' +
                 '.btn-blue:hover{background:#0284c7;}' +
-                '.btn-green{background:#059669;}' +
-                '.btn-green:hover{background:#047857;}' +
-                '.btn-red{background:#ef4444;}' +
-                '.btn-red:hover{background:#dc2626;}' +
-                'button:focus-visible{outline:none;box-shadow:0 0 0 2px #1e293b, 0 0 0 4px #4f46e5;}' +
-                'input:focus-visible{outline:none;border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,0.3);}' +
+                '.btn-green{background:var(--mb-success);}' +
+                '.btn-green:hover{background:var(--mb-success-hover);}' +
+                '.btn-red{background:var(--mb-danger);}' +
+                '.btn-red:hover{background:var(--mb-danger-hover);}' +
+                'button:focus-visible{outline:none;box-shadow:0 0 0 2px var(--mb-bg), 0 0 0 4px var(--mb-primary);}' +
+                'input:focus-visible{outline:none;border-color:var(--mb-highlight);box-shadow:0 0 0 2px var(--mb-ring);}' +
+                '.empty-msg-icon{font-size:32px;margin-bottom:12px;opacity:0.8}' +
+                '.empty-msg-text{font-weight:600;color:var(--mb-text-sub);font-size:14px}' +
+                '.empty-msg-sub{font-size:12px;opacity:0.6;margin-top:4px}' +
+                '.export-msg{text-align:center;color:var(--mb-text-sub);margin:0 0 12px 0;font-size:12px}' +
+                '.seq-title{font-weight:bold;font-size:12px;color:var(--mb-text)}' +
+                '.wait-label{font-size:11px;color:var(--mb-text-muted);margin-right:4px}' +
+                '@keyframes pa-fade-in{from{opacity:0;transform:translate(-50%,-45%)}to{opacity:1;transform:translate(-50%,-50%)}}' +
 '</style>' +
                 '<div class="box">' +
                 '<div class="row" id="drag"><h3>Macro Builder</h3><button id="x" aria-label="Close Macro Builder" class="btn-close">✕</button></div>' +
                 '<div id="view_steps">' +
-                '<div id="list" class="list"><div class="empty-msg"><div style="font-size:24px;margin-bottom:8px">🤖</div><div style="font-weight:500;color:#94a3b8">No steps yet.</div><div style="font-size:11px;opacity:0.7">Click "Add Sequence" to start recording actions.</div></div></div>' +
+                '<div id="list" class="list"><div class="empty-msg"><div class="empty-msg-icon">🤖</div><div class="empty-msg-text">No steps yet.</div><div class="empty-msg-sub">Click "Add Sequence" to start recording actions.</div></div></div>' +
                 '<button id="add" aria-label="Add Macro Sequence">➕ Add Sequence</button>' +
                 '<button id="exp" aria-label="Export Macro" class="btn-export">⚡ Export</button>' +
-                '<div id="out" class="export-area" style="display:none">' +
-                '<p style="text-align:center;color:#e2e8f0;margin:0 0 10px 0">Drag to toolbar:</p>' +
+                '<div id="out" class="export-area hidden">' +
+                '<p class="export-msg">Drag to toolbar:</p>' +
                 '<a id="lnk" href="#" class="bm-btn">🤖 Macro</a>' +
                 '</div>' +
                 '</div>' +
@@ -167,7 +171,6 @@
         }
 
         startSequence() {
-            this._log('Sequence picking started');
             this.currentSequence = [];
             this.pick('sequence');
         }
@@ -176,7 +179,7 @@
             this.h.style.display = 'none';
             const hl = document.createElement('div');
             hl.style.cssText =
-                'position:absolute;border:2px solid #a855f7;background:rgba(168,85,247,0.2);pointer-events:none;z-index:999999';
+                'position:absolute;border:2px solid #a855f7;background:rgba(168,85,247,0.2);pointer-events:none;z-index:999999;transition:all 0.15s ease;border-radius:4px;box-shadow:0 0 0 2px rgba(168,85,247,0.4)';
             document.body.appendChild(hl);
 
 
@@ -246,7 +249,6 @@
                 }
 
                 const handleConfirm = (nextAction) => {
-                    this._log('Element picked', { tag: targetEl.tagName, sel: sel });
                     this.q('#preview').classList.add('hidden');
                     this.clearListeners();
 
@@ -300,7 +302,7 @@
         refreshList() {
             const l = this.q('#list');
             if (this.steps.length === 0) {
-                l.innerHTML = '<div class="empty-msg"><div style="font-size:24px;margin-bottom:8px">🤖</div><div style="font-weight:500;color:#94a3b8">No steps yet.</div><div style="font-size:11px;opacity:0.7">Click "Add Sequence" to start recording actions.</div></div>';
+                l.innerHTML = '<div class="empty-msg"><div class="empty-msg-icon">🤖</div><div class="empty-msg-text">No steps yet.</div><div class="empty-msg-sub">Click "Add Sequence" to start recording actions.</div></div>';
                 return;
             }
             l.innerHTML = '';
@@ -323,9 +325,9 @@
                     <div class="step-row">
                         <div class="step-idx">${i + 1}</div>
                         <div class="step-info">
-                            <div style="font-weight:bold;font-size:11px">Sequence ${i + 1}</div>
+                            <div class="seq-title">Sequence ${i + 1}</div>
                         </div>
-                        <div style="font-size:10px;color:#a5b4fc">Wait(s)</div>
+                        <div class="wait-label">Wait(s)</div>
                         <input type="number" class="delay" value="${s.delay}" data-idx="${i}">
                         <div class="step-del" data-idx="${i}">✕</div>
                     </div>
@@ -343,11 +345,9 @@
                     this.refreshList();
                 };
             });
-            this._log('Step list refreshed', { steps: this.steps.length });
         }
 
         compile() {
-            this._log('Compiling macro', { steps: this.steps.length });
             if (this.steps.length === 0) return BookmarkletUtils.showToast('Add steps first', 'error');
 
             this.steps.forEach((step) => {
@@ -373,28 +373,12 @@
                         this.id = 'run-'+Math.random().toString(36).slice(2);
                         this.init();
                     }
-                    _log(msg, data, level) {
-                        data = data || {};
-                        level = level || 'info';
-                        const safeData = {};
-                        for (const k in data) {
-                             if (/password|token|secret|key|auth|email|phone/i.test(k)) safeData[k] = '***REDACTED***';
-                             else safeData[k] = data[k];
-                        }
-                        (console[level] || console.log)('[MacroRuntime] ' + msg, safeData);
-                    }
                     init(){
-                        this._log('Initialized', {
-                            id: this.id,
-                            stepCount: steps.length,
-                            userAgent: navigator.userAgent,
-                            windowSize: window.innerWidth + 'x' + window.innerHeight
-                        });
                         this.h = document.createElement('div');
                         this.h.id = this.id;
                         this.h.style.cssText = 'position:fixed;top:15px;right:15px;z-index:2147483647;font-family:system-ui,sans-serif';
                         this.s = this.h.attachShadow({mode:'open'});
-                        this.s.innerHTML = '<style>:host{all:initial;font-family:system-ui,sans-serif}.box{background:var(--mb-bg, #1e293b);color:var(--mb-text, #f8fafc);width:240px;padding:16px;border-radius:16px;box-shadow:0 25px 50px -12px rgba(0, 0, 0, 0.5);border:1px solid #4338ca;font-size:13px}.row{display:flex;justify-content:space-between;align-items:center;cursor:move;user-select:none;padding-bottom:5px;border-bottom:1px solid #334155;margin-bottom:10px}.timer{font-size:32px;text-align:center;color:#a5b4fc;margin:10px 0;font-family:monospace}button{width:100%;background:#ef4444;color:#fff;border:none;padding:8px;border-radius:8px;cursor:pointer;transition:all 0.3s ease-in-out}button:hover{transform:translateY(-1px);box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1)}button:active{transform:scale(0.95)}</style><div class="box"><div class="row" id="drag"><b>RUNNING</b><button id="x" aria-label="Close Macro Runtime" style="background:transparent;border:none;color:#e2e8f0;font-size:14px;cursor:pointer;padding:0;width:auto;margin:0;box-shadow:none;transform:none">✕</button></div><div style="text-align:center;color:#c7d2fe;font-size:11px" id="st">Initializing...</div><div class="timer" id="tm">00:00</div><button id="cn" aria-label="Stop Macro">Stop</button></div>';
+                        this.s.innerHTML = '<style>:host{all:initial;font-family:system-ui,sans-serif}.box{background:var(--mb-bg, #1e293b);color:var(--mb-text, #f8fafc);width:240px;padding:16px;border-radius:16px;box-shadow:0 25px 50px -12px rgba(0, 0, 0, 0.5);border:1px solid #4338ca;font-size:13px}.row{display:flex;justify-content:space-between;align-items:center;cursor:move;user-select:none;padding-bottom:5px;border-bottom:1px solid #334155;margin-bottom:10px}.timer{font-size:32px;text-align:center;color:#a5b4fc;margin:10px 0;font-family:monospace}button{width:100%;background:#ef4444;color:#fff;border:none;padding:8px;border-radius:8px;cursor:pointer;transition:all 0.3s ease-in-out}button:hover{transform:translateY(-1px);box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1)}button:active{transform:scale(0.95)}.btn-close{background:transparent;border:none;color:#e2e8f0;font-size:14px;cursor:pointer;padding:0;width:auto;margin:0;box-shadow:none;transform:none}.status-text{text-align:center;color:#c7d2fe;font-size:11px}</style><div class="box"><div class="row" id="drag"><b>RUNNING</b><button id="x" aria-label="Close Macro Runtime" class="btn-close">✕</button></div><div class="status-text" id="st">Initializing...</div><div class="timer" id="tm">00:00</div><button id="cn" aria-label="Stop Macro">Stop</button></div>';
                         this.q = s => this.s.querySelector(s);
                         this.q('#x').onclick = () => this.destroy();
                         this.q('#cn').onclick = () => this.destroy();
@@ -410,8 +394,7 @@
                         head.onmousedown = dragMouseDown;
                     }
                     async run(){
-                        this._log('Execution started');
-                        try { if('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch(e){ this._log('Wake Lock failed', { error: e.message, type: e.name }, 'warn'); }
+                        try { if('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch(e){ console.warn('Wake Lock failed:', e); }
                         const wait = ms => new Promise(r => setTimeout(r, ms));
 
                         const queryDeep = (selector, root = document) => {
@@ -462,7 +445,6 @@
 
                         for(let i=0; i<steps.length; i++){
                             const group = steps[i];
-                            this._log('Starting step', { index: i + 1, total: steps.length, delay: group.delay });
                             this.q('#st').innerText = 'Step '+(i+1)+'/'+steps.length;
 
                             let rem = group.delay * 1000;
@@ -479,7 +461,6 @@
                             this.q('#tm').innerText = 'Running...';
                             for(let j=0; j<group.actions.length; j++) {
                                 const action = group.actions[j];
-                                this._log('Executing action', { index: j + 1, sel: action.sel });
 
                                 if(j === 1) {
                                    await ensureTopLevel();
@@ -489,12 +470,10 @@
 
                                 if(!el) {
                                     const err = { step: i+1, action: j+1, sel: action.sel, url: window.location.href };
-                                    this._log('Element not found', err, 'error');
                                     this.q('#st').innerText = 'Error: Step '+(i+1)+' Sub-action '+(j+1)+' Failed';
                                     this.q('#st').style.color = '#ef4444';
                                     return;
                                 }
-                                this._log('Element found', { sel: action.sel });
 
                                 if(action.val !== null || action.ask){
                                     let v = action.val;
@@ -518,7 +497,6 @@
                         }
                         this.q('#tm').innerText = 'Done';
                         this.q('#st').innerText = 'Finished';
-                        this._log('Execution finished');
                         setTimeout(()=>this.destroy(), 3000);
                     }
                     destroy(){ this.h.remove(); delete window.__mb_run; }
