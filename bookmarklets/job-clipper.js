@@ -4,6 +4,15 @@
     const oId = "jc-job-overlay";
 
     // --- DOM Utility ---
+    const escapeHtml = (unsafe) => {
+        return (unsafe || "").toString()
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    };
+
     const el = (tag, html, parent, attributes) => {
         const e = document.createElement(tag);
         if (html) e.innerHTML = html;
@@ -103,7 +112,7 @@
         const mo = el("div", "", document.body, { id: mId, class: "jc-modal" });
         
         el("h2", title, mo, { class: "jc-header" });
-        if (headerText) el("div", headerText, mo, { class: "jc-subheader" });
+        if (headerText) el("div", headerText, mo, { class: "jc-subheader" }); // Intentionally allow HTML here for bolding/etc, since it's passed from safe internal strings. If it contains user input, it should be escaped at the call site.
         
         mo.appendChild(contentNode);
         
@@ -289,7 +298,7 @@
         
         const pe = el("div", "Initializing scan...", mo, { class: "jc-progress" });
         const dt = await Ext.l((c, t, n) => { 
-            pe.innerHTML = `Fetching Job ${c} of ${t}...<br><span>${n}</span>`;
+            pe.innerHTML = `Fetching Job ${escapeHtml(c)} of ${escapeHtml(t)}...<br><span>${escapeHtml(n)}</span>`;
         });
         
         mo.remove();
@@ -300,9 +309,9 @@
         } else {
             dt.m.forEach(m => {
                 const i = el("div", "", c, { class: "jc-list-item" });
-                el("a", m.ti, i, { class: "jc-item-title", href: m.ln, target: "_blank" });
-                el("div", m.me, i, { class: "jc-item-meta" });
-                const hs = m.s.replace(/(telework|remote|hybrid|work from home|wfh)/gi, "<span class=\"jc-highlight\">$1</span>");
+                el("a", escapeHtml(m.ti), i, { class: "jc-item-title", href: m.ln, target: "_blank" });
+                el("div", escapeHtml(m.me), i, { class: "jc-item-meta" });
+                const hs = escapeHtml(m.s).replace(/(telework|remote|hybrid|work from home|wfh)/gi, "<span class=\"jc-highlight\">$1</span>");
                 el("div", `"...${hs}..."`, i, { class: "jc-item-snippet" });
             });
         }
