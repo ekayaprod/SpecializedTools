@@ -21,7 +21,6 @@ global.navigator.wakeLock = {
 
 // Mock console.warn
 const warns = [];
-const originalWarn = console.warn;
 console.warn = (...args) => {
     warns.push(args);
 };

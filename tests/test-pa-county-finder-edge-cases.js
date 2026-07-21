@@ -48,7 +48,7 @@ function runTest(testCase) {
     } catch (e) {
         console.error(`❌ ${input}`);
         console.error(`   Expected: ${expected.join(', ')}`);
-        console.error(`   Actual:   ${counties.join(', ')}`);
+        console.error(`   Error:    ${e}`);
         failed++;
     }
 }

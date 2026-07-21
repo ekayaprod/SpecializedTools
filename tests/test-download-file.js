@@ -23,7 +23,7 @@ let createdUrl = '';
 let revokedUrl = '';
 
 global.URL = {
-    createObjectURL: (blob) => {
+    createObjectURL: () => {
         createdUrl = 'blob:mock-url';
         return createdUrl;
     },

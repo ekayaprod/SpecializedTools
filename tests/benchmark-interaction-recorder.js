@@ -65,7 +65,7 @@ console.log('✅ Passed');
 
 // Test 3: Multiple siblings (nth-of-type)
 console.log('Test 3: Multiple siblings (nth-of-type)');
-const li1 = createMockElement('li', null, ul);
+createMockElement('li', null, ul);
 const li2 = createMockElement('li', null, ul); // this is the 3rd li
 assert.strictEqual(recorder.getPath(li2), 'div#myid > ul > li:nth-of-type(3)');
 console.log('✅ Passed');

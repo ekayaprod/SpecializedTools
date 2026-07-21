@@ -8,7 +8,6 @@
 
     /* Check if we can run here */
     if (window.location.protocol === 'about:' || window.location.protocol === 'chrome:') {
-        console.warn('Delayed Clicker: Cannot run on internal browser pages.', { url: window.location.href });
         return;
     }
 
@@ -32,15 +31,16 @@
             <style>
                 :host { all: initial; font-family: inherit; }
                 .card {
-                    background: #1e1e1e;
-                    color: #fff;
+                    background: var(--dc-bg, #1e1e1e);
+                    color: var(--dc-text, #f8fafc);
                     width: 300px;
-                    border-radius: 12px;
-                    box-shadow: 0 10px 40px rgba(0,0,0,0.4), 0 0 0 1px #333;
+                    border-radius: 16px;
+                    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5), 0 0 0 1px #333;
                     overflow: hidden;
                     font-size: 14px;
                     opacity: 0;
                     transform: translateY(-10px);
+                    transition: all 0.3s ease-in-out;
                     animation: enter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
                 }
                 @keyframes enter { to { opacity: 1; transform: translateY(0); } }
@@ -100,7 +100,7 @@
                     border-radius: 6px;
                     font-weight: 600;
                     cursor: pointer;
-                    transition: transform 0.2s, background-color 0.2s, color 0.2s;
+                    transition: all 0.3s ease-in-out;
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -108,9 +108,9 @@
                     font-size: 14px;
                 }
                 .btn-primary { background: #3b82f6; color: white; }
-                .btn-primary:hover { background: #2563eb; }
+                .btn-primary:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
                 .btn-secondary { background: #333; color: #ddd; margin-bottom: 12px; }
-                .btn-secondary:hover { background: #444; color: #fff; }
+                .btn-secondary:hover { background: #444; color: #fff; transform: translateY(-1px); }
                 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
                 /* Target Display */

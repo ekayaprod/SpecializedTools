@@ -80,7 +80,7 @@ tests.forEach((test) => {
         console.error(`❌ ${test.name}`);
         console.error(`   Input:    ${JSON.stringify(test.input)}`);
         console.error(`   Expected: ${JSON.stringify(test.expected)}`);
-        console.error(`   Actual:   ${JSON.stringify(compile(test.input))}`);
+        console.error(`   Error:    ${e}`);
         failed++;
     }
 });

@@ -46,8 +46,7 @@ async function runTest() {
         return true;
     };
 
-    global.prompt = (msg) => {
-        // console.log("Prompt:", msg);
+    global.prompt = () => {
         return 'Test Input';
     };
 

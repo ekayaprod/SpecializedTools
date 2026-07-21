@@ -63,7 +63,7 @@ global.window.matchMedia = (query) => {
 
 // Mock BookmarkletUtils
 global.window.BookmarkletUtils = {
-    normalizeImages: async (el) => {
+    normalizeImages: async () => {
         console.log('Mock: normalizeImages');
     },
     inlineStylesAsync: async (src, tgt, cb) => {
@@ -72,7 +72,7 @@ global.window.BookmarkletUtils = {
         if (src.getAttribute('style')) tgt.setAttribute('style', src.getAttribute('style'));
         if (cb) cb(1);
     },
-    sanitizeAttributes: (el) => {
+    sanitizeAttributes: () => {
         console.log('Mock: sanitizeAttributes');
     },
     sanitizeFilename: (s) => (s || 'export').replace(/[^a-z0-9]/gi, '_'),
@@ -80,7 +80,7 @@ global.window.BookmarkletUtils = {
     loadLibrary: async (name) => {
         console.log('Mock: loadLibrary', name);
     },
-    downloadFile: (name, content) => {
+    downloadFile: (name) => {
         console.log('Mock: downloadFile', name);
     },
     htmlToMarkdown: (html) => html,

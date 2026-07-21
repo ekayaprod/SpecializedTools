@@ -223,9 +223,12 @@ function _shouldStoreProperty(propId, newPropType, existingProp) {
  * parseAddress('"Smith, Jane" <jane@test.com>'); // Returns { name: 'Smith, Jane', email: 'jane@test.com' }
  * parseAddress('bob@test.com'); // Returns { name: '', email: 'bob@test.com' }
  */
-// WARN: The regex extracts the name by checking for the standard format `Name <email>`.
-// Since OLE files sometimes leave the name unquoted or include legacy artifacts, we aggressively strip outer quotes.
-// If the string doesn't follow the `<...>` format, it falls back to matching standard email formats and strips the email out to isolate the name.
+// 🕯️ CHRONICLE: AST reasoning explains the logic; Git history explains the business intent.
+/**
+ * Extracts the name and email from an address string by falling back from explicit `<email>` formatting to a raw regex email match.
+ * It aggressively strips outer quotes to clean up legacy artifacts.
+ * * Historical Intent: Added via PR #473 (Jul 2026) to handle OLE file artifacts that often leave names unquoted or inconsistently formatted.
+ */
 function parseAddress(addr) {
     if (!addr) return { name: '', email: null };
     addr = addr.trim();

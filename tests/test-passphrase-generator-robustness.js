@@ -31,7 +31,7 @@ global.Date = MockDate; // Override global Date
 
 // Mock clipboard
 global.navigator.clipboard = {
-    writeText: (text) => Promise.resolve(),
+    writeText: () => Promise.resolve(),
 };
 
 function runScript() {

@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### New
+- ⚙️ Prompt Engineer: Evolved AI instruction protocols and cognitive boundaries.
+- 📝 Scribe/Retcon: Expanded localized README with detailed architecture and tool descriptions.
 - 🏗️ Architect: Refactored Web Clipper to class-based architecture for better maintainability.
 - ✨ Spark: Added Property Appraisal prompt to Property Clipper.
 - 🎨 Virtuoso: Polished PA County Finder UI with animations and accessibility improvements.
@@ -16,6 +18,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - 🛡️ Warden: Added comprehensive resilience tests for Web Clipper and TSConfig.
+- 🐛 Fix: Resolved Job Clipper UI test failure by aligning with user instructions.
+
+### Cleanups & Maintenance
+- 🎨 Palette+: Injected fluid motion, focus rings, and soft borders into UI components.
+- 👁️ Overseer: Categorized structural decay and updated agent triages.
+- 🪲 Scavenger: Executed aggressive codebase sweep to remove diagnostic droppings, orphaned entities, and dead logic.
+- 🧰 Superintendent: Enforced repository baselines, injected missing POSIX-compliant EOF newlines, and purged workspace debris.
+- 🎨 Stylize: Applied fluid patterns, touch targets, empty states, and dynamic transitions to automation tools.
+- ⚙️ Modernizer: Bumped Prettier and ESLint dependencies.
+- 🧠 Cortex: Evolved AI instruction payloads by injecting cognitive heuristics and constraints.
 - 🐛 Fix: Resolved Property Clipper UI checkbox selection issues.
 - 🐛 Fix: Regex literal parsing in bookmarklet builder.
 - 🕵️ Inspector: Added comprehensive test suite for Macro Builder.

@@ -136,7 +136,7 @@ async function runTests() {
         }
 
         let progressUpdates = 0;
-        await window.BookmarkletUtils.inlineStylesAsync(source, target, (count) => {
+        await window.BookmarkletUtils.inlineStylesAsync(source, target, () => {
             progressUpdates++;
         });
 

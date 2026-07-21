@@ -8,8 +8,5 @@ if (fs.existsSync(filePath)) {
             '- [x] mailto-link-generator/js/msgreader.js'
         );
         fs.writeFileSync(filePath, content);
-        console.log('Audit updated.');
-    } else {
-        console.log('No matching entry found in audit.');
     }
 }

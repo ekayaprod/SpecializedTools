@@ -219,8 +219,11 @@
         },
     };
 
+    // 🕯️ CHRONICLE: AST reasoning explains the logic; Git history explains the business intent.
     /**
-     * Processes a <picture> element to ensure the fallback <img> has a valid src.
+     * Processes a `<picture>` element to ensure the fallback `<img>` has a valid `src`.
+     * Inspects `<source>` elements to correctly fall back when lazy loaded sources are active.
+     * * Historical Intent: Enhanced via PR #473 (Jul 2026) to handle complex `<picture>` tags where standard `src` attributes are hidden.
      * @param {HTMLElement} pic - The picture element.
      */
     function processPictureElement(pic) {
@@ -237,8 +240,11 @@
         }
     }
 
+    // 🕯️ CHRONICLE: AST reasoning explains the logic; Git history explains the business intent.
     /**
      * Processes an <img> element to resolve lazy loading and stabilize dimensions.
+     * Evaluates data attributes (`data-src`, `data-lazy-src`) and sets the `src` attribute.
+     * * Historical Intent: Enhanced via PR #473 (Jul 2026) to improve structural UI boundaries and guarantee valid images are passed to extraction tasks.
      * @param {HTMLImageElement} img - The image element.
      */
     function processImageElement(img) {
@@ -337,17 +343,7 @@
          * @param {HTMLElement|null} [parent=null] - The parent element to append to.
          * @param {Object} [props={}] - Additional properties to assign to the element.
          * @returns {HTMLElement} The created element.
-         *
-         * @example
-         * const btn = BookmarkletUtils.buildElement('button', {
-         *   backgroundColor: 'blue',
-         *   color: 'white',
-         *   padding: '10px'
-         * }, 'Click Me', document.body, {
-         *   id: 'my-btn',
-         *   onclick: () => alert('Clicked!')
-         * });
-         */
+         **/
         buildElement(tag, styles, text, parent, props) {
             const el = document.createElement(tag);
             if (styles) {
@@ -643,15 +639,7 @@
          * @param {HTMLElement} root - The root element to scan for images.
          * @param {function(number): void} [onProgress] - Callback reporting processed count.
          * @returns {Promise<void>}
-         *
-         * @example
-         * const container = document.getElementById('content');
-         * BookmarkletUtils.normalizeImages(container, (count) => {
-         *   console.log(`Processed ${count} images...`);
-         * }).then(() => {
-         *   console.log('All images normalized!');
-         * });
-         */
+         **/
         normalizeImages(root, onProgress) {
             return new Promise((resolve, reject) => {
                 /* Use stack-based traversal (DFS) to avoid expensive querySelectorAll on huge DOMs */
@@ -735,14 +723,7 @@
          * @param {HTMLElement} target - The cloned element.
          * @param {function(number): void} [onProgress] - Callback reporting processed count.
          * @returns {Promise<void>}
-         *
-         * @example
-         * const source = document.getElementById('source');
-         * const target = source.cloneNode(true);
-         * BookmarkletUtils.inlineStylesAsync(source, target).then(() => {
-         *   console.log('Styles inlined!');
-         * });
-         */
+         **/
         inlineStylesAsync(source, target, onProgress) {
             return new Promise((resolve, reject) => {
                 /** @type {Array<{s: HTMLElement, t: HTMLElement}>} */
@@ -803,11 +784,7 @@
          *
          * @param {string|number} s - The string to escape.
          * @returns {string} The escaped string.
-         *
-         * @example
-         * const escaped = BookmarkletUtils.escapeHtml('<img src=x onerror=alert(1)>');
-         * // Returns: "&lt;img src=x onerror=alert(1)&gt;"
-         */
+         **/
         escapeHtml(s) {
             const input = s || s === 0 ? s : '';
             return String(input).replace(/[&<>"']/g, (m) => ESCAPE_MAP[m]);

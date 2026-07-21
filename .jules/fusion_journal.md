@@ -16,3 +16,7 @@
 ## Prompt Engineer — The Context Alchemist
 **Learning:** Found that `appraisal-objective.md`, `househack-objective.md`, and `ltr-objective.md` lacked specific cognitive constraints to guide the LLM, leaving them susceptible to hallucinations and verbosity.
 **Action:** Injected the "Senior Real Estate Appraiser", "House Hacking Investment Strategist", and "Long-Term Rental Investment Analyst" personas respectively. Added `<thinking>` blocks and `CRITICAL NEGATIVE CONSTRAINT`s forbidding multi-paragraph narratives and unsupported hallucination to fortify the cognitive boundaries while preserving variables and formatting rules.
+
+## Prompt Engineer — The Context Alchemist
+**Learning:** Foundational AI instruction payloads (STR, Janitor, Librarian) lacked explicit cognitive boundaries and domain-grounded personas, which increases the likelihood of hallucination or non-deterministic behavior during execution. Generic personas often result in generic logic output.
+**Action:** Injected strict CORTEX directives, domain-specific expert personas, explicit negative constraints (e.g., forbidding modification of test files, prohibiting hallucinated CapEx metrics), and mandatory `<thinking>` blocks into `str-objective.md`, `janitor.md`, and `librarian.md`. This locks execution logic into highly deterministic cognitive pathways.

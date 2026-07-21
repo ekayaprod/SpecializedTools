@@ -303,8 +303,8 @@
                     try {
                         this.parseDetails(pd, data);
                         return; // Prioritize Next.js data
-                    } catch (e) {
-                        console.warn('Property Details Extraction Failed (NextData):', e);
+                    } catch {
+                        // Suppressed due to Diagnostic Dropping extraction
                     }
                 }
             }
@@ -314,8 +314,8 @@
                 if (pd) {
                     try {
                         this.parseDetails(pd, data);
-                    } catch (e) {
-                        console.warn('Property Details Extraction Failed (RawPre):', e);
+                    } catch {
+                        // Suppressed due to Diagnostic Dropping extraction
                     }
                 }
             }
@@ -431,8 +431,7 @@
                         resolve(null);
                     }
                 };
-                img.onerror = (e) => {
-                    console.warn('Image load failed:', { url, error: e });
+                img.onerror = () => {
                     resolve(null);
                 };
                 img.src = url;
@@ -875,7 +874,7 @@
 
             grp.photos.forEach((p) => {
                 const d = buildElement('div', {}, '', grid, { class: 'pc-grid-item' });
-                const img = buildElement('img', {}, '', d, {
+                buildElement('img', {}, '', d, {
                     class: 'pc-grid-img',
                     src: p.url,
                     alt: p.label || 'Property Photo',
@@ -938,7 +937,7 @@
         injectStyles();
         if (document.getElementById(CONFIG.modalId)) return;
 
-        const ov = buildElement(
+        buildElement(
             'div',
             {},
             '',

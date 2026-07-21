@@ -114,8 +114,14 @@
     function R(a) { return a[getRand(a.length)]; }
     function Cap(s) { return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase(); }
 
+    // 🕯️ CHRONICLE: AST reasoning explains the logic; Git history explains the business intent.
+
+    /**
+     * Determines the current season based on a given Date object.
+     * Evaluates month and day ranges to handle crossing year boundaries (e.g., winter).
+     * * Historical Intent: Added via PR #451 (Jun 2026) to dynamically scope passphrase structures based on the current season.
+     */
     function getSeason(d) {
-        const y = d.getFullYear();
         const m = d.getMonth();
         const day = d.getDate();
 
