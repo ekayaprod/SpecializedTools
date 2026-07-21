@@ -27,7 +27,69 @@
     };
 
     // --- CSS Injection ---
-    const css = `:root{--p:#d946ef;--bg:#fff;--t:#1f2937;--b:#e5e7eb;--s:#10b981}@keyframes i{from{opacity:0}to{opacity:1}}@keyframes u{from{transform:translate(-50%,-45%);opacity:0}to{transform:translate(-50%,-50%);opacity:1}}.jc-overlay{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:99998;backdrop-filter:blur(4px);animation:i .2s}.jc-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg);padding:24px;width:650px;max-width:90vw;border-radius:12px;z-index:99999;box-shadow:0 20px 25px -5px rgba(0,0,0,.1);font-family:system-ui;display:flex;flex-direction:column;gap:16px;color:var(--t);animation:u .3s;max-height:90vh}.jc-header{margin:0;font-size:20px;font-weight:700;text-align:center;color:var(--p)}.jc-toggles{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}.jc-pill{padding:6px 14px;border-radius:99px;border:1px solid var(--b);cursor:pointer;font-size:13px;font-weight:600;user-select:none}.jc-pill[data-active="true"]{background:var(--p);color:#fff;border-color:var(--p)}.jc-textarea{width:100%;padding:12px;border:1px solid var(--b);border-radius:6px;font-size:13px;box-sizing:border-box;resize:vertical;min-height:280px;font-family:monospace;background:#f9fafb}.jc-textarea:focus{outline:none;border-color:var(--p)}.jc-textarea:focus-visible{outline:none;box-shadow:0 0 0 2px rgba(217,70,239,0.3)}.jc-actions{display:flex;gap:10px;justify-content:space-between;border-top:1px solid var(--b);padding-top:16px}.jc-btn{padding:10px 16px;border-radius:6px;font-weight:600;font-size:14px;cursor:pointer;border:1px solid transparent;transition:all 0.3s ease-in-out}.jc-btn:active{transform:scale(0.95)}.jc-btn:focus-visible{outline:none;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--p)}.jc-btn-primary{background:var(--p);color:#fff}.jc-btn-primary:hover{opacity:0.9}.jc-btn-ghost{background:0 0;color:#6b7280}.jc-btn-ghost:hover{background:#f3f4f6;color:#374151}.jc-btn-success{background:var(--s);color:#fff}.jc-scroll-list{overflow-y:auto;flex:1;min-height:200px;border:1px solid var(--b);border-radius:8px;background:#f8fafc;padding:12px}.jc-list-item{background:#fff;border:1px solid var(--b);border-radius:6px;padding:12px;margin-bottom:12px;transition:all 0.3s ease-in-out}.jc-list-item:hover{transform:translateY(-1px);box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);border-color:var(--p)}.jc-item-title{font-size:15px;font-weight:700;color:#0284c7;text-decoration:none;display:block;margin-bottom:4px}.jc-item-meta{font-size:11px;font-weight:600;color:#64748b;margin-bottom:8px;text-transform:uppercase}.jc-item-snippet{font-size:13px;color:#334155;line-height:1.5;padding:8px;background:#f1f5f9;border-left:3px solid var(--p);border-radius:4px}.jc-highlight{background:#dcfce7;color:#166534;padding:0 4px;border-radius:3px;font-weight:600}.jc-progress{font-size:16px;font-weight:600;text-align:center;color:var(--p);padding:40px}`;
+    const css = `:root {
+    --jc-primary: #d946ef;
+    --jc-primary-hover: #c026d3;
+    --jc-primary-focus: rgba(217, 70, 239, 0.3);
+    --jc-primary-focus-strong: rgba(217, 70, 239, 0.4);
+    --jc-bg: #fff;
+    --jc-bg-alt: #f9fafb;
+    --jc-bg-hover: #f3f4f6;
+    --jc-text: #1f2937;
+    --jc-text-muted: #6b7280;
+    --jc-text-sub: #4b5563;
+    --jc-border: #e5e7eb;
+    --jc-success: #10b981;
+    --jc-overlay: rgba(15, 23, 42, 0.6);
+    --jc-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    --jc-shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    --jc-radius-xl: 16px;
+    --jc-radius-md: 8px;
+    --jc-radius-sm: 6px;
+    --jc-link: #0284c7;
+    --jc-link-hover: #0369a1;
+    --jc-snippet-bg: #f1f5f9;
+    --jc-snippet-text: #334155;
+    --jc-highlight-bg: #dcfce7;
+    --jc-highlight-text: #166534;
+}
+@keyframes jc-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes jc-slide-up { from { transform: translate(-50%, -45%); opacity: 0; } to { transform: translate(-50%, -50%); opacity: 1; } }
+@keyframes jc-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+.jc-overlay { position: fixed; inset: 0; background: var(--jc-overlay); z-index: 99998; backdrop-filter: blur(4px); animation: jc-fade-in 0.2s ease-out; }
+.jc-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--jc-bg); padding: 24px; width: 650px; max-width: 90vw; border-radius: var(--jc-radius-xl); z-index: 99999; box-shadow: var(--jc-shadow); font-family: system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; gap: 16px; color: var(--jc-text); animation: jc-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 90vh; }
+.jc-header { margin: 0; font-size: 20px; font-weight: 700; text-align: center; color: var(--jc-primary); }
+.jc-subheader { font-size: 13px; text-align: center; color: var(--jc-text-sub); font-weight: 600; }
+.jc-toggles { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.jc-pill { padding: 6px 14px; border-radius: 99px; border: 1px solid var(--jc-border); cursor: pointer; font-size: 13px; font-weight: 600; user-select: none; transition: all 0.2s ease; }
+.jc-pill:hover { border-color: var(--jc-primary); }
+.jc-pill[data-active="true"] { background: var(--jc-primary); color: #fff; border-color: var(--jc-primary); box-shadow: var(--jc-shadow-sm); }
+.jc-textarea { width: 100%; padding: 12px; border: 1px solid var(--jc-border); border-radius: var(--jc-radius-sm); font-size: 13px; box-sizing: border-box; resize: vertical; min-height: 280px; font-family: monospace; background: var(--jc-bg-alt); transition: all 0.3s ease; }
+.jc-textarea:focus { outline: none; border-color: var(--jc-primary); box-shadow: 0 0 0 2px var(--jc-primary-focus); }
+.jc-textarea:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--jc-primary-focus-strong); }
+.jc-actions { display: flex; gap: 10px; justify-content: space-between; border-top: 1px solid var(--jc-border); padding-top: 16px; }
+.jc-btn { padding: 10px 16px; border-radius: var(--jc-radius-sm); font-weight: 600; font-size: 14px; cursor: pointer; border: 1px solid transparent; transition: all 0.3s ease-in-out; display: inline-flex; align-items: center; justify-content: center; }
+.jc-btn:active { transform: scale(0.95); }
+.jc-btn:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--jc-bg), 0 0 0 4px var(--jc-primary); }
+.jc-btn-primary { background: var(--jc-primary); color: #fff; }
+.jc-btn-primary:hover { background: var(--jc-primary-hover); }
+.jc-btn-ghost { background: transparent; color: var(--jc-text-muted); }
+.jc-btn-ghost:hover { background: var(--jc-bg-hover); color: var(--jc-text); }
+.jc-btn-success { background: var(--jc-success); color: #fff; }
+.jc-scroll-list { overflow-y: auto; flex: 1; min-height: 200px; border: 1px solid var(--jc-border); border-radius: var(--jc-radius-md); background: var(--jc-bg-alt); padding: 12px; display: flex; flex-direction: column; gap: 12px; }
+.jc-list-item { background: var(--jc-bg); border: 1px solid var(--jc-border); border-radius: var(--jc-radius-sm); padding: 14px; transition: all 0.3s ease-in-out; }
+.jc-list-item:hover { transform: translateY(-2px); box-shadow: var(--jc-shadow-sm); border-color: var(--jc-primary); }
+.jc-item-title { font-size: 15px; font-weight: 700; color: var(--jc-link); text-decoration: none; display: block; margin-bottom: 4px; transition: color 0.2s ease; }
+.jc-item-title:hover { color: var(--jc-link-hover); text-decoration: underline; }
+.jc-item-meta { font-size: 11px; font-weight: 600; color: var(--jc-text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.jc-item-snippet { font-size: 13px; color: var(--jc-snippet-text); line-height: 1.6; padding: 10px; background: var(--jc-snippet-bg); border-left: 3px solid var(--jc-primary); border-radius: 4px; }
+.jc-highlight { background: var(--jc-highlight-bg); color: var(--jc-highlight-text); padding: 0 4px; border-radius: 3px; font-weight: 600; }
+.jc-progress { font-size: 16px; font-weight: 600; text-align: center; color: var(--jc-primary); padding: 40px; animation: jc-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; display: flex; flex-direction: column; gap: 8px; align-items: center; justify-content: center; }
+.jc-progress span { font-size: 13px; font-weight: 400; color: var(--jc-text-muted); }
+.jc-empty-state { text-align: center; padding: 40px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.jc-empty-icon { font-size: 32px; opacity: 0.5; }
+.jc-empty-title { font-weight: 600; color: var(--jc-text-sub); font-size: 15px; }
+.jc-empty-desc { font-size: 13px; color: var(--jc-text-muted); }`;
 
     // --- UI Builder ---
     const initUI = (title, headerText, contentNode, getCopyPayload) => {
@@ -41,7 +103,7 @@
         const mo = el("div", "", document.body, { id: mId, class: "jc-modal" });
         
         el("h2", title, mo, { class: "jc-header" });
-        if (headerText) el("div", headerText, mo, { style: "font-size:13px;text-align:center;color:#4b5563;font-weight:600" });
+        if (headerText) el("div", headerText, mo, { class: "jc-subheader" });
         
         mo.appendChild(contentNode);
         
@@ -227,14 +289,14 @@
         
         const pe = el("div", "Initializing scan...", mo, { class: "jc-progress" });
         const dt = await Ext.l((c, t, n) => { 
-            pe.innerHTML = `Fetching Job ${c} of ${t}...<br><span style="font-size:12px">${n}</span>`; 
+            pe.innerHTML = `Fetching Job ${c} of ${t}...<br><span>${n}</span>`;
         });
         
         mo.remove();
         
         const c = el("div", "", null, { class: "jc-scroll-list" });
         if (!dt.m.length) {
-            c.innerHTML = "<div style=\"text-align:center;padding:40px;display:flex;flex-direction:column;align-items:center;gap:12px\"><div style=\"font-size:32px;opacity:0.5\">🔍</div><div style=\"font-weight:600;color:#4b5563;font-size:15px\">No matches detected.</div><div style=\"font-size:13px;color:#9ca3af\">Try expanding your search or checking a different page.</div></div>";
+            c.innerHTML = "<div class=\"jc-empty-state\"><div class=\"jc-empty-icon\">🔍</div><div class=\"jc-empty-title\">No matches detected.</div><div class=\"jc-empty-desc\">Try expanding your search or checking a different page.</div></div>";
         } else {
             dt.m.forEach(m => {
                 const i = el("div", "", c, { class: "jc-list-item" });
